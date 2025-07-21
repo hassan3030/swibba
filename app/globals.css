@@ -1,0 +1,258 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Orange/Yellow palette */
+    --primary: 40 89% 57%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 32 89% 57%;
+    --secondary-foreground: 0 0% 0%;
+
+    --accent: 27 89% 57%;
+    --accent-foreground: 0 0% 0%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 40 89% 57%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* DeelDeal-inspired dark mode colors */
+    --background: 0 0% 7%; /* #121212 - Very dark background */
+    --foreground: 0 0% 98%; /* #fafafa - Light text */
+
+    --card: 0 0% 10%; /* #1a1a1a - Slightly lighter card background */
+    --card-foreground: 0 0% 98%; /* #fafafa - Light text */
+
+    --popover: 0 0% 10%; /* #1a1a1a - Matching card background */
+    --popover-foreground: 0 0% 98%; /* #fafafa - Light text */
+
+    /* Primary color - gold accent like in the image */
+    --primary: 45 93% 47%; /* #f5b014 - Gold/yellow accent */
+    --primary-foreground: 0 0% 10%; /* #1a1a1a - Dark text on primary */
+
+    /* Secondary color - darker gold */
+    --secondary: 36 91% 43%; /* #d99212 - Darker gold */
+    --secondary-foreground: 0 0% 98%; /* #fafafa - Light text */
+
+    /* Accent color - brighter gold */
+    --accent: 45 100% 60%; /* #ffcc33 - Brighter gold */
+    --accent-foreground: 0 0% 10%; /* #1a1a1a - Dark text */
+
+    --muted: 0 0% 15%; /* #262626 - Muted background */
+    --muted-foreground: 0 0% 65%; /* #a6a6a6 - Muted text */
+
+    --destructive: 0 84% 60%; /* Red for destructive actions */
+    --destructive-foreground: 0 0% 98%; /* #fafafa - Light text */
+
+    --border: 0 0% 18%; /* #2e2e2e - Border color */
+    --input: 0 0% 18%; /* #2e2e2e - Input background */
+    --ring: 45 93% 47%; /* #f5b014 - Gold accent for focus rings */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom color classes for the palette */
+.bg-primary-yellow {
+  @apply bg-primary;
+}
+
+.bg-primary-orange {
+  @apply bg-secondary;
+}
+
+.bg-secondary-orange {
+  @apply bg-accent;
+}
+
+.bg-accent-orange {
+  background-color: hsl(var(--accent));
+}
+
+.bg-deep-orange {
+  background-color: hsl(15 89% 57%);
+}
+
+.text-primary-yellow {
+  @apply text-primary;
+}
+
+.text-primary-orange {
+  @apply text-secondary;
+}
+
+.text-secondary-orange {
+  @apply text-accent;
+}
+
+.text-accent-orange {
+  color: hsl(var(--accent));
+}
+
+.text-deep-orange {
+  color: hsl(15 89% 57%);
+}
+
+/* Dark mode custom colors */
+.dark .bg-deep-orange {
+  background-color: hsl(45 93% 47%); /* Gold accent */
+}
+
+.dark .text-deep-orange {
+  color: hsl(45 93% 47%); /* Gold accent */
+}
+
+/* Additional dark mode custom classes */
+.dark .bg-dark-surface {
+  background-color: #121212;
+}
+
+.dark .bg-dark-card {
+  background-color: #1a1a1a;
+}
+
+.dark .bg-dark-accent {
+  background-color: #f5b014;
+}
+
+.dark .bg-dark-text {
+  background-color: #fafafa;
+}
+
+.dark .text-dark-surface {
+  color: #121212;
+}
+
+.dark .text-dark-card {
+  color: #1a1a1a;
+}
+
+.dark .text-dark-accent {
+  color: #f5b014;
+}
+
+.dark .text-dark-text {
+  color: #fafafa;
+}
+
+/* DeelDeal-specific styles */
+.dark .bg-deeldeal-gold {
+  background-color: #f5b014;
+}
+
+.dark .text-deeldeal-gold {
+  color: #f5b014;
+}
+
+.dark .bg-deeldeal-dark {
+  background-color: #121212;
+}
+
+.dark .text-deeldeal-dark {
+  color: #121212;
+}
+
+.dark .border-deeldeal {
+  border-color: #2e2e2e;
+}
+
+.dark .hover-deeldeal:hover {
+  background-color: #2e2e2e;
+}
+
+/* Gold gradient */
+.gold-gradient {
+  @apply bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500;
+}
+
+.dark .gold-gradient {
+  @apply bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500;
+}
+
+/* Gold text gradient */
+.gold-text-gradient {
+  @apply bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 bg-clip-text text-transparent;
+}
+
+/* RTL Support */
+[dir="rtl"] .scrollbar-hide {
+  scrollbar-width: none;
+}
+
+[dir="rtl"] .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Stats counter animation */
+@keyframes countUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-count-up {
+  animation: countUp 1s forwards;
+}

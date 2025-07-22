@@ -35,10 +35,10 @@ export default async function  RootLayout({ children }) {
             {/* <AuthProvider> */}
               {/* <AuthGuard> */}
                 <div className="flex min-h-screen flex-col">
-                  <Header />
+{/*                   <Header /> */}
            
                   <div className="flex-1">{children}</div>
-                  <Footer />
+{/*                   <Footer /> */}
                 </div>
                 <Toaster />
               {/* </AuthGuard> */}

@@ -274,7 +274,7 @@ export default function ProfileSettingsPage() {
   }, [])
 
   useEffect(() => {
-    setAvatarPath(`http://localhost:8055/assets/${user.avatar}`)
+    setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}`)
     setFirstName(user.first_name || "")
     setLasttName(user.last_name || "")
     setGender(user?.gender || "")

@@ -1,8 +1,8 @@
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 
-export const baseItemsURL = "http://localhost:8055/items"
-export const baseURL = "http://localhost:8055"
+export const baseItemsURL = "https://deel-deal-directus.csiwm3.easypanel.host/items"
+export const baseURL = "https://deel-deal-directus.csiwm3.easypanel.host"
 
 // Enhanced error handling utility
 const handleApiError = (error, context) => {

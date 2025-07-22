@@ -240,7 +240,7 @@ const WishlistCard = ({ item, onRemove }) => {
         <CardHeader className="p-0">
           <div className="relative overflow-hidden">
             <motion.img
-              src={`http://localhost:8055/assets/${bigImage}` || "/placeholder.svg"}
+              src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
               alt={item.name}
               className="w-full h-48 object-cover rounded-t-lg"
               whileHover={{ scale: 1.05 }}

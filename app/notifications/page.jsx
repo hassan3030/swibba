@@ -490,7 +490,7 @@ const Notifications = () => {
                             <Avatar className="h-10 w-10 border">
                               <AvatarImage
                                 src={
-                                  `http://localhost:8055/assets/${
+                                  `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
                                     userSwaps.find((u) => u.id === offer.from_user_id)?.avatar || "/placeholder.svg"
                                   }` || "/placeholder.svg"
                                 }
@@ -719,7 +719,7 @@ const Notifications = () => {
                                 userName={`${userToRate.first_name || ""} ${userToRate.last_name || ""}`}
                                 userAvatar={
                                   userToRate.avatar
-                                    ? `http://localhost:8055/assets/${userToRate.avatar}`
+                                    ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userToRate.avatar}`
                                     : "/placeholder.svg"
                                 }
                               />
@@ -887,7 +887,7 @@ const CardItemSwap = ({ id, name, description, price, status_item, images, delet
           transition={{ duration: 0.3 }}
         >
           <img
-            src={bigImage ? `http://localhost:8055/assets/${bigImage}` : "/placeholder.svg"}
+            src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
             alt={name}
             className="w-full h-full object-cover"
           />

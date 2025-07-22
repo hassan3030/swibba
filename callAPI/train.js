@@ -2,8 +2,8 @@
 
 import axios from 'axios';
 const baseURLAssets = 'http://localhost:3000/api/product/1';
-export const baseItemsURL = 'http://localhost:8055/items';
-export const baseURL = 'http://localhost:8055';
+export const baseItemsURL = 'https://deel-deal-directus.csiwm3.easypanel.host/items';
+export const baseURL = 'https://deel-deal-directus.csiwm3.easypanel.host';
 import {  getCookie , setCookie , decodedToken } from './utiles';
 import { getUserByProductId } from './users';
 import {  } from './products';
@@ -148,19 +148,19 @@ export const deleteOfferById = async (id) => {
     console.log('getItemsByOfferId' , items)
   if(items){
    for (const item of items) {
-      await axios.patch(`http://localhost:8055/items/Items/${item.item_id}`, {
+      await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/items/Items/${item.item_id}`, {
         "status_swap": "available" ,       
       },
     );
-    await axios.delete(`http://localhost:8055/items/Offer_Items?filter[offer_id][_eq]=${id}` );
+    await axios.delete(`https://deel-deal-directus.csiwm3.easypanel.host/items/Offer_Items?filter[offer_id][_eq]=${id}` );
     }
 
 }
-const chat = await axios.get(`http://localhost:8055/items/Chat?filter[offer_id][_eq]=${id}`);
+const chat = await axios.get(`https://deel-deal-directus.csiwm3.easypanel.host/items/Chat?filter[offer_id][_eq]=${id}`);
 if(chat){
-  await axios.delete(`http://localhost:8055/items/Chat?filter[offer_id][_eq]=${id}`);
+  await axios.delete(`https://deel-deal-directus.csiwm3.easypanel.host/items/Chat?filter[offer_id][_eq]=${id}`);
 }
-await axios.patch(`http://localhost:8055/items/Offers/${id}`, {
+await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/items/Offers/${id}`, {
         "status_offer": "rejected",
       });
 
@@ -206,7 +206,7 @@ export const completeOffer = async (id) => {
 const items = await getItemsByOfferId(id)
 if(items){
    for (const item of items) {
-      await axios.delete(`http://localhost:8055/items/Items/${item.id}`);
+      await axios.delete(`https://deel-deal-directus.csiwm3.easypanel.host/items/Items/${item.id}`);
     }
      await axios.delete(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${items.id}`);
 }
@@ -287,7 +287,7 @@ export const addOffer = async (to_user_id, cash_adjustment=0, user_prods, owner_
     }
     // 3. Update items' status_swap to 'unavailable'
     for (const item of allItems) {
-      await axios.patch(`http://localhost:8055/items/Items/${item}`, {
+      await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/items/Items/${item}`, {
         "status_swap": "unavailable"
                         
       });

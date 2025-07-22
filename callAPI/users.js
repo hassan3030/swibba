@@ -166,7 +166,7 @@ export const login = async (email, password) => {
 
 // const userRegisterId = registerUserCheck.data.data.id;
 //     // Step 2: Update (PATCH) the user status to active
-//     const statusChange = await axios.patch(`http://localhost:8055/users/${userRegisterId}`,
+//     const statusChange = await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/users/${userRegisterId}`,
 //       { status: 'active' },
 //       {
 //         headers: {
@@ -283,7 +283,7 @@ export const register = async (email, password, first_name, additional_data = {}
         throw new Error("An account with this email already exists")
       }
 
-    const response = await axios.post('http://localhost:8055/users/register', {
+    const response = await axios.post('https://deel-deal-directus.csiwm3.easypanel.host/users/register', {
       email: cleanEmail,
       password,
       first_name: cleanFirstName,
@@ -293,7 +293,7 @@ export const register = async (email, password, first_name, additional_data = {}
       
 
 
-      const getRes = await axios.get('http://localhost:8055/users', {
+      const getRes = await axios.get('https://deel-deal-directus.csiwm3.easypanel.host/users', {
       params: {
         filter: { email: { _eq: cleanEmail } },
       },
@@ -314,7 +314,7 @@ export const register = async (email, password, first_name, additional_data = {}
     console.log('i am in regisration userId ',userId )
 
     // Step 2: Update (PATCH) the user status to active
-    const patchRes = await axios.patch(`http://localhost:8055/users/${userId}`,
+    const patchRes = await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/users/${userId}`,
       { status: 'active' },
       {
         headers: {

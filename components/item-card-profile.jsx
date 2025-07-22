@@ -183,7 +183,7 @@ export function ItemCardProfile({
                   //  variants={imageVariants} 
                    whileHover="hover">
                     <Image
-                      src={`http://localhost:8055/assets/${bigImage}` || "/placeholder.svg"}
+                      src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
                       alt={name}
                       fill
                       className="object-cover transition-transform duration-300"

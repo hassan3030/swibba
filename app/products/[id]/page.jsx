@@ -82,7 +82,7 @@ export default function ProductPage() {
         // Images
         if (prod.data.images && prod.data.images.length > 0) {
           const images2 = await getImageProducts(prod.data.images)
-          const filesArray = images2.data.map((item) => `http://localhost:8055/assets/${item.directus_files_id}`)
+          const filesArray = images2.data.map((item) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
           setImages(filesArray)
         } else {
           setImages([])
@@ -93,7 +93,7 @@ export default function ProductPage() {
           const userData = await getUserByProductId(id)
           setUser(userData.data)
           setName(`${userData.data?.first_name || ""} ${userData.data?.last_name || ""}`.trim())
-          setAvatar(userData.data?.avatar ? `http://localhost:8055/assets/${userData.data.avatar}` : "")
+          setAvatar(userData.data?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userData.data.avatar}` : "")
         } else {
           setUser(null)
           setName("")

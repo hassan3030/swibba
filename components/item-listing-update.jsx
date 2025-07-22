@@ -135,7 +135,7 @@ export function ItemListingUpdate({
         const fetchedImages = await getImageProducts(images)
         if (fetchedImages.datas && fetchedImages.data.length > 0) {
           setBigImage(fetchedImages.data[0].directus_files_id)
-          const urls = fetchedImages.data.map((img) => `http://localhost:8055/assets/${img.directus_files_id}`)
+          const urls = fetchedImages.data.map((img) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`)
           setImageUrls(urls)
         }
       } catch (err) {

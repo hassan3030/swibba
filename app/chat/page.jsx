@@ -255,7 +255,7 @@ const Messages = () => {
                                 <Avatar className="h-12 w-12">
                                   <AvatarImage
                                     src={
-                                      `http://localhost:8055/assets/${offer.partner_avatar || "/placeholder.svg"}` ||
+                                      `https://deel-deal-directus.csiwm3.easypanel.host/assets/${offer.partner_avatar || "/placeholder.svg"}` ||
                                       "/placeholder.svg"
                                     }
                                     alt={offer.partner_name || t("Unknown")}
@@ -306,7 +306,7 @@ const Messages = () => {
                       <Avatar className="h-10 w-10 border">
                         <AvatarImage
                           src={
-                            `http://localhost:8055/assets/${partner.avatar || "/placeholder.svg"}` || "/placeholder.svg"
+                            `https://deel-deal-directus.csiwm3.easypanel.host/assets/${partner.avatar || "/placeholder.svg"}` || "/placeholder.svg"
                           }
                           alt={partner.first_name || t("User") || "User"}
                         />

@@ -248,7 +248,7 @@ export function DeelProductCard({
                 >
                   <motion.div variants={imageVariants} className="w-full h-full">
                     <Image
-                      src={bigImage ? `http://localhost:8055/assets/${bigImage}` : "/placeholder.svg"}
+                      src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
                       alt={name}
                       fill
                       className="object-contain transition-transform duration-300"

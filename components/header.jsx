@@ -358,7 +358,7 @@ export function Header() {
                         {user?.avatar ? (
                           <img
                             src={
-                              `http://localhost:8055/assets/${user.avatar || "/placeholder.svg"}` || "/placeholder.svg"
+                              `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar || "/placeholder.svg"}` || "/placeholder.svg"
                             }
                             alt={user?.first_name || t("account")}
                             className="h-6 w-6 rounded-full object-cover"

@@ -851,7 +851,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
     >
       <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
         <Image
-          src={bigImage ? `http://localhost:8055/assets/${bigImage}` : "/placeholder.svg"}
+          src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
           alt={name}
           className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
           width={80}

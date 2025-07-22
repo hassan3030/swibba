@@ -262,7 +262,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       handleGetBreviousRating(user.id)
-      setAvatarPath(`http://localhost:8055/assets/${user.avatar}`)
+      setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}`)
       setFullName(`${user.first_name} ${user.last_name}`)
     }
   }, [user])

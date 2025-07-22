@@ -112,7 +112,7 @@ const ItemCard = ({ item }) => {
           whileHover="hover"
         >
           <Image
-            src={`http://localhost:8055/assets/${bigImage}` || "/placeholder.svg"}
+            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
             alt={item.name}
             fill
             className="rounded-t-lg object-cover sm:rounded-l-lg sm:rounded-tr-none"

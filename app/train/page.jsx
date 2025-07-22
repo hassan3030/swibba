@@ -6,7 +6,7 @@ const TtainPage = () => {
 const STATIC_ADMIN_TOKEN =  'wQuBWUjR0p4_3Rz2BIeHAnkiK5f7GDaR';
 const FLOW_ID_FROM_PREVIOUS_STEP = "ed5ad5e3-e129-447e-99ba-0639f857d21a"
 const directus = axios.create({
-  baseURL: "http://localhost:8055",
+  baseURL: "https://deel-deal-directus.csiwm3.easypanel.host",
   headers: {
     Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
   },

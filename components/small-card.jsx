@@ -59,7 +59,7 @@ const [bigImage , setBigImage] =  useState('')
                       >
                         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                           <Image
-                          src={`http://localhost:8055/assets/${bigImage}` || "/placeholder.svg"}
+                          src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
                          alt={item.name} fill className="object-cover" />
                         </div>
                         <div className="flex-1">

@@ -48,7 +48,7 @@ export default  function  ProductPage() {
         // Images
         if (prod.images && prod.images.length > 0) {
           const images2 = await getImageProducts(prod.images);
-          const filesArray = images2.map(item => `http://localhost:8055/assets/${item.directus_files_id}`);
+          const filesArray = images2.map(item => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`);
           setImages(filesArray);
         } else {
           setImages([]);
@@ -59,7 +59,7 @@ export default  function  ProductPage() {
           const userData = await getUserByProductId(id);
           setUser(userData);
           setName(`${userData?.first_name || ""} ${userData?.last_name || ""}`.trim());
-          setAvatar(userData?.avatar ? `http://localhost:8055/assets/${userData.avatar}` : "");
+          setAvatar(userData?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userData.avatar}` : "");
         } else {
           setUser(null);
           setName("");

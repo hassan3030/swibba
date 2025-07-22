@@ -23,6 +23,22 @@ const containerVariantsMain = {
   },
 }
 
+const CustomerServicePage = () => {
+  return (
+    <motion.div className="mt-20" variants={containerVariantsMain} initial="hidden" animate="visible">
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+        <CustomerService/>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+export default CustomerServicePage
+
+
+
+
+
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -91,10 +107,8 @@ const formVariants = {
   },
 }
 
-
-const CustomerServicePage = () => {
-
-   const { toast } = useToast()
+const CustomerService = () => {
+  const { toast } = useToast()
   const { t } = useTranslations()
 
   const [name, setName] = useState("")
@@ -149,10 +163,7 @@ const CustomerServicePage = () => {
   }, [])
 
   return (
-    <motion.div className="mt-20" variants={containerVariantsMain} initial="hidden" animate="visible">
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-        {/* <CustomerService/> */}
- <motion.div
+    <motion.div
       className="min-h-screen bg-background pb-10"
       variants={containerVariants}
       initial="hidden"
@@ -409,11 +420,6 @@ const TopicCard = ({ title, count }) => {
         </CardContent>
       </Card>
     </motion.div>
-      </motion.div>
-    </motion.div>
   )
 }
-
-export default CustomerServicePage
-
 

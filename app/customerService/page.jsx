@@ -13,7 +13,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { addMessage } from "@/callAPI/users"
 // import CustomerService from '../../components/customerService';
  
-const containerVariants = {
+const containerVariantsMain = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -22,22 +22,6 @@ const containerVariants = {
     },
   },
 }
-
-const CustomerServicePage = () => {
-  return (
-    <motion.div className="mt-20" variants={containerVariants} initial="hidden" animate="visible">
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-        <CustomerService/>
-      </motion.div>
-    </motion.div>
-  )
-}
-
-export default CustomerServicePage
-
-
-
-
 
 
 const containerVariants = {
@@ -107,8 +91,10 @@ const formVariants = {
   },
 }
 
-const CustomerService = () => {
-  const { toast } = useToast()
+
+const CustomerServicePage = () => {
+
+   const { toast } = useToast()
   const { t } = useTranslations()
 
   const [name, setName] = useState("")
@@ -163,7 +149,10 @@ const CustomerService = () => {
   }, [])
 
   return (
-    <motion.div
+    <motion.div className="mt-20" variants={containerVariantsMain} initial="hidden" animate="visible">
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+        {/* <CustomerService/> */}
+ <motion.div
       className="min-h-screen bg-background pb-10"
       variants={containerVariants}
       initial="hidden"
@@ -420,7 +409,11 @@ const TopicCard = ({ title, count }) => {
         </CardContent>
       </Card>
     </motion.div>
+      </motion.div>
+    </motion.div>
   )
 }
 
-export default CustomerService
+export default CustomerServicePage
+
+

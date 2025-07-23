@@ -10,7 +10,7 @@ import {
   makeAuthenticatedRequest,
 } from "./utiles.js"
 
-const STATIC_ADMIN_TOKEN =  'wQuBWUjR0p4_3Rz2BIeHAnkiK5f7GDaR';
+const STATIC_ADMIN_TOKEN =  '6cORce4QNZNlriCXfWWiYn7gcn_XUQOL';
 
 // Authenticate user and get token
 export const auth = async (email, password) => {

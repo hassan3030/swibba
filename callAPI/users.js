@@ -342,40 +342,6 @@ const logining  =  await login(email , password)
 
 
 
-// Add customer message with validation
-export const addMessage = async (email, name, message, phone_number) => {
-  try {
-    if (!email || !name || !message) {
-      throw new Error("Email, name, and message are required")
-    }
-
-    const messageData = {
-      email: email.toLowerCase().trim(),
-      name: name.trim(),
-      message: message.trim(),
-      phone_number: phone_number || null,
-    }
-
-    const token = await getCookie()
-    if (token) {
-      const decoded = await decodedToken()
-      if (decoded?.id) {
-        messageData.user_id = decoded.id
-      }
-    }
-
-    const response = await axios.post(`${baseURL}/items/Customers_Problems`, messageData)
-
-    console.log("Message added successfully")
-    return {
-      success: true,
-      data: response.data,
-      message: "Message sent successfully",
-    }
-  } catch (error) {
-    return handleApiError(error, "Add Message")
-  }
-}
 
 // Get user by ID with enhanced error handling
 export const getUserById = async (id) => {
@@ -603,3 +569,50 @@ export const logout = async () => {
     return handleApiError(error, "Logout")
   }
 }
+
+
+
+
+// Add customer message with validation
+export const addMessage = async (email, name, message, phone_number) => {
+  try {
+    if (!email || !name || !message) {
+      throw new Error("Email, name, and message are required");
+    }
+
+    const messageData = {
+      email: email.toLowerCase().trim(),
+      name: name.trim(),
+      message: message.trim(),
+      phone_number: phone_number || null,
+    };
+
+    const token = await getCookie();
+    const headers = {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+      const decoded = await decodedToken();
+      if (decoded?.id) {
+        messageData.user_id = decoded.id;
+      }
+    } else {
+      headers.Authorization = `Bearer ${STATIC_ADMIN_TOKEN}`;
+    }
+
+    const response = await axios.post(
+      `${baseURL}/items/Customers_Problems`,
+      messageData,
+      { headers }
+    );
+
+    console.log("Message added successfully");
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Message sent successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Add Message");
+  }
+};

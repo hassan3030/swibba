@@ -132,9 +132,12 @@ export default function SwapPage() {
   // Fetch other user's items
   const getOtherItems = useCallback(async () => {
     const otherUser = await getUserByProductId(id_item_to)
+    console.log("otherUser " , otherUser)
+    console.log("id_item_to " , id_item_to)
     const otherProductsData = await getAvailableAndUnavailableProducts(otherUser.data.id)
+     console.log("otherProductsData " , otherProductsData)
     setOtherItems(otherProductsData.data)
-  }, [id_item_to])
+  }, [])
 
   // Fetch swap history
   const getSwapHistory = useCallback(async () => {
@@ -648,7 +651,7 @@ export default function SwapPage() {
 
                 {/* Other Users' Products */}
                 <motion.div variants={cardVariants}>
-                  {otherItems.length !== 0 ? (
+                  {otherItems?.length !== 0 ? (
                     <div>
                       <motion.div
                         className="flex items-center mb-6"
@@ -670,7 +673,7 @@ export default function SwapPage() {
 
                       <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
                         <AnimatePresence>
-                          {otherItems.map((product, index) => {
+                          {otherItems?.map((product, index) => {
                             const isSelectable = isOtherItemSelectable(product)
                             const isSelected = selectedOtherItems.includes(product.id)
 

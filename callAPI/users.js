@@ -381,21 +381,38 @@ export const addMessage = async (email, name, message, phone_number) => {
 export const getUserById = async (id) => {
   try {
     if (!id) {
-      throw new Error("User ID is required")
+      throw new Error("User ID is required");
     }
 
-    const response = await axios.get(`${baseURL}/users/${id}`)
+    // Retrieve the authentication token
+    const token = await getCookie();
+    if (!token) {
+      // Handle cases where the token is not available, if necessary
+      // For example, you might want to allow certain public profiles to be viewed
+      console.warn("No authentication token found. Making an unauthenticated request.");
+    }
 
-    console.log("User data retrieved for ID:", id)
+    // Configure headers with the token if it exists
+    const headers = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await axios.get(`${baseURL}/users/${id}`, { headers });
+
+    console.log("User data retrieved for ID:", id);
+
     return {
       success: true,
       data: response.data.data,
       message: "User data retrieved successfully",
-    }
+    };
   } catch (error) {
-    return handleApiError(error, "Get User By ID")
+    // Improved error logging
+    console.error(`Failed to get user by ID ${id}:`, error.response?.data || error.message);
+    return handleApiError(error, "Get User By ID");
   }
-}
+};
 
 // Get all user 
 export const getAllUsers = async () => {
@@ -435,21 +452,25 @@ export const getUserByProductId = async (productId) => {
 
     const productRes = await axios.get(`${baseItemsURL}/Items/${productId}`)
     const userId = productRes.data?.data?.user_id
-
+     console.log('userId' , userId)
     if (!userId) {
-      throw new Error("No user associated with this product")
+      throw new Error("No user associated with this product");
     }
 
-    const userResult = await getUserById(userId)
+    // Fetch the user's data using the retrieved userId
+    const userResult = await getUserById(userId);
+
     if (!userResult.success) {
-      throw new Error(userResult.error)
+      // The error from getUserById is already logged, so just re-throw or handle
+      throw new Error(userResult.error || "Failed to get user data");
     }
 
-    return userResult
+    return userResult;
   } catch (error) {
-    return handleApiError(error, "Get User By Product ID")
+    console.error(`Failed to get user by product ID ${productId}:`, error.response?.data || error.message);
+    return handleApiError(error, "Get User By Product ID");
   }
-}
+};
 
 // Edit profile with enhanced validation and authentication
 export const editeProfile = async (userData, authId, avatar = null) => {

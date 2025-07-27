@@ -2,34 +2,53 @@ import axios from "axios"
 import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 
+
+const validateAuth = async () => {
+  const token = await getCookie()
+  if (!token) {
+    throw new Error("Authentication required")
+  }
+
+  const decoded = await decodedToken()
+  if (!decoded?.id) {
+    throw new Error("Invalid authentication token")
+  }
+
+  return { token, userId: decoded.id , decoded }
+}
 // Get available/unavailable products by user ID
 export const getAvailableAndUnavailableProducts = async (user_id, available = true) => {
   try {
     if (!user_id) {
-      throw new Error("User ID is required")
+      throw new Error("User ID is required");
     }
 
-    const token = await getCookie()
+    const token = await getCookie();
     if (!token) {
-      return { success: false, error: "Authentication required", status: 401 }
+      return { success: false, error: "Authentication required", status: 401 };
     }
 
-    const status = available ? "available" : "unavailable"
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    const status = available ? "available" : "unavailable";
     const response = await axios.get(
       `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}`,
-    )
+      { headers }
+    );
 
-    console.log(`Retrieved ${status} products for user:`, user_id)
+    console.log(`Retrieved ${status} products for user:`, user_id);
     return {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
       message: `${status} products retrieved successfully`,
-    }
+    };
   } catch (error) {
-    return handleApiError(error, "Get Available/Unavailable Products")
+    return handleApiError(error, "Get Available/Unavailable Products");
   }
-}
+};
 
 // Get all products with smart filtering based on authentication
 export const getProducts = async (filters = {}) => {
@@ -365,9 +384,9 @@ export const addProduct = async (payload, files) => {
           throw new Error(`${field} is required`)
         }
       }
-
-      const token = await getCookie()
-      const decoded = await decodedToken()
+      const auth = await validateAuth()
+      const token = auth.token
+      const decoded = auth.decoded
 
       if (!token || !decoded?.id) {
         throw new Error("Authentication required")
@@ -397,7 +416,7 @@ export const addProduct = async (payload, files) => {
         },
       )
 
-      const itemId = itemRes.data?.data?.id
+      const itemId = await itemRes.data?.data?.id
       if (!itemId) {
         throw new Error("Failed to create product")
       }

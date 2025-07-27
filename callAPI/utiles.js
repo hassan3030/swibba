@@ -140,7 +140,7 @@ export const setCookie = async (jwtToken, options = {}) => {
     }
 
     const defaultOptions = {
-      expires: 7, // 7 days
+      expires: 7 * 24 * 60 * 60, // 7 days in seconds
       secure: window.location.protocol === "https:",
       sameSite: "strict",
       path: "/",

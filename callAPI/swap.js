@@ -123,7 +123,10 @@ export const getItemsByOfferId = async (id) => {
 
 // Delete offer by ID (reject offer)
 export const deleteOfferById = async (id) => {
+   
   try {
+    const auth = await validateAuth()
+
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer ID is required")
@@ -143,6 +146,12 @@ export const deleteOfferById = async (id) => {
           try {
             await axios.patch(`${baseItemsURL}/Items/${item.item_id}`, {
               status_swap: "available",
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
             })
             return { item_id: item.item_id, success: true }
           } catch (error) {
@@ -158,7 +167,13 @@ export const deleteOfferById = async (id) => {
       const deleteItemPromises = items.map(async (item) => {
         if (item.id) {
           try {
-            await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`)
+            await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
             return { offer_item_id: item.id, success: true }
           } catch (error) {
             console.warn(`Failed to delete offer item ${item.id}:`, error.message)
@@ -175,7 +190,13 @@ export const deleteOfferById = async (id) => {
         const chats = chatRes.data?.data || []
 
         const deleteChatPromises = chats.map((chat) =>
-          chat.id ? axios.delete(`${baseItemsURL}/Chat/${chat.id}`) : Promise.resolve(),
+          chat.id ? axios.delete(`${baseItemsURL}/Chat/${chat.id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            }) : Promise.resolve(),
         )
 
         await Promise.allSettled(deleteChatPromises)
@@ -186,7 +207,13 @@ export const deleteOfferById = async (id) => {
       // Update offer status to rejected
       await axios.patch(`${baseItemsURL}/Offers/${id}`, {
         status_offer: "rejected",
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Offer rejected successfully, ID:", id)
       return {
@@ -212,6 +239,7 @@ export const deleteOfferById = async (id) => {
 // Finally Delete offer by ID 
 export const deleteFinallyOfferById = async (id) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer ID is required")
@@ -219,7 +247,13 @@ export const deleteFinallyOfferById = async (id) => {
  
       await axios.patch(`${baseItemsURL}/Offers/${id}`, {
         finaly_deleted: false,
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
       console.log("Offer Deleted Finally successfully, ID:", id)
       return {
         success: true,
@@ -239,6 +273,7 @@ export const deleteFinallyOfferById = async (id) => {
 // Accept offer (keeping original function name)
 export const acceptedOffer = async (id) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer ID is required")
@@ -246,7 +281,13 @@ export const acceptedOffer = async (id) => {
 
       const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
         status_offer: "accepted",
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Offer accepted successfully, ID:", id)
       return {
@@ -263,6 +304,7 @@ export const acceptedOffer = async (id) => {
 // Update offer by ID (cash adjustment)
 export const updateOfferById = async (id, cash_adjustment) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer ID is required")
@@ -274,7 +316,13 @@ export const updateOfferById = async (id, cash_adjustment) => {
 
       const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
         cash_adjustment,
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Offer cash adjustment updated successfully, ID:", id)
       return {
@@ -291,6 +339,7 @@ export const updateOfferById = async (id, cash_adjustment) => {
 // Accept offer by ID (keeping original function name)
 export const acceptedOfferById = async (id_offer) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id_offer) {
         throw new Error("Offer ID is required")
@@ -298,7 +347,13 @@ export const acceptedOfferById = async (id_offer) => {
 
       const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
         status_offer: "accepted",
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Offer accepted successfully, ID:", id_offer)
       return {
@@ -315,6 +370,7 @@ export const acceptedOfferById = async (id_offer) => {
 // Complete offer by ID
 export const completedOfferById = async (id_offer) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id_offer) {
         throw new Error("Offer ID is required")
@@ -332,7 +388,13 @@ export const completedOfferById = async (id_offer) => {
       const deleteItemPromises = items.map(async (item) => {
         if (item.item_id) {
           try {
-            await axios.delete(`${baseItemsURL}/Items/${item.item_id}`)
+            await axios.delete(`${baseItemsURL}/Items/${item.item_id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
             return { item_id: item.item_id, success: true }
           } catch (error) {
             console.warn(`Failed to delete item ${item.item_id}:`, error.message)
@@ -347,7 +409,13 @@ export const completedOfferById = async (id_offer) => {
       const deleteOfferItemPromises = items.map(async (item) => {
         if (item.id) {
           try {
-            await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`)
+            await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
             return { offer_item_id: item.id, success: true }
           } catch (error) {
             console.warn(`Failed to delete offer item ${item.id}:`, error.message)
@@ -361,7 +429,13 @@ export const completedOfferById = async (id_offer) => {
       // Update offer status to completed
       const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
         status_offer: "completed",
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Offer completed successfully, ID:", id_offer)
       return {
@@ -386,6 +460,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
   const updatedItemIds = []
 
   try {
+  
     return await makeAuthenticatedRequest(async () => {
       // Validation
       if (!to_user_id) {
@@ -420,6 +495,10 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
         cash_adjustment: cash_adjustment || 0,
         status_offer: "pending",
         name: name || `Offer from ${auth.userId}`,
+      },{
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
       })
 
       offer_id = offerRes.data.data.id
@@ -436,7 +515,11 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
           offer_id,
           item_id: itemId,
           offered_by: ownerResult.data.id,
-        })
+        },{
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
         createdItemIds.push(offerItemResponse.data.data.id)
       }
@@ -445,7 +528,11 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       for (const itemId of allItems) {
         await axios.patch(`${baseItemsURL}/Items/${itemId}`, {
           status_swap: "unavailable",
-        })
+        },{
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
         updatedItemIds.push(itemId)
       }
 
@@ -456,7 +543,11 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
           to_user_id,
           offer_id,
           message: message.trim(),
-        })
+        },{
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
       }
 
       console.log("Offer created successfully with all items and message")
@@ -475,21 +566,38 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
     console.error("Error creating offer, attempting rollback...")
 
     try {
+      const auth = await validateAuth()
       // Restore item statuses
       for (const itemId of updatedItemIds) {
         await axios.patch(`${baseItemsURL}/Items/${itemId}`, {
           status_swap: "available",
-        })
+        },{
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
       }
 
       // Delete created offer items
       for (const offerItemId of createdItemIds) {
-        await axios.delete(`${baseItemsURL}/Offer_Items/${offerItemId}`)
+        await axios.delete(`${baseItemsURL}/Offer_Items/${offerItemId}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
       }
 
       // Delete created offer
       if (offer_id) {
-        await axios.delete(`${baseItemsURL}/Offers/${offer_id}`)
+        await axios.delete(`${baseItemsURL}/Offers/${offer_id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
       }
 
       console.log("Rollback completed successfully")
@@ -562,6 +670,7 @@ export const getOfferItemsByOfferId = async (offer_id) => {
 // Delete offer item by ID
 export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, offer_id) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id || !idItemItself) {
         throw new Error("Offer item ID and item ID are required")
@@ -570,16 +679,34 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
       // Restore item availability
       await axios.patch(`${baseItemsURL}/Items/${idItemItself}`, {
         status_swap: "available",
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       // Delete offer item
-      await axios.delete(`${baseItemsURL}/Offer_Items/${id}`)
+      await axios.delete(`${baseItemsURL}/Offer_Items/${id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       // Update cash adjustment if provided
       if (offer_id && cashAdjustment !== null && cashAdjustment !== undefined && !isNaN(cashAdjustment)) {
         const patchRes = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
           cash_adjustment: cashAdjustment,
-        })
+        },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
         console.log("Cash adjustment updated:", patchRes.data)
       }
 
@@ -602,6 +729,7 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
 // Update offer item by ID
 export const updateOfferItemsById = async (id, updateData = {}) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer item ID is required")
@@ -611,7 +739,13 @@ export const updateOfferItemsById = async (id, updateData = {}) => {
         throw new Error("Update data is required")
       }
 
-      const response = await axios.patch(`${baseItemsURL}/Offer_Items/${id}`, updateData)
+      const response = await axios.patch(`${baseItemsURL}/Offer_Items/${id}`, updateData,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Offer item updated successfully, ID:", id)
       return {
@@ -630,6 +764,7 @@ export const updateOfferItemsById = async (id, updateData = {}) => {
 // Add message
 export const addMessage = async (message, to_user_id, offer_id) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!message || !message.trim()) {
         throw new Error("Message content is required")
@@ -646,7 +781,13 @@ export const addMessage = async (message, to_user_id, offer_id) => {
         to_user_id,
         offer_id,
         message: message.trim(),
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Message added successfully to offer:", offer_id)
       return {
@@ -702,6 +843,7 @@ export const getAllMessage = async () => {
 // Add to wishlist
 export const addWishList = async (item_id, user_id) => {
   try {
+    const auth = await validateAuth()
     if (!item_id || !user_id) {
       throw new Error("Item ID and user ID are required")
     }
@@ -722,7 +864,13 @@ export const addWishList = async (item_id, user_id) => {
     const response = await axios.post(`${baseItemsURL}/WishList`, {
       item_id,
       user_id,
-    })
+    },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
     console.log("Item added to wishlist successfully, item ID:", item_id)
     return {
@@ -775,11 +923,18 @@ export const getAllWishList = async () => {
 // Delete wishlist item by ID
 export const deleteWishList = async (id) => {
   try {
+
     if (!id) {
       throw new Error("Wishlist ID is required")
     }
-
-    await axios.delete(`${baseItemsURL}/WishList/${id}`)
+   const auth = await validateAuth()
+    await axios.delete(`${baseItemsURL}/WishList/${id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
     console.log("Item removed from wishlist successfully, ID:", id)
     return {
@@ -797,6 +952,7 @@ export const deleteWishList = async (id) => {
 // Add review
 export const addReview = async (from_user_id, to_user_id, offer_id, rating, comment) => {
   try {
+    const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
       if (!from_user_id || !to_user_id || !offer_id || !rating) {
         throw new Error("From user ID, to user ID, offer ID, and rating are required")
@@ -825,7 +981,13 @@ export const addReview = async (from_user_id, to_user_id, offer_id, rating, comm
         offer_id,
         rating,
         comment: comment || "No comment",
-      })
+      },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
 
       console.log("Review added successfully for offer:", offer_id)
       return {

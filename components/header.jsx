@@ -640,30 +640,49 @@ export function Header() {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Mobile menu content */}
-                <nav className="flex flex-col gap-2">
-                  {user ? (
-                    <>
-                      <div className="flex items-center gap-2 p-2">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage
-                            src={user?.avatar || "/placeholder.svg"}
-                            alt={user?.first_name || t("account")}
-                          />
-                          <AvatarFallback className="bg-primary text-black dark:bg-primary dark:text-black">
-                            {String(user?.first_name).charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          <p className="text-sm font-medium"> {(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</p>
-                          <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
-                        </div>
-                      </div>
-                      <div className="my-2 border-t dark:border-[#2a2a2a]"></div>
-                      {/* Mobile menu items */}
+               { /* Mobile menu content */}
+                        <nav className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary/30">
+                          {user ? (
+                          <>
+                            <Link
+                            href="/profile"
+                            className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                            onClick={() => setIsMenuOpen(false)}
+                            >
+                            <div className="flex items-center gap-2 p-2">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage
+                              src={user?.avatar || "/placeholder.svg"}
+                              alt={user?.first_name || t("account")}
+                              />
+                              <AvatarFallback className="bg-primary text-black dark:bg-primary dark:text-black">
+                              {String(user?.first_name).charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col">
+                              <p className="text-sm font-medium"> {(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</p>
+                              <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
+                            </div>
+                            </div>
+                             
+                            </Link>
+
+
+                           
+                            <div className="my-2 border-t dark:border-[#2a2a2a]"></div>
+                            {/* Mobile menu items */}
+                       <Link
+                        href="/profile/settings/editItem/new"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        <span>{t("addanewitem") || "Add a new item"}</span>
+                      </Link>
                       <Link
                         href="/notifications"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
                       >
                         <Bell className="h-4 w-4" />
                         <span>
@@ -671,9 +690,11 @@ export function Header() {
                           {`${notificationsLength ? notificationsLength : ""}`}
                         </span>
                       </Link>
+                     
                       <Link
                         href="/cart"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
                       >
                         <ShoppingCart className="h-4 w-4" />
                         <span>{`${t("cart")} ${cartLength ? cartLength : ""} `}</span>
@@ -681,6 +702,7 @@ export function Header() {
                       <Link
                         href="/chat"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
                       >
                         <MessageCircle className="h-4 w-4" />
                         <span>{`${t("messages") || "Messages"}  ${chatLength ? chatLength : ""} `}</span>
@@ -688,24 +710,31 @@ export function Header() {
                       <Link
                         href="/wishList"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
                       >
                         <Heart className="h-4 w-4" />
                         <span>{`${t("wishList" || "WishList")} ${wishlistLength !== 0 ? wishlistLength : ""} `}</span>
                       </Link>
-                      <Link
-                        href="/profile/settings/editItem/new"
-                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
-                      >
-                        <PlusCircle className="h-4 w-4" />
-                        <span>{t("addanewitem") || "Add a new item"}</span>
-                      </Link>
+                     
                       <Link
                         href="/customerService"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
                       >
                         <HandPlatter className="h-4 w-4" />
                         <span>{t("customerService")}</span>
                       </Link>
+                   
+                       <Link
+                        href="/profile/settings/editProfile/"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>{t("settings")}</span>
+                      </Link>
+                   
+                   
                       <Link
                         href="/"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"

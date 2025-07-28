@@ -750,6 +750,7 @@ export function Header() {
                       <Link
                         href="/auth/login"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                         onClick={() => setIsMenuOpen(false)}
                       >
                         <User className="h-4 w-4" />
                         <span>{t("signIn")}</span>
@@ -757,6 +758,7 @@ export function Header() {
                       <Link
                         href="/customerService"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                         onClick={() => setIsMenuOpen(false)}
                       >
                         <span>{t("customerService")}</span>
                       </Link>

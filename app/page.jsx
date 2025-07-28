@@ -345,7 +345,7 @@ export default function Home() {
     setItems(prods.data)
     setTopPrice(topPriceProds.data)
     setItemsCount(prods.count)
-    setUsersCount(users.count)
+    setUsersCount( users.count || 0)
     
 
     console.log("i am in product home ", prods)

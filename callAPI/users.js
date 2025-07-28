@@ -380,32 +380,24 @@ export const getUserById = async (id) => {
   }
 };
 
+
+
 // Get all user 
 export const getAllUsers = async () => {
   try {
-    const tokenAdmin =  await getCookie()
-    if (!tokenAdmin) {
-      const response = await axios.get(`${baseURL}/users`)
-
-    // console.log("User data retrieved for ID:", id)
+    const token = await getCookie();
+    const headers = {
+      Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+    };
+    const response = await axios.get(`${baseURL}/users`, { headers });
     return {
       success: true,
-       count: response.data.data?.length || 0, 
+      data: response.data.data,
+      count: response.data.data.length || 0,
       message: "Users data retrieved successfully",
-    }
-    }
-
-    const response = await axios.get(`${baseURL}/users`)
-
-    // console.log("User data retrieved for ID:", id)
-    return {
-      success: true,
-       data: response.data.data ,
-       count: response.data.data?.length || 0,
-      message: "Users data retrieved successfully",
-    }
+    };
   } catch (error) {
-    return handleApiError(error, "Get Users not valid")
+    return handleApiError(error, "Get Users not valid");
   }
 }
 

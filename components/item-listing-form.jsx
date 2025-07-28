@@ -98,7 +98,7 @@ export function ItemListingForm() {
   const { t } = useTranslations()
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp" ]
   const MAX_IMAGES = 3
 
   const formSchema = z.object({
@@ -333,14 +333,16 @@ export function ItemListingForm() {
     return marketDemand[category] || 1.0
   }
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data, event) => {
+    if (event) event.preventDefault();
     if (images.length === 0) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
         variant: "destructive",
       })
-      return
+      console.log("No images uploaded")
+      return;
     }
 
     setIsSubmitting(true)
@@ -349,9 +351,7 @@ export function ItemListingForm() {
       await handleSubmit()
       console.log("Form data:", data)
       console.log("Images:", images)
-
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      router.push("/")
+      // No navigation or refresh here
     } catch (error) {
       console.error("Error creating item:", error)
       toast({
@@ -430,7 +430,7 @@ export function ItemListingForm() {
   }
 
   const handleSubmit = async () => {
-    const files = images
+    let files = images
     if (files.length === 0) {
       toast({
         title: t("error") || "ERROR ",
@@ -455,7 +455,7 @@ export function ItemListingForm() {
       form.reset()
       setImages([])
       setImageUrls([])
-      router.refresh()
+      // router.refresh()
     } catch (err) {
       console.error(err)
       toast({
@@ -470,9 +470,7 @@ export function ItemListingForm() {
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
       <Form {...form}>
         <form
-          onSubmit={() => {
-            form.handleSubmit(onSubmit)
-          }}
+          onSubmit={(e) => form.handleSubmit((data) => onSubmit(data, e))(e)}
           className="space-y-8"
         >
           <div className="grid gap-8 md:grid-cols-2">

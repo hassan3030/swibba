@@ -1,21 +1,7 @@
 import axios from "axios"
-import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
+import {validateAuth , getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 
-// Validate authentication and return user info
-const validateAuth = async () => {
-  const token = await getCookie()
-  if (!token) {
-    throw new Error("Authentication required")
-  }
-
-  const decoded = await decodedToken()
-  if (!decoded?.id) {
-    throw new Error("Invalid authentication token")
-  }
-
-  return { token, userId: decoded.id }
-}
 
 // ========================= OFFERS MANAGEMENT =========================
 

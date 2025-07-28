@@ -10,7 +10,7 @@ import {
   makeAuthenticatedRequest,
 } from "./utiles.js"
 
-const STATIC_ADMIN_TOKEN =  '6cORce4QNZNlriCXfWWiYn7gcn_XUQOL';
+const STATIC_ADMIN_TOKEN =  'Q25pLQ8ZQqLbf3pbnUDs2Al4NDRad6-u';
 
 // Authenticate user and get token
 export const auth = async (email, password) => {
@@ -240,6 +240,7 @@ export const login = async (email, password) => {
 //   }
 // }
 
+
 export const register = async (email, password, first_name, additional_data = {}) => {
   // Input validation
     if (!email || !password || !first_name) {
@@ -291,44 +292,47 @@ export const register = async (email, password, first_name, additional_data = {}
     }
       );
       
-
-
-      const getRes = await axios.get('https://deel-deal-directus.csiwm3.easypanel.host/users', {
-      params: {
-        filter: { email: { _eq: cleanEmail } },
-      },
-      headers: {
-        Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-      },
-    });
-    console.log('i am in regisration getRes  ',getRes )
-
-    const user = getRes.data.data[0];
-    console.log('i am in regisration user ',user )
-    if (!user) {
-      console.log('User not found.');
-      return;
-    }
-
-    const userId = user.id;
-    console.log('i am in regisration userId ',userId )
-
-    // Step 2: Update (PATCH) the user status to active
-    const patchRes = await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/users/${userId}`,
-      { status: 'active' },
-      {
+      if (response.status == 200) {
+       const getRes = await axios.get('https://deel-deal-directus.csiwm3.easypanel.host/users', {
+        params: {
+          filter: { email: { _eq: cleanEmail } },
+        },
         headers: {
           Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
         },
-      }
-    );
+      });
+      console.log('i am in regisration getRes  ', getRes);
 
-    console.log('User activated:', patchRes.data.data);
+      const userArr = getRes.data.data;
+      const user = userArr && userArr.length > 0 ? userArr[0] : null;
+      console.log('i am in regisration user ', user);
+      if (!user) {
+        console.log('User not found.');
+        return;
+      }
+
+      const userId = user.id;
+      console.log('i am in regisration userId ', userId);
+
+      // Step 2: Update (PATCH) the user status to active
+      const patchRes = await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/users/${userId}`,
+        { status: 'active', role: "e164ca4a-f003-4b3e-bb1b-a5b14ab5009c" },
+        {
+          headers: {
+            Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+          },
+        }
+      );
+
+      console.log('User activated:', patchRes.data.data);
 
 console.log('User registered:', response.data.data);
 
 const logining  =  await login(email , password)
     console.log('i am in regisration function2 ',logining )
+      }
+
+     
 
   } catch (error) {
     console.error('Registration error:', error.response?.data || error.message);
@@ -379,8 +383,6 @@ export const getUserById = async (id) => {
     return handleApiError(error, "Get User By ID");
   }
 };
-
-
 
 // Get all user 
 export const getAllUsers = async () => {

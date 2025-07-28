@@ -4,6 +4,9 @@ import { jwtDecode } from "jwt-decode"
 export const baseItemsURL = "https://deel-deal-directus.csiwm3.easypanel.host/items"
 export const baseURL = "https://deel-deal-directus.csiwm3.easypanel.host"
 
+
+
+
 // Enhanced error handling utility
 const handleApiError = (error, context) => {
   const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred"
@@ -217,6 +220,20 @@ export const makeAuthenticatedRequest = async (requestFn) => {
     }
     throw error
   }
+}
+
+export const validateAuth = async () => {
+  const token = await getCookie()
+  if (!token) {
+    throw new Error("Authentication required")
+  }
+
+  const decoded = await decodedToken()
+  if (!decoded?.id) {
+    throw new Error("Invalid authentication token")
+  }
+
+  return { token, userId: decoded.id , decoded }
 }
 
 // Export error handler for use in other modules

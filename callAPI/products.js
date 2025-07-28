@@ -1,21 +1,9 @@
 import axios from "axios"
-import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
+import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
+const STATIC_ADMIN_TOKEN =  'Q25pLQ8ZQqLbf3pbnUDs2Al4NDRad6-u';
 
 
-const validateAuth = async () => {
-  const token = await getCookie()
-  if (!token) {
-    throw new Error("Authentication required")
-  }
-
-  const decoded = await decodedToken()
-  if (!decoded?.id) {
-    throw new Error("Invalid authentication token")
-  }
-
-  return { token, userId: decoded.id , decoded }
-}
 // Get available/unavailable products by user ID
 export const getAvailableAndUnavailableProducts = async (user_id, available = true) => {
   try {
@@ -428,7 +416,7 @@ export const addProduct = async (payload, files) => {
       for (let i = 0; i < files.length; i++) {
         try {
           const file = files[i]
-          const formData = new FormData()
+          let formData = new FormData()
           formData.append("file", file)
 
           const fileRes = await axios.post(`${baseURL}/files`, formData, {
@@ -452,7 +440,7 @@ export const addProduct = async (payload, files) => {
             {
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
               },
             },
           )
@@ -465,6 +453,10 @@ export const addProduct = async (payload, files) => {
       }
 
       const successfulUploads = uploadResults.filter((r) => r.success).length
+      if (successfulUploads === 0) {
+        // If all uploads failed, throw error and do not allow product creation without images
+        throw new Error("All image uploads failed. Product was not created with images. Please try again.")
+      }
       console.log(`Product added successfully with ${successfulUploads}/${files.length} images, ID:`, itemId)
 
       return {

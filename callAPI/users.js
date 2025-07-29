@@ -82,163 +82,6 @@ export const login = async (email, password) => {
   }
 }
 
-// Register user with enhanced Directus handling
-// export const register = async (email, password, first_name, additional_data = {}) => {
-//   try {
-//     // Input validation
-//     if (!email || !password || !first_name) {
-//       throw new Error("Email, password, and first name are required")
-//     }
-
-//     // Email format validation
-//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-//     if (!emailRegex.test(email)) {
-//       throw new Error("Please provide a valid email address")
-//     }
-
-//     // Password strength validation
-//     if (password.length < 8) {
-//       throw new Error("Password must be at least 8 characters long")
-//     }
-
-//     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)/
-//     if (!passwordRegex.test(password)) {
-//       throw new Error("Password must contain at least one letter and one number")
-//     }
-
-//     const cleanEmail = email.toLowerCase().trim()
-//     const cleanFirstName = first_name.trim()
-
-//     // Check if user already exists
-//     try {
-//       const existingUserCheck = await axios.get(
-//         // if not work remove it encodeURIComponent
-//         `${baseURL}/users?filter[email][_eq]=${encodeURIComponent(cleanEmail)}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-//           },
-//         },
-//       )
-
-//       if (existingUserCheck.data?.data?.length > 0) {
-//         throw new Error("An account with this email already exists")
-//       }
-//     } catch (checkError) {
-//       if (checkError.message.includes("already exists")) {
-//         throw checkError
-//       }
-//       console.warn("Could not verify existing user, proceeding with registration")
-//     }
-
-//     // Prepare user data for Directus
-    
-//     const userData = {
-//       email: cleanEmail,
-//       password,
-//       first_name: cleanFirstName,
-//     }
-
-//  const userRegister = await axios.post(`${baseURL}/users/register`,  userData );
-
-
-//     // const userRegister = await axios.post(`${baseURL}/users`, userData, {
-//     //   headers: {
-//     //     "Content-Type": "application/json",
-//     //     Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-//     //   },
-//     // })
-
-//     // if (!userRegister.data?.data) {
-//     //   throw new Error("Failed to create user account")
-
-//     // }
-    
-//   const registerUserCheck = await axios.get(
-//         // if not work remove it encodeURIComponent
-//         `${baseURL}/users?filter[email][_eq]=${encodeURIComponent(cleanEmail)}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-//           },
-//         },
-//       )
-
-// const userRegisterId = registerUserCheck.data.data.id;
-//     // Step 2: Update (PATCH) the user status to active
-//     const statusChange = await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/users/${userRegisterId}`,
-//       { status: 'active' },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-//         },
-//       }
-//     );
-
-//     console.log('User activated patch:', statusChange.data);
-    
-//     console.log("User created successfully in Directus, ID:", userRegisterId)
-
-//     // Attempt automatic login after registration
-//     let autoLoginResult = null
-//     try {
-//       console.log("Attempting automatic login after registration...")
-//       autoLoginResult = await auth(cleanEmail, password)
-
-//       if (autoLoginResult.success) {
-//         console.log("Auto-login successful after registration")
-//       }
-//     } catch (loginError) {
-//       console.warn("Auto-login failed after registration:", loginError.message)
-//     }
-
-//     return {
-//       success: true,
-//       data: {
-//         user: {
-//           id: userRegisterId,
-//           email: cleanEmail,
-//           first_name: cleanFirstName,
-//         },
-//         auto_login: autoLoginResult?.success || false,
-//         token: autoLoginResult?.success ? autoLoginResult.data?.access_token : null,
-//       },
-//       message: autoLoginResult?.success
-//         ? "Registration successful and automatically logged in"
-//         : "Registration successful. Please log in to continue.",
-//     }
-//   } catch (error) {
-    // Handle Directus-specific errors
-    // if (error.response?.data?.errors) {
-    //   const directusErrors = error.response.data.errors
-    //   let errorMessage = "Registration failed"
-
-    //   if (Array.isArray(directusErrors)) {
-    //     const errorMessages = directusErrors.map((err) => {
-    //       if (err.extensions?.code === "RECORD_NOT_UNIQUE") {
-    //         return "An account with this email already exists"
-    //       }
-    //       if (err.extensions?.code === "FAILED_VALIDATION") {
-    //         return `Validation error: ${err.message}`
-    //       }
-    //       return err.message || "Unknown error"
-    //     })
-    //     errorMessage = errorMessages.join(", ")
-    //   } else if (directusErrors.message) {
-    //     errorMessage = directusErrors.message
-    //   }
-
-    //   return {
-    //     success: false,
-    //     error: errorMessage,
-    //     status: error.response?.status || 400,
-    //     code: "DIRECTUS_REGISTRATION_ERROR",
-    //   }
-    // }
-
-    // return handleApiError(error, "Registration")
-//   }
-// }
 
 
 export const register = async (email, password, first_name, additional_data = {}) => {
@@ -284,7 +127,7 @@ export const register = async (email, password, first_name, additional_data = {}
         throw new Error("An account with this email already exists")
       }
 
-    const response = await axios.post('https://deel-deal-directus.csiwm3.easypanel.host/users/register', {
+    const response = await axios.post(`${baseURL}/users/register`, {
       email: cleanEmail,
       password,
       first_name: cleanFirstName,
@@ -292,57 +135,48 @@ export const register = async (email, password, first_name, additional_data = {}
     }
       );
       
-      if (response.status == 200) {
-       const getRes = await axios.get('https://deel-deal-directus.csiwm3.easypanel.host/users', {
+
+
+      const getRes = await axios.get(`${baseURL}/users`, {
         params: {
-          filter: { email: { _eq: cleanEmail } },
+          email: cleanEmail
         },
         headers: {
           Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
         },
-      });
-      console.log('i am in regisration getRes  ', getRes);
+    });
+    console.log('i am in regisration getRes  ',getRes )
+    const user = getRes.data.data[0];
+    console.log('i am in regisration user ',user )
+    if (!user) {
+      console.log('User not found.');
+      return;
+    }
 
-      const userArr = getRes.data.data;
-      const user = userArr && userArr.length > 0 ? userArr[0] : null;
-      console.log('i am in regisration user ', user);
-      if (!user) {
-        console.log('User not found.');
-        return;
+    const userId = user.id;
+    console.log('i am in regisration userId ',userId )
+
+    // Step 2: Update (PATCH) the user status to active
+    const patchRes = await axios.patch(`${baseURL}/users/${userId}`,
+      { status: 'active' },
+      {
+        headers: {
+          Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+        },
       }
+    );
 
-      const userId = user.id;
-      console.log('i am in regisration userId ', userId);
-
-      // Step 2: Update (PATCH) the user status to active
-      const patchRes = await axios.patch(`https://deel-deal-directus.csiwm3.easypanel.host/users/${userId}`,
-        { status: 'active', role: "e164ca4a-f003-4b3e-bb1b-a5b14ab5009c" },
-        {
-          headers: {
-            Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-          },
-        }
-      );
-
-      console.log('User activated:', patchRes.data.data);
+    console.log('User activated:', patchRes.data.data);
 
 console.log('User registered:', response.data.data);
 
 const logining  =  await login(email , password)
     console.log('i am in regisration function2 ',logining )
-      }
-
-     
 
   } catch (error) {
     console.error('Registration error:', error.response?.data || error.message);
   }
 }
-
-
-
-
-
 
 
 

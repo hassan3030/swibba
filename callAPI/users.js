@@ -154,18 +154,21 @@ export const register = async (email, password, first_name, additional_data = {}
     }
 
 // ============================================
-const getRes2 = await axios.get(`${baseURL}/users`,{"email":cleanEmail}, {
-        headers: {
-          Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-        },
-    });
-    console.log('i am in regisration getRes  ',getRes2 )
-    const user2 = getRes2.data.data;
-    console.log('i am in regisration user ',user2 )
-    if (!user2) {
-      console.log('User2 not found.');
-      return;
-    }
+const getRes2 = await axios.get(`${baseURL}/users`, {
+  headers: {
+    Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+  },
+});
+
+const users = getRes2.data.data;
+// Filter the user by email (exact match)
+const user2 = users.find(user => user.email === cleanEmail);
+if (!user2) {
+  console.log('User not found.');
+  return;
+}
+console.log('User found:', user2);
+
 // =============================================
 
 

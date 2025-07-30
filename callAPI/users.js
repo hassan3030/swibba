@@ -137,37 +137,37 @@ export const register = async (email, password, first_name, additional_data = {}
       
 
 
-      const getRes = await axios.get(`${baseURL}/users`, {
-        params: {
-        filter: { email: { _eq: cleanEmail } },
-      },
-        headers: {
-          Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-        },
-    });
-    console.log('i am in regisration getRes  ',getRes )
-    const user = getRes.data.data[0];
-    console.log('i am in regisration user ',user )
-    if (!user) {
-      console.log('User not found.');
-      return;
-    }
+    //   const getRes = await axios.get(`${baseURL}/users`, {
+    //     params: {
+    //     filter: { email: { _eq: cleanEmail } },
+    //   },
+    //     headers: {
+    //       Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+    //     },
+    // });
+    // console.log('i am in regisration getRes  ',getRes )
+    // const user = getRes.data.data[0];
+    // console.log('i am in regisration user ',user )
+    // if (!user) {
+    //   console.log('User not found.');
+    //   return;
+    // }
 
 // ============================================
-const getRes2 = await axios.get(`${baseURL}/users`, {
+const getRes = await axios.get(`${baseURL}/users`, {
   headers: {
     Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
   },
 });
 
-const users = getRes2.data.data;
+const users = getRes.data.data;
 // Filter the user by email (exact match)
-const user2 = users.find(user => user.email === cleanEmail);
-if (!user2) {
+const user = users.find(user => user.email === cleanEmail);
+if (!user) {
   console.log('User not found.');
   return;
 }
-console.log('User found:', user2);
+console.log('User found:', user);
 
 // =============================================
 

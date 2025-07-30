@@ -137,7 +137,7 @@ export const register = async (email, password, first_name, additional_data = {}
       
 
 
-      const getRes = await axios.get(`${baseURL}/users`, {
+      const getRes = await axios.get(`${baseURL}/users?filter[email][_eq]=${cleanEmail}`, {
         params: {
           email: cleanEmail
         },

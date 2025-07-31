@@ -464,7 +464,7 @@ export function Header() {
                               </motion.span>
                             )}
                           </AnimatePresence>
-                          <span className="sr-only">{t("notifications")}</span>
+                          <span className="sr-only">{t("notifications") || "Recived Offers"}</span>
                         </Button>
                       </motion.div>
                     </Link>
@@ -686,7 +686,7 @@ export function Header() {
                       >
                         <Bell className="h-4 w-4" />
                         <span>
-                          {`${t("notifications")} `}
+                          {`${t("notifications") || "Recived Offers"} `}
                           {`${notificationsLength ? notificationsLength : ""}`}
                         </span>
                       </Link>

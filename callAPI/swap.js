@@ -1,5 +1,5 @@
 import axios from "axios"
-import {validateAuth , getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
+import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 
 

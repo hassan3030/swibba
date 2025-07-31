@@ -1,7 +1,7 @@
 import axios from "axios"
-import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth } from "./utiles.js"
+import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth ,STATIC_ADMIN_TOKEN} from "./utiles.js"
 import { getUserByProductId } from "./users.js"
-const STATIC_ADMIN_TOKEN =  'Q25pLQ8ZQqLbf3pbnUDs2Al4NDRad6-u';
+
 
 
 // Get available/unavailable products by user ID

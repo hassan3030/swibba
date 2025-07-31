@@ -343,7 +343,9 @@ export default function ProfilePage() {
                       <MapPin className="h-4 w-4 text-[#49c5b6]" />
                     </motion.div>
                     <span className="font-medium">
-                      {`${user?.country}, ${user?.city}, ${user?.street}` || "No location set"}
+
+                      {user?.country &&  user?.city && user?.street? "":  `${t("noAddress") || "No address provided"}`}
+                      {`${user?.country || ''} ${user?.city || ''} ${user?.street || ''}`}
                     </span>
                   </motion.div>
 

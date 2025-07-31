@@ -8,9 +8,8 @@ import {
   removeCookie,
   handleApiError,
   makeAuthenticatedRequest,
+  STATIC_ADMIN_TOKEN
 } from "./utiles.js"
-
-const STATIC_ADMIN_TOKEN =  'Q25pLQ8ZQqLbf3pbnUDs2Al4NDRad6-u';
 
 // Authenticate user and get token
 export const auth = async (email, password) => {
@@ -20,9 +19,10 @@ export const auth = async (email, password) => {
     }
 
     const authResponse = await axios.post(`${baseURL}/auth/login`, {
-      email: email.toLowerCase().trim(),
+      email: email.trim(),
       password,
-    })
+    }
+  )
 
     const token = authResponse.data?.data?.access_token
     if (!token) {
@@ -84,6 +84,104 @@ export const login = async (email, password) => {
 
 
 
+// export const register = async (email, password, first_name, additional_data = {}) => {
+//   // Input validation
+//     if (!email || !password || !first_name) {
+//       throw new Error("Email, password, and first name are required")
+//     }
+
+//     // Email format validation
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+//     if (!emailRegex.test(email)) {
+//       throw new Error("Please provide a valid email address")
+//     }
+
+//     // Password strength validation
+//     if (password.length < 8) {
+//       throw new Error("Password must be at least 8 characters long")
+//     }
+
+//     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)/
+//     if (!passwordRegex.test(password)) {
+//       throw new Error("Password must contain at least one letter and one number")
+//     }
+
+//     const cleanEmail = email.toLowerCase().trim()
+//     const cleanFirstName = first_name.trim()
+   
+
+//    try {
+//     //  Check if user already exists
+//      const existingUserCheck = await axios.get(
+//         `${baseURL}/users?filter[email][_eq]=${cleanEmail}`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+//           },
+//         },
+//       )
+//     console.log('i am in regisration existingUserCheck ',existingUserCheck )
+
+     
+//       if (existingUserCheck.data?.data?.length > 0) {
+//         throw new Error("An account with this email already exists")
+//       }
+
+//     const response = await axios.post(`${baseURL}/users/register`, {
+//       email: cleanEmail,
+//       password,
+//       first_name: cleanFirstName,
+
+//     }
+//       );
+      
+
+
+//     //   const getRes = await axios.get(`${baseURL}/users`, {
+//     //     params: {
+//     //       email: cleanEmail
+//     //     },
+//     //     headers: {
+//     //       Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+//     //     },
+//     // });
+//     // console.log('i am in regisration getRes  ',getRes )
+//     // const user = getRes.data.data[0];
+//     // console.log('i am in regisration user ',user )
+//     // if (!user) {
+//     //   console.log('User not found.');
+//     //   return;
+//     // }
+
+//     // const userId = user.id;
+//     // console.log('i am in regisration userId ',userId )
+
+
+
+//     // Step 2: Update (PATCH) the user status to active
+//     // const patchRes = await axios.patch(`${baseURL}/users/${userId}`,
+//     //   { status: 'active' },
+//     //   {
+//     //     headers: {
+//     //       Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+//     //     },
+//     //   }
+//     // );
+
+//     // console.log('User activated:', patchRes.data.data);
+
+// // console.log('User registered:', response.data.data);
+
+// const logining  =  await login(cleanEmail , password)
+//     console.log('i am in regisration then login ',logining )
+
+//   } catch (error) {
+//     console.error('Registration error:', error.response?.data || error.message);
+//   }
+// }
+
+
+
 export const register = async (email, password, first_name, additional_data = {}) => {
   // Input validation
     if (!email || !password || !first_name) {
@@ -112,24 +210,24 @@ export const register = async (email, password, first_name, additional_data = {}
 
    try {
     //  Check if user already exists
-     const existingUserCheck = await axios.get(
-        `${baseURL}/users?filter[email][_eq]=${cleanEmail}`,
-        {
-          headers: {
-            Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-          },
-        },
-      )
-    console.log('i am in regisration existingUserCheck ',existingUserCheck )
+    //  const existingUserCheck = await axios.get(
+    //     `${baseURL}/users?filter[email][_eq]=${cleanEmail}`,
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+    //       },
+    //     },
+    //   )
+    // console.log('i am in regisration existingUserCheck ',existingUserCheck )
 
      
-      if (existingUserCheck.data?.data?.length > 0) {
-        throw new Error("An account with this email already exists")
-      }
+    //   if (existingUserCheck.data?.data?.length > 0) {
+    //     throw new Error("An account with this email already exists")
+    //   }
 
     const response = await axios.post(`${baseURL}/users/register`, {
       email: cleanEmail,
-      password,
+      password: password,
       first_name: cleanFirstName,
 
     }
@@ -137,47 +235,31 @@ export const register = async (email, password, first_name, additional_data = {}
       
 
 
-    //   const getRes = await axios.get(`${baseURL}/users`, {
-    //     params: {
-    //     filter: { email: { _eq: cleanEmail } },
-    //   },
-    //     headers: {
-    //       Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-    //     },
-    // });
-    // console.log('i am in regisration getRes  ',getRes )
-    // const user = getRes.data.data[0];
-    // console.log('i am in regisration user ',user )
-    // if (!user) {
-    //   console.log('User not found.');
-    //   return;
-    // }
+      const getRes = await axios.get(`${baseURL}/users`, {
+      params: {
+        filter: { email: { _eq: cleanEmail } },
+      },
+      headers: {
+        Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
+      },
+    });
+    console.log('i am in regisration getRes  ',getRes )
 
-// ============================================
-const getRes = await axios.get(`${baseURL}/users`, {
-  headers: {
-    Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-  },
-});
-
-const users = getRes.data.data;
-// Filter the user by email (exact match)
-const user = users.find(user => user.email === cleanEmail);
-if (!user) {
-  console.log('User not found.');
-  return;
-}
-console.log('User found:', user);
-
-// =============================================
-
+    const user = getRes.data.data[0];
+    if (!user) {
+      console.log('User not found.');
+      return;
+    }
+    console.log('i am in regisration user ',user )
 
     const userId = user.id;
     console.log('i am in regisration userId ',userId )
 
     // Step 2: Update (PATCH) the user status to active
     const patchRes = await axios.patch(`${baseURL}/users/${userId}`,
-      { status: 'active' },
+      { status: 'active' ,
+        role:'e164ca4a-f003-4b3e-bb1b-a5b14ab5009c'
+      },
       {
         headers: {
           Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
@@ -196,7 +278,6 @@ const logining  =  await login(email , password)
     console.error('Registration error:', error.response?.data || error.message);
   }
 }
-
 
 
 

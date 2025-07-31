@@ -114,6 +114,7 @@ export default function SwapPage() {
   const [name, setName] = useState("")
   const [disabledOffer, setDisabledOffer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [sameUser, setSameUser] = useState([])
 
   const { toast } = useToast()
   const { t } = useTranslations()
@@ -123,6 +124,7 @@ export default function SwapPage() {
     const token = await getCookie()
     if (token) {
       const { id } = await decodedToken()
+     setSameUser([...sameUser, id])
       const myProductsData = await getAvailableAndUnavailableProducts(id)
       setMyItems(myProductsData.data)
     } else {
@@ -133,6 +135,7 @@ export default function SwapPage() {
   // Fetch other user's items
   const getOtherItems = useCallback(async () => {
     const otherUser = await getUserByProductId(id_item_to)
+    setSameUser([...sameUser, otherUser.data.id])
     console.log("otherUser " , otherUser)
     console.log("id_item_to " , id_item_to)
     const otherProductsData = await getAvailableAndUnavailableProducts(otherUser.data.id)
@@ -321,7 +324,9 @@ export default function SwapPage() {
         </div>
       </motion.header>
 
-      <div className="container mx-auto px-4 py-8">
+{sameUser[0] === sameUser[1] ? (
+  <>
+   <div className="container mx-auto px-4 py-8">
         <motion.div
           className="mb-8 text-center"
           initial={{ opacity: 0, y: -20 }}
@@ -820,6 +825,16 @@ export default function SwapPage() {
           </TabsContent>
         </Tabs>
       </div>
+  </>
+):(
+    <div className="min-h-full bg-background flex flex-col items-center justify-center text-center p-8">
+    <p className="text-muted-foreground">You cann't make any swaps with yourself.</p>
+    <Link href="/products" className="text-primary hover:underline">
+       <Button className="mt-4 bg-primary-orange text-white hover:bg-deep-orange"> Go back to products</Button>
+    </Link>
+    </div>
+)}
+     
     </motion.div>
   )
 }

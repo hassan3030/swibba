@@ -11,7 +11,7 @@ import { Heart, Repeat } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getImageProducts } from "@/callAPI/products"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
-import { decodedToken, getCookie } from "@/callAPI/utiles"
+import { decodedToken, getCookie, setTarget } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 
@@ -109,6 +109,7 @@ export function ItemCardProfile({
     if (token) {
       router.push(`/swap/${id}`)
     } else {
+       await setTarget(id)
       toast({
         title: t("faildSwap") || "Failed Swap",
         description: t("DescFaildSwapLogin"),

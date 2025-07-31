@@ -234,5 +234,52 @@ export const validateAuth = async () => {
   return { token, userId: decoded.id , decoded }
 }
 
+
+
+// Set a Target 
+export const setTarget = async (targetValue) => {
+  try {
+    if (!targetValue) {
+      throw new Error("Invalid Target value provided")
+    }
+  
+    Cookies.set("Target", targetValue)
+    console.log("Target set successfully")
+    return { success: true, message: "Target set successfully" }
+  } catch (error) {
+    console.error("Set Target Error:", error.message)
+    return { success: false, message: `Failed to set Target: ${error.message}` }
+  }
+}
+
+// Get a Target
+export const getTarget = async () => {
+  try {
+    const targetValue = Cookies.get("Target")
+    if (!targetValue) {
+      console.warn("Target not found in cookies")
+      return null
+    }
+    return targetValue
+  } catch (error) {
+    console.error("Get Target Error:", error.message)
+    await removeTarget() // Clean up on error
+    return null
+  }
+}
+
+// Remove a Target 
+export const removeTarget = async () => {
+  try {
+    Cookies.remove("Target", { path: "/" })
+    Cookies.remove("Target", { path: "/", domain: window.location.hostname })
+    console.log("Target removed successfully")
+    return { success: true, message: "Target removed" }
+  } catch (error) {
+    console.error("Remove Target Error:", error.message)
+    return { success: false, message: "Failed to remove Target" }
+  }
+}
+
 // Export error handler for use in other modules
 export { handleApiError }

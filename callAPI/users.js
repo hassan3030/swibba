@@ -8,7 +8,8 @@ import {
   removeCookie,
   handleApiError,
   makeAuthenticatedRequest,
-  STATIC_ADMIN_TOKEN
+  STATIC_ADMIN_TOKEN,
+  getTarget
 } from "./utiles.js"
 
 // Authenticate user and get token
@@ -48,6 +49,7 @@ export const auth = async (email, password) => {
 // Login user with enhanced error handling
 export const login = async (email, password) => {
   try {
+       const getTargetId  = await getTarget()
     const authResult = await auth(email, password)
     if (!authResult.success) {
       return authResult
@@ -66,8 +68,14 @@ export const login = async (email, password) => {
     })
 
     console.log("Login successful for user:", decoded.id)
-    window.location.reload()
-           window.location.replace('/');
+    if (getTargetId) {
+        window.location.reload()
+             window.location.replace(`/swap/${getTargetId}`);
+        } else {
+           window.location.reload()
+    window.location.replace(`/`);
+        }
+   
 
     return {
       success: true,

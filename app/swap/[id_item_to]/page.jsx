@@ -16,6 +16,7 @@ import { decodedToken, getCookie } from "@/callAPI/utiles"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
+import { getCurrentUserId , removeTarget } from "@/callAPI/utiles"
 import { addOffer, getOfferById } from "@/callAPI/swap"
 import { useParams, useRouter } from "next/navigation"
 
@@ -179,6 +180,14 @@ export default function SwapPage() {
     }
     fetchData()
   }, [getMyItems, getOtherItems, getSwapHistory])
+
+
+  // Reset target on unmount
+  useEffect(() => {
+    return () => {
+      removeTarget()
+    }
+  }, [])
 
   // Selection handlers
   const handleMyItemSelect = (itemId) => {

@@ -12,7 +12,7 @@ import { getImageProducts } from "@/callAPI/products"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
-import { decodedToken, getCookie } from "@/callAPI/utiles"
+import { decodedToken, getCookie  , setTarget} from "@/callAPI/utiles"
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -134,10 +134,10 @@ export function DeelProductCard({
     e.preventDefault()
     e.stopPropagation()
     const token = await getCookie()
-
     if (token) {
       router.push(`/swap/${id}`)
     } else {
+    await setTarget(id)
       toast({
         title: t("faildSwap") || "Failed Swap",
         description: "Invalid swap without login. Please try to login.",

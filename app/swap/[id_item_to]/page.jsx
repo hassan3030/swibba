@@ -16,7 +16,7 @@ import { decodedToken, getCookie } from "@/callAPI/utiles"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
-import { getCurrentUserId , removeTarget } from "@/callAPI/utiles"
+import { getCurrentUserId, removeTarget } from "@/callAPI/utiles"
 import { addOffer, getOfferById } from "@/callAPI/swap"
 import { useParams, useRouter } from "next/navigation"
 
@@ -101,7 +101,6 @@ export default function SwapPage() {
   const params = useParams()
   const router = useRouter()
   const id_item_to = params.id_item_to
-
   const [myItems, setMyItems] = useState([])
   const [otherItems, setOtherItems] = useState([])
   const [selectedMyItems, setSelectedMyItems] = useState([])
@@ -115,7 +114,6 @@ export default function SwapPage() {
   const [disabledOffer, setDisabledOffer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [sameUser, setSameUser] = useState([])
-
   const { toast } = useToast()
   const { t } = useTranslations()
 
@@ -124,7 +122,7 @@ export default function SwapPage() {
     const token = await getCookie()
     if (token) {
       const { id } = await decodedToken()
-     setSameUser([...sameUser, id])
+      setSameUser([...sameUser, id])
       const myProductsData = await getAvailableAndUnavailableProducts(id)
       setMyItems(myProductsData.data)
     } else {
@@ -136,10 +134,10 @@ export default function SwapPage() {
   const getOtherItems = useCallback(async () => {
     const otherUser = await getUserByProductId(id_item_to)
     setSameUser([...sameUser, otherUser.data.id])
-    console.log("otherUser " , otherUser)
-    console.log("id_item_to " , id_item_to)
+    console.log("otherUser ", otherUser)
+    console.log("id_item_to ", id_item_to)
     const otherProductsData = await getAvailableAndUnavailableProducts(otherUser.data.id)
-     console.log("otherProductsData " , otherProductsData)
+    console.log("otherProductsData ", otherProductsData)
     setOtherItems(otherProductsData.data)
   }, [])
 
@@ -288,7 +286,7 @@ export default function SwapPage() {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">Loading swap page...</p>
+          <p className="text-muted-foreground">{t("LoadingSwapPage") || "Loading swap page..."}</p>
         </motion.div>
       </div>
     )
@@ -313,528 +311,526 @@ export default function SwapPage() {
             <div className="flex items-center space-x-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link href="/" className="text-2xl font-bold text-primary">
-                  SwapSpace
+                  {t("SwapSpace") || "SwapSpace"}
                 </Link>
               </motion.div>
               <Badge variant="outline" className="hidden sm:inline-flex">
-                Swap
+                {t("Swap") || "Swap"}
               </Badge>
             </div>
           </div>
         </div>
       </motion.header>
 
-{sameUser[0] === sameUser[1] ? (
-  <>
-   <div className="container mx-auto px-4 py-8">
-        <motion.div
-          className="mb-8 text-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h1 className="text-3xl font-bold mb-4">Create a Swap</h1>
-          <p className="text-muted-foreground">
-            Select items from your collection first, then choose matching items from other users
-          </p>
-        </motion.div>
-
-        <Tabs defaultValue="swap">
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <TabsList className="mb-8">
-              <TabsTrigger value="swap">Swap</TabsTrigger>
-              <TabsTrigger value="history">{t("swapHistory")}</TabsTrigger>
-            </TabsList>
-          </motion.div>
-
-          <TabsContent value="swap">
-            <motion.div variants={containerVariants} initial="hidden" animate="visible">
-              {/* Category Hint */}
-              <AnimatePresence>
-                {showHint && allowedCategories.length > 0 && (
-                  <motion.div variants={cardVariants} initial="hidden" animate="visible" exit="exit" className="mb-6">
-                    <Card className="border-blue-200 bg-blue-50 hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-2">
-                          <motion.div
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                          >
-                            <Info className="h-5 w-5 text-blue-600" />
-                          </motion.div>
-                          <div>
-                            <p className="text-sm font-medium text-blue-800">Available categories for swapping:</p>
-                            <motion.div
-                              className="flex flex-wrap gap-2 mt-2"
-                              variants={containerVariants}
-                              initial="hidden"
-                              animate="visible"
-                            >
-                              {allowedCategories.map((category, index) => (
-                                <motion.div
-                                  key={category}
-                                  variants={itemVariants}
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                    {category}
-                                  </Badge>
-                                </motion.div>
-                              ))}
-                            </motion.div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Selection Rules Info */}
-              <motion.div variants={cardVariants}>
-                <Card className="mb-6 border-yellow-200 bg-yellow-50 hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-2">
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                      >
-                        <Info className="h-5 w-5 text-yellow-600 mt-0.5" />
-                      </motion.div>
-                      <div className="text-sm text-yellow-800">
-                        <p className="font-medium mb-1">Swap Rules:</p>
-                        <motion.ul
-                          className="space-y-1 text-xs"
-                          variants={containerVariants}
-                          initial="hidden"
-                          animate="visible"
-                        >
-                          {[
-                            "First select your items to see available categories",
-                            "You can only select items from matching categories",
-                            "Unchecking your items will clear other selections",
-                          ].map((rule, index) => (
-                            <motion.li key={index} variants={itemVariants}>
-                              • {rule}
-                            </motion.li>
-                          ))}
-                        </motion.ul>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Swap Summary */}
-              <AnimatePresence>
-                {canCreateSwap && (
-                  <motion.div
-                    variants={swapSummaryVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="mb-8"
-                  >
-                    <Card className="border-primary/20 bg-primary/5 hover:shadow-lg transition-shadow">
-                      <CardContent className="p-6">
-                        <motion.div
-                          className="flex items-center justify-between mb-4"
-                          variants={containerVariants}
-                          initial="hidden"
-                          animate="visible"
-                        >
-                          <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                            <motion.div
-                              className="text-2xl font-bold text-primary"
-                              animate={{ scale: [1, 1.1, 1] }}
-                              transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-                            >
-                              {selectedMyItems.length}
-                            </motion.div>
-                            <div className="text-sm text-muted-foreground">Your Items</div>
-                            <div className="text-lg font-semibold">{mySelectedValue}LE</div>
-                          </motion.div>
-
-                          <motion.div
-                            className="flex items-center"
-                            animate={{ x: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                          >
-                            <ArrowLeftRight className="h-8 w-8 text-primary" />
-                          </motion.div>
-
-                          <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                            <motion.div
-                              className="text-2xl font-bold text-primary"
-                              animate={{ scale: [1, 1.1, 1] }}
-                              transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
-                            >
-                              {selectedOtherItems.length}
-                            </motion.div>
-                            <div className="text-sm text-muted-foreground">Their Items</div>
-                            <div className="text-lg font-semibold">{otherSelectedValue}LE</div>
-                          </motion.div>
-                        </motion.div>
-
-                        {/* Price Difference */}
-                        <motion.div
-                          className="text-center mb-4"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          <div className="text-sm text-muted-foreground mb-1">Price Difference</div>
-                          <motion.div
-                            className={`text-lg font-bold ${
-                              priceDifference > 0
-                                ? "text-green-600"
-                                : priceDifference < 0
-                                  ? "text-red-600"
-                                  : "text-gray-600"
-                            }`}
-                            animate={{ scale: [1, 1.05, 1] }}
-                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                          >
-                            {priceDifference > 0 ? "+" : ""}
-                            {priceDifference}LE
-                            {priceDifference > 0 && <span className="text-sm ml-1">(You gain)</span>}
-                            {priceDifference < 0 && <span className="text-sm ml-1">(You pay extra)</span>}
-                            {priceDifference === 0 && <span className="text-sm ml-1">(Equal value)</span>}
-                          </motion.div>
-                        </motion.div>
-
-                        {/* Swap name */}
-                        <motion.div
-                          className="flex space-x-3 my-2"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
-                        >
-                          <Input
-                            placeholder="Take name for deal is optionally"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="flex-1"
-                          />
-                        </motion.div>
-
-                        {/* Chat Section */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          <Card className="mb-6 hover:shadow-md transition-shadow">
-                            <CardHeader>
-                              <CardTitle className="flex items-center">
-                                <MessageCircle className="h-5 w-5 mr-2" />
-                                Chat with Swap Partners
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="flex space-x-2">
-                                <Input
-                                  placeholder="Type your message for the swap partners"
-                                  value={message}
-                                  onChange={(e) => setMessage(e.target.value)}
-                                  className="flex-1"
-                                />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-
-                        <motion.div
-                          className="text-center"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.6 }}
-                        >
-                          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                            <Button size="lg" className="px-8" onClick={handleAddOffer} disabled={disabledOffer}>
-                              {disabledOffer ? (
-                                <>
-                                  <motion.div
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
-                                  />
-                                  Creating...
-                                </>
-                              ) : (
-                                <>
-                                  <ArrowLeftRight className="h-4 w-4 mr-2" />
-                                  Swap
-                                </>
-                              )}
-                            </Button>
-                          </motion.div>
-                        </motion.div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <motion.div
-                className="grid lg:grid-cols-2 gap-8"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                {/* My Products */}
-                <motion.div variants={cardVariants}>
-                  {myItems.length !== 0 ? (
-                    <div>
-                      <motion.div
-                        className="flex items-center mb-6"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        <Package className="h-6 w-6 mr-3 text-primary" />
-                        <h2 className="text-2xl font-bold">Your Products</h2>
-                        <motion.div
-                          animate={{ scale: [1, 1.1, 1] }}
-                          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                        >
-                          <Badge variant="secondary" className="ml-3">
-                            {selectedMyItems.length} selected
-                          </Badge>
-                        </motion.div>
-                      </motion.div>
-
-                      <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
-                        <AnimatePresence>
-                          {myItems.map((product, index) => (
-                            <motion.div
-                              key={product.id}
-                              variants={cardVariants}
-                              layout
-                              layoutId={`my-item-${product.id}`}
-                              custom={index}
-                              whileHover={{ scale: 1.02, y: -2 }}
-                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            >
-                              <Card
-                                className={`transition-all duration-200 ${
-                                  selectedMyItems.includes(product.id)
-                                    ? "ring-2 ring-primary shadow-lg"
-                                    : "hover:shadow-md"
-                                }`}
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-start space-x-4">
-                                    <div className="flex items-center">
-                                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                                        <Checkbox
-                                          checked={selectedMyItems.includes(product.id)}
-                                          onCheckedChange={() => handleMyItemSelect(product.id)}
-                                          className="mr-3"
-                                        />
-                                      </motion.div>
-                                    </div>
-                                    <ItemCard {...product} />
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </motion.div>
-                          ))}
-                        </AnimatePresence>
-                      </motion.div>
-                    </div>
-                  ) : (
-                    <motion.div
-                      className="rounded-lg border border-dashed p-8 text-center"
-                      variants={cardVariants}
-                      whileHover={{ scale: 1.02 }}
-                    >
-                      <p className="text-muted-foreground">You haven't any Items yet.</p>
-                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                        <Button
-                          onClick={() => router.push("/profile/settings/editItem/new")}
-                          className="mt-4 bg-primary-orange text-white hover:bg-deep-orange"
-                        >
-                          Add New Item
-                        </Button>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </motion.div>
-
-                {/* Other Users' Products */}
-                <motion.div variants={cardVariants}>
-                  {otherItems?.length !== 0 ? (
-                    <div>
-                      <motion.div
-                        className="flex items-center mb-6"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 }}
-                      >
-                        <Users className="h-6 w-6 mr-3 text-primary" />
-                        <h2 className="text-2xl font-bold">Available Products</h2>
-                        <motion.div
-                          animate={{ scale: [1, 1.1, 1] }}
-                          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
-                        >
-                          <Badge variant="secondary" className="ml-3">
-                            {selectedOtherItems.length} selected
-                          </Badge>
-                        </motion.div>
-                      </motion.div>
-
-                      <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
-                        <AnimatePresence>
-                          {otherItems?.map((product, index) => {
-                            const isSelectable = isOtherItemSelectable(product)
-                            const isSelected = selectedOtherItems.includes(product.id)
-
-                            return (
-                              <motion.div
-                                key={product.id}
-                                variants={cardVariants}
-                                layout
-                                layoutId={`other-item-${product.id}`}
-                                custom={index}
-                                whileHover={isSelectable ? { scale: 1.02, y: -2 } : {}}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                              >
-                                <Card
-                                  className={`transition-all duration-200 ${
-                                    isSelected
-                                      ? "ring-2 ring-primary shadow-lg"
-                                      : isSelectable
-                                        ? "hover:shadow-md"
-                                        : "opacity-50 cursor-not-allowed"
-                                  }`}
-                                >
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start space-x-4">
-                                      <div className="flex items-center">
-                                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                                          <Checkbox
-                                            checked={isSelected}
-                                            onCheckedChange={() => handleOtherItemSelect(product.id)}
-                                            disabled={!isSelectable}
-                                            className="mr-3"
-                                          />
-                                        </motion.div>
-                                      </div>
-                                      <ItemCard {...product} />
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </motion.div>
-                            )
-                          })}
-                        </AnimatePresence>
-                      </motion.div>
-                    </div>
-                  ) : (
-                    <motion.div
-                      className="rounded-lg border border-dashed p-8 text-center"
-                      variants={cardVariants}
-                      whileHover={{ scale: 1.02 }}
-                    >
-                      <p className="text-muted-foreground">He hasn't made any Items yet.</p>
-                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                        <Button
-                          onClick={() => router.push("/products")}
-                          className="mt-4 bg-primary-orange text-white hover:bg-deep-orange"
-                        >
-                          Start Swapping
-                        </Button>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              </motion.div>
+      {sameUser[0] !== sameUser[1] ? (
+        <>
+          <div className="container mx-auto px-4 py-8">
+            <motion.div
+              className="mb-8 text-center"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h1 className="text-3xl font-bold mb-4">{t("CreateaSwap") || "Create a Swap"}</h1>
+              <p className="text-muted-foreground">
+                {t("Selectitemsfromyourollectionfirstthenchoosematchingitemsfromotherusers") || "Select items from your collection first, then choose matching items from other users"}
+              </p>
             </motion.div>
-          </TabsContent>
 
-          <TabsContent value="history">
-            <motion.div className="space-y-6" variants={containerVariants} initial="hidden" animate="visible">
-              <h2 className="text-xl font-semibold">{t("swapHistory")}</h2>
-              {swapHistory.length > 0 ? (
-                <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+            <Tabs defaultValue="swap">
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <TabsList className="mb-8">
+                  <TabsTrigger value="swap">{t("Swap") || "Swap"}</TabsTrigger>
+                  <TabsTrigger value="history">{t("swapHistory") || "Swap History"}</TabsTrigger>
+                </TabsList>
+              </motion.div>
+
+              <TabsContent value="swap">
+                <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                  {/* Category Hint */}
                   <AnimatePresence>
-                    {swapHistory.map((swap, index) => (
-                      <motion.div
-                        key={swap.id}
-                        variants={cardVariants}
-                        layout
-                        layoutId={`history-${swap.id}`}
-                        custom={index}
-                        whileHover={{ scale: 1.02, y: -2 }}
-                      >
-                        <Card className="hover:shadow-lg transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    {showHint && allowedCategories.length > 0 && (
+                      <motion.div variants={cardVariants} initial="hidden" animate="visible" exit="exit" className="mb-6">
+                        <Card className="border-blue-200 bg-blue-50 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <motion.div
+                                animate={{ rotate: [0, 10, -10, 0] }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                              >
+                                <Info className="h-5 w-5 text-blue-600" />
+                              </motion.div>
                               <div>
-                                <p className="text-sm text-muted-foreground">
-                                  {new Date(swap?.date_created).toISOString().split("T")[0]}
+                                <p className="text-sm font-medium text-blue-800">
+                                  {t("Availablecategoriesforswapping") || "  Available categories for swapping:"}
                                 </p>
-                                <h3 className="font-medium">
-                                  Swap with:{" "}
-                                  {usersOffer.find((u) => u.id === swap.to_user_id)?.first_name || `Not Name`}
-                                </h3>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                  <motion.span
-                                    className={`rounded-full px-2 py-1 text-xs ${
-                                      swap.status_offer === "completed"
-                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                                        : swap.status_offer === "pending"
-                                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                                          : "bg-red-600 text-yellow-800 dark:bg-red-500 dark:text-yellow-100"
-                                    }`}
-                                    whileHover={{ scale: 1.05 }}
-                                  >
-                                    {swap.status_offer}
-                                  </motion.span>
-                                </div>
-                              </div>
-                              <div className="flex flex-col gap-2 md:items-end">
-                                <div className="flex flex-col">
-                                  <span className="text-sm text-muted-foreground">
-                                    {handlePriceDifference(swap.from_user_id, swap.cash_adjustment)}
-                                  </span>
-                                </div>
+                                <motion.div
+                                  className="flex flex-wrap gap-2 mt-2"
+                                  variants={containerVariants}
+                                  initial="hidden"
+                                  animate="visible"
+                                >
+                                  {allowedCategories.map((category, index) => (
+                                    <motion.div
+                                      key={category}
+                                      variants={itemVariants}
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
+                                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                        {category}
+                                      </Badge>
+                                    </motion.div>
+                                  ))}
+                                </motion.div>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
                       </motion.div>
-                    ))}
+                    )}
                   </AnimatePresence>
-                </motion.div>
-              ) : (
-                <motion.div
-                  className="rounded-lg border border-dashed p-8 text-center"
-                  variants={cardVariants}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <p className="text-muted-foreground">You haven't made any swaps yet.</p>
-                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                    <Button className="mt-4 bg-primary-orange text-white hover:bg-deep-orange">Start Swapping</Button>
+
+                  {/* Selection Rules Info */}
+                  <motion.div variants={cardVariants}>
+                    <Card className="mb-6 border-yellow-200 bg-yellow-50 hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start space-x-2">
+                          <motion.div
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                          >
+                            <Info className="h-5 w-5 text-yellow-600 mt-0.5" />
+                          </motion.div>
+                          <div className="text-sm text-yellow-800">
+                            <p className="font-medium mb-1">{t("SwapRules") || "Swap Rules:"}</p>
+                            <motion.ul
+                              className="space-y-1 text-xs"
+                              variants={containerVariants}
+                              initial="hidden"
+                              animate="visible"
+                            >
+                              {[
+                                t("Firstselectyouritemstoseeavailablecategories") || "First select your items to see available categories",
+                                t("Youcanonlyselectitemsfrommatchingcategories") || "You can only select items from matching categories",
+                                t("Uncheckingyouritemswillclearotherselections") || "Unchecking your items will clear other selections",
+                              ].map((rule, index) => (
+                                <motion.li key={index} variants={itemVariants}>
+                                  • {t(rule) || rule}
+                                </motion.li>
+                              ))}
+                            </motion.ul>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* Swap Summary */}
+                  <AnimatePresence>
+                    {canCreateSwap && (
+                      <motion.div
+                        variants={swapSummaryVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="mb-8"
+                      >
+                        <Card className="border-primary/20 bg-primary/5 hover:shadow-lg transition-shadow">
+                          <CardContent className="p-6">
+                            <motion.div
+                              className="flex items-center justify-between mb-4"
+                              variants={containerVariants}
+                              initial="hidden"
+                              animate="visible"
+                            >
+                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
+                                <motion.div
+                                  className="text-2xl font-bold text-primary"
+                                  animate={{ scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                                >
+                                  {selectedMyItems.length}
+                                </motion.div>
+                                <div className="text-sm text-muted-foreground">{t("YourItems") || "Your Items"}</div>
+                                <div className="text-lg font-semibold">{mySelectedValue}LE</div>
+                              </motion.div>
+
+                              <motion.div
+                                className="flex items-center"
+                                animate={{ x: [0, 10, -10, 0] }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                              >
+                                <ArrowLeftRight className="h-8 w-8 text-primary" />
+                              </motion.div>
+
+                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
+                                <motion.div
+                                  className="text-2xl font-bold text-primary"
+                                  animate={{ scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                                >
+                                  {selectedOtherItems.length}
+                                </motion.div>
+                                <div className="text-sm text-muted-foreground">{t("TheirItems") || "Their Items"}</div>
+                                <div className="text-lg font-semibold">{otherSelectedValue}LE</div>
+                              </motion.div>
+                            </motion.div>
+
+                            {/* Price Difference */}
+                            <motion.div
+                              className="text-center mb-4"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3 }}
+                            >
+                              <div className="text-sm text-muted-foreground mb-1">{t("PriceDifference") || "Price Difference"}</div>
+                              <motion.div
+                                className={`text-lg font-bold ${priceDifference > 0
+                                    ? "text-green-600"
+                                    : priceDifference < 0
+                                      ? "text-red-600"
+                                      : "text-gray-600"
+                                  }`}
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                              >
+                                {priceDifference > 0 ? "+" : ""}
+                                {priceDifference}LE
+                                {priceDifference > 0 && <span className="text-sm ml-1">({t("Yougain") || "You gain"})</span>}
+                                {priceDifference < 0 && <span className="text-sm ml-1">({t("Youpayextra") || "You pay extra"})</span>}
+                                {priceDifference === 0 && <span className="text-sm ml-1">({t("Equalvalue") || "Equal value"})</span>}
+                              </motion.div>
+                            </motion.div>
+
+                            {/* Swap name */}
+                            <motion.div
+                              className="flex space-x-3 my-2"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 }}
+                            >
+                              <Input
+                                placeholder={t("SwapName") || "Swap Name is optional"}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="flex-1"
+                              />
+                            </motion.div>
+
+                            {/* Chat Section */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.5 }}
+                            >
+                              <Card className="mb-6 hover:shadow-md transition-shadow">
+                                <CardHeader>
+                                  <CardTitle className="flex items-center">
+                                    <MessageCircle className="h-5 w-5 mr-2" />
+                                    Chat with Swap Partners
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="flex space-x-2">
+                                    <Input
+                                      placeholder={t("Typeyourmessageforyourswappartners") || "Type your message for the swap partners"}
+                                      value={message}
+                                      onChange={(e) => setMessage(e.target.value)}
+                                      className="flex-1"
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+
+                            <motion.div
+                              className="text-center"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.6 }}
+                            >
+                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                <Button size="lg" className="px-8" onClick={handleAddOffer} disabled={disabledOffer}>
+                                  {disabledOffer ? (
+                                    <>
+                                      <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                                        className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                                      />
+                                      {t("CreatingSwap") || "Creating Swap..."}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ArrowLeftRight className="h-4 w-4 mr-2" />
+                                      {t("Swap") || "Swap"}
+                                    </>
+                                  )}
+                                </Button>
+                              </motion.div>
+                            </motion.div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <motion.div
+                    className="grid lg:grid-cols-2 gap-8"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {/* My Products */}
+                    <motion.div variants={cardVariants}>
+                      {myItems.length !== 0 ? (
+                        <div>
+                          <motion.div
+                            className="flex items-center mb-6"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            <Package className="h-6 w-6 mr-3 text-primary" />
+                            <h2 className="text-2xl font-bold">{t("YourProducts") || "Your Products"}</h2>
+                            <motion.div
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                            >
+                              <Badge variant="secondary" className="ml-3">
+                                {selectedMyItems.length} {t("selected") || "selected"}
+                              </Badge>
+                            </motion.div>
+                          </motion.div>
+
+                          <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                            <AnimatePresence>
+                              {myItems.map((product, index) => (
+                                <motion.div
+                                  key={product.id}
+                                  variants={cardVariants}
+                                  layout
+                                  layoutId={`my-item-${product.id}`}
+                                  custom={index}
+                                  whileHover={{ scale: 1.02, y: -2 }}
+                                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                >
+                                  <Card
+                                    className={`transition-all duration-200 ${selectedMyItems.includes(product.id)
+                                        ? "ring-2 ring-primary shadow-lg"
+                                        : "hover:shadow-md"
+                                      }`}
+                                  >
+                                    <CardContent className="p-4">
+                                      <div className="flex items-start space-x-4">
+                                        <div className="flex items-center">
+                                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                            <Checkbox
+                                              checked={selectedMyItems.includes(product.id)}
+                                              onCheckedChange={() => handleMyItemSelect(product.id)}
+                                              className="mr-3"
+                                            />
+                                          </motion.div>
+                                        </div>
+                                        <ItemCard {...product} />
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
+                          </motion.div>
+                        </div>
+                      ) : (
+                        <motion.div
+                          className="rounded-lg border border-dashed p-8 text-center"
+                          variants={cardVariants}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <p className="text-muted-foreground">You haven't any Items yet.</p>
+                          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                            <Button
+                              onClick={() => router.push("/profile/settings/editItem/new")}
+                              className="mt-4 bg-primary-orange text-white hover:bg-deep-orange"
+                            >
+                              {t("AddNewItem") || "Add New Item"}
+                            </Button>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </motion.div>
+
+                    {/* Other Users' Products */}
+                    <motion.div variants={cardVariants}>
+                      {otherItems?.length !== 0 ? (
+                        <div>
+                          <motion.div
+                            className="flex items-center mb-6"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            <Users className="h-6 w-6 mr-3 text-primary" />
+                            <h2 className="text-2xl font-bold">{t("AvailableProducts") || "Available Products"}</h2>
+                            <motion.div
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                            >
+                              <Badge variant="secondary" className="ml-3">
+                                {selectedOtherItems.length} {t("selected") || "selected"}
+                              </Badge>
+                            </motion.div>
+                          </motion.div>
+
+                          <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                            <AnimatePresence>
+                              {otherItems?.map((product, index) => {
+                                const isSelectable = isOtherItemSelectable(product)
+                                const isSelected = selectedOtherItems.includes(product.id)
+
+                                return (
+                                  <motion.div
+                                    key={product.id}
+                                    variants={cardVariants}
+                                    layout
+                                    layoutId={`other-item-${product.id}`}
+                                    custom={index}
+                                    whileHover={isSelectable ? { scale: 1.02, y: -2 } : {}}
+                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                  >
+                                    <Card
+                                      className={`transition-all duration-200 ${isSelected
+                                          ? "ring-2 ring-primary shadow-lg"
+                                          : isSelectable
+                                            ? "hover:shadow-md"
+                                            : "opacity-50 cursor-not-allowed"
+                                        }`}
+                                    >
+                                      <CardContent className="p-4">
+                                        <div className="flex items-start space-x-4">
+                                          <div className="flex items-center">
+                                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                              <Checkbox
+                                                checked={isSelected}
+                                                onCheckedChange={() => handleOtherItemSelect(product.id)}
+                                                disabled={!isSelectable}
+                                                className="mr-3"
+                                              />
+                                            </motion.div>
+                                          </div>
+                                          <ItemCard {...product} />
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  </motion.div>
+                                )
+                              })}
+                            </AnimatePresence>
+                          </motion.div>
+                        </div>
+                      ) : (
+                        <motion.div
+                          className="rounded-lg border border-dashed p-8 text-center"
+                          variants={cardVariants}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <p className="text-muted-foreground">{t("HehasntmadeanyItemsyet") || "He hasn't made any Items yet."}</p>
+                          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                            <Button
+                              onClick={() => router.push("/products")}
+                              className="mt-4 bg-primary-orange text-white hover:bg-deep-orange"
+                            >
+                              {t("StartSwapping") || "Start Swapping"}
+                            </Button>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </motion.div>
                   </motion.div>
                 </motion.div>
-              )}
-            </motion.div>
-          </TabsContent>
-        </Tabs>
-      </div>
-  </>
-):(
-    <div className="min-h-full bg-background flex flex-col items-center justify-center text-center p-8">
-    <p className="text-muted-foreground">You cann't make any swaps with yourself.</p>
-    <Link href="/products" className="text-primary hover:underline">
-       <Button className="mt-4 bg-primary-orange text-white hover:bg-deep-orange"> Go back to products</Button>
-    </Link>
-    </div>
-)}
-     
+              </TabsContent>
+
+              <TabsContent value="history">
+                <motion.div className="space-y-6" variants={containerVariants} initial="hidden" animate="visible">
+                  <h2 className="text-xl font-semibold">{t("swapHistory")}</h2>
+                  {swapHistory.length > 0 ? (
+                    <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                      <AnimatePresence>
+                        {swapHistory.map((swap, index) => (
+                          <motion.div
+                            key={swap.id}
+                            variants={cardVariants}
+                            layout
+                            layoutId={`history-${swap.id}`}
+                            custom={index}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                          >
+                            <Card className="hover:shadow-lg transition-shadow">
+                              <CardContent className="p-6">
+                                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                  <div>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(swap?.date_created).toISOString().split("T")[0]}
+                                    </p>
+                                    <h3 className="font-medium">
+                                      {t("Swapwith") || "Swap with:"}{" "}
+                                      {usersOffer.find((u) => u.id === swap.to_user_id)?.first_name || `Not Name`}
+                                    </h3>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      <motion.span
+                                        className={`rounded-full px-2 py-1 text-xs ${swap.status_offer === "completed"
+                                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                                            : swap.status_offer === "pending"
+                                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                                              : "bg-red-600 text-yellow-800 dark:bg-red-500 dark:text-yellow-100"
+                                          }`}
+                                        whileHover={{ scale: 1.05 }}
+                                      >
+                                        {swap.status_offer}
+                                      </motion.span>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 md:items-end">
+                                    <div className="flex flex-col">
+                                      <span className="text-sm text-muted-foreground">
+                                        {handlePriceDifference(swap.from_user_id, swap.cash_adjustment)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      className="rounded-lg border border-dashed p-8 text-center"
+                      variants={cardVariants}
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <p className="text-muted-foreground">{t("HehasntmadeanyItemsyet") || "He hasn't made any Items yet."}</p>
+                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                        <Button className="mt-4 bg-primary-orange text-white hover:bg-deep-orange">{t("StartSwapping") || "Start Swapping"}</Button>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </>
+      ) : (
+        <div className="min-h-full bg-background flex flex-col items-center justify-center text-center p-8">
+          <p className="text-muted-foreground">{t("Youcantmakeanyswapswithyourself") || "You cann't make any swaps with yourself."}</p>
+          <Link href="/products" className="text-primary hover:underline">
+            <Button className="mt-4 bg-primary-orange text-white hover:bg-deep-orange">{t("Gobacktoproducts") || "Go back to products"} </Button>
+          </Link>
+        </div>
+      )}
+
     </motion.div>
   )
 }
@@ -842,7 +838,7 @@ export default function SwapPage() {
 // ItemCard component
 const ItemCard = ({ id, name, description, price, images, allowed_categories, status_swap, category }) => {
   const [bigImage, setBigImage] = useState("")
-
+  const { t } = useTranslations()
   useEffect(() => {
     const getDataImage = async () => {
       if (images) {
@@ -914,7 +910,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
             }}
             whileHover={{ scale: 1.05 }}
           >
-            <Badge variant="secondary">{category}</Badge>
+            <Badge variant="secondary">{t(category) || category}</Badge>
           </motion.div>
           <motion.div
             variants={{
@@ -923,7 +919,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
             }}
             whileHover={{ scale: 1.05 }}
           >
-            <Badge className={getConditionColor(status_swap)}>{status_swap}</Badge>
+            <Badge className={getConditionColor(status_swap)}>{t(status_swap) || status_swap}</Badge>
           </motion.div>
           <Separator />
           <motion.div
@@ -933,7 +929,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
             }}
             whileHover={{ scale: 1.05 }}
           >
-            <Badge>Allow To:</Badge>
+            <Badge>{t("AllowTo") || "Allow To:"}</Badge>
           </motion.div>
           {allowed_categories &&
             allowed_categories.length > 0 &&
@@ -947,14 +943,14 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
                 whileHover={{ scale: 1.05 }}
               >
                 <Badge variant="outline" className="ml-1">
-                  {cat}
+                  {t(cat) || cat}
                 </Badge>
               </motion.div>
             ))}
         </motion.div>
         <motion.div
           className="text-xl font-bold text-primary"
-          
+
         >
           {price} LE
         </motion.div>

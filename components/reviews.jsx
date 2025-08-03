@@ -103,9 +103,9 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar }
 
   const checkReview = async () => {
     try {
-      const myId = await decodedToken()
-      const rev = await getReviewConditins(myId.id, offer_id)
-      if (Array.isArray(rev.data) && rev.data.length > 0) {
+      const {id} = await decodedToken()
+      const rev = await getReviewConditins(id, offer_id)
+      if (rev.data.can_review) {
         setHasReviewed(false)
       } else {
         setHasReviewed(true)
@@ -366,7 +366,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar }
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="p-4 rounded-lg bg-green-50 border border-green-200 flex items-center gap-3 mb-4 mx-4"
+              className="p-4 rounded-lg bg-green-50 border border-green-200 flex items-center gap-3 mb-4 mx-4 mt-2"
             >
               <motion.div
                 initial={{ scale: 0 }}

@@ -1,7 +1,7 @@
 import axios from "axios"
 import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
-
+ 
 
 // ========================= OFFERS MANAGEMENT =========================
 
@@ -1030,7 +1030,7 @@ export const getReviewConditins = async (from_user_id, offer_id) => {
     return {
       success: true,
       data: {
-        can_review: !hasReviewed,
+        can_review: hasReviewed,
         has_reviewed: hasReviewed,
         existing_reviews: response.data.data || [],
       },

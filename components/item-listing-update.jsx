@@ -322,8 +322,8 @@ export function ItemListingUpdate({
                 </motion.p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+              <div className="grid gap-4 ">
+                <motion.div  whileTap="tap">
                   <Button
                     onClick={() => {
                       handleSubmit()
@@ -723,50 +723,64 @@ export function ItemListingUpdate({
               <Separator />
 
               {/* Allowed Categories */}
-              <div className="space-y-4">
+             <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="allowed_categories"
                   render={() => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">What will you accept in return?</FormLabel>
+                        <FormLabel className="text-base">
+                          {t("Whatwillyouacceptinreturn") || "What will you accept in return?"}
+                        </FormLabel>
                         <FormDescription>
-                          Select the categories of items you're willing to accept in exchange.
+                          {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange") ||
+                            "Select the categories of items you're willing to accept in exchange"}
                         </FormDescription>
                       </div>
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                        {allowedCat.map((category, index) => (
-                          <FormField
-                            key={category}
-                            control={form.control}
-                            name="allowed_categories"
-                            render={({ field }) => {
-                              return (
-                                <motion.div
+                        {allowedCategories.map((category) => {
+                          const isAll = category === "all"
+                          const selected = form.getValues("allowed_categories") || []
+                          const isAllSelected = selected.includes("all")
+
+                          return (
+                            <FormField
+                              key={category}
+                              control={form.control}
+                              name="allowed_categories"
+                              render={({ field }) => (
+                                <FormItem
                                   key={category}
-                                  className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3 hover:bg-muted/50 transition-colors"
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: index * 0.05 }}
-                                  whileHover={{ scale: 1.02 }}
+                                  className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3"
                                 >
                                   <FormControl>
                                     <Checkbox
                                       checked={field.value?.includes(category)}
+                                      disabled={!isAll && isAllSelected}
                                       onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, category])
-                                          : field.onChange(field.value?.filter((value) => value !== category))
+                                        if (isAll) {
+                                          field.onChange(checked ? ["all"] : [])
+                                        } else {
+                                          let newValue = field.value?.filter((v) => v !== "all") || []
+                                          if (checked) {
+                                            newValue = [...newValue, category]
+                                          } else {
+                                            newValue = newValue.filter((v) => v !== category)
+                                          }
+                                          field.onChange(newValue)
+                                        }
                                       }}
                                     />
                                   </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer">{category}</FormLabel>
-                                </motion.div>
-                              )
-                            }}
-                          />
-                        ))}
+                                  <FormLabel className="font-normal capitalize px-1">
+                                    {t(category) || category}
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          )
+                        })}
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -777,57 +791,7 @@ export function ItemListingUpdate({
           </div>
 
           {/* Submit Buttons */}
-          <motion.div
-            className="flex justify-end gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Button type="button" variant="outline" onClick={() => router.push("/profile")}>
-                Cancel
-              </Button>
-            </motion.div>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Button
-                type="submit"
-                className="bg-[#49c5b6] hover:bg-[#3db6a7] text-white font-semibold"
-                disabled={isSubmitting}
-              >
-                <AnimatePresence mode="wait">
-                  {isSubmitting ? (
-                    <motion.div
-                      key="updating"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center"
-                    >
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                        className="mr-2"
-                      >
-                        <Loader2 className="h-4 w-4" />
-                      </motion.div>
-                      Updating...
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="update"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center"
-                    >
-                      <Package className="mr-2 h-4 w-4" />
-                      Update Item
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button>
-            </motion.div>
-          </motion.div>
+       
         </form>
       </Form>
     </motion.div>

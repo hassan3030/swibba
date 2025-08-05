@@ -116,6 +116,7 @@ export function ItemListingForm() {
     allowedCategories: z
       .array(z.enum(allowedCategories))
       .min(1, t("Selectatleastonecategory") || "Select at least one category"),
+      price: z.number().min(1, t("Pricecannotbenegative") || "Price cannot be negative"),
   })
 
   const form = useForm({
@@ -137,54 +138,58 @@ export function ItemListingForm() {
   })
 
   const handleImageUpload = (e) => {
-    if (!e.target.files || e.target.files.length === 0) return
+    // Require all main form fields before allowing image upload
+    const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
+    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
+      toast({
+        title: t("error") || "ERROR ",
+        description: t("Pleasefillallitemdetailsbeforeuploadingimages") || "Please fill all item details before uploading images.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const newFiles = Array.from(e.target.files)
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const newFiles = Array.from(e.target.files);
 
     // Validate file size and type
     const validFiles = newFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
         toast({
           title: t("error") || "ERROR ",
-          description: `${t("File")} ${file.name} ${
-            t("istoolargeMaximumsizeis5MB") || "is too large. Maximum size is 5MB."
-          }`,
+          description: `${t("File")} ${file.name} ${(t("istoolargeMaximumsizeis5MB") || "is too large. Maximum size is 5MB.")}`,
           variant: "destructive",
-        })
-        return false
+        });
+        return false;
       }
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
         toast({
           title: t("error") || "ERROR ",
-          description: `${t("File")} ${file.name}  ${
-            t("hasanunsupportedformatPleaseuploadJPEGPNGorWebP") ||
-            "has an unsupported format. Please upload JPEG, PNG, or WebP."
-          }`,
+          description: `${t("File")} ${file.name} ${(t("hasanunsupportedformatPleaseuploadJPEGPNGorWebP") || "has an unsupported format. Please upload JPEG, PNG, or WebP.")}`,
           variant: "destructive",
-        })
-        return false
+        });
+        return false;
       }
-      return true
-    })
+      return true;
+    });
 
     // Check if adding these files would exceed the maximum
     if (images.length + validFiles.length > MAX_IMAGES) {
       toast({
         title: t("error") || "ERROR ",
-        description: `${t("Youcanuploadmaximumof") || "You can upload a maximum of"} ${MAX_IMAGES} ${
-          t("images") || "images"
-        }.`,
+        description: `${t("Youcanuploadmaximumof") || "You can upload a maximum of"} ${MAX_IMAGES} ${(t("images") || "images")}.`,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Create URLs for preview
-    const newImageUrls = validFiles.map((file) => URL.createObjectURL(file))
+    const newImageUrls = validFiles.map((file) => URL.createObjectURL(file));
 
-    setImages((prev) => [...prev, ...validFiles])
-    setImageUrls((prev) => [...prev, ...newImageUrls])
-  }
+    setImages((prev) => [...prev, ...validFiles]);
+    setImageUrls((prev) => [...prev, ...newImageUrls]);
+  };
 
   const removeImage = (index) => {
     // Revoke the object URL to avoid memory leaks
@@ -335,34 +340,42 @@ export function ItemListingForm() {
 
   const onSubmit = async (data, event) => {
     if (event) event.preventDefault();
+    const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
+    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
+      toast({
+        title: t("error") || "ERROR ",
+        description: t("Pleasefillallitemdetails") || "Please fill all item details before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (images.length === 0) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
         variant: "destructive",
-      })
-      console.log("No images uploaded")
+      });
       return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      await handleSubmit()
-      console.log("Form data:", data)
-      console.log("Images:", images)
+      await handleSubmit();
+      console.log("Form data:", data);
+      console.log("Images:", images);
       // No navigation or refresh here
     } catch (error) {
-      console.error("Error creating item:", error)
+      console.error("Error creating item:", error);
       toast({
         title: t("error") || "ERROR ",
         description: "Failed to create item. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const getCurrentPosition = () => {
     setIsGettingLocation(true)
@@ -721,86 +734,7 @@ export function ItemListingForm() {
 
             {/* Right column - Images and value */}
             <motion.div className="space-y-6" variants={itemVariants}>
-              <div className="space-y-2">
-                <h2 className="text-xl font-semibold">{t("ImagesValue") || "Images & Value"}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {t("Uploadclearphotosofyouritemandsetitsestimatedvalue") ||
-                    "Upload clear photos of your item and set its estimated value"}
-                </p>
-              </div>
-
-              {/* Image upload section */}
-              <div>
-                <FormLabel>{t("ItemImages") || "Item Images"}</FormLabel>
-                <div className="mt-2 grid grid-cols-3 gap-4">
-                  <AnimatePresence>
-                    {imageUrls.map((url, index) => (
-                      <motion.div
-                        key={index}
-                        variants={imageUploadVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
-                        whileHover="hover"
-                      >
-                        <Card className="relative overflow-hidden">
-                          <div className="aspect-square relative">
-                            <Image
-                              src={url || "/placeholder.svg"}
-                              alt={`Item image ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <motion.div
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="absolute right-1 top-1"
-                          >
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="h-6 w-6 rounded-full"
-                              onClick={() => removeImage(index)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </motion.div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-
-                  {images.length < MAX_IMAGES && (
-                    <motion.div variants={imageUploadVariants} initial="hidden" animate="visible" whileHover="hover">
-                      <Card className="flex aspect-square items-center justify-center">
-                        <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
-                          <label htmlFor="image-upload" className="cursor-pointer text-center">
-                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                              <Upload className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <p className="text-xs text-muted-foreground">{t("Clicktoupload") || "Click to upload"}</p>
-                            <input
-                              id="image-upload"
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp"
-                              multiple
-                              className="hidden"
-                              onChange={handleImageUpload}
-                            />
-                          </label>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  )}
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {t("Uploadupto") || "Upload up to"} {MAX_IMAGES} {t("images") || "images"} (JPEG, PNG, WebP, max 5MB
-                  each)
-                </p>
-              </div>
-
+              
               {/* Value estimation section */}
               <div className="space-y-4">
                 <FormField
@@ -937,36 +871,90 @@ export function ItemListingForm() {
                   )}
                 />
               </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold">{t("ImagesValue") || "Images & Value"}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("Uploadclearphotosofyouritemandsetitsestimatedvalue") ||
+                    "Upload clear photos of your item and set its estimated value"}
+                </p>
+              </div>
+
+              {/* Image upload section */}
+              <div>
+                <FormLabel>{t("ItemImages") || "Item Images"}</FormLabel>
+                <div className="mt-2 grid grid-cols-3 gap-4">
+                  <AnimatePresence>
+                    {imageUrls.map((url, index) => (
+                      <motion.div
+                        key={index}
+                        variants={imageUploadVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        whileHover="hover"
+                      >
+                        <Card className="relative overflow-hidden">
+                          <div className="aspect-square relative">
+                            <Image
+                              src={url || "/placeholder.svg"}
+                              alt={`Item image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="absolute right-1 top-1"
+                          >
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="h-6 w-6 rounded-full"
+                              onClick={() => removeImage(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </motion.div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {images.length < MAX_IMAGES && (
+                    <motion.div variants={imageUploadVariants} initial="hidden" animate="visible" whileHover="hover">
+                      <Card className="flex aspect-square items-center justify-center">
+                        <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
+                          <label htmlFor="image-upload" className="cursor-pointer text-center">
+                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                              <Upload className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">{t("Clicktoupload") || "Click to upload"}</p>
+                            <input
+                              id="image-upload"
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              multiple
+                              className="hidden"
+                              onChange={handleImageUpload}
+                            />
+                          </label>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("Uploadupto") || "Upload up to"} {MAX_IMAGES} {t("images") || "images"} (JPEG, PNG, WebP, max 5MB
+                  each)
+                </p>
+              </div>
             </motion.div>
+            
           </div>
 
-          {/* Submit buttons */}
-          <motion.div className="flex justify-end gap-4" variants={itemVariants}>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Button type="button" variant="outline" onClick={() => router.push("/profile")}>
-                {t("Cancel") || "Cancel"}
-              </Button>
-            </motion.div>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Button
-                type="submit"
-                className="bg-[#49c5b6] hover:bg-[#3db6a7]"
-                disabled={isSubmitting}
-                onClick={() => {
-                  handleSubmit()
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("CreateListing") || "Create Listing...."}
-                  </>
-                ) : (
-                  <>{t("CreateListing") || "Create Listing"}</>
-                )}
-              </Button>
-            </motion.div>
-          </motion.div>
+         
         </form>
       </Form>
     </motion.div>

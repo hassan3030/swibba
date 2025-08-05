@@ -1,5 +1,9 @@
 export const translations = {
   en: {
+
+     Pricecannotbenegative:"Price cannot be negative",
+   Pleasefillallitemdetailsbeforeuploadingimages: "Please fill all item details before uploading images.",
+
     // swap 
 
     Firstselectyouritemstoseeavailablecategories: "First select your items to see available categories",
@@ -637,6 +641,9 @@ export const translations = {
     developerAPIs: "Developer APIs",
   },
   ar: {
+     Pricecannotbenegative:"السعر لا يمكن أن يكون سالبًا",
+   Pleasefillallitemdetailsbeforeuploadingimages: "يرجى ملء جميع تفاصيل العنصر قبل تحميل الصور.",
+
     // swap 
     Firstselectyouritemstoseeavailablecategories: "حدد عناصر من مجموعتك أولاً لرؤية الفئات المتاحة",
     Youcanonlyselectitemsfrommatchingcategories: "يمكنك فقط اختيار العناصر من الفئات المطابقة",

@@ -16,6 +16,7 @@ import { getOfferById, getOfferItemsByOfferId, getOffersNotifications, getReview
 import { decodedToken, getCookie } from "@/callAPI/utiles"
 import Notifications from "@/app/notifications/page"
 import Cart from "@/app/cart/page"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Animation variants
 const containerVariants = {
@@ -111,6 +112,14 @@ const badgeVariants = {
     scale: 1.1,
     rotate: [0, -5, 5, 0],
     transition: { duration: 0.3 },
+  },
+  pulse: {
+    scale: [1, 1.05, 1],
+    transition: {
+      duration: 2,
+      repeat: Number.POSITIVE_INFINITY,
+      ease: "easeInOut",
+    },
   },
 }
 
@@ -263,7 +272,9 @@ export default function ProfilePage() {
     if (user) {
       handleGetBreviousRating(user.id)
       setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}`)
-      setFullName(`${user.first_name} ${user.last_name}`)
+      setFullName(`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")} 
+            ${(String(user?.last_name).length <= 11 ? (String(user?.last_name)) : (String(user?.last_name).slice(0, 10)) )|| ""}`.trim()
+          )
     }
   }, [user])
   // -------------------------------------
@@ -402,49 +413,69 @@ export default function ProfilePage() {
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-              <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl shadow-lg">
-                {[
-                  { value: "items", icon: Package, label: t("yourProducts"), count: myAvailableItems.length },
-                  {
-                    value: "unavailableItems",
-                    icon: Star,
-                    label: t("itemsInOffers") || "Items In Offers",
-                    count: myUnavailableItems.length,
-                  },
-                  { value: "offers", icon: Clock, label: t("offers") || "Offers", count: userOffers.length },
-                  {
-                    value: "notifications",
-                    icon: BellDot,
-                    label: t("notifications") || "Notifications",
-                    count: notificationsLength,
-                  },
-                ].map((tab, index) => (
-                  <motion.div
-                    key={tab.value}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                  >
-                    <TabsTrigger
-                      value={tab.value}
-                      className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all duration-300"
-                    >
-                      <tab.icon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{tab.label}</span>
-                      <motion.span
-                        className="ml-1 rounded-full bg-[#49c5b6] text-white px-2 py-0.5 text-xs font-bold"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.8 + index * 0.1, type: "spring" }}
-                      >
-                        {tab.count}
-                      </motion.span>
-                    </TabsTrigger>
-                  </motion.div>
-                ))}
-              </TabsList>
+              <div className="w-full bg-gradient-to-r p-2 from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900  rounded-xl shadow-lg">
+                <TabsList className="grid w-full grid-cols-4 bg-transparent  rounded-xl overflow-hidden ">
+                  {[
+                    { value: "items", icon: Package, label: t("yourProducts"), count: myAvailableItems.length },
+                    {
+                      value: "unavailableItems",
+                      icon: Star,
+                      label: t("itemsInOffers") || "Items In Offers",
+                      count: myUnavailableItems.length,
+                    },
+                    { value: "offers", icon: Clock, label: t("offers") || "Offers", count: userOffers.length },
+                    {
+                      value: "notifications",
+                      icon: BellDot,
+                      label: t("notifications") || "Notifications",
+                      count: notificationsLength,
+                    },
+                  ].map((tab, index) => (
+                    <TooltipProvider key={tab.value} >
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 + index * 0.1 }}
+                            className="w-full"
+                          >
+                            <TabsTrigger
+                              value={tab.value}
+                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all duration-300 w-full min-w-0 relative group bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
+                            >
+                              <tab.icon className="h-4 w-4 flex-shrink-0" />
+                              <span className="hidden md:inline text-xs lg:text-sm font-medium truncate">
+                                {tab.label}
+                              </span>
+                              <motion.span
+                                className="ml-auto rounded-full bg-[#49c5b6] text-white px-1.5 py-0.5 text-xs font-bold flex-shrink-0 min-w-[20px] text-center"
+                                initial={{ scale: 0 }}
+                                variants={badgeVariants}
+                                whileHover="hover"
+                                animate={tab.count > 0 ? "pulse" : "visible"}
+                                transition={{ delay: 0.8 + index * 0.1, type: "spring" }}
+                              >
+                                {tab.count}
+                              </motion.span>
+                              {/* Mobile indicator for active state */}
+                              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-[#49c5b6] rounded-full opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300 md:hidden" />
+                            </TabsTrigger>
+                          </motion.div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-[#49c5b6] text-white lg:hidden text-xs z-50">
+                          <div className="flex flex-col gap-1">
+                            <p className="font-medium">{tab.label}</p>
+                            <p className="text-white">{tab.count} items</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </TabsList>
+              </div>
             </motion.div>
 
             <AnimatePresence mode="wait">

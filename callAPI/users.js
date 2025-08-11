@@ -374,6 +374,113 @@ export const getUserByProductId = async (productId) => {
   }
 };
 
+// // Edit profile with enhanced validation and authentication
+// export const editeProfile = async (userData, authId, avatar = null) => {
+//   try {
+//     return await makeAuthenticatedRequest(async () => {
+//       const decoded = await decodedToken()
+//       if (!decoded?.id) {
+//         throw new Error("Authentication required")
+//       }
+//       if (decoded.id !== authId) {
+//         throw new Error("Unauthorized: Cannot edit another user's profile")
+//       }
+//       const token = await getCookie()
+//       if (!token) {
+//         throw new Error("Authentication token not found")
+//       }
+//       const updateData = { ...userData }
+//       // Remove avatar if it's not a string (ID)
+// if ('avatar' in updateData && (typeof updateData.avatar !== 'string' || !updateData.avatar)) {
+//   delete updateData.avatar;
+// }
+//       const response = await axios.patch(`${baseURL}/users/${decoded.id}`, updateData, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       })
+//       if (avatar) {
+//           // Remove old avatar if exists
+//           const currentUser = await getUserById(decoded.id)
+//           if (currentUser.success && currentUser.data.avatar) {
+//             await axios.delete(`${baseURL}/files/${currentUser.data.avatar}`, {
+//               headers: { Authorization: `Bearer ${token}` },
+//             })
+//           }
+//        else {
+// // Upload new avatar
+//           const formData = new FormData()
+//           formData.append("file", avatar)
+
+//           const avatarResponse = await axios.post(`${baseURL}/files`, formData, {
+//             headers: {
+//               Authorization: `Bearer ${token}`,
+//               "Content-Type": "multipart/form-data",
+//             },
+//           })
+//        }       
+//       }
+//       console.log("Profile updated successfully")
+//       return {
+//         success: true,
+//         data: response.data.data,
+//         avatar: avatarResponse?.data.data,
+//         message: "Profile updated successfully",
+//       }
+//     })
+//   } catch (error) {
+//     return handleApiError(error, "Edit Profile")
+//   }
+// }
+
+// // ----------------------------------
+// export const editeProfileImage = async (authId, avatar = null) => {
+//   try {
+//     if (!authId) {
+//       throw new Error("Authentication ID is required");
+//     }
+
+//     const token = await getCookie();
+//     const decoded = await decodedToken();
+//     if (!token) {
+//       throw new Error("Authentication token not found");
+//     }
+
+// // Remove old avatar if exists
+//           const currentUser = await getUserById(decoded.id)
+//           if (currentUser.success && currentUser.data.avatar) {
+//             await axios.delete(`${baseURL}/files/${currentUser.data.avatar}`, {
+//               headers: { Authorization: `Bearer ${token}` },
+//             })
+//           }
+
+
+//     if (avatar) {
+//       const formData = new FormData();
+//       formData.append("file", avatar);
+
+//       const avatarResponse = await axios.post(`${baseURL}/files`, formData, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "multipart/form-data",
+//         },
+//       });
+
+//       console.log("Profile image updated successfully");
+//       return {
+//         success: true,
+//         data: avatarResponse.data.data,
+//         message: "Profile image updated successfully",
+//       };
+//     } else {
+//       throw new Error("No avatar file provided");
+//     }
+//   } catch (error) {
+//     return handleApiError(error, "Edit Profile Image");
+//   }
+// }
+// // ----------------------------------
 // Edit profile with enhanced validation and authentication
 export const editeProfile = async (userData, authId, avatar = null) => {
   try {
@@ -439,6 +546,8 @@ export const editeProfile = async (userData, authId, avatar = null) => {
     return handleApiError(error, "Edit Profile")
   }
 }
+
+
 
 // Reset password with validation
 export const resetPassword = async (newPassword, email) => {

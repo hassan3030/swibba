@@ -471,13 +471,7 @@ const Notifications = () => {
                             <CircleDot className="w-3 h-3" />
                             {t("Offerstate") || "Offer state"}: {t(offer.status_offer)}
                           </div>
-                          {offer.name ? (
-                            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 capitalize">
-                              {t("OfferName") || "Offer Name"}: {offer.name}
-                            </div>
-                          ) : (
-                            ""
-                          )}
+                         
                         </motion.div>
 
                         <motion.div
@@ -508,7 +502,8 @@ const Notifications = () => {
 
                           <div>
                             <div className="font-semibold text-base">
-                              {userSwaps.find((u) => u.id === offer.from_user_id)?.first_name || t("User") || "User"}
+                              {`${(String(userSwaps.find((u) => u.id === offer.from_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.from_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.from_user_id)?.first_name).slice(0, 10)) )|| t("account")} 
+                             `}
                             </div>
                           </div>
                         </motion.div>
@@ -522,10 +517,21 @@ const Notifications = () => {
                         >
                           <div className="flex items-center space-x-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
+
+{/* 
+{user?.country &&  user?.city && user?.street? "":  `${t("noAddress") || "No address provided"}`}
+                      {`${user?.country || ''} ${user?.city || ''} ${user?.street || ''}`} */}
+
+
                             <span className="text-sm">
-                              {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country}, ${
-                                userSwaps.find((u) => u.id === offer.from_user_id)?.city
-                              }, ${userSwaps.find((u) => u.id === offer.from_user_id)?.street}`}
+                              {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country||''} ${
+                                userSwaps.find((u) => u.id === offer.from_user_id)?.city||''
+                              } ${userSwaps.find((u) => u.id === offer.from_user_id)?.street||''}`}
+
+                              {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country &&
+                                userSwaps.find((u) => u.id === offer.from_user_id)?.city &&
+                                userSwaps.find((u) => u.id === offer.from_user_id)?.street? "": `${t("noAddress") || "No address provided"}`
+                              }`}
                             </span>
                           </div>
                         </motion.div>
@@ -665,7 +671,11 @@ const Notifications = () => {
                                     className="flex-1"
                                   />
                                   <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                    <Button onClick={() => handleSendMessage(offer.from_user_id, offer.id)} size="icon">
+                                    <Button onClick={() => handleSendMessage(offer.from_user_id, offer.id)} 
+                                    size="icon"
+                                    disabled={!message.trim()}
+                                    className="mr-1"
+                                    >
                                       <Send className="h-4 w-4" />
                                     </Button>
                                   </motion.div>
@@ -716,7 +726,9 @@ const Notifications = () => {
                                 from_user_id={myUserId}
                                 to_user_id={userToRate.id}
                                 offer_id={offer.id}
-                                userName={`${userToRate.first_name || ""} ${userToRate.last_name || ""}`}
+                                userName={`${(String(userToRate.first_name).length <= 11 ? (String(userToRate.first_name)) : (String(userToRate.first_name).slice(0, 10)) )|| t("account")} 
+                                ${(String(userToRate.last_name).length <= 11 ? (String(userToRate.last_name)) : (String(userToRate.last_name).slice(0, 10)) )|| ""}`.trim()
+                                }
                                 userAvatar={
                                   userToRate.avatar
                                     ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userToRate.avatar}`

@@ -161,36 +161,15 @@ const Messages = () => {
   }
 
   return (
-    <motion.div
-      className="min-h-screen bg-background"
+    <>
+  <motion.div
+      className="min-h-full bg-background"
+      style={{ minHeight: "calc(100vh - 80px)", height: "calc(100vh - 80px)", overflowY: "hidden" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header */}
-      <motion.header
-        className="border-b bg-card/50 backdrop-blur-sm top-0 z-50"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href={"/"} className="text-2xl font-bold text-primary">
-                  DEELDEAL
-                </Link>
-              </motion.div>
-              <Badge variant="outline" className="hidden sm:inline-flex">
-                {t("Messages") || "Messages"}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </motion.header>
-
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex h-full">
         {/* Offers List */}
         <motion.div
           className={`${selectedOffer ? "hidden lg:block" : "block"} w-full lg:w-1/3 border-r bg-card/30`}
@@ -244,7 +223,7 @@ const Messages = () => {
                         }`}
                         onClick={() => setSelectedOffer(offer)}
                       >
-                        <CardContent className="p-4">
+                        <CardContent className="p-0 mt-0">
                           <div className="flex items-start space-x-3">
                             <div className="flex items-center text-sm">
                               <motion.div
@@ -357,57 +336,58 @@ const Messages = () => {
                 </div>
               </motion.div>
 
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
-                  <AnimatePresence>
-                    {messages.map((msg, index) => (
-                      <motion.div
-                        key={msg.id}
-                        variants={chatMessageVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className={`flex ${msg.from_user_id === myUserId ? "justify-end" : "justify-start"}`}
-                      >
+              {/* Chat messages area with space for input */}
+              <div className="flex flex-col h-[calc(100vh-270px)]">
+                <ScrollArea className="flex-1 p-4 overflow-y-auto">
+                  <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                    <AnimatePresence>
+                      {messages.map((msg, index) => (
                         <motion.div
-                          className={`max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 ${
-                            msg.from_user_id === myUserId ? "bg-primary text-primary-foreground" : "bg-muted"
-                          }`}
-                          whileHover={{ scale: 1.02 }}
-                          transition={{ type: "spring", stiffness: 400 }}
+                          key={msg.id}
+                          variants={chatMessageVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          className={`flex ${msg.from_user_id === myUserId ? "justify-end" : "justify-start"}`}
                         >
-                          <div className="text-sm">{msg.message}</div>
-                          <div className="text-xs opacity-70 mt-1">{new Date(msg.date_created).toLocaleString()}</div>
+                          <motion.div
+                            className={`max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 ${
+                              msg.from_user_id === myUserId ? "bg-primary text-primary-foreground" : "bg-muted"
+                            }`}
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                          >
+                            <div className="text-sm">{msg.message}</div>
+                            <div className="text-xs opacity-70 mt-1">{new Date(msg.date_created).toLocaleString()}</div>
+                          </motion.div>
                         </motion.div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-              </ScrollArea>
-
-              {/* Message Input */}
-              <motion.div
-                className="p-4 border-t bg-card/30"
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder={t("Typeyourmessage") || "Type your message..."}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    className="flex-1"
-                  />
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button onClick={handleSendMessage} size="icon">
-                      <Send className="h-4 w-4" />
-                    </Button>
+                      ))}
+                    </AnimatePresence>
                   </motion.div>
+                </ScrollArea>
+                {/* Static message input at the end */}
+                <div className="w-full flex justify-center p-4 border-t bg-card/30">
+                  <div className="flex space-x-2 max-w-3xl w-full">
+                    <Input
+                      placeholder={t("Typeyourmessage") || "Type your message..."}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                      className="flex-1"
+                    />
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} >
+                      <Button
+                        onClick={handleSendMessage}
+                        size="icon"
+                        disabled={!message.trim()}
+                        className="mr-2"
+                      >
+                        <Send className="h-4 w-4 " />
+                      </Button>
+                    </motion.div>
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             </>
           ) : (
             <motion.div
@@ -440,6 +420,9 @@ const Messages = () => {
         </motion.div>
       </div>
     </motion.div>
+
+    </>
+  
   )
 }
 

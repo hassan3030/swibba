@@ -7,11 +7,6 @@ export async function middleware(req) {
  
    const token = req.cookies.get('Token')?.value;
 
-  // Protect /admin
-  if (!token && req.nextUrl.pathname.startsWith('/admin')) {
-    return NextResponse.redirect(new URL('/auth/login', req.url));
-  }
-
   // Protect /cart
   if (!token && req.nextUrl.pathname.startsWith('/cart')) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
@@ -41,19 +36,27 @@ export async function middleware(req) {
   if (!token && req.nextUrl.pathname.startsWith('/wishList')) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }
-  
+   // Protect /auth/login when already logged in
+   if (token && req.nextUrl.pathname.startsWith('/auth/login')) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
+   // Protect /auth/login when already logged in
 
+ if (token && req.nextUrl.pathname.startsWith('/auth/register')) {
+  
+    return NextResponse.redirect(new URL('/', req.url));
+  }
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-             '/admin/:path*', 
             '/cart/:path*',
              '/chat/:path*',
              '/notifications/:path*',
              '/swap/:path*',
              '/wishList/:path*',
              '/profile/:path*',
+             '/auth/:path*',
             ],
 };

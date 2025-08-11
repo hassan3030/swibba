@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
 import { decodedToken, getCookie } from "@/callAPI/utiles"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import RTLWrapper from "@/components/rtl-wrapper"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
 import { getCurrentUserId, removeTarget } from "@/callAPI/utiles"
@@ -293,34 +294,16 @@ export default function SwapPage() {
   }
 
   return (
-    <motion.div
+
+   
+ <motion.div
       className="min-h-screen bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header */}
-      <motion.header
-        className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-0"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href="/" className="text-2xl font-bold text-primary">
-                  {t("SwapSpace") || "SwapSpace"}
-                </Link>
-              </motion.div>
-              <Badge variant="outline" className="hidden sm:inline-flex">
-                {t("Swap") || "Swap"}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </motion.header>
+  
+    
 
       {sameUser[0] !== sameUser[1] ? (
         <>
@@ -348,50 +331,10 @@ export default function SwapPage() {
               <TabsContent value="swap">
                 <motion.div variants={containerVariants} initial="hidden" animate="visible">
                   {/* Category Hint */}
-                  <AnimatePresence>
-                    {showHint && allowedCategories.length > 0 && (
-                      <motion.div variants={cardVariants} initial="hidden" animate="visible" exit="exit" className="mb-6">
-                        <Card className="border-blue-200 bg-blue-50 hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex items-center space-x-2">
-                              <motion.div
-                                animate={{ rotate: [0, 10, -10, 0] }}
-                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                              >
-                                <Info className="h-5 w-5 text-blue-600" />
-                              </motion.div>
-                              <div>
-                                <p className="text-sm font-medium text-blue-800">
-                                  {t("Availablecategoriesforswapping") || "  Available categories for swapping:"}
-                                </p>
-                                <motion.div
-                                  className="flex flex-wrap gap-2 mt-2"
-                                  variants={containerVariants}
-                                  initial="hidden"
-                                  animate="visible"
-                                >
-                                  {allowedCategories.map((category, index) => (
-                                    <motion.div
-                                      key={category}
-                                      variants={itemVariants}
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                    >
-                                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                        {category}
-                                      </Badge>
-                                    </motion.div>
-                                  ))}
-                                </motion.div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                 
 
                   {/* Selection Rules Info */}
+                  
                   <motion.div variants={cardVariants}>
                     <Card className="mb-6 border-yellow-200 bg-yellow-50 hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
@@ -452,8 +395,8 @@ export default function SwapPage() {
                                 >
                                   {selectedMyItems.length}
                                 </motion.div>
-                                <div className="text-sm text-muted-foreground">{t("YourItems") || "Your Items"}</div>
-                                <div className="text-lg font-semibold">{mySelectedValue}LE</div>
+                                <div className="text-sm text-muted-foreground">{t("yourItems") || "Your Items"}</div>
+                                <div className="text-lg font-semibold">{Number(mySelectedValue).toLocaleString()} LE</div>
                               </motion.div>
 
                               <motion.div
@@ -472,8 +415,8 @@ export default function SwapPage() {
                                 >
                                   {selectedOtherItems.length}
                                 </motion.div>
-                                <div className="text-sm text-muted-foreground">{t("TheirItems") || "Their Items"}</div>
-                                <div className="text-lg font-semibold">{otherSelectedValue}LE</div>
+                                <div className="text-sm text-muted-foreground">{t("Theiritems") || "Their Items"}</div>
+                                <div className="text-lg font-semibold">{Number(otherSelectedValue).toLocaleString()} LE</div>
                               </motion.div>
                             </motion.div>
 
@@ -496,52 +439,11 @@ export default function SwapPage() {
                                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                               >
                                 {priceDifference > 0 ? "+" : ""}
-                                {priceDifference}LE
+                                {Number(priceDifference).toLocaleString()} LE
                                 {priceDifference > 0 && <span className="text-sm ml-1">({t("Yougain") || "You gain"})</span>}
                                 {priceDifference < 0 && <span className="text-sm ml-1">({t("Youpayextra") || "You pay extra"})</span>}
                                 {priceDifference === 0 && <span className="text-sm ml-1">({t("Equalvalue") || "Equal value"})</span>}
                               </motion.div>
-                            </motion.div>
-
-                            {/* Swap name */}
-                            <motion.div
-                              className="flex space-x-3 my-2"
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.4 }}
-                            >
-                              <Input
-                                placeholder={t("SwapName") || "Swap Name is optional"}
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="flex-1"
-                              />
-                            </motion.div>
-
-                            {/* Chat Section */}
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.5 }}
-                            >
-                              <Card className="mb-6 hover:shadow-md transition-shadow">
-                                <CardHeader>
-                                  <CardTitle className="flex items-center">
-                                    <MessageCircle className="h-5 w-5 mr-2" />
-                                    Chat with Swap Partners
-                                  </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                  <div className="flex space-x-2">
-                                    <Input
-                                      placeholder={t("Typeyourmessageforyourswappartners") || "Type your message for the swap partners"}
-                                      value={message}
-                                      onChange={(e) => setMessage(e.target.value)}
-                                      className="flex-1"
-                                    />
-                                  </div>
-                                </CardContent>
-                              </Card>
                             </motion.div>
 
                             <motion.div
@@ -832,6 +734,9 @@ export default function SwapPage() {
       )}
 
     </motion.div>
+
+
+   
   )
 }
 

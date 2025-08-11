@@ -1,14 +1,22 @@
-
-import { Inter } from "next/font/google"
-// import { AuthProvider } from "@/lib/auth-context"
-// import { AuthGuard } from "@/components/auth/auth-guard"
+import { Inter , Cairo } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { LanguageProvider } from "@/lib/language-provider"
+import { headers } from "next/headers";
 import "./globals.css"
+
 const inter = Inter({ subsets: ["latin"] })
+
+// Configure Cairo font for both Arabic and Latin text
+const cairo = Cairo({ 
+  subsets: ["latin", "arabic"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-cairo",
+  display: "swap"
+})
+
 export const metadata = {
   title: "DeelDeal",
   description: "A marketplace platform where users can swap items across categories",
@@ -20,29 +28,20 @@ export const metadata = {
 }
 
 export default async function  RootLayout({ children }) {
-  //   const session = await getServerSession(authOptions);
+  const pathname = headers().get("/chat");
 
-  // if (!session) {
-  //   return <p>⛔ Access Denied: You must be logged in.</p>;
-  // }
   return (
-    <html lang="en">
-    
-      <body className={inter.className} >
-
+    <html lang="ar" className={cairo.variable} dir="ltr">
+      <body className={cairo.className}>
    <ThemeProvider>
           <LanguageProvider>
-            {/* <AuthProvider> */}
-              {/* <AuthGuard> */}
                 <div className="flex min-h-screen flex-col">
                   <Header />
-           
                   <div className="flex-1">{children}</div>
-                  <Footer />
+                  {/* handle it  */}
+                  {pathname==null ?(<Footer />):null}
                 </div>
                 <Toaster />
-              {/* </AuthGuard> */}
-            {/* </AuthProvider> */}
           </LanguageProvider>
         </ThemeProvider>
 

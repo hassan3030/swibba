@@ -69,8 +69,8 @@ const [bigImage , setBigImage] =  useState('')
                           </div>
                           <p className="text-sm text-muted-foreground">{item.description}</p>
                           <div className="mt-1 flex items-center justify-between">
-                            <p className="font-semibold">${item.price}</p>
-        
+                            <p className="font-semibold">${Number(item.price).toLocaleString('en-US')}</p>
+
                           </div>
                         </div>
                       </div>

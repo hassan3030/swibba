@@ -244,8 +244,8 @@ export function ItemCardProfile({
               transition={{ delay: 0.2 }}
             >
               <span className="px-1">{t("aIExpectedPrice")}: </span>
-              <span className="px-1"> LE</span>
-              <span className="px-1"> {value_estimate}</span>
+         
+              <span className="px-1"> {Number(value_estimate).toLocaleString('en-US')} LE</span>
             </motion.div>
 
             <motion.p
@@ -263,7 +263,7 @@ export function ItemCardProfile({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              {t("price")}: {price}LE
+              {t("price")}: {Number(price).toLocaleString('en-US')} LE
             </motion.div>
           </CardContent>
 

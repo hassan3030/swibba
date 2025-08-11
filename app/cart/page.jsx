@@ -549,13 +549,7 @@ const Cart = () => {
                               <CircleDot className="w-3 h-3" />
                               {t("Offerstate") || "Offer state"} : {t(offer.status_offer)}
                             </div>
-                            {offer.name ? (
-                              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 capitalize">
-                                {t("OfferName") || "Offer Name"} : {offer.name}
-                              </div>
-                            ) : (
-                              ""
-                            )}
+                           
                           </motion.div>
                         )}
                       </CardHeader>
@@ -596,7 +590,30 @@ const Cart = () => {
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.3 }}
                             >
-                              <h4 className="font-semibold mb-2">{t("Theiritems") || "Their Items"}</h4>
+                               <div className="flex items-center gap-3 my-2 md:mt-0">
+                            <Avatar className="h-10 w-10 border">
+                              <AvatarImage
+                                src={
+                                  `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
+                                    userSwaps.find((u) => u.id === offer.to_user_id)?.avatar || "/placeholder.svg"
+                                  }` || "/placeholder.svg"
+                                }
+                                alt={
+                                  userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"
+                                }
+                              />
+                              <AvatarFallback>
+                                {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-semibold text-base capitalize">
+                                {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).slice(0, 10)) )|| t("account")} `}
+                              </div>
+                            </div>                            
+                          </div>
+                          {/* <Separator/> */}
+                              {/* <h4 className="font-semibold mb-2">{t("Theiritems") || "Their Items"}</h4> */}
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                                 {swapItems
                                   .filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id)
@@ -661,7 +678,10 @@ const Cart = () => {
                                   from_user_id={myUserId}
                                   to_user_id={userToRate.id}
                                   offer_id={offer.id}
-                                  userName={`${userToRate.first_name || ""} ${userToRate.last_name || ""}`}
+                                  userName={ 
+                                    `${(String(userToRate.first_name).length <= 11 ? (String(userToRate.first_name)) : (String(userToRate.first_name).slice(0, 10)) )|| t("account")} 
+                                    ${(String(userToRate.last_name).length <= 11 ? (String(userToRate.last_name)) : (String(userToRate.last_name).slice(0, 10)) )|| ""}`.trim()
+                                  }
                                   userAvatar={
                                     userToRate.avatar
                                       ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userToRate.avatar}`
@@ -703,28 +723,7 @@ const Cart = () => {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.4 }}
                         >
-                          <div className="flex items-center gap-3 mt-2 md:mt-0">
-                            <Avatar className="h-10 w-10 border">
-                              <AvatarImage
-                                src={
-                                  `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
-                                    userSwaps.find((u) => u.id === offer.to_user_id)?.avatar || "/placeholder.svg"
-                                  }` || "/placeholder.svg"
-                                }
-                                alt={
-                                  userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"
-                                }
-                              />
-                              <AvatarFallback>
-                                {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-semibold text-base capitalize">
-                                {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"}
-                              </div>
-                            </div>                            
-                          </div>
+                         
                         
 
                           {offer.status_offer === "pending" ? (

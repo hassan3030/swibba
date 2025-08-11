@@ -11,8 +11,8 @@ export default function RegisterPage() {
   return (
     <div className="container flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-10">
       <Link href="/" className="mb-8 flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-              {t("Backtomarketplace")||"Back to marketplace"}
+        <ArrowLeft className="mr-2 h-4 w-4 mx-1 " />
+              {t("back")||"Back to home"}
       </Link>
 
       <Card className="mx-auto w-full max-w-md">

@@ -17,6 +17,10 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        cairo: ["var(--font-cairo)", "sans-serif"],
+        sans: ["var(--font-cairo)", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -71,7 +75,35 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      // RTL-specific spacing utilities
+      spacing: {
+        'rtl-safe': 'env(safe-area-inset-right)',
+        'rtl-safe-left': 'env(safe-area-inset-left)',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // Custom RTL plugin
+    function({ addUtilities, theme }) {
+      const rtlUtilities = {
+        '.rtl-safe': {
+          'margin-right': 'env(safe-area-inset-right)',
+          'margin-left': 'env(safe-area-inset-left)',
+        },
+        '.rtl-safe-padding': {
+          'padding-right': 'env(safe-area-inset-right)',
+          'padding-left': 'env(safe-area-inset-left)',
+        },
+        '.rtl-flip': {
+          'transform': 'scaleX(-1)',
+        },
+        '.rtl-preserve': {
+          'direction': 'ltr',
+          'text-align': 'left',
+        },
+      }
+      addUtilities(rtlUtilities)
+    }
+  ],
 }

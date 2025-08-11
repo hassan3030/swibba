@@ -308,7 +308,7 @@ export function DeelProductCard({
             <motion.div className="mb-2" variants={priceVariants}>
               <div className="flex items-baseline gap-1">
                 <motion.span className="text-lg font-bold" whileHover="pulse" variants={priceVariants}>
-                  {price}LE
+                  {Number(price).toLocaleString('en-US')} LE
                 </motion.span>
               </div>
             </motion.div>

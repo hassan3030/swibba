@@ -1,12 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
 
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2 , Mail , Lock} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -192,6 +192,7 @@ export function LoginForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <motion.div className="space-y-2" variants={itemVariants}>
           <label htmlFor="email" className="text-sm font-medium">
+           <Mail className="h-4 w-4 text-[#f2b230] inline-block mx-1" />
             {t("email") || "Email"}
           </label>
           <motion.div variants={inputVariants} animate={isFocused.email ? "focus" : ""} transition={{ duration: 0.2 }}>
@@ -223,6 +224,7 @@ export function LoginForm() {
         <motion.div className="space-y-2" variants={itemVariants}>
           <div className="flex items-center justify-between">
             <label htmlFor="password" className="text-sm font-medium">
+                <Lock className="h-4 w-4 text-[#f2b230] inline-block mx-1" />
               {t("password") || "Password"}
             </label>
             <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
@@ -275,8 +277,8 @@ export function LoginForm() {
         </motion.div>
 
         <motion.div className="flex items-center space-x-2" variants={itemVariants}>
-          <Checkbox id="rememberMe" {...register("rememberMe")} />
-          <label htmlFor="rememberMe" className="text-sm font-normal">
+          <Checkbox id="rememberMe" {...register("rememberMe")} className="mx-1" />
+          <label htmlFor="rememberMe" className="text-sm font-normal mx-1">
             {t("rememberMe") || "Remember me for 30 days"}
           </label>
         </motion.div>

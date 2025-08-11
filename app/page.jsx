@@ -10,7 +10,6 @@ import { CategoryCard } from "@/components/category-card"
 import { ProductCarousel } from "@/components/product-carousel"
 import { DeelProductCardSkeleton } from "@/components/DeelProductCardSkeleton"
 import  FloatingActionButton  from "@/components/floating-action-button"
-import { HeroSlider } from "@/components/hero-slider"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
 import { categories } from "@/lib/data"
@@ -388,17 +387,7 @@ export default function Home() {
 
         {/* Hero Section */}
         <HeroSection/>
-        {/* <motion.section 
-          className="container py-6 relative z-10"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ y: y1 }}
-        >
-          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-            <HeroSlider />
-          </motion.div>
-        </motion.section> */}
+       
 
         {/* Enhanced Stats Section */}
         <motion.section

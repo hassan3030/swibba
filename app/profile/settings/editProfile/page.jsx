@@ -35,7 +35,7 @@ import { useTheme } from "@/lib/theme-provider"
 import { useToast } from "@/components/ui/use-toast"
 import { ItemListingForm } from "@/components/item-listing-form"
 import { z } from "zod"
-
+import { countriesList } from "@/lib/data"
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -157,10 +157,10 @@ const buttonVariants = {
 export default function ProfileSettingsPage() {
   // -----------------------------------------
   const { toast } = useToast()
-
   const [currentEmail, setCurrentEmail] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false);
 
   const updatePassword = async () => {
     if (!newPassword || !confirmPassword) {
@@ -211,10 +211,10 @@ export default function ProfileSettingsPage() {
 
   const router = useRouter()
   const [user, setUser] = useState({})
-
   const [avatar, setAvatar] = useState(null)
   const [avatarPath, setAvatarPath] = useState("")
   const [first_name, setFirstName] = useState("")
+  const [email, setEmail] = useState("")
   const [last_name, setLasttName] = useState("")
   const [gender, setGender] = useState("")
   const [phone_number, setPhone] = useState("")
@@ -244,9 +244,17 @@ export default function ProfileSettingsPage() {
       .min(8, t("PhoneIsShort") || "Phone number is too short")
       .max(20, t("PhoneIsLong") || "Phone number is too long")
       .regex(/^\+?\d{8,20}$/, t("invalidNumber") || "Invalid phone number"),
+      first_name: z
+      .string()
+      .min(1, t("firstname") || "First name is required")
+      .max(20, t("firstnameIsLong") || "First name is too long"),
+      last_name: z
+      .string()
+      .min(1, t("lastname") || "Last name is required")
+      .max(20, t("lastnameIsLong") || "Last name is too long"),
   })
 
-  const result = profileSchema.safeParse({ phone_number })
+  const result = profileSchema.safeParse({ phone_number ,first_name,last_name})
 
   const userCollectionData = {}
   if (first_name) userCollectionData.first_name = first_name
@@ -274,17 +282,18 @@ export default function ProfileSettingsPage() {
   }, [])
 
   useEffect(() => {
-    setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}`)
-    setFirstName(user.first_name || "")
-    setLasttName(user.last_name || "")
+    setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user?.avatar}` || "/placeholder-user.jpg")
+    setFirstName(user?.first_name || "")
+    setLasttName(user?.last_name || "")
     setGender(user?.gender || "")
-    setPhone(user.phone_number || "")
-    setDescription(user.description || "")
+    setPhone(user?.phone_number || "")
+    setDescription(user?.description || "")
     setCountry(user?.country || "")
     setCity(user?.city || "")
     setStreet(user?.street || "")
     setPostCode(user?.post_code || "")
     set_geo_location(user?.geo_location || {})
+    setEmail(user?.email || "")
   }, [user])
 
   const [formData, setFormData] = useState({
@@ -309,29 +318,47 @@ export default function ProfileSettingsPage() {
     setFormData((prev) => ({ ...prev, [name]: checked }))
   }
 
+  const isDataChanged = Object.keys(userCollectionData).some(
+    key => userCollectionData[key] !== user[key]
+  );
+
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!isDataChanged && !avatar) {
+      toast({
+        title: t("noChangeSaved") || "No changes to save",
+        description: t("Youhavenotupdatedanyfield") || "You have not updated any field.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     if (!userCollectionData || Object.keys(userCollectionData).length === 0) {
       toast({
         title: "Warning",
         description: t("noChangeSaved") || "No changes to save",
         variant: "destructive",
-      })
+      });
+      setIsLoading(false);
     } else {
       if (!result.success) {
         toast({
           title: "Warning",
-          description: t("phoneNumberNotValidate") || "Phone number not valid",
+          description: t(result.error.errors[0].message) || "Phone number not valid",
           variant: "destructive",
-        })
+        });
+        setIsLoading(false);
       } else {
-        await editeProfile(userCollectionData, user.id, avatar)
-        router.refresh()
-
+        await editeProfile(userCollectionData, user.id, avatar);
+        router.refresh();
         toast({
           title: t("successfully") || "Success",
           description: t("savedSuccessfully") || "Settings saved successfully!",
-        })
+        });
+        setIsLoading(false);
       }
     }
   }
@@ -525,13 +552,29 @@ export default function ProfileSettingsPage() {
                               variants={avatarVariants}
                               whileHover="hover"
                             >
-                              <Image
-                                src={avatarPath || "/placeholder.svg"}
-                                alt={user?.first_name || "Unknown"}
-                                width={96}
-                                height={96}
-                                className="h-full w-full object-cover"
-                              />
+                              {avatarPath && user?.avatar ? (
+                                <Image
+                                  src={avatarPath}
+                                  alt={`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}`}
+                                 
+                                  width={96}
+                                  height={96}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center h-full w-full bg-gray-100">
+                                  <Image
+                                    src="/placeholder-user.jpg"
+                                    alt={t("NoAvatar") || "No Avatar"}
+                                    width={96}
+                                    height={96}
+                                    className="h-full w-full object-cover absolute inset-0"
+                                  />
+                                  <span className="absolute inset-0 flex items-center justify-center text-gray-500 font-semibold">
+                                  {`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("NoAvatar") }` || "No Avatar"}
+                                  </span>
+                                </div>
+                              )}
                               <motion.div
                                 className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300"
                                 whileHover={{ opacity: 1 }}
@@ -588,6 +631,7 @@ export default function ProfileSettingsPage() {
 
                             {/* Location Fields */}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              {/* Country field - Searchable Select (single) */}
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="country"
@@ -596,16 +640,25 @@ export default function ProfileSettingsPage() {
                                   {t("Country") || "Country"}
                                 </Label>
                                 <motion.div whileFocus="focus">
-                                  <Input
-                                    id="country"
-                                    name="country"
+                                  <Select
                                     value={country}
-                                    onChange={(e) => setCountry(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
-                                  />
+                                    onValueChange={setCountry}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={t("SelectCountry") || "Select country"} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {countriesList.map((c) => (
+                                        <SelectItem key={c} value={c} className="text-right">
+                                          { t(c) || c }
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </motion.div>
                               </motion.div>
 
+                              {/* City field */}
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label htmlFor="city" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                   {t("City") || "City"}
@@ -621,6 +674,7 @@ export default function ProfileSettingsPage() {
                                 </motion.div>
                               </motion.div>
 
+                              {/* Street field */}
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="street"
@@ -639,6 +693,7 @@ export default function ProfileSettingsPage() {
                                 </motion.div>
                               </motion.div>
 
+                              {/* Postal Code field */}
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="post_code"
@@ -763,7 +818,7 @@ export default function ProfileSettingsPage() {
                                   id="email"
                                   name="email"
                                   type="email"
-                                  value={user.email || ""}
+                                  value={email || ""}
                                   className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                                 />
                               </motion.div>
@@ -854,9 +909,17 @@ export default function ProfileSettingsPage() {
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={handleSubmit}
+                            disabled={isLoading}
                             className="bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] hover:from-[#3db6a7] hover:to-[#2ea89a] text-white shadow-lg hover:shadow-xl transition-all duration-300"
                           >
-                            {t("SaveChanges") || "Save Changes"}
+                            {isLoading ? (
+                              <span className="flex items-center gap-2">
+                                <Loader2 className="animate-spin h-4 w-4" />
+                                {t("saving") || "Saving..."}
+                              </span>
+                            ) : (
+                              t("save") || "Save"
+                            )}
                           </Button>
                         </motion.div>
                       </CardFooter>

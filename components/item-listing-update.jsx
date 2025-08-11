@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { categoriesName, itemsStatus, allowedCategories } from "@/lib/data"
+import { categoriesName, itemsStatus, allowedCategories, countriesList } from "@/lib/data"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import { updateProduct } from "@/callAPI/products"
@@ -82,21 +82,22 @@ const buttonVariants = {
   tap: { scale: 0.95 },
 }
 
-export function ItemListingUpdate({
-  id,
-  name,
-  description,
-  category,
-  status_item,
-  value_estimate,
-  allowed_categories,
-  status_swap,
-  price,
-  city,
-  country,
-  street,
-  images,
-}) {
+export function ItemListingUpdate(props) {
+  const {
+    id,
+    name,
+    description,
+    category,
+    status_item,
+    value_estimate,
+    allowed_categories,
+    status_swap,
+    price,
+    city,
+    country,
+    street,
+    images,
+  } = props
   const router = useRouter()
   const [imagesFile, setImagesFile] = useState([])
   const [imageUrls, setImageUrls] = useState([])
@@ -105,6 +106,7 @@ export function ItemListingUpdate({
   const [isEstimating, setIsEstimating] = useState(false)
   const [product, setProduct] = useState(name)
   const [bigImage, setBigImage] = useState("")
+  const [step, setStep] = useState(1)
   const { toast } = useToast()
   const { t } = useTranslations()
 
@@ -179,7 +181,7 @@ export function ItemListingUpdate({
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
         toast({
           title: t("error") || "ERROR",
-          description: `File ${file.name} has an unsupported format. Please upload JPEG, PNG, or WebP.`,
+          description: `${t("File")} ${file.name} ${t("hasanunsupportedformat")} ${t("PleaseuploadJPEGPNGorWebP")}`,
           variant: "destructive",
         })
         return false
@@ -190,7 +192,7 @@ export function ItemListingUpdate({
     if (imagesFile.length + validFiles.length > MAX_IMAGES) {
       toast({
         title: t("error") || "ERROR",
-        description: `You can upload a maximum of ${MAX_IMAGES} images.`,
+        description: `${t("Youcanonlyselectitemsfrommatchingcategories") || "You can only select items from matching categories"} ${MAX_IMAGES} ${t("images") || "images"}.`,
         variant: "destructive",
       })
       return
@@ -208,9 +210,10 @@ export function ItemListingUpdate({
   }
 
   const requestAiPriceEstimate = async () => {
-    const { name, description, category, condition } = form.getValues()
+    const { name, description, category, status_item } = form.getValues()
+    console.log("Requesting AI estimate for:", { name, description, category, status_item })
 
-    if (!name || !description || !category || !condition) {
+    if (!name || !description || !category || !status_item) {
       toast({
         title: t("error") || "ERROR",
         description: "Please fill in the item name, description, category, and condition for an AI price estimate.",
@@ -296,504 +299,536 @@ export function ItemListingUpdate({
     }
   }
 
+  // Step validation
+  const isStep1Valid =
+    form.watch("name")?.length >= 3 &&
+    form.watch("description")?.length >= 20 &&
+    !!form.watch("category") &&
+    !!form.watch("status_item") &&
+    !!form.watch("price") &&
+    !!form.watch("country") &&
+    !!form.watch("city") &&
+    !!form.watch("street")
+
+  const isStep2Valid =
+    imagesFile.length > 0 &&
+    !!form.watch("value_estimate") &&
+    form.watch("allowed_categories")?.length > 0
+
+
+
+
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-6xl mx-auto p-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid gap-8 md:grid-cols-2">
-            {/* Left column - Basic details */}
-            <motion.div className="space-y-6" variants={sectionVariants}>
-              <div className="space-y-2">
-                <motion.h2
-                  className="text-2xl font-bold bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  Item Details
-                </motion.h2>
-                <motion.p
-                  className="text-sm text-muted-foreground"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  Provide detailed information about your item to help others understand what you're offering.
-                </motion.p>
-              </div>
-
-              <div className="grid gap-4 ">
-                <motion.div  whileTap="tap">
-                  <Button
-                    onClick={() => {
-                      handleSubmit()
-                    }}
-                    className="bg-[#49c5b6] hover:bg-[#3db6a7] text-white font-semibold"
-                  >
-                    <Package className="mr-2 h-4 w-4" />
-                    Update Item
-                  </Button>
-                </motion.div>
-
-                {/* Name field */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Item Name</FormLabel>
-                      <FormControl>
-                        <motion.div variants={inputVariants} whileFocus="focus">
-                          <Input
-                            placeholder="e.g., MacBook Pro 16-inch 2021"
-                            {...field}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          />
-                        </motion.div>
-                      </FormControl>
-                      <FormDescription>Be specific about brand, model, and key features.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Price field */}
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-[#49c5b6]" />
-                        Price
-                      </FormLabel>
-                      <FormControl>
-                        <motion.div variants={inputVariants} whileFocus="focus">
-                          <Input
-                            placeholder="Enter price"
-                            {...field}
-                            type="number"
-                            className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          />
-                        </motion.div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Location fields */}
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <motion.div variants={inputVariants} whileFocus="focus">
-                          <Input
-                            placeholder="e.g., Egypt"
-                            {...field}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          />
-                        </motion.div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <motion.div variants={inputVariants} whileFocus="focus">
-                          <Input
-                            placeholder="e.g., Sohage"
-                            {...field}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          />
-                        </motion.div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="street"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Street</FormLabel>
-                      <FormControl>
-                        <motion.div variants={inputVariants} whileFocus="focus">
-                          <Input
-                            placeholder="e.g., Omar ebn Elkhtab"
-                            {...field}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          />
-                        </motion.div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <motion.div variants={inputVariants} whileFocus="focus">
-                        <Textarea
-                          placeholder="Describe your item in detail, including condition, features, and any relevant history."
-                          className="min-h-[120px] transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          {...field}
-                        />
-                      </motion.div>
-                    </FormControl>
-                    <FormDescription>
-                      The more details you provide, the more likely you are to find a good swap.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Category and Condition */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <motion.div variants={inputVariants} whileFocus="focus">
-                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20">
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </motion.div>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status_item"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Condition</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <motion.div variants={inputVariants} whileFocus="focus">
-                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20">
-                              <SelectValue placeholder="Select condition" />
-                            </SelectTrigger>
-                          </motion.div>
-                        </FormControl>
-                        <SelectContent>
-                          {conditions.map((condition) => (
-                            <SelectItem key={condition} value={condition}>
-                              {condition}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </motion.div>
-
-            {/* Right column - Images and value */}
-            <motion.div className="space-y-6" variants={sectionVariants}>
-              <div className="space-y-2">
-                <motion.h2
-                  className="text-2xl font-bold bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  Images & Value
-                </motion.h2>
-                <motion.p
-                  className="text-sm text-muted-foreground"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  Upload clear photos of your item and set its estimated value.
-                </motion.p>
-              </div>
-
-              {/* Image Upload */}
-              <div>
-                <FormLabel className="flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4 text-[#49c5b6]" />
-                  Item Images
-                </FormLabel>
-                <div className="mt-2 grid grid-cols-3 gap-4">
-                  <AnimatePresence>
-                    {imageUrls.map((url, index) => (
-                      <motion.div
-                        key={index}
-                        variants={imageVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        layout
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-2 md:px-8"
+    >
+      <div className="w-full max-w-3xl">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid gap-8 md:grid-cols-1 rounded-2xl shadow-xl bg-white p-6 md:p-10">
+              <div className="grid gap-8 md:grid-cols-1">
+                {step === 1 && (
+                  <motion.div className="space-y-6" variants={sectionVariants}>
+                    <div className="space-y-2">
+                      <motion.h2
+                        className="text-2xl font-bold bg-gradient-to-r text-[rgb(242,178,48)] bg-clip-text text-transparent"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
                       >
-                        <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                          <div className="aspect-square relative">
-                            <Image
-                              src={url || "/placeholder.svg"}
-                              alt={`Item image ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <motion.div
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="absolute right-1 top-1"
-                          >
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="h-6 w-6 rounded-full"
-                              onClick={() => removeImage(index)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </motion.div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                        {t("ItemDetails")}
+                      </motion.h2>
+                      <motion.p
+                        className="text-sm text-muted-foreground"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        {t("ProvideDetailsAboutYourItem")}
+                      </motion.p>
+                    </div>
 
-                  {imagesFile.length < MAX_IMAGES && (
-                    <motion.div
-                      variants={imageVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Card className="flex aspect-square items-center justify-center border-2 border-dashed border-[#49c5b6]/30 hover:border-[#49c5b6] transition-colors cursor-pointer">
-                        <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
-                          <label htmlFor="image-upload" className="cursor-pointer text-center">
-                            <motion.div
-                              className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#49c5b6]/10"
-                              whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}
-                            >
-                              <Upload className="h-5 w-5 text-[#49c5b6]" />
-                            </motion.div>
-                            <p className="text-xs text-muted-foreground">Click to upload</p>
-                            <input
-                              id="image-upload"
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp"
-                              multiple
-                              className="hidden"
-                              onChange={handleImageUpload}
-                            />
-                          </label>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  )}
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Upload up to {MAX_IMAGES} images (JPEG, PNG, WebP, max 5MB each)
-                </p>
-              </div>
-
-              {/* Value Estimation */}
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="value_estimate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Estimated Value ($)</FormLabel>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={requestAiPriceEstimate}
-                                  disabled={isEstimating}
-                                  className="h-8 gap-1"
-                                >
-                                  <AnimatePresence mode="wait">
-                                    {isEstimating ? (
-                                      <motion.div
-                                        key="estimating"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <motion.div
-                                          animate={{ rotate: 360 }}
-                                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                        >
-                                          <Loader2 className="h-3 w-3" />
-                                        </motion.div>
-                                        Estimating...
-                                      </motion.div>
-                                    ) : (
-                                      <motion.div
-                                        key="estimate"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <Info className="h-3 w-3" />
-                                        Get AI Estimate
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </Button>
+                    <div className="grid gap-4">
+                      {/* Name field */}
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("Name")}</FormLabel>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  placeholder={t("NamePlaceholder")}
+                                  {...field}
+                                  className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                />
                               </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Get an AI-powered price estimate based on your item details</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <FormControl>
-                        <motion.div variants={inputVariants} whileFocus="focus">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="1"
-                            {...field}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20"
-                          />
-                        </motion.div>
-                      </FormControl>
-                      <AnimatePresence>
-                        {aiPriceEstimation !== null && (
-                          <motion.p
-                            className="text-xs text-[#49c5b6] font-medium"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            AI suggests a value of ${aiPriceEstimation}
-                          </motion.p>
+                            </FormControl>
+                            <FormDescription> {t("BeSpecificAboutBrandModelAndKeyFeatures")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </AnimatePresence>
-                      <FormDescription>Set a fair market value to help facilitate balanced swaps.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                      />
 
-              <Separator />
+                      {/* Price field */}
+                      <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              {t("Price")}
+                            </FormLabel>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  placeholder={t("EnterPrice")}
+                                  {...field}
+                                  type="number"
+                                  className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                />
+                              </motion.div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-              {/* Allowed Categories */}
-             <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="allowed_categories"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">
-                          {t("Whatwillyouacceptinreturn") || "What will you accept in return?"}
-                        </FormLabel>
-                        <FormDescription>
-                          {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange") ||
-                            "Select the categories of items you're willing to accept in exchange"}
-                        </FormDescription>
+                      {/* Country field - searchable list */}
+                      <FormField
+                        control={form.control}
+                        name="country"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("Country")}</FormLabel>
+                            <FormControl>
+                              <Select
+                                searchable
+                                onValueChange={field.onChange}
+                                defaultValue={field.value || ""}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t("SelectCountry")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {countriesList.map((country) => (
+                                    <SelectItem key={country} value={country} className="text-right">
+                                      {t(country)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* City field */}
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("City")}</FormLabel>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  placeholder={t("CityPlaceholder")}
+                                  {...field}
+                                  className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                />
+                              </motion.div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Street field */}
+                      <FormField
+                        control={form.control}
+                        name="street"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("Street")}</FormLabel>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  placeholder={t("StreetPlaceholder")}
+                                  {...field}
+                                  className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                />
+                              </motion.div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Description */}
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("Description")}</FormLabel>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Textarea
+                                  placeholder={t("DescribeYourItemInDetail")}
+                                  className="min-h-[120px] transition-all duration-200 focus:ring-2 focus:border-[#f2b230] focus:ring-[#f2b230]/20"
+                                  {...field}
+                                />
+                              </motion.div>
+                            </FormControl>
+                            <FormDescription>
+                              {t("BeSpecificAboutBrandModelAndKeyFeatures")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Category and Condition */}
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("Category")}</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <motion.div variants={inputVariants} whileFocus="focus">
+                                    <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:border-[#f2b230] focus:ring-[#f2b230]/20">
+                                      <SelectValue placeholder={t("SelectACategory")} />
+                                    </SelectTrigger>
+                                  </motion.div>
+                                </FormControl>
+                                <SelectContent>
+                                  {categoriesName.map((category) => (
+                                    <SelectItem key={category} value={category}>
+                                      {t(category)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="status_item"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("Condition")}</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <motion.div variants={inputVariants} whileFocus="focus">
+                                    <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:border-[#f2b230] focus:ring-[#f2b230]/20">
+                                      <SelectValue placeholder={t("SelectCondition")} />
+                                    </SelectTrigger>
+                                  </motion.div>
+                                </FormControl>
+                                <SelectContent>
+                                  {itemsStatus.map((condition) => (
+                                    <SelectItem key={condition} value={condition}>
+                                      {t(condition)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                        {allowedCategories.map((category) => {
-                          const isAll = category === "all"
-                          const selected = form.getValues("allowed_categories") || []
-                          const isAllSelected = selected.includes("all")
-
-                          return (
-                            <FormField
-                              key={category}
-                              control={form.control}
-                              name="allowed_categories"
-                              render={({ field }) => (
-                                <FormItem
-                                  key={category}
-                                  className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3"
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      disabled={!isStep1Valid}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
+                    >
+                      {t("continue")}
+                    </Button>
+                  </motion.div>
+                )}
+                {step === 2 && (
+                  <motion.div className="space-y-6" variants={sectionVariants}>
+                    {/* Images & Value */}
+                    <div>
+                      <FormLabel className="flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4 text-[#f2b230]" />
+                        {t("images")}
+                      </FormLabel>
+                      <div className="mt-2 grid grid-cols-3 gap-4">
+                        <AnimatePresence>
+                          {imageUrls.map((url, index) => (
+                            <motion.div
+                              key={index}
+                              variants={imageVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              layout
+                            >
+                              <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                                <div className="aspect-square relative">
+                                  <Image
+                                    src={url || "/placeholder.svg"}
+                                    alt={`${t("images")} ${index + 1}`}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                                <motion.div
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="absolute right-1 top-1"
                                 >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(category)}
-                                      disabled={!isAll && isAllSelected}
-                                      onCheckedChange={(checked) => {
-                                        if (isAll) {
-                                          field.onChange(checked ? ["all"] : [])
-                                        } else {
-                                          let newValue = field.value?.filter((v) => v !== "all") || []
-                                          if (checked) {
-                                            newValue = [...newValue, category]
-                                          } else {
-                                            newValue = newValue.filter((v) => v !== category)
-                                          }
-                                          field.onChange(newValue)
-                                        }
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal capitalize px-1">
-                                    {t(category) || category}
-                                  </FormLabel>
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        })}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </motion.div>
-          </div>
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="h-6 w-6 rounded-full"
+                                    onClick={() => removeImage(index)}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </motion.div>
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
 
-          {/* Submit Buttons */}
-       
-        </form>
-      </Form>
+                        {imagesFile.length < MAX_IMAGES && (
+                          <motion.div
+                            variants={imageVariants}
+                            initial="hidden"
+                            animate="visible"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Card className="flex aspect-square items-center justify-center border-2 border-dashed border-[#f2b230]/30 hover:border-[#f2b230] transition-colors cursor-pointer">
+                              <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
+                                <label htmlFor="image-upload" className="cursor-pointer text-center">
+                                  <motion.div
+                                    className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#f2b230]/10"
+                                    whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}
+                                  >
+                                    <Upload className="h-5 w-5 text-[#f2b230]" />
+                                  </motion.div>
+                                  <p className="text-xs text-muted-foreground">{t("Clicktoupload")}</p>
+                                  <input
+                                    id="image-upload"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    multiple
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                  />
+                                </label>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {t("UploadUpTo")} {MAX_IMAGES} {t("images")} (JPEG, PNG, WebP, {t("max5MBEach")})
+                      </p>
+                    </div>
+
+                  
+
+          
+
+                    {/* Allowed Categories */}
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="allowed_categories"
+                        render={() => (
+                          <FormItem>
+                            <div className="mb-4">
+                              <FormLabel className="text-base">
+                                {t("Whatwillyouacceptinreturn")}
+                              </FormLabel>
+                              <FormDescription>
+                                {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange")}
+                              </FormDescription>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                              {allowedCategories.map((category) => {
+                                const isAll = category === "all"
+                                const selected = form.getValues("allowed_categories") || []
+                                const isAllSelected = selected.includes("all")
+
+                                return (
+                                  <FormField
+                                    key={category}
+                                    control={form.control}
+                                    name="allowed_categories"
+                                    render={({ field }) => (
+                                      <FormItem
+                                        key={category}
+                                        className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(category)}
+                                            disabled={!isAll && isAllSelected}
+                                            onCheckedChange={(checked) => {
+                                              if (isAll) {
+                                                field.onChange(checked ? ["all"] : [])
+                                              } else {
+                                                let newValue = field.value?.filter((v) => v !== "all") || []
+                                                if (checked) {
+                                                  newValue = [...newValue, category]
+                                                } else {
+                                                  newValue = newValue.filter((v) => v !== category)
+                                                }
+                                                field.onChange(newValue)
+                                              }
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className="font-normal capitalize px-1">
+                                          {t(category)}
+                                        </FormLabel>
+                                      </FormItem>
+                                    )}
+                                  />
+                                )
+                              })}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                      {/* Value Estimation */}
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="value_estimate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel>{t("aIExpectedPrice")} ( {t("LE")} )</FormLabel>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={()=>{requestAiPriceEstimate()}}
+                                        disabled={isEstimating}
+                                        className="h-8 gap-1"
+                                      >
+                                        <AnimatePresence mode="wait">
+                                          {isEstimating ? (
+                                            <motion.div
+                                              key="estimating"
+                                              initial={{ opacity: 0 }}
+                                              animate={{ opacity: 1 }}
+                                              exit={{ opacity: 0 }}
+                                              className="flex items-center gap-1"
+                                            >
+                                              <motion.div
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                                              >
+                                                <Loader2 className="h-3 w-3" />
+                                              </motion.div>
+                                              {t("Estimating")}
+                                            </motion.div>
+                                          ) : (
+                                            <motion.div
+                                              key="estimate"
+                                              initial={{ opacity: 0 }}
+                                              animate={{ opacity: 1 }}
+                                              exit={{ opacity: 0 }}
+                                              className="flex items-center gap-1"
+                                            >
+                                              <Info className="h-3 w-3" />
+                                              {t("GetAIEstimate")}
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{t("GetAIEstimateTooltip")}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  {...field}
+                                  className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                />
+                              </motion.div>
+                            </FormControl>
+                            <AnimatePresence>
+                              {aiPriceEstimation !== null && (
+                                <motion.p
+                                  className="text-xs text-[#f2b230] font-medium"
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                >
+                                  {t("aIExpectedPrice")} {t("LE")}{aiPriceEstimation}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
+                            <FormDescription>{t("SetAFairMarketValue")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="flex flex-col-2 gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => setStep(1)}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
+                      >
+                        {t("goBack")}
+                      </Button>
+                      <Button
+                        onClick={() => onSubmit()}
+                        type="submit"
+                        disabled={!isStep2Valid}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
+                      >
+                        {t("save")}
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </form>
+        </Form>
+      </div>
     </motion.div>
   )
 }

@@ -92,7 +92,11 @@ export default function ProductPage() {
         if (id) {
           const userData = await getUserByProductId(id)
           setUser(userData.data)
-          setName(`${userData.data?.first_name || ""} ${userData.data?.last_name || ""}`.trim())
+          setName(
+            `${(String(userData.data?.first_name).length <= 11 ? (String(userData.data?.first_name)) : (String(userData.data?.first_name).slice(0, 10)) )|| t("account")} 
+            ${(String(userData.data?.last_name).length <= 11 ? (String(userData.data?.last_name)) : (String(userData.data?.last_name).slice(0, 10)) )|| ""}`.trim()
+          
+          )
           setAvatar(userData.data?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userData.data.avatar}` : "")
         } else {
           setUser(null)
@@ -191,12 +195,12 @@ export default function ProductPage() {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
                 >
-                  {product.price}
+                  {Number(product.price).toLocaleString()}
                 </motion.span>
               </div>
             </div>
             <div className="text-xs text-[#49c5b6]">
-              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: LE{product.price}
+              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: LE{Number(product.price).toLocaleString()}
             </div>
           </motion.div>
 

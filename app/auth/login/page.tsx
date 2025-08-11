@@ -3,9 +3,7 @@ import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { Bentham } from "next/font/google"
 import { useTranslations } from "@/lib/use-translations";
-
 
 
 export default function LoginPage() {
@@ -15,8 +13,8 @@ export default function LoginPage() {
 
   
       <Link href="/" className="mb-8 flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-       {t("Backtomarketplace")||"Back to marketplace"}
+        <ArrowLeft className="mr-2 h-4 w-4 mx-1 " />
+       {t("back")||"Back to home"}
 
       </Link>
 

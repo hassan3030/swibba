@@ -86,7 +86,7 @@ export function RegisterForm() {
       userName: z
         .string()
         .min(2, t("Namemustbeatleast2characters") || "Name must be at least 2 characters")
-        .max(50, t("Namemustbelessthan50characters") || "Name must be less than 50 characters"),
+        .max(26, t("Namemustbelessthan50characters") || "Name must be less than 50 characters"),
       email: z.string().email(t("Pleaseenteravalidemailaddress") || "Please enter a valid email address"),
       password: z
         .string()
@@ -173,16 +173,16 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <motion.div variants={iconVariants}>
-                      <UserPlus className="h-4 w-4 text-[#49c5b6]" />
+                      <UserPlus className="h-4 w-4 text-[#f2b230]" />
                     </motion.div>
-                    {t("FullName") || "Full Name"}
+                    {t("firstName") || "First Name"}
                   </FormLabel>
                   <FormControl>
                     <motion.div variants={inputVariants} whileFocus="focus">
                       <Input
                         placeholder="John Doe"
                         {...field}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20 border-gray-200 focus:border-[#49c5b6]"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
                       />
                     </motion.div>
                   </FormControl>
@@ -200,7 +200,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <motion.div variants={iconVariants}>
-                      <Mail className="h-4 w-4 text-[#49c5b6]" />
+                      <Mail className="h-4 w-4 text-[#f2b230]" />
                     </motion.div>
                     {t("email") || "Email"}
                   </FormLabel>
@@ -210,7 +210,7 @@ export function RegisterForm() {
                         type="email"
                         placeholder="you@example.com"
                         {...field}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20 border-gray-200 focus:border-[#49c5b6]"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
                       />
                     </motion.div>
                   </FormControl>
@@ -228,7 +228,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <motion.div variants={iconVariants}>
-                      <Lock className="h-4 w-4 text-[#49c5b6]" />
+                      <Lock className="h-4 w-4 text-[#f2b230]" />
                     </motion.div>
                     {t("password") || "Password"}
                   </FormLabel>
@@ -238,7 +238,7 @@ export function RegisterForm() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
-                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20 border-gray-200 focus:border-[#49c5b6]"
+                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
                       />
                       <motion.div
                         whileHover={{ scale: 1.1 }}
@@ -249,7 +249,7 @@ export function RegisterForm() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-full px-3 py-2 text-muted-foreground hover:text-[#49c5b6]"
+                          className="h-full px-3 py-2 text-muted-foreground hover:text-[#f2b230]"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           <AnimatePresence mode="wait">
@@ -300,7 +300,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <motion.div variants={iconVariants}>
-                      <CheckCircle className="h-4 w-4 text-[#49c5b6]" />
+                      <CheckCircle className="h-4 w-4 text-[#f2b230]" />
                     </motion.div>
                     {t("ConfirmPassword") || "Confirm Password"}
                   </FormLabel>
@@ -310,7 +310,7 @@ export function RegisterForm() {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
-                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#49c5b6]/20 border-gray-200 focus:border-[#49c5b6]"
+                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
                       />
                       <motion.div
                         whileHover={{ scale: 1.1 }}
@@ -321,7 +321,7 @@ export function RegisterForm() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-full px-3 py-2 text-muted-foreground hover:text-[#49c5b6]"
+                          className="h-full px-3 py-2 text-muted-foreground hover:text-[#f2b230]"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           <AnimatePresence mode="wait">
@@ -366,7 +366,7 @@ export function RegisterForm() {
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Button
                 type="submit"
-                className="w-full bg-[#49c5b6] hover:bg-[#3db6a7] text-white font-semibold py-6 text-lg"
+                className="w-full bg-[#f2b230] hover:bg-[#eeb74a] text-white font-semibold py-6 text-lg"
                 onClick={onSubmit}
                 disabled={isLoading}
               >
@@ -396,7 +396,7 @@ export function RegisterForm() {
                       exit={{ opacity: 0 }}
                       className="flex items-center"
                     >
-                      <UserPlus className="mr-2 h-4 w-4" />
+                      <UserPlus className="mr-2 h-4 w-4 mx-1" />
                       {t("CreateAccount") || "Create Account"}
                     </motion.div>
                   )}
@@ -412,7 +412,7 @@ export function RegisterForm() {
             >
               {t("Alreadyhaveanaccount") || "Already have an account?"}{" "}
               <motion.span whileHover={{ scale: 1.05 }} className="inline-block">
-                <Link href="/auth/login" className="font-medium text-[#49c5b6] hover:underline transition-colors">
+                <Link href="/auth/login" className="font-medium text-[#f2b230] hover:underline transition-colors mx-1">
                   {t("Signin") || "Sign in"}
                 </Link>
               </motion.span>

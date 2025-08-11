@@ -57,12 +57,12 @@ export function Footer() {
 
   return (
     <motion.footer
-      className="border-t bg-background my-3"
+      className="border-t bg-background my-2"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <div className="container py-12">
+      <div className="container pt-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <motion.div variants={itemVariants}>
             <motion.h3
@@ -75,9 +75,9 @@ export function Footer() {
             </motion.h3>
             <motion.div className="mb-4 flex gap-4" variants={containerVariants} initial="hidden" animate="visible">
               {[
-                { icon: Facebook, href: "#", label: "Facebook" },
-                { icon: Twitter, href: "#", label: "Twitter" },
-                { icon: Instagram, href: "#", label: "Instagram" },
+                { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61579242208574", label: "Facebook" },
+                { icon: Twitter, href: "https://x.com/DEELDEAL", label: "Twitter" },
+                { icon: Instagram, href: "https://www.instagram.com/deeldeal123/", label: "Instagram" },
               ].map((social, index) => (
                 <motion.div key={social.label} variants={itemVariants} custom={index}>
                   <Link
@@ -98,10 +98,10 @@ export function Footer() {
             <h3 className="mb-4 text-lg font-semibold">{t("categories")}</h3>
             <ul className="space-y-2 text-sm">
               {[
-                { href: "/category/electronics", label: t("electronics") },
-                { href: "/category/fashion", label: t("fashion") },
-                { href: "/category/home", label: t("home") },
-                { href: "/category/beauty", label: t("beauty") },
+                { href: "/categories/electronics", label: t("electronics") },
+                { href: "/categories/fashion", label: t("fashion") },
+                { href: "/categories/home", label: t("home") },
+                { href: "/categories/beauty", label: t("beauty") },
               ].map((link, index) => (
                 <motion.li
                   key={link.href}
@@ -144,7 +144,7 @@ export function Footer() {
         </div>
 
         <motion.div
-          className="mt-12 border-t pt-6"
+          className="mt-10 border-t pt-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}

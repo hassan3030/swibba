@@ -52,19 +52,19 @@ import { useTranslations } from "@/lib/use-translations"
             <div className="space-y-4">
               <motion.h1
                 variants={fadeIn("up", 0.2)}
-                className="text-6xl md:text-6xl font-bold leading-tight"
+                className="text-4xl md:text-6xl font-bold leading-tight"
               >
                 <span className="gradient-text"> {t("deelDeal")}</span>
               </motion.h1>
               <motion.h2
                 variants={fadeIn("up", 0.4)}
-                className="text-6xl md:text-5xl font-bold text-foreground leading-tight"
+                className="text-3xl md:text-5xl font-bold text-foreground leading-tight"
               >
              {t("deelDealSlogan")}
               </motion.h2>
               <motion.p
                 variants={fadeIn("up", 0.6)}
-                className="text-xl text-muted-foreground max-w-lg"
+                className="text-lg text-muted-foreground max-w-lg"
               >
                 {t("deelDealDescription")}
               </motion.p>

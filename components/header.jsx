@@ -4,10 +4,10 @@ import { Heart } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { BiCartDownload } from "react-icons/bi";
+import { TbShoppingCartUp } from "react-icons/tb";
 import {
   Search,
-  ShoppingCart,
-  Bell,
   Menu,
   X,
   User,
@@ -211,6 +211,7 @@ export function Header() {
     }, [objPath]);
   return (
     <>
+
       <motion.header
         className="sticky top-0 z-50 w-full border-b bg-background shadow-sm dark:bg-[#121212] dark:border-[#2a2a2a]"
         variants={navVariants}
@@ -450,7 +451,7 @@ export function Header() {
                           size="icon"
                           className="relative hover:text-primary dark:hover:text-primary"
                         >
-                          <Bell className="h-5 w-5" />
+                          <TbShoppingCartUp className="h-5 w-5" />
                           <AnimatePresence>
                             {notificationsLength > 0 && (
                               <motion.span
@@ -479,7 +480,8 @@ export function Header() {
                           size="icon"
                           className="relative hover:text-primary dark:hover:text-primary"
                         >
-                          <ShoppingCart className="h-5 w-5" />
+                        
+                          <BiCartDownload className="h-5 w-5" />
                           <AnimatePresence>
                             {cartLength > 0 && (
                               <motion.span
@@ -493,12 +495,11 @@ export function Header() {
                               </motion.span>
                             )}
                           </AnimatePresence>
-                          <span className="sr-only">{t("cart") || "Cart "}</span>
+                          <span className="sr-only">{t("sendoffers") || "Sendo ffers"}</span>
                         </Button>
                       </motion.div>
                     </Link>
                   </motion.div>
-
                   {/* Wishlist */}
                   <motion.div custom={7} variants={itemVariants}>
                     <Link href="/wishList" className="relative">
@@ -684,7 +685,7 @@ export function Header() {
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Bell className="h-4 w-4" />
+                        <TbShoppingCartUp className="h-4 w-4"/>
                         <span>
                           {`${t("notifications") || "Recived Offers"} `}
                           {`${notificationsLength ? notificationsLength : ""}`}
@@ -696,8 +697,8 @@ export function Header() {
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <ShoppingCart className="h-4 w-4" />
-                        <span>{`${t("cart")} ${cartLength ? cartLength : ""} `}</span>
+                        <BiCartDownload className="h-4 w-4" />
+                        <span>{`${t("sendoffers")} ${cartLength ? cartLength : ""} `}</span>
                       </Link>
                       <Link
                         href="/chat"

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { fadeIn,  floatingAnimation, glowEffect } from "@/lib/animations";
 import { useSmoothScroll } from "@/hooks/use-scroll-animation";
 import { useTranslations } from "@/lib/use-translations"
+import Link from "next/link";
+import Image from "next/image";
  const HeroSection = ()=> {
   const { scrollToSection } = useSmoothScroll();
   const { t } = useTranslations()
@@ -37,7 +39,7 @@ import { useTranslations } from "@/lib/use-translations"
   ];
 
   return (
-    <section className="relative overflow-hidden h-full pb-4">
+    <section className="relative overflow-hidden h-full pb-4 -mt-4 ">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-[hsl(14,100%,60%)]/20 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary/20" />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
@@ -54,7 +56,26 @@ import { useTranslations } from "@/lib/use-translations"
                 variants={fadeIn("up", 0.2)}
                 className="text-6xl md:text-6xl font-bold leading-tight"
               >
-                <span className="gradient-text"> {t("deelDeal")}</span>
+
+                {/* <Link href="/" className="flex items-center gap-2"> */}
+                {/* <div className="flex h-16 w-32 items-center justify-center bg-transparent -my-3  "> */}
+                    <Image 
+                    dir="ltr"
+                    lang="en"
+                   src="/logoheader.png" 
+                   alt="DeelDeal Logo"
+                   width={300} 
+                    height={100}
+                    className="font-bold filter saturate-50  animate-pulse-custom  h-32 w-64 cursor-pointer "
+                     priority
+                     style={{ direction: "rtl" }}
+                    />
+
+                  {/* <span className="text-2xl font-black gold-text-gradient">
+                  </span> */}
+                {/* </div> */}
+              {/* </Link> */}
+                {/* <span className="gradient-text"> {t("deelDeal")}</span> */}
               </motion.h1>
               <motion.h2
                 variants={fadeIn("up", 0.4)}

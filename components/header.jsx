@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Image from "next/image"
 
 const navVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -276,13 +277,32 @@ export function Header() {
             </motion.div>
 
             {/* Logo */}
-            <motion.div variants={logoVariants} initial="hidden" animate="visible" whileHover="hover">
+ <motion.div variants={logoVariants} initial="hidden" animate="visible" whileHover="hover">
+              <Link href="/" className="flex items-center gap-2">
+                <div className="flex h-16 w-32 items-center justify-center bg-transparent -my-3  ">
+                    <Image 
+                   src="/logoheader.png" 
+                   alt="DeelDeal Logo"
+                   width={200} 
+                    height={300}
+                    className="h-full w-full font-bold filter saturate-50  "
+                     priority
+                    />
+
+                  {/* <span className="text-2xl font-black gold-text-gradient">
+                  </span> */}
+                </div>
+              </Link>
+            </motion.div>
+
+
+            {/* <motion.div variants={logoVariants} initial="hidden" animate="visible" whileHover="hover">
               <Link href="/" className="flex items-center gap-2">
                 <div className="flex h-10 w-32 items-center justify-center rounded-md font-bold text-black dark:text-[#f5b014] shadow-md bg-transparent">
                   <span className="text-2xl font-black gold-text-gradient">DeelDeal</span>
                 </div>
               </Link>
-            </motion.div>
+            </motion.div> */}
 
             {/* Search */}
             <motion.div

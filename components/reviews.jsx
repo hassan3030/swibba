@@ -10,8 +10,10 @@ import { addReview, getReviewConditins } from "@/callAPI/swap"
 import { decodedToken } from "@/callAPI/utiles"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
+import { getUserById } from "@/callAPI/users"
+import { getCurrentUserId } from "@/callAPI/utiles"
 
-// Animation variants
+// Animation variants 
 const cardVariants = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
   visible: {
@@ -90,7 +92,7 @@ const successVariants = {
   },
 }
 
-const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar }) => {
+const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  }) => {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [message, setMessage] = useState("")
@@ -100,6 +102,17 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar }
   const router = useRouter()
   const { toast } = useToast()
   const { t } = useTranslations()
+
+  const [myEmail, setMyEmail] = useState("")
+
+  const getMyDataUser = async()=>{ 
+    const myUser = await getUserById(getCurrentUserId())
+    setMyEmail(myUser.data.email)
+  }
+
+  useEffect(() => {
+    getMyDataUser()
+  }, [])
 
   const checkReview = async () => {
     try {
@@ -117,7 +130,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar }
   }
 
   const handleAddRating = async () => {
-    await addReview(from_user_id, to_user_id, offer_id, rating, message)
+    await addReview(from_user_id, to_user_id, offer_id, rating, message , myEmail)
   }
 
   const handleStarClick = (starRating) => {

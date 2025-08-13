@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeftRight, Package, Users, Info, MessageCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import Image from "next/image"
+import Image from "next/image" 
 import { getAvailableAndUnavailableProducts, getImageProducts } from "@/callAPI/products"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
@@ -87,16 +87,7 @@ const swapSummaryVariants = {
   },
 }
 
-const pulseVariants = {
-  pulse: {
-    scale: [1, 1.05, 1],
-    transition: {
-      duration: 2,
-      repeat: Number.POSITIVE_INFINITY,
-      ease: "easeInOut",
-    },
-  },
-}
+
 
 export default function SwapPage() {
   const params = useParams()
@@ -117,6 +108,19 @@ export default function SwapPage() {
   const [sameUser, setSameUser] = useState([])
   const { toast } = useToast()
   const { t } = useTranslations()
+  const [myEmail, setMyEmail] = useState("")
+  const [otherEmail, setOtherEmail] = useState("")
+
+  const getMyDataUser = async()=>{ 
+    const token = await getCookie()
+    const { id } = await decodedToken(token)
+    const user = await getUserById(id)
+    setMyEmail(user.data.email)
+  }
+
+useEffect(() => {
+    getMyDataUser()
+  }, [])
 
   // Fetch my items
   const getMyItems = useCallback(async () => {
@@ -134,6 +138,7 @@ export default function SwapPage() {
   // Fetch other user's items
   const getOtherItems = useCallback(async () => {
     const otherUser = await getUserByProductId(id_item_to)
+    setOtherEmail(otherUser.data.email)
     setSameUser([...sameUser, otherUser.data.id])
     console.log("otherUser ", otherUser)
     console.log("id_item_to ", id_item_to)
@@ -237,12 +242,11 @@ export default function SwapPage() {
     setDisabledOffer(true)
     try {
       const to_user = await getUserByProductId(id_item_to)
-      await addOffer(to_user.data.id, priceDifference, selectedMyItems, selectedOtherItems, message, name)
+      await addOffer(to_user.data.id, priceDifference, selectedMyItems, selectedOtherItems, myEmail, otherEmail)
       toast({
         title: t("successfully") || "Success",
         description: "Successfully created offer",
       })
-      setMessage("")
       setSelectedMyItems([])
       setSelectedOtherItems([])
       setDisabledOffer(false)

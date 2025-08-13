@@ -219,9 +219,6 @@ export const deleteOfferById = async (id) => {
 
 
 
-
-
-
 // Finally Delete offer by ID 
 export const deleteFinallyOfferById = async (id) => {
   try {
@@ -287,7 +284,7 @@ export const acceptedOffer = async (id) => {
   }
 }
 
-// Update offer by ID (cash adjustment)
+// Update offer by ID (cash adjustment) when remove item
 export const updateOfferById = async (id, cash_adjustment) => {
   try {
     const auth = await validateAuth()
@@ -322,7 +319,7 @@ export const updateOfferById = async (id, cash_adjustment) => {
   }
 }
 
-// Accept offer by ID (keeping original function name)
+// Accept offer by ID (keeping original function name)  without remove item
 export const acceptedOfferById = async (id_offer) => {
   try {
     const auth = await validateAuth()
@@ -440,7 +437,7 @@ export const completedOfferById = async (id_offer) => {
 }
 
 // Add offer with transaction-like behavior
-export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owner_prods, message, name = "") => {
+export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owner_prods,email_user_from, email_user_to,) => {
   let offer_id = null
   const createdItemIds = []
   const updatedItemIds = []
@@ -480,7 +477,9 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
         to_user_id,
         cash_adjustment: cash_adjustment || 0,
         status_offer: "pending",
-        name: name || `Offer from ${auth.userId}`,
+        email_user_from,
+        email_user_to,
+
       },{
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -501,6 +500,8 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
           offer_id,
           item_id: itemId,
           offered_by: ownerResult.data.id,
+          email_user_from,
+          email_user_to,
         },{
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -522,19 +523,6 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
         updatedItemIds.push(itemId)
       }
 
-      // Add initial message if provided
-      if (message && message.trim()) {
-        await axios.post(`${baseURL}/items/Chat`, {
-          from_user_id: auth.userId,
-          to_user_id,
-          offer_id,
-          message: message.trim(),
-        },{
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      })
-      }
 
       console.log("Offer created successfully with all items and message")
       return {
@@ -542,7 +530,8 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
         data: {
           offer_id,
           items_count: allItems.length,
-          has_message: !!(message && message.trim()),
+          email_user_from,
+          email_user_to,
         },
         message: "Offer created successfully",
       }
@@ -936,11 +925,11 @@ export const deleteWishList = async (id) => {
 // ========================= REVIEWS SYSTEM =========================
 
 // Add review
-export const addReview = async (from_user_id, to_user_id, offer_id, rating, comment) => {
+export const addReview = async (from_user_id, to_user_id, offer_id, rating, comment , email_user_to) => {
   try {
     const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
-      if (!from_user_id || !to_user_id || !offer_id || !rating) {
+      if (!from_user_id || !to_user_id || !offer_id || !rating || !email_user_to) {
         throw new Error("From user ID, to user ID, offer ID, and rating are required")
       }
 
@@ -967,6 +956,7 @@ export const addReview = async (from_user_id, to_user_id, offer_id, rating, comm
         offer_id,
         rating,
         comment: comment || "No comment",
+        email_user_to,
       },
             {
               headers: {

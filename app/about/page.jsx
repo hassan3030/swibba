@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building, Users, Award } from "lucide-react";
 import { useTranslations } from "@/lib/use-translations";
 import { teamMembers } from "../../lib/data";
+import Image from 'next/image';
 
 const AboutPage = () => {
   
@@ -24,7 +25,7 @@ const AboutPage = () => {
 
        <section className="mb-16">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className='hover:shadow-lg transition-shadow duration-300 hover:scale-105'>
             <CardHeader className="flex flex-row items-center gap-4">
               <div className="p-2 bg-primary/10 rounded-full">
                 <Building className="h-6 w-6 text-primary" />
@@ -40,7 +41,7 @@ const AboutPage = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className='hover:shadow-lg transition-shadow duration-300 hover:scale-105'>
             <CardHeader className="flex flex-row items-center gap-4">
               <div className="p-2 bg-primary/10 rounded-full">
                 <Users className="h-6 w-6 text-primary" />
@@ -58,7 +59,7 @@ const AboutPage = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className='hover:shadow-lg transition-shadow duration-300 hover:scale-105'>
             <CardHeader className="flex flex-row items-center gap-4">
               <div className="p-2 bg-primary/10 rounded-full">
                 <Award className="h-6 w-6 text-primary" />
@@ -107,12 +108,13 @@ const AboutPage = () => {
 
       <section className="mb-12">
         <h2 className="text-3xl font-bold text-center mb-8">{t("OurLeadershipTeam")||"Our Leadership Team"}</h2>
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
           {teamMembers.map((leader, index) => (
-            <Card key={index}>
+            <Card key={index} className='hover:shadow-lg transition-shadow duration-300 hover:scale-105'>
               <CardHeader>
                 <CardTitle>{t(leader.name)}</CardTitle>
                 <CardDescription>{t(leader.title)}</CardDescription>
+                <Image src={leader.image} alt={t(leader.name)} width={64} height={64} className="h-16 w-16 rounded-full" />
               </CardHeader>
               <CardContent>
                 <p>{t(leader.description)}</p>

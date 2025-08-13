@@ -82,6 +82,7 @@ export function Footer() {
                 <motion.div key={social.label} variants={itemVariants} custom={index}>
                   <Link
                     href={social.href}
+                    target="_blank"
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     <motion.div variants={socialVariants} whileHover="hover">

@@ -391,7 +391,7 @@ export default function Home() {
 
         {/* Enhanced Stats Section */}
         <motion.section
-          className="container py-16 relative z-10"
+          className="container py-4 relative z-10"
           variants={statsContainerVariants}
           initial="hidden"
           animate="visible"
@@ -569,10 +569,10 @@ export default function Home() {
         </motion.section>
 
         {/* Enhanced Categories Section */}
-        <motion.section className="container py-16 relative z-10" style={{ y: y2 }}>
+        <motion.section className="container pt-24  relative z-10" style={{ y: y2 }}>
           <motion.div className="mb-12 text-center" variants={titleVariants} initial="hidden" animate="visible">
             <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6"
+              className="inline-flex items-center gap-2 px-4  rounded-full bg-primary/10 text-primary mb-6"
               variants={floatingVariants}
               animate="animate"
             >
@@ -640,7 +640,7 @@ export default function Home() {
 
         {/* Enhanced Middle Banner */}
         <motion.section
-          className="container py-16 relative z-10"
+          className="container relative z-10"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -747,13 +747,13 @@ export default function Home() {
 
         {/* NEW: Featured Collections Section */}
         <motion.section 
-          className="container py-16 relative z-10"
+          className="container relative z-10"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
         >
-          <motion.div className="mb-12 text-center" variants={titleVariants} initial="hidden" animate="visible">
+          <motion.div className="mb-12 pt-10 text-center" variants={titleVariants} initial="hidden" animate="visible">
             <motion.div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6"
               variants={floatingVariants}
@@ -824,7 +824,7 @@ export default function Home() {
 
         {/* Enhanced Products Section */}
         <motion.section
-          className="container py-16 relative z-10"
+          className="container  relative z-10"
           id="items"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -867,7 +867,7 @@ export default function Home() {
 
         {/* Enhanced Top Deals Section */}
         <motion.section
-          className="container py-16 relative z-10"
+          className="container  relative z-10"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}

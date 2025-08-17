@@ -19,6 +19,7 @@ import {getAllUsers} from "@/callAPI/users"
 import { getCookie } from "@/callAPI/utiles"
 import HeroSection from "@/components/hero-section"
 import Link from "next/link"
+import HomePageSpinner from "@/components/home-page-spinner"
 
 // Enhanced Animation variants
 const containerVariants = {
@@ -162,13 +163,14 @@ const AnimatedCounter = ({ value, duration = 2, className , shape=true}) => {
 
       window.requestAnimationFrame(step)
       controls.start("visible")
+       window.scrollTo(0, 0);
     }
   }, [inView, value, duration, controls])
 
 
   return (
     <>
-      <motion.div
+      <motion.div 
       ref={ref}
       animate={controls}
       initial="hidden"
@@ -359,17 +361,20 @@ export default function Home() {
     setIsLoading(true)
     setIsLoadingCat(true)
 
-    try {
-      getData().then(() => {
+    const fetchData = async () => {
+      try {
+        await getData()
+        await getWishList()
+        setIsLoadingCat(false)
         setIsLoading(false)
-      })
-      setIsLoadingCat(false)
-      getWishList()
-    } catch (error) {
-      console.error("Error fetching data:", error)
-      setIsLoading(false)
-      setIsLoadingCat(false)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        setIsLoading(false)
+        setIsLoadingCat(false)
+      }
     }
+
+    fetchData()
   }, [])
 
   useEffect(() => {
@@ -380,6 +385,7 @@ export default function Home() {
 
   return (
     <>
+    {isLoading && <HomePageSpinner />}
     {showSwitchHeart?(<FloatingActionButton/>):''}
 
       <main className="min-h-screen dark:bg-[#121212] relative overflow-hidden">

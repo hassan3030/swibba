@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { fadeIn,  floatingAnimation, glowEffect } from "@/lib/animations";
 import { useSmoothScroll } from "@/hooks/use-scroll-animation";
 import { useTranslations } from "@/lib/use-translations"
-import Link from "next/link";
 import Image from "next/image";
  const HeroSection = ()=> {
   const { scrollToSection } = useSmoothScroll();
   const { t } = useTranslations()
+
   const heroImages = [
     {
       src: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
@@ -39,8 +39,8 @@ import Image from "next/image";
   ];
 
   return (
-    <section className="relative overflow-hidden h-full pb-4 -mt-4 ">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-[hsl(14,100%,60%)]/20 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary/20" />
+    <section className="relative overflow-hidden h-full pb-4 -mt-4 px-2">
+      <div className="absolute  inset-0 bg-gradient-to-br from-primary/10 via-background to-[hsl(14,100%,60%)]/20 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary/20" />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -51,22 +51,22 @@ import Image from "next/image";
             animate="visible"
             className="space-y-8"
           >
-            <div className="space-y-4">
+            <div className="space-y-4 ">
               <motion.h1
                 variants={fadeIn("up", 0.2)}
-                className="text-6xl md:text-6xl font-bold leading-tight"
+                className="text-6xl md:text-6xl font-bold leading-tight "
               >
 
                 {/* <Link href="/" className="flex items-center gap-2"> */}
                 {/* <div className="flex h-16 w-32 items-center justify-center bg-transparent -my-3  "> */}
-                    <Image 
+                    <Image
                     dir="ltr"
                     lang="en"
-                   src="/logoheader.png" 
-                   alt="DeelDeal Logo"
-                   width={300} 
-                    height={100}
-                    className="font-bold filter saturate-50  animate-pulse-custom  h-32 w-64 cursor-pointer "
+                   src="/hero-section-logo.png"
+                   alt="Swibba Logo"
+                   width={300}
+                    height={80}
+                    className="font-bold text-center  animate-pulse-custom  h-28 w-64 cursor-pointer "
                      priority
                      style={{ direction: "rtl" }}
                     />
@@ -126,8 +126,8 @@ import Image from "next/image";
           </motion.div>
 
           {/* Floating Images */}
-          <div className="relative hidden lg:block -mt-72 ">
-            <div className="absolute inset-0">
+          <div className={`relative hidden lg:block -mt-72 lg:mr-32 `}>
+            <div className="absolute inset-0 ">
               {heroImages.map((image, index) => (
                 <motion.div
                   key={index}

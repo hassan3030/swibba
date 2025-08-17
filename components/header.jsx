@@ -17,6 +17,8 @@ import {
   LogOut,
   PlusCircle,
   HandPlatter,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -113,6 +115,8 @@ export function Header() {
   const [chatLength, setChatLength] = useState(0)
   const [hasSearched, setHasSearched] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [showTopBar, setShowTopBar] = useState(true)
+  const [showCategoriesBar, setShowCategoriesBar] = useState(true)
 
   const router = useRouter()
   const { isRTL, toggleLanguage } = useLanguage()
@@ -220,26 +224,33 @@ export function Header() {
         animate="visible"
       >
         {/* Top bar */}
-        <motion.div
-          className="hidden lg:block bg-primary text-primary-foreground px-4 py-1 dark:bg-[#1a1a1a]"
-          variants={navVariants}
-        >
-          <div className="container flex items-center justify-between">
-            <motion.div className="flex items-center gap-4" variants={navVariants}>
-              <motion.div custom={0} variants={itemVariants}>
-                <LanguageToggle />
-              </motion.div>
-              <motion.div custom={1} variants={itemVariants}>
-                <ThemeToggle />
-              </motion.div>
+        <AnimatePresence>
+          {showTopBar && (
+            <motion.div
+              className="hidden lg:block bg-primary text-primary-foreground px-4 py-1 dark:bg-[#1a1a1a]"
+              variants={navVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <div className="container flex items-center justify-between">
+                <motion.div className="flex items-center gap-4" variants={navVariants}>
+                  <motion.div custom={0} variants={itemVariants}>
+                    <LanguageToggle />
+                  </motion.div>
+                  <motion.div custom={1} variants={itemVariants}>
+                    <ThemeToggle />
+                  </motion.div>
+                </motion.div>
+                <motion.div className="flex items-center gap-4" custom={2} variants={itemVariants}>
+                  <Link href="/customerService" className="text-xs hover:underline dark:text-white dark:hover:text-[#f2b230]">
+                    {t("customerService")}
+                  </Link>
+                </motion.div>
+              </div>
             </motion.div>
-            <motion.div className="flex items-center gap-4" custom={2} variants={itemVariants}>
-              <Link href="/customerService" className="text-xs hover:underline">
-                {t("customerService")}
-              </Link>
-            </motion.div>
-          </div>
-        </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Main header */}
         <div className="container py-4">
@@ -257,7 +268,7 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => toggleTheme()}
-                  className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20"
+                  className="rounded-full hover:bg-primary/10 dark:hover:bg-white  "
                   aria-label={theme === "light" ? t("darkMode") : t("lightMode")}
                 >
                   {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
@@ -268,10 +279,10 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => toggleLanguage()}
-                  className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20"
+                  className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 dark:text-white"
                   aria-label={t("language")}
                 >
-                  <span className="text-sm font-medium">{isRTL ? "EN" : "عر"}</span>
+                  <span className="text-sm font-medium">{isRTL ? "EN" : "AR"}</span>
                 </Button>
               </motion.div>
             </motion.div>
@@ -279,13 +290,13 @@ export function Header() {
             {/* Logo */}
  <motion.div variants={logoVariants} initial="hidden" animate="visible" whileHover="hover">
               <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-16 w-32 items-center justify-center bg-transparent -my-3  ">
+                <div className="flex h-10 w-16 items-center justify-center bg-transparent -my-3  ">
                     <Image 
                    src="/logoheader.png" 
-                   alt="DeelDeal Logo"
+                   alt="Swibba Logo"
                    width={200} 
                     height={300}
-                    className="h-full w-full font-bold filter saturate-50  "
+                    className="h-full w-full font-bold   "
                      priority
                     />
 
@@ -348,11 +359,11 @@ export function Header() {
                 }}
               />
               {filter.trim() && (
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                <motion.div >
                   <Button
                     size="xs"
                     className={`absolute top-1/2 -translate-y-1/2 h-full rounded-full ${
-                      isRTL ? "right-0 ml-2 " : "left-0 mr-2 "
+                      isRTL ? "right-0 " : "left-0 -mr-2 "
                     } px-3 py-1`}
                     onClick={() => handlegetProductSearchFilter()}
                     variant="default"
@@ -444,6 +455,7 @@ export function Header() {
                       </Button>
                     </motion.div>
                   </motion.div>
+
                   <motion.div custom={4} variants={itemVariants}>
                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                       <Button
@@ -457,6 +469,8 @@ export function Header() {
                       </Button>
                     </motion.div>
                   </motion.div>
+
+
                 </>
               )}
 
@@ -515,7 +529,7 @@ export function Header() {
                               </motion.span>
                             )}
                           </AnimatePresence>
-                          <span className="sr-only">{t("sendoffers") || "Sendo ffers"}</span>
+                          <span className="sr-only">{t("sendoffers") || "Send Offers"}</span>
                         </Button>
                       </motion.div>
                     </Link>
@@ -572,7 +586,7 @@ export function Header() {
                               </motion.span>
                             )}
                           </AnimatePresence>
-                          <span className="pointer-events-none absolute -top-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                             {t("messages") || "Messages"}
                           </span>
                         </Button>
@@ -590,13 +604,23 @@ export function Header() {
                           className="relative hover:text-primary dark:hover:text-primary group"
                         >
                           <PlusCircle className="h-6 w-6" />
-                          <span className="pointer-events-none absolute -top-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                             {t("addanewitem") || "  Add a new item"}
                           </span>
                         </Button>
                       </motion.div>
                     </Link>
                   </motion.div>
+
+
+                   <Button 
+      variant="" 
+      size="sm" 
+      onClick={() => {setShowTopBar(!showTopBar) ;  setShowCategoriesBar(!showCategoriesBar)}}
+      className="flex items-center text-xs bg-transparent hover:bg-transparent hover:text-[#f2b230] hover:scale-105 dark:text-white dark:hover:text-[#f2b230] transition-transform duration-300"
+    >
+      {showTopBar ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+    </Button>
                 </>
               ) : null}
             </motion.div>
@@ -792,7 +816,8 @@ export function Header() {
         </div>
 
         {/* Categories navigation */}
-        <motion.div
+        {
+          showCategoriesBar?( <motion.div
           className="border-t bg-background dark:bg-[#121212] dark:border-[#2a2a2a]"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -815,8 +840,15 @@ export function Header() {
               ))}
             </nav>
           </div>
-        </motion.div>
+        </motion.div>):''
+        }
+       
       </motion.header>
+
+      {/* Section toggle controls */}
+
     </>
   )
+
+  
 }

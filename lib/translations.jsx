@@ -1,5 +1,7 @@
 export const translations = {
-  en: {
+  en  :{
+    preparingAmazingItems:"Preparing amazing items for you",
+
 // all coins
 // "le": "Egyptian Pound",
 "LE": "LE",
@@ -310,7 +312,7 @@ SelectCountry: "Select a country",
      Pricecannotbenegative:"Price cannot be negative",
    Pleasefillallitemdetailsbeforeuploadingimages: "Please fill all item details before uploading images.",
 
-  sendoffers:"Sendo ffers",
+  sendoffers:"Send Offers",
     // swap 
 
     Firstselectyouritemstoseeavailablecategories: "First select your items to see available categories",
@@ -458,7 +460,7 @@ SelectCountry: "Select a country",
     TherewasaproblemcreatingyouraccountPleasetryagain:
       "There was a problem creating your account. Please try again.",
     YouraccounthasbeencreatedWelcometoDeelDeal:
-      "Your account has been created. Welcome to DeelDeal!",
+      "Your account has been created. Welcome to Swibba!",
     Passwordsdonotmatch: "Passwords do not match",
     Namemustbeatleast2characters: "Name must be at least 2 characters",
     Namemustbelessthan50characters: "Name must be less than 50 characters",
@@ -487,7 +489,7 @@ SelectCountry: "Select a country",
     Enteryourcredentialstoaccessyouraccount:
       "Enter your credentials to access your account",
     Enteryourinformationtocreate:
-      " Enter your information to create a DeelDeal account",
+      " Enter your information to create a Swibba account",
 
     //wishlist
     item: "item",
@@ -720,7 +722,7 @@ SelectCountry: "Select a country",
     // toast
     successfully: " Successfully",
     error: "Error",
-    // deel-product-card product card comp
+    // Swibba-product-card product card comp
     swap: "Swap",
 
     // swap And transaction status
@@ -731,12 +733,12 @@ SelectCountry: "Select a country",
     completed: "Completed",
 
     // home banner
-    deelDeal: "DeelDeal",
+    Swibba: "Swibba",
     deelDealSlogan: "Don't Shop. Trade Smarter.",
     deelDealDescription:
-      "DeelDeal lets you trade your items for things you want. List your items, find what you're looking for, and make an offer.",
+      "Swibba lets you trade your items for things you want. List your items, find what you're looking for, and make an offer.",
     browseItems: "Browse Items",
-    swapNow: "DEEL NOW",
+    swapNow: "Swap NOW",
     // Header
     search: "Search for products",
     signIn: "Sign In",
@@ -812,7 +814,7 @@ SelectCountry: "Select a country",
     fair: "Fair",
     old: "Old",
     // App
-    downloadApp: "Download the DeelDeal App",
+    downloadApp: "Download the Swibba App",
     betterExperience: "Get a better shopping experience on your mobile",
 
     // Banners
@@ -871,7 +873,7 @@ SelectCountry: "Select a country",
     facebook: "Facebook",
     noAccount: "Don't have an account?",
     loginSuccessful: "Login successful!",
-    welcomeBack: "Welcome back to DeelDeal!",
+    welcomeBack: "Welcome back to Swibba!",
     loginFailed: "Login failed",
     invalidCredentials: "Invalid email or password. Please try again.",
     showPassword: "Show password",
@@ -949,6 +951,8 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    preparingAmazingItems:"تحضير عناصر مذهلة لك",
+
 // all coins
 // "Egyptian Pound": "الجنيه المصري",
 "LE": "ج م",
@@ -1258,7 +1262,7 @@ SelectCountry: "اختر الدولة",
     TherewasaproblemcreatingyouraccountPleasetryagain:
       "حدثت مشكلة أثناء إنشاء حسابك. يُرجى المحاولة مرة أخرى.",
     YouraccounthasbeencreatedWelcometoDeelDeal:
-      "تم إنشاء حسابك. أهلاً بك في DeelDeal!",
+      "تم إنشاء حسابك. أهلاً بك في Swibba!",
     Passwordsdonotmatch: "كلمة المرور غير متطابقة",
     Namemustbeatleast2characters: "يجب أن يتكون الاسم من حرفين على الأقل",
     Namemustbelessthan50characters: "يجب أن يكون الاسم أقل من 50 حرفًا",
@@ -1516,7 +1520,7 @@ SelectCountry: "اختر الدولة",
     // toast
     successfully: "تمت بنجاح",
     error: "خطأ",
-    // deel-product-card product card comp
+    // Swap-product-card product card comp
     swap: "إستبدال",
     statusSwap: "حالة الإستبدال",
     // swap And transaction status
@@ -1526,10 +1530,10 @@ SelectCountry: "اختر الدولة",
     completed: "مكتمل",
 
     // home banner
-    deelDeal: "ديل ديل",
+    Swibba: "Swibba",
     deelDealSlogan: "لا تتسوق. تبادل كل ماتريد.",
     deelDealDescription:
-      " ديل ديل يتيح لك تبادل العناصر الخاصة بك مقابل الأشياء التي تريدها. قم بإدراج عناصر، وابحث عن ما تبحث عنه، وقدم عرضًا.",
+      " Swibba يتيح لك تبادل العناصر الخاصة بك مقابل الأشياء التي تريدها. قم بإدراج عناصر، وابحث عن ما تبحث عنه، وقدم عرضًا.",
     browseItems: "تصفح المنتجات",
     swapNow: "إختر منتج للاستبدال",
     // Header
@@ -1579,7 +1583,7 @@ SelectCountry: "اختر الدولة",
     returnPolicy: "سياسة الإرجاع",
     termsOfUse: "شروط الاستخدام",
     privacyPolicy: "سياسة الخصوصية",
-    sellerCenter: "البيع على ديل ديل",
+    sellerCenter: "البيع على Swibba",
     shippingDelivery: "الشحن والتوصيل",
     customerService: "خدمة العملاء",
     allRightsReserved: "جميع الحقوق محفوظة",
@@ -1601,7 +1605,7 @@ SelectCountry: "اختر الدولة",
     backToProducts: "العودة إلى المنتجات",
     category: "الفئة",
     // App
-    downloadApp: "حمّل تطبيق ديل ديل",
+    downloadApp: "حمّل تطبيق Swibba",
     betterExperience: "احصل على تجربة تسوق أفضل على هاتفك المحمول",
 
     new: "جديد",
@@ -1667,7 +1671,7 @@ SelectCountry: "اختر الدولة",
     facebook: "فيسبوك",
     noAccount: "ليس لديك حساب؟",
     loginSuccessful: "تم تسجيل الدخول بنجاح!",
-    welcomeBack: "مرحبًا بعودتك إلى ديل ديل!",
+    welcomeBack: "مرحبًا بعودتك إلى Swibba!",
     loginFailed: "فشل تسجيل الدخول",
     invalidCredentials:
       "بريد إلكتروني أو كلمة مرور غير صالحة. يرجى المحاولة مرة أخرى.",

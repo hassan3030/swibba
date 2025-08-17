@@ -490,7 +490,6 @@ export function ItemListingForm() {
 
   return (
     <motion.div
-    
       variants={containerVariants}
       initial="hidden"
       animate="visible"

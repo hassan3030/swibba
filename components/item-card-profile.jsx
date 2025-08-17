@@ -78,7 +78,6 @@ export function ItemCardProfile({
   images,
   status_item,
   status_swap,
-  category,
   showbtn,
   showSwitchHeart = true,
 }) {
@@ -168,8 +167,8 @@ export function ItemCardProfile({
 
   return (
     <Link href={`/products/${id}`}>
-      <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover">
-        <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
+      <motion.div  initial="hidden" animate="visible" whileHover="hover">
+        <Card className="overflow-hidden w-[150px] transition-all duration-200 hover:shadow-md ">
           <div className="relative">
             <div className="relative aspect-square overflow-hidden">
               <AnimatePresence>
@@ -181,7 +180,7 @@ export function ItemCardProfile({
                   />
                 ) : (
                   <motion.div
-                  //  variants={imageVariants} 
+       
                    whileHover="hover">
                     <Image
                       src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
@@ -197,10 +196,10 @@ export function ItemCardProfile({
               {showSwitchHeart && (
                 <motion.button
                   type="button"
-                  className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors"
+                  className="absolute top-2 right-2 z-10 bg-transparent backdrop-blur-sm rounded-full p-2 hover:scale-105 transition-colors"
                   onClick={(e) => {
-                    e.preventDefault()
                     e.stopPropagation()
+                    e.preventDefault()
                     handleAddWishItem()
                   }}
                   variants={heartVariants}
@@ -223,33 +222,33 @@ export function ItemCardProfile({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 capitalize">{t(category)}</Badge>
+              <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 capitalize">{t(status_item)}</Badge>
             </motion.div>
           </div>
 
-          <CardContent className="p-4">
+          <CardContent className="p-2">
             <motion.div
-              className="mb-2 flex items-start justify-between gap-2"
+              className="mb-1 flex items-start justify-between gap-2"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h3 className="line-clamp-1 font-semibold group-hover:text-primary capitalize">{name}</h3>
+              <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{name}</h3>
             </motion.div>
 
             <motion.div
-              className="flex items-center whitespace-nowrap text-sm font-semibold text-green-500 mb-2"
+              className="flex items-center whitespace-nowrap text-sm font-semibold text-green-500 mb-1"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
               <span className="px-1">{t("aIExpectedPrice")}: </span>
          
-              <span className="px-1"> {Number(value_estimate).toLocaleString('en-US')} LE</span>
+              <span className="px-1 overflow-ellipsis"> {Number(value_estimate).toLocaleString('en-US')} LE</span>
             </motion.div>
 
             <motion.p
-              className="mb-3 line-clamp-1 text-sm text-muted-foreground first-letter:capitalize"
+              className="mb-1 line-clamp-1 overflow-ellipsis text-sm text-muted-foreground first-letter:capitalize"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -258,7 +257,7 @@ export function ItemCardProfile({
             </motion.p>
 
             <motion.div
-              className="flex items-center whitespace-nowrap text-sm font-semibold text-green-500"
+              className="flex items-center max-w-[150px] line-clamp-1 overflow-hidden whitespace-nowrap text-sm font-semibold text-green-500"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -270,7 +269,7 @@ export function ItemCardProfile({
           {/* Swap button */}
           {status_swap == "available" && showbtn && (
             <motion.div
-              className="p-4 pt-0"
+              className="p-2 pt-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}

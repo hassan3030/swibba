@@ -105,7 +105,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
     <motion.div className="relative" variants={containerVariants} initial="hidden" animate="visible">
       <motion.div className="mb-4 flex items-center justify-between" variants={headerVariants}>
         <motion.h2
-          className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent"
+          className="text-xl font-bold bg-gradient-to-r  from-gray-900 to-gray-600  dark:from-green-500 dark:to-green-900 bg-clip-text text-transparent"
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -128,7 +128,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
         <AnimatePresence>
           {canScrollLeft && (
             <motion.div
-              className="absolute -left-4 top-1/2 z-10 -translate-y-1/2"
+              className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 rounded-full hover:rounded-full"
               variants={buttonVariants}
               initial="hidden"
               animate="visible"
@@ -165,7 +165,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
         <AnimatePresence>
           {canScrollRight && (
             <motion.div
-              className="absolute -right-4 top-1/2 z-10 -translate-y-1/2"
+              className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 rounded-full " 
               variants={buttonVariants}
               initial="hidden"
               animate="visible"

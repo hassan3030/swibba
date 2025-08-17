@@ -93,7 +93,6 @@ export function LoginForm() {
   const { t } = useTranslations()
   const { isRTL } = useLanguage()
 
-  const returnUrl = searchParams.get("returnUrl") || "/"
 
   const {
     register,
@@ -107,26 +106,6 @@ export function LoginForm() {
     },
   })
 
-  // useEffect(() => {
-  //   if (true) {
-  //     const loadGoogleScript = () => {
-  //       const script = document.createElement("script")
-  //       script.src = "https://accounts.google.com/gsi/client"
-  //       script.async = true
-  //       script.defer = true
-  //       document.body.appendChild(script)
-  //       return () => {
-  //         document.body.removeChild(script)
-  //       }
-  //     }
-
-  //     const googleCleanup = loadGoogleScript()
-
-  //     return () => {
-  //       googleCleanup()
-  //     }
-  //   }
-  // }, [])
 
   const validateForm = (data) => {
     let isValid = true

@@ -83,12 +83,13 @@ export function ProductGallery({ images, productName }) {
 
   return (
     <motion.div
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-4 "
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
+      
     >
-      <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg">
+      <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg max-h-80 w-full">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={currentImage}
@@ -102,13 +103,13 @@ export function ProductGallery({ images, productName }) {
               opacity: { duration: 0.2 },
               scale: { duration: 0.2 },
             }}
-            className="absolute inset-0"
+            className="absolute inset-0 "
           >
             <Image
               src={images[currentImage] || "/placeholder.svg"}
               alt={`${productName} - Image ${currentImage + 1}`}
               fill
-              className="object-contain"
+              className="object-contain "
               priority
             />
           </motion.div>
@@ -117,15 +118,14 @@ export function ProductGallery({ images, productName }) {
         {images.length > 1 && (
           <>
             <motion.div
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full hover:rounded-full"
               variants={buttonVariants}
-              whileHover="hover"
               whileTap="tap"
             >
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-md"
+                className="h-10 w-10 rounded-full  bg-background/80 backdrop-blur-sm "
                 onClick={prevImage}
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -134,9 +134,8 @@ export function ProductGallery({ images, productName }) {
             </motion.div>
 
             <motion.div
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 rounded-full hover:rounded-full"
               variants={buttonVariants}
-              whileHover="hover"
               whileTap="tap"
             >
               <Button

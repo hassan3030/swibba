@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Search } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { ItemCardProfile } from "./item-card-profile"
 import { categoriesName } from "@/lib/data"
 import { useTranslations } from "@/lib/use-translations"
@@ -96,7 +96,6 @@ export function ItemsList({
   useEffect(() => {
     setIsLoading(true)
     let filtered = items
-
     if (category !== "all") {
       filtered = filtered.filter((item) => item.category === category)
     }
@@ -139,6 +138,8 @@ const paginatedItems = Array.isArray(displayedItems)
   return (
     <motion.div className="space-y-6" initial="hidden" animate="visible" variants={containerVariants}>
       {showFilters && (
+
+
         <motion.div className="flex flex-col gap-4 sm:flex-row" variants={filterVariants}>
           <motion.div
             className="relative flex-1"
@@ -150,17 +151,9 @@ const paginatedItems = Array.isArray(displayedItems)
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pr-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+              className="border pr-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary/20"
             />
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full hover:bg-primary/10"
-                onClick={handleSearch}
-              >
-                <Search className="h-4 w-4" />
-              </Button>
             </motion.div>
           </motion.div>
           {showCategoriesFilter && (
@@ -230,7 +223,7 @@ const paginatedItems = Array.isArray(displayedItems)
         ) : (
           <motion.div key="content">
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              className="flex flex-row gap-4 justify-center flex-wrap max-w-screen"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -276,7 +269,7 @@ function SimplePagination({ currentPage, totalPages, onPageChange }) {
       transition={{ delay: 0.3 }}
     >
       <motion.button
-        className="px-3 py-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
+        className="px-3 py-1 rounded border dark:text-black bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         whileHover={{ scale: 1.05 }}
@@ -288,7 +281,7 @@ function SimplePagination({ currentPage, totalPages, onPageChange }) {
       {[...Array(totalPages)].map((_, idx) => (
         <motion.button
           key={idx + 1}
-          className={`px-3 py-1 border rounded transition-all duration-200 ${
+          className={`px-3 dark:text-black py-1 border rounded transition-all duration-200 ${
             currentPage === idx + 1 ? "bg-primary text-white shadow-lg" : "bg-white hover:bg-gray-100"
           }`}
           onClick={() => onPageChange(idx + 1)}
@@ -303,7 +296,7 @@ function SimplePagination({ currentPage, totalPages, onPageChange }) {
       ))}
 
       <motion.button
-        className="px-3 py-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
+        className="px-3 py-1 dark:text-black rounded border bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         whileHover={{ scale: 1.05 }}

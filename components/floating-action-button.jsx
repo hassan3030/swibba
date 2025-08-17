@@ -1,19 +1,16 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation"
 import {
      Plus, MessageSquare, Heart, User,
-  ShoppingCart,
-  Bell,
   Settings,
   PlusCircle,
  
 } from "lucide-react"
-
-
+import { BiCartDownload } from "react-icons/bi";
+import { TbShoppingCartUp } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
-
 const fabVariants = {
   initial: { scale: 0, rotate: -180 },
   animate: {
@@ -75,8 +72,8 @@ const menuItems = [
   { icon: MessageSquare, label: "Messages", color: "bg-blue-500",  href:"/chat"},
   { icon: Heart, label: "Favorites", color: "bg-red-500" , href:"/wishList"},
   { icon: User, label: "Profile", color: "bg-green-500" , href:"/profile"},
-  { icon: ShoppingCart, label: "Shopping Cart", color: "bg-blue-500", href:"/cart" },
-  { icon: Bell, label: "Bell", color: "bg-red-500" , href:"/notifications"},
+  { icon:TbShoppingCartUp , label: "Send offers", color: "bg-blue-500", href:"/cart" },
+  { icon: BiCartDownload, label: "Received offers", color: "bg-red-500" , href:"/notifications"},
   { icon: Settings, label: "Settings Profile", color: "bg-green-500", href:"/profile/settings/editProfile" },
   { icon: PlusCircle, label: "Add Item", color: "bg-blue-500", href:"/profile/settings/editItem/new" },
 ];

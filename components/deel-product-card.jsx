@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Heart, Repeat, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
 import { getImageProducts } from "@/callAPI/products"
 import { useRouter } from "next/navigation"
@@ -110,12 +109,8 @@ export function DeelProductCard({
   id,
   name,
   price,
-  value_estimate,
-  description,
   images,
   status_item,
-  category,
-  location,
   showSwitchHeart = true,
 }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -125,7 +120,6 @@ export function DeelProductCard({
   const [loading, setLoading] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
 
-  const { isRTL } = useLanguage()
   const { t } = useTranslations()
   const { toast } = useToast()
   const router = useRouter()
@@ -200,8 +194,8 @@ export function DeelProductCard({
   }
 
   const handleAddToCart = async (e) => {
-    e.preventDefault()
     e.stopPropagation()
+    e.preventDefault()
     setIsAddingToCart(true)
 
     // Simulate API call for swap request
@@ -227,7 +221,7 @@ export function DeelProductCard({
   return (
     <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover" className="group">
       <Link href={`/products/${id}`}>
-        <div className="group relative flex w-[220px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
+        <div className="group relative flex w-[150px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
           {/* Image container */}
           <div className="relative aspect-square overflow-hidden">
             <AnimatePresence>
@@ -251,7 +245,7 @@ export function DeelProductCard({
                       src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
                       alt={name}
                       fill
-                      className="object-contain transition-transform duration-300"
+                      className=" transition-transform duration-300 object-fill"
                       placeholder="blur"
                       blurDataURL="/placeholder.svg?height=300&width=300"
                       priority
@@ -266,7 +260,7 @@ export function DeelProductCard({
             {showSwitchHeart && (
               <motion.button
                 type="button"
-                className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur-sm rounded-full p-2 hover:bg-white/90 transition-colors"
+                className="absolute top-2 right-2 z-10  backdrop-blur-sm  rounded-full p-2 bg-transparent hover:bg-white/90 transition-colors"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -279,7 +273,7 @@ export function DeelProductCard({
                 animate={switchHeart ? "liked" : "initial"}
               >
                 <Heart
-                  className={`h-5 w-5 transition-colors ${
+                  className={`h-4 w-4 transition-colors -mt-1 ${
                     switchHeart ? "text-red-500 fill-current" : "text-muted-foreground"
                   }`}
                 />
@@ -296,7 +290,7 @@ export function DeelProductCard({
           <div className="flex flex-1 flex-col p-3">
             {/* Title */}
             <motion.h3
-              className="mb-1 line-clamp-2 min-h-[40px] text-sm font-medium capitalize"
+              className="mb-1 line-clamp-1 overflow-ellipsis text-sm font-medium capitalize"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
@@ -307,7 +301,7 @@ export function DeelProductCard({
             {/* Price */}
             <motion.div className="mb-2" variants={priceVariants}>
               <div className="flex items-baseline gap-1">
-                <motion.span className="text-lg font-bold" whileHover="pulse" variants={priceVariants}>
+                <motion.span className="text-lg font-bold line-clamp-1" whileHover="pulse" variants={priceVariants}>
                   {Number(price).toLocaleString('en-US')} LE
                 </motion.span>
               </div>

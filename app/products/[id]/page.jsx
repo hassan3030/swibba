@@ -130,7 +130,7 @@ export default function ProductPage() {
 
   return (
     <motion.div
-      className="container py-10"
+      className="container py-5"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -326,12 +326,12 @@ export default function ProductPage() {
                   >
                     {product.status_swap === "available" ? (
                       <p className="text-green-600">
-                        {t("statusSwap")}: <span className="capitalize">{t(product?.status_swap)}</span> -{" "}
+                        {t("statusSwap")}:
                         {t("availableItems")}
                       </p>
                     ) : (
                       <p className="text-red-600">
-                        {t("statusSwap")}: <span className="capitalize">{t(product?.status_swap)}</span> -{" "}
+                        {t("statusSwap")}: 
                         {t("unAvailableItems")}
                       </p>
                     )}

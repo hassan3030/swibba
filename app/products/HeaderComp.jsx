@@ -30,7 +30,7 @@ export const HeaderComp = () => {
           animate="visible"
         >
           <motion.h2
-            className="text-xl font-bold"
+            className="ext-xl font-bold bg-gradient-to-r  from-gray-900 to-gray-600  dark:from-green-500 dark:to-green-900 bg-clip-text text-transparent"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}

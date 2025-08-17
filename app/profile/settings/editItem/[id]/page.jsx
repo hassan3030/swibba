@@ -69,7 +69,7 @@ export default function EditItemPage({ params }) {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">Loading item...</p>
+          <p className="text-muted-foreground">{t("loading") || "Loading..."}</p>
         </motion.div>
       </div>
     )
@@ -93,7 +93,8 @@ export default function EditItemPage({ params }) {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/profile">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to profile
+                {t("goBackProfile")||"Back to profile"}
+                
               </Link>
             </Button>
           </motion.div>

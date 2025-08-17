@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -12,7 +11,6 @@ import { itemsStatus, categoriesName, allowedCategories } from "@/lib/data"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import {countriesList} from "@/lib/data"; // Add this import at the top (you need a countries array)
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -20,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { addProduct } from "@/callAPI/products"
 
@@ -84,7 +81,6 @@ const buttonVariants = {
 }
 
 export function ItemListingForm() {
-  const router = useRouter()
   const [images, setImages] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -94,7 +90,6 @@ export function ItemListingForm() {
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [selectedPosition, setSelectedPosition] = useState(null)
-  const mapInstanceRef = useRef(null)
   const { toast } = useToast()
   const { t } = useTranslations()
 
@@ -469,7 +464,6 @@ export function ItemListingForm() {
       form.reset()
       setImages([])
       setImageUrls([])
-      // router.refresh()
     } catch (err) {
       console.error(err)
       toast({
@@ -499,7 +493,7 @@ export function ItemListingForm() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center bg-gradient-to-br from-gray-50 to-white min-h-screen py-8 px-2 md:px-8"
+      className="flex items-center justify-center bg-gradient-to-br from-gray-50 to-white min-h-screen w-full py-8 px-2 md:px-8"
     >
       <div className="w-full max-w-3xl">
         <Form {...form}>

@@ -17,8 +17,8 @@ import {
   LogOut,
   PlusCircle,
   HandPlatter,
-  ChevronUp,
-  ChevronDown,
+  Maximize2,
+  Minimize2
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -618,7 +618,7 @@ export function Header() {
       onClick={() => {setShowTopBar(!showTopBar) ;  setShowCategoriesBar(!showCategoriesBar)}}
       className="flex items-center text-xs bg-transparent hover:bg-transparent hover:text-[#f2b230] hover:scale-105 dark:text-white dark:hover:text-[#f2b230] transition-transform duration-300"
     >
-      {showTopBar ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+      {showTopBar ? <Minimize2 className="h-5 w-5" /> : < Maximize2 className="h-5 w-5" />}
     </Button>
                 </>
               ) : null}

@@ -71,7 +71,7 @@ export function Footer() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              DeelDeal
+              SWIBBA
             </motion.h3>
             <motion.div className="mb-4 flex gap-4" variants={containerVariants} initial="hidden" animate="visible">
               {[
@@ -157,7 +157,7 @@ export function Footer() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              &copy; {new Date().getFullYear()} DeelDeal. {t("allRightsReserved")}
+              &copy; {new Date().getFullYear()} SWIBBA. {t("allRightsReserved")}
             </motion.p>
           </div>
         </motion.div>

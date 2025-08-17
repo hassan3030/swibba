@@ -382,7 +382,7 @@ export function ItemListingUpdate(props) {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
-                              {t("Price")}
+                              {t("price")|| "Price"}
                             </FormLabel>
                             <FormControl>
                               <motion.div variants={inputVariants} whileFocus="focus">
@@ -477,7 +477,7 @@ export function ItemListingUpdate(props) {
                         name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t("Description")}</FormLabel>
+                            <FormLabel>{t("description")||"Description"}</FormLabel>
                             <FormControl>
                               <motion.div variants={inputVariants} whileFocus="focus">
                                 <Textarea
@@ -502,7 +502,7 @@ export function ItemListingUpdate(props) {
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("Category")}</FormLabel>
+                              <FormLabel>{t("category")||"Category"}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <motion.div variants={inputVariants} whileFocus="focus">

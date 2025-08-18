@@ -142,24 +142,18 @@ export default function ProfilePage() {
   const router = useRouter()
   const id = params.id
   const [user, setUser] = useState([])
-
   const [rate, setRate] = useState(0)
-
   const [products, setProducts] = useState([])
   const [avatarPath, setAvatarPath] = useState("")
-
   const [full_name, setFullName] = useState(`${user?.first_name} ${user?.last_name}` || "")
-
   const [userOffers, setUserOffers] = useState([])
   const [notificationsLength, setNotificationsLength] = useState(0)
-
   const [myAvailableItems, setmyAvailableItems] = useState([])
   const [myUnavailableItems, setmyUnavailableItems] = useState([])
   const [userSwaps, setUserSwaps] = useState([])
   const [swapItems, setSwapItems] = useState([])
-
   const [showSwitchHeart, setShowSwitchHeart] = useState(false)
-
+  
   const getUser = async () => {
     const token = await getCookie()
     if (token) {
@@ -389,7 +383,7 @@ export default function ProfilePage() {
                     </motion.div>
                     <span className="font-medium">
                       {!user?.completedSwaps
-                        ? "No completed swaps"
+                        ? `${t("noCompletedSwaps")|| "No completed swaps"}`
                         : `${user?.completedSwaps == 0 ? t("no") : user?.completedSwaps} ${t("completedSwaps") || "Completed swaps"}`}{" "}
                     </span>
                   </motion.div>
@@ -423,7 +417,7 @@ export default function ProfilePage() {
                       label: t("itemsInOffers") || "Items In Offers",
                       count: myUnavailableItems.length,
                     },
-                    { value: "offers", icon: Clock, label: t("offers") || "Offers", count: userOffers.length },
+                    { value: "offers", icon: Clock, label: t("sendoffers") || "Send Offers", count: userOffers.length },
                     {
                       value: "notifications",
                       icon: BellDot,

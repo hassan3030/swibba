@@ -3,8 +3,7 @@ export const translations = {
 
 Pleasefillallrequiredfields:"Please fill all required fields correctly before submitting.",
 Locationrequesttimedout:"Location request timed out",
-
-
+noCompletedSwaps: "No completed swaps",
 // all coins
 // "le": "Egyptian Pound",
 "LE": "LE",
@@ -957,6 +956,8 @@ SelectCountry: "Select a country",
     Pleasefillallrequiredfields:"يرجى ملء جميع الحقول المطلوبة بشكل صحيح قبل الإرسال.",
     Locationrequesttimedout:"طلب الموقع قد استغرق وقتًا طويلاً",
     Preparingamazingitems:"تحضير عناصر مذهلة لك",
+    itemsInOffers: "العناصر في العروض",
+noCompletedSwaps:"لا توجد تبديلات مكتملة",
 
 // all coins
 // "Egyptian Pound": "الجنيه المصري",
@@ -1419,7 +1420,6 @@ SelectCountry: "اختر الدولة",
     myOffers: "عروضي",
     manageItems: "إدارة المنتجات",
     myItems: "منتجاتي",
-    itemsInOffers: "منتجات في تبديلات",
     offers: "تبديلات",
     myProfile: "الملف الشخصي",
     rate: "التقييم",

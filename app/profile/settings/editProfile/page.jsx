@@ -1098,7 +1098,7 @@ export default function ProfileSettingsPage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="add"  key='add'>
+              <TabsContent value="add"  key='add'  >
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="add">
                   <motion.div variants={cardVariants} whileHover="hover">
                     <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
@@ -1116,13 +1116,10 @@ export default function ProfileSettingsPage() {
                           {t("Addyouritemstoswap") || "Add your items to swap"}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="p-8">
+                      <CardContent className="p-0 w-full">
                         <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
                         >
-                          <ItemListingForm />
+                          <ItemListingForm className="w-full p-0"/>
                         </motion.div>
                       </CardContent>
                     </Card>

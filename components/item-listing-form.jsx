@@ -748,6 +748,7 @@ export function ItemListingForm() {
                             </Card>
                             </motion.div>
                           )}
+
                         </AnimatePresence>
                       </Card>
                     </motion.div>
@@ -757,7 +758,7 @@ export function ItemListingForm() {
                     disabled={!isStep1Valid}
                     className="w-full py-2 rounded-xl bg-[#f2b230] text-gray-900 font-semibold shadow-md hover:bg-[#f2b230]/90 transition-all"
                   >
-                    {t("Continue") || "Continue"}
+                    {t("continue") || "Continue"}
                   </Button>
                 </motion.div>
               )}

@@ -3,11 +3,10 @@ import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Eye } from "lucide-react"
+import { Edit, Trash2, Eye, MoreHorizontal } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,
@@ -15,6 +14,13 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
@@ -61,6 +67,7 @@ const ItemCard = ({ item }) => {
   const { toast } = useToast()
   const [bigImage, setBigImage] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const { t } = useTranslations()
   const router = useRouter()
 
@@ -120,7 +127,7 @@ const ItemCard = ({ item }) => {
         </motion.div>
         <div className="flex flex-1 flex-col p-4">
           <motion.div
-            className="mb-2 flex sm:flex-col justify-between"
+            className="mb-2 flex flex-col sm:flex-row sm:justify-between"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
@@ -190,98 +197,86 @@ const ItemCard = ({ item }) => {
           </motion.p>
 
           <motion.div
-            className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-4"
+            className="mt-auto flex justify-end pt-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="flex items-center gap-2">{/* Future feature */}</div>
-            <div className="flex gap-2">
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/products/${item.id}`}>
-                    <Eye className="mr-1 h-4 w-4" />
-                    {t("view")}
-                  </Link>
-                </Button>
-              </motion.div>
-
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`settings/editItem/${item.id}`}>
-                    <Edit className="mr-1 h-4 w-4" />
-                    {t("edit")}
-                  </Link>
-                </Button>
-              </motion.div>
-
-            {item.status_swap === "available" && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                    <Button variant="destructive" size="sm" disabled={isDeleting}>
-                      <Trash2 className="mr-1 h-4 w-4" />
-                      {isDeleting ? t("deleting") || "Deleting..." : t("delete")}
+            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/products/${item.id}`} className="flex items-center w-full">
+                      <Eye className="mr-2 h-4 w-4" />
+                      {t("view")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`settings/editItem/${item.id}`} className="flex items-center w-full">
+                      <Edit className="mr-2 h-4 w-4" />
+                      {t("edit")}
+                    </Link>
+                  </DropdownMenuItem>
+                  {item.status_swap === "available" && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)} className="text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t("delete")}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DialogContent>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  <DialogHeader>
+                    <DialogTitle>{t("deleteOneItem") || "Delete Item"}</DialogTitle>
+                    <DialogDescription>
+                      {t("deleteDialogDesc") ||
+                        "Are you sure you want to delete this item? This action cannot be undone."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <p>
+                    {t("areYouSureDelete") ||
+                      "This will permanently remove the item from your listings."}
+                  </p>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">{t("cancel") || "Cancel"}</Button>
+                    </DialogClose>
+                    <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                      {isDeleting ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              ease: "linear",
+                            }}
+                            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                          />
+                          {t("deleting") || "Deleting..."}
+                        </>
+                      ) : (
+                        t("delete") || "Delete"
+                      )}
                     </Button>
-                  </motion.div>
-                </DialogTrigger>
-
-                <DialogContent>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  >
-                    <DialogHeader>
-                      <DialogTitle>{t("deleteOneItem") || "Delete Item"}</DialogTitle>
-                      <DialogDescription>
-                        {t("deleteDialogDesc") ||
-                          "Are you sure you want to delete this item? This action cannot be undone."}
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <p>
-                      {t("areYouSureDelete") ||
-                        "This will permanently remove the item from your listings."}
-                    </p>
-
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                          <Button variant="outline">{t("cancel") || "Cancel"}</Button>
-                        </motion.div>
-                      </DialogClose>
-
-                      <DialogClose asChild>
-                        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                            {isDeleting ? (
-                              <>
-                                <motion.div
-                                  animate={{ rotate: 360 }}
-                                  transition={{
-                                    duration: 1,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                  }}
-                                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
-                                />
-                                {t("deleting") || "Deleting..."}
-                              </>
-                            ) : (
-                              t("delete") || "Delete"
-                            )}
-                          </Button>
-                        </motion.div>
-                      </DialogClose>
-                    </DialogFooter>
-                  </motion.div>
-                </DialogContent>
-              </Dialog>
-            )}
-
-            </div>
+                  </DialogFooter>
+                </motion.div>
+              </DialogContent>
+            </Dialog>
           </motion.div>
         </div>
       </div>

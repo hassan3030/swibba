@@ -134,10 +134,11 @@ export function ItemListingForm() {
   })
 
   const handleImageUpload = (e) => {
+    // Require all main form fields before allowing image upload
     const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
     if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
       toast({
-        title: t("error") || "ERROR",
+        title: t("error") || "ERROR ",
         description: t("Pleasefillallitemdetailsbeforeuploadingimages") || "Please fill all item details before uploading images.",
         variant: "destructive",
       });
@@ -148,10 +149,11 @@ export function ItemListingForm() {
 
     const newFiles = Array.from(e.target.files);
 
+    // Validate file size and type
     const validFiles = newFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
         toast({
-          title: t("error") || "ERROR",
+          title: t("error") || "ERROR ",
           description: `${t("File")} ${file.name} ${(t("istoolargeMaximumsizeis5MB") || "is too large. Maximum size is 5MB.")}`,
           variant: "destructive",
         });
@@ -159,7 +161,7 @@ export function ItemListingForm() {
       }
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
         toast({
-          title: t("error") || "ERROR",
+          title: t("error") || "ERROR ",
           description: `${t("File")} ${file.name} ${(t("hasanunsupportedformatPleaseuploadJPEGPNGorWebP") || "has an unsupported format. Please upload JPEG, PNG, or WebP.")}`,
           variant: "destructive",
         });
@@ -168,15 +170,17 @@ export function ItemListingForm() {
       return true;
     });
 
+    // Check if adding these files would exceed the maximum
     if (images.length + validFiles.length > MAX_IMAGES) {
       toast({
-        title: t("error") || "ERROR",
+        title: t("error") || "ERROR ",
         description: `${t("Youcanuploadmaximumof") || "You can upload a maximum of"} ${MAX_IMAGES} ${(t("images") || "images")}.`,
         variant: "destructive",
       });
       return;
     }
 
+    // Create URLs for preview
     const newImageUrls = validFiles.map((file) => URL.createObjectURL(file));
 
     setImages((prev) => [...prev, ...validFiles]);
@@ -184,7 +188,9 @@ export function ItemListingForm() {
   };
 
   const removeImage = (index) => {
+    // Revoke the object URL to avoid memory leaks
     URL.revokeObjectURL(imageUrls[index])
+
     setImages((prev) => prev.filter((_, i) => i !== index))
     setImageUrls((prev) => prev.filter((_, i) => i !== index))
   }
@@ -194,7 +200,7 @@ export function ItemListingForm() {
 
     if (!name || !description || !category || !condition) {
       toast({
-        title: t("error") || "ERROR",
+        title: t("error") || "ERROR ",
         description:
           t("PleasedescriptioncategoryconditionAIpriceestimate") ||
           "Please fill in the item name, description, category, and condition for an AI price estimate.",
@@ -206,8 +212,13 @@ export function ItemListingForm() {
     setIsEstimating(true)
 
     try {
+      // Simulate AI processing time
       await new Promise((resolve) => setTimeout(resolve, 1500))
+      
+      // Base price factors - either from user input or category-based defaults
       const basePrice = parseFloat(price) || getCategoryBasePrice(category)
+      
+      // Condition factors - how condition affects value
       const conditionFactors = {
         "new": 1.0,
         "excellent": 0.85,
@@ -215,36 +226,69 @@ export function ItemListingForm() {
         "fair": 0.5,
         "poor": 0.3
       }
+      
+      // Category-specific depreciation rates
       const categoryDepreciationRates = {
-        "electronics": 0.25,
+        "electronics": 0.25, // Electronics depreciate faster
         "clothing": 0.4,
         "furniture": 0.15,
         "books": 0.1,
         "toys": 0.2,
         "sports": 0.15,
         "automotive": 0.2,
-        "jewelry": 0.05,
+        "jewelry": 0.05, // Jewelry holds value better
         "collectibles": 0.05,
         "art": 0.02
       }
+      
+      // Market demand multiplier (could be based on real market data)
       const marketDemandMultiplier = getMarketDemandMultiplier(category)
+      
+      // Image quality factor (placeholder - in a real system this would analyze images)
       const imageQualityFactor = images.length > 0 ? 1.05 : 0.95
+      
+      // Calculate the estimated value
       let estimatedValue = basePrice
+      
+      // Apply condition adjustment
       const conditionFactor = conditionFactors[condition] || 0.7
       estimatedValue *= conditionFactor
+      
+      // Apply category-specific depreciation
       const depreciationRate = categoryDepreciationRates[category] || 0.2
       estimatedValue *= (1 - depreciationRate)
+      
+      // Apply market demand
       estimatedValue *= marketDemandMultiplier
+      
+      // Apply image quality factor
       estimatedValue *= imageQualityFactor
+      
+      // Add slight randomness to make it feel more "AI-like" (±5%)
       const randomFactor = 0.95 + (Math.random() * 0.1)
       estimatedValue *= randomFactor
+      
+      // Round to nearest whole number
       const finalEstimate = Math.round(estimatedValue)
+      
       setAiPriceEstimation(finalEstimate)
       form.setValue("value_estimate", finalEstimate)
+      
+      console.log("AI Price Estimation Details:", {
+        basePrice,
+        condition,
+        conditionFactor,
+        category,
+        depreciationRate,
+        marketDemandMultiplier,
+        imageQualityFactor,
+        randomFactor,
+        finalEstimate
+      })
     } catch (error) {
       console.error("Error getting AI price estimate:", error)
       toast({
-        title: t("error") || "ERROR",
+        title: t("error") || "ERROR ",
         description:
           t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
           "Failed to get AI price estimate. Please try again or enter your own estimate.",
@@ -255,6 +299,7 @@ export function ItemListingForm() {
     }
   }
   
+  // Helper function to get base price by category
   const getCategoryBasePrice = (category) => {
     const basePrices = {
       "electronics": 500,
@@ -271,9 +316,11 @@ export function ItemListingForm() {
     return basePrices[category] || 100
   }
   
+  // Helper function to simulate market demand
   const getMarketDemandMultiplier = (category) => {
+    // Simulated market demand (in a real app, this could come from an API)
     const marketDemand = {
-      "electronics": 1.2,
+      "electronics": 1.2, // High demand
       "clothing": 0.9,
       "furniture": 0.85,
       "books": 0.7,
@@ -281,16 +328,26 @@ export function ItemListingForm() {
       "sports": 1.1,
       "automotive": 0.95,
       "jewelry": 1.15,
-      "collectibles": 1.3,
+      "collectibles": 1.3, // Very high demand
       "art": 1.25
     }
     return marketDemand[category] || 1.0
   }
 
-  const onValidSubmit = async (data) => {
+  const onSubmit = async (data, event) => {
+    if (event) event.preventDefault();
+    const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
+    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
+      toast({
+        title: t("error") || "ERROR ",
+        description: t("Pleasefillallitemdetails") || "Please fill all item details before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (images.length === 0) {
       toast({
-        title: t("error") || "ERROR",
+        title: t("error") || "ERROR ",
         description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
         variant: "destructive",
       });
@@ -300,37 +357,20 @@ export function ItemListingForm() {
     setIsSubmitting(true);
 
     try {
-      const payload = { ...data, geo_location };
-      await addProduct(payload, images);
-
+      await handleSubmit();
+      console.log("Form data:", data);
+      console.log("Images:", images);
+      // No navigation or refresh here
+    } catch (error) {
+      console.error("Error creating item:", error);
       toast({
-        title: t("successfully"),
-        description: t("Itemaddedsuccessfullywithimage") || "Item added successfully with images!",
-      });
-
-      form.reset();
-      setImages([]);
-      setImageUrls([]);
-      setStep(1);
-    } catch (err) {
-      console.error("Error creating item:", err);
-      toast({
-        title: t("error") || "ERROR",
-        description: err.message || t("Erroraddingitem") || "Error adding item.",
+        title: t("error") || "ERROR ",
+        description: "Failed to create item. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const onInvalidSubmit = (errors) => {
-    console.log("Form errors:", errors);
-    toast({
-        title: t("error") || "ERROR",
-        description: t("Pleasefillallrequiredfields") || "Please fill all required fields correctly before submitting.",
-        variant: "destructive",
-    });
   };
 
   const getCurrentPosition = () => {
@@ -380,7 +420,7 @@ export function ItemListingForm() {
             message = t("Locationinformationisunavailable") || "Location information is unavailable"
             break
           case error.TIMEOUT:
-            message = t("Locationinformationisunavailable") || "Location request timed out"
+            message = t("Locationrequesttimedout") || "Location request timed out"
             break
         }
         toast({
@@ -398,14 +438,52 @@ export function ItemListingForm() {
     )
   }
 
+  const handleSubmit = async () => {
+    let files = images
+    if (files.length === 0) {
+      toast({
+        title: t("error") || "ERROR ",
+        description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const payload = { ...form.getValues(), geo_location }
+      console.log("Payload:", payload)
+      console.log("geo_location:", geo_location)
+
+      await addProduct(payload, files)
+
+      toast({
+        title: t("successfully"),
+        description: t("Itemaddedsuccessfullywithimage") || "Item added successfully with images!",
+      })
+
+      form.reset()
+      setImages([])
+      setImageUrls([])
+    } catch (err) {
+      console.error(err)
+      toast({
+        title: t("error") || "ERROR ",
+        description: err.message || t("Erroraddingitem") || "Error adding item.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const [step, setStep] = useState(1);
 
+  // Validation for step 1 fields
   const isStep1Valid = form.watch("name")?.length >= 3 &&
     form.watch("description")?.length >= 20 &&
     !!form.watch("category") &&
     !!form.watch("condition") &&
     !!form.watch("price");
 
+  // Validation for step 2 fields
   const isStep2Valid = images.length > 0 &&
     !!form.watch("value_estimate") &&
     form.watch("allowed_categories")?.length > 0;
@@ -415,35 +493,35 @@ export function ItemListingForm() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center min-h-screen w-full py-2 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50"
+      className="flex items-center justify-center min-h-screen w-full py-2 px-0 sm:px-0 lg:px-8 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50"
     >
-      <div className="w-full max-w-4xl">
+      <div className="w-full ">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onValidSubmit, onInvalidSubmit)}
-            className="space-y-2"
+            onSubmit={form.handleSubmit()}
+            className="space-y-2 px-0"
           >
-            <div className="grid gap-2 md:grid-cols-1 rounded-2xl shadow-xl bg-white dark:bg-gray-900 p-6 md:p-10 border border-gray-200 dark:border-gray-800">
+            <div className="grid gap-2 max-[370px]:px-1  md:grid-cols-1 rounded-2xl shadow-xl bg-white dark:bg-gray-900 p-6 md:p-10 border border-gray-200 dark:border-gray-800">
               {step === 1 && (
-                <motion.div className="space-y-2" variants={itemVariants}>
+                <motion.div className="space-y-2 max-[370px]:mx-2 max-[370px]:max-w-[calc(100%-theme(spacing.6))]" variants={itemVariants}>
                   <div className="space-y-2">
                     <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-50 tracking-tight">{t("ItemDetails") || "Item Details"}</h2>
-                    <p className="text-base text-gray-500 dark:text-gray-400">
+                    {/* <p className="text-base text-gray-500 dark:text-gray-400">
                       {t("Providedetailedinformationunderstandoffering") ||
                         "Provide detailed information about your item to help others understand what you're offering."}
-                    </p>
+                    </p> */}
                   </div>
 
-                  <div className="grid gap-2">
+                  <div className="grid w-full gap-2 ">
                     
                     <FormField
                       control={form.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("ItemName") || "Item Name"}</FormLabel>
+                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Name") || "Name"}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MacBook Pro 16-inch 2021" {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input placeholder="e.g., MacBook Pro 16-inch 2021" {...field} className="rounded-lg   bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
                           </FormControl>
                           <FormDescription className="text-gray-500 dark:text-gray-400">
                             {t("Bespecificaboutbrandmodelkeyfeatures") ||
@@ -684,9 +762,9 @@ export function ItemListingForm() {
                 </motion.div>
               )}
               {step === 2 && (
-                <motion.div className="space-y-2" variants={itemVariants}>
+                <motion.div className="space-y-2 max-[370px]:mx-2 max-[370px]:max-w-[calc(100%-theme(spacing.6))]" variants={itemVariants}>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 ">
                     <FormField
                       control={form.control}
                       name="allowed_categories"
@@ -836,18 +914,17 @@ export function ItemListingForm() {
                       render={({ field }) => (
                         <FormItem>
                           <div className="flex items-center justify-between gap-2">
-                            <FormLabel className="font-semibold text-gray-800 dark:text-gray-300">{t("aIExpectedPrice") || "Estimated Value"} ({t("le")})</FormLabel>
                             <TooltipProvider>
                               <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                <TooltipTrigger asChild >
+                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className=" max-[370px]:w-full">
                                     <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
                                       onClick={() => {requestAiPriceEstimate() }}
                                       disabled={isEstimating}
-                                      className="h-8 gap-1 rounded-lg border-gray-300 dark:border-[#f2b230] bg-white dark:bg-[#f2b230] text-black dark:text-[#3e3e3e] hover:bg-[#f2ae27] dark:hover:bg-[#f2b230] hover:border-[#f2b230] dark:hover:border-[#f2b230] transition-all"
+                                      className="h-8 gap-1 rounded-lg  max-[370px]:min-w-[100%]  border-gray-300 dark:border-[#f2b230] bg-white dark:bg-[#f2b230] text-black dark:text-[#3e3e3e] hover:bg-[#f2ae27] dark:hover:bg-[#f2b230] hover:border-[#f2b230] dark:hover:border-[#f2b230] transition-all"
                                     >
                                       {isEstimating ? (
                                         <>
@@ -870,6 +947,7 @@ export function ItemListingForm() {
                                   </p>
                                 </TooltipContent>
                               </Tooltip>
+
                             </TooltipProvider>
                           </div>
                           <FormControl>
@@ -883,7 +961,7 @@ export function ItemListingForm() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                               >
-                                {t("AIsuggestsvalueof") || "AI suggests a value of"} ${aiPriceEstimation}
+                                {t("AIsuggestsvalueof") || "AI suggests a value of"} {t('le')||"LE"} {aiPriceEstimation}
                               </motion.p>
                             )}
                           </AnimatePresence>
@@ -906,6 +984,9 @@ export function ItemListingForm() {
                         </Button>
                         <Button
                           type="submit"
+                        onClick={() => {
+                      handleSubmit()
+                    }}
                           disabled={!isStep2Valid || isSubmitting}
                           className="w-full py-2 rounded-xl bg-[#f2b230] text-gray-900 font-semibold shadow-md hover:bg-[#f2b230]/90 transition-all"
                         >

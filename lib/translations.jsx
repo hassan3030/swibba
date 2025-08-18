@@ -1,6 +1,9 @@
 export const translations = {
   en  :{
-    preparingAmazingItems:"Preparing amazing items for you",
+
+Pleasefillallrequiredfields:"Please fill all required fields correctly before submitting.",
+Locationrequesttimedout:"Location request timed out",
+
 
 // all coins
 // "le": "Egyptian Pound",
@@ -579,7 +582,7 @@ SelectCountry: "Select a country",
     ListNewItem: "List a New Item",
     Createadetailedlistingtofindtheperfectswapforyouritem:
       "Create a detailed listing to find the perfect swap for your item.",
-    UpdateYourItem: "Update Your Item",
+    Updateitem: "Update Item",
     Updatedetailedlistingtofindtheperfectswapforyouritem:
       "Update a detailed listing to find the perfect swap for your item",
     all: "All categories",
@@ -951,7 +954,9 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
-    preparingAmazingItems:"تحضير عناصر مذهلة لك",
+    Pleasefillallrequiredfields:"يرجى ملء جميع الحقول المطلوبة بشكل صحيح قبل الإرسال.",
+    Locationrequesttimedout:"طلب الموقع قد استغرق وقتًا طويلاً",
+    Preparingamazingitems:"تحضير عناصر مذهلة لك",
 
 // all coins
 // "Egyptian Pound": "الجنيه المصري",
@@ -1379,7 +1384,7 @@ SelectCountry: "اختر الدولة",
     ListNewItem: "إضافة عنصر جديد",
     Createadetailedlistingtofindtheperfectswapforyouritem:
       "إنشاء قائمة مفصلة لتحديد التبادل المثالي لعنصرك",
-    UpdateYourItem: " تحديث عنصرك",
+    Updateitem: " تحديث عنصرك",
     Updatedetailedlistingtofindtheperfectswapforyouritem:
       " تحديث قائمة مفصلة لتحديد التبادل المثالي لعنصرك",
 

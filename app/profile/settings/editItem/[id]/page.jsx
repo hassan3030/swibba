@@ -57,7 +57,7 @@ export default function EditItemPage({ params }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center dark:bg-[#121212] ">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -77,13 +77,13 @@ export default function EditItemPage({ params }) {
 
   return (
     <motion.div
-      className="container py-10"
+      className="container py-2  dark:bg-[#121212] "
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="mb-6 flex items-center gap-2"
+        className="mb-2 flex items-center gap-2 "
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -99,16 +99,16 @@ export default function EditItemPage({ params }) {
             </Button>
           </motion.div>
         </motion.div>
-      </motion.div>
+      </motion.div> 
 
-      <motion.div className="mb-8" variants={itemVariants} initial="hidden" animate="visible">
+      <motion.div className="mb-2 " variants={itemVariants} initial="hidden" animate="visible">
         <motion.h1
-          className="text-3xl font-bold"
+          className="text-3xl font-bold "
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {t("UpdateYourItem") || "Update Your Item"}
+          {t("Updateitem") || "Update Item"}
         </motion.h1>
         <motion.p
           className="text-muted-foreground"
@@ -121,7 +121,7 @@ export default function EditItemPage({ params }) {
         </motion.p>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} >
         {item && <ItemListingUpdate {...item} />}
       </motion.div>
     </motion.div>

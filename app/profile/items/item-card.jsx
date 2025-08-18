@@ -127,7 +127,7 @@ const ItemCard = ({ item }) => {
         </motion.div>
         <div className="flex flex-1 flex-col p-4">
           <motion.div
-            className="mb-2 flex flex-col sm:flex-row sm:justify-between"
+            className="mb-2 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-start"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
@@ -164,12 +164,12 @@ const ItemCard = ({ item }) => {
             </div>
 
             <motion.div
-              className="text-right"
+              className=""
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex flex-col items-start gap-1">
                 <motion.span
                   className="inline-flex items-center gap-2 rounded bg-orange-50 px-2 py-1 text-base font-bold text-orange-700 shadow-sm"
                   whileHover={{ scale: 1.05 }}

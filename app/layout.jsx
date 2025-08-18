@@ -18,7 +18,7 @@ const cairo = Cairo({
 })
 
 export const metadata = {
-  title: "DeelDeal",
+  title: "Swibba",
   description: "A marketplace platform where users can swap items across categories",
   icons: {
     icon: "/favicon.ico",

@@ -66,7 +66,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <motion.div variants={itemVariants}>
             <motion.h3
-              className="mb-4 text-lg font-semibold"
+              className="text-4xl mb-2 font-bold bg-gradient-to-r from-yellow-400 to-red-500 bg-clip-text text-transparent"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}

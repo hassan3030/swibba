@@ -10,7 +10,7 @@ import Image from "next/image"
 import { itemsStatus, categoriesName, allowedCategories } from "@/lib/data"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-import {countriesList} from "@/lib/data"; 
+import {countriesList} from "@/lib/data"; // Add this import at the top (you need a countries array)
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -415,37 +415,37 @@ export function ItemListingForm() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center min-h-screen w-full py-2 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50"
+      className="flex items-center justify-center min-h-screen w-full py-8 px-4 sm:px-6 lg:px-8 bg-gray-950 text-gray-50"
     >
       <div className="w-full max-w-4xl">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onValidSubmit, onInvalidSubmit)}
-            className="space-y-2"
+            className="space-y-6"
           >
-            <div className="grid gap-2 md:grid-cols-1 rounded-2xl shadow-xl bg-white dark:bg-gray-900 p-6 md:p-10 border border-gray-200 dark:border-gray-800">
+            <div className="grid gap-6 md:grid-cols-1 rounded-2xl shadow-xl bg-gray-900 p-6 md:p-10 border border-gray-800">
               {step === 1 && (
-                <motion.div className="space-y-2" variants={itemVariants}>
+                <motion.div className="space-y-6" variants={itemVariants}>
                   <div className="space-y-2">
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-50 tracking-tight">{t("ItemDetails") || "Item Details"}</h2>
+                    <h2 className="text-3xl font-bold text-gray-50 tracking-tight">{t("ItemDetails") || "Item Details"}</h2>
                     <p className="text-base text-gray-500 dark:text-gray-400">
                       {t("Providedetailedinformationunderstandoffering") ||
                         "Provide detailed information about your item to help others understand what you're offering."}
                     </p>
                   </div>
 
-                  <div className="grid gap-2">
+                  <div className="grid gap-4">
                     
                     <FormField
                       control={form.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("ItemName") || "Item Name"}</FormLabel>
+                          <FormLabel className="text-gray-400">{t("ItemName") || "Item Name"}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MacBook Pro 16-inch 2021" {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input placeholder="e.g., MacBook Pro 16-inch 2021" {...field} className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]" />
                           </FormControl>
-                          <FormDescription className="text-gray-500 dark:text-gray-400">
+                          <FormDescription className="text-gray-500">
                             {t("Bespecificaboutbrandmodelkeyfeatures") ||
                               "Be specific about brand, model, and key features."}
                           </FormDescription>
@@ -454,176 +454,17 @@ export function ItemListingForm() {
                       )}
                     />
 
-                
-
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("price") || "Price"}</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 500" {...field} type="number" min={1}      
-                      className="rounded-lg bg-white dark:bg-gray-800 border-gray-300
-                       dark:border-gray-700 text-gray-900 dark:text-gray-50
-                        focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all "
-                        />
-                       
-                          </FormControl>
-                          <FormDescription></FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Country") || "Country"}</FormLabel>
-                          <FormControl>
-                            <Select
-                              multiple
-                              searchable
-                              onValueChange={field.onChange}
-                              defaultValue={field.value || []}
-                            >
-                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
-                                <SelectValue placeholder={t("SelectCountry") || "Select country/countries"} />
-                              </SelectTrigger>
-                              <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50">
-                                {countriesList.map((country) => (
-                                  <SelectItem key={country} value={country} className="text-right">
-                                    { t(country) || country }
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("City") || "City"}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t("e.g., Sohage") || "e.g., Sohage"} {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="street"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Street") || "Street"}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t("egOmarebnElkhtab") || "e.g., Omar ebn Elkhtab"} {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel className="text-gray-700 dark:text-gray-400">{t("description") || "Description"}</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder={
-                              t("Describeyouritemndetailincludingconditionfeaturesandanyrelevanthistory") ||
-                              "Describe your item in detail, including condition, features, and any relevant history."
-                            }
-                            className="min-h-[120px] rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormDescription className="text-gray-500 dark:text-gray-400">
-                          {t("detailsprovidethemorelikelyfindgoodswap") ||
-                            "The more details you provide, the more likely you are to find a good swap."}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("category") || "Category"}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                            <FormControl>
-                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
-                                <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50">
-                              {categoriesName.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {t(category) || category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="condition"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Condition") || "Condition"}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
-                                <SelectValue placeholder={t("SelectCondition") || "Select condition"} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50">
-                              {itemsStatus.map((condition) => (
-                                <SelectItem key={condition} value={condition} className="capitalize">
-                                  {t(condition) || condition}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    
-                  </div>
-    <motion.div variants={itemVariants}>
-                      <Card className="rounded-xl shadow-md bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <motion.div variants={itemVariants}>
+                      <Card className="rounded-xl shadow-md bg-gray-800 border-gray-700">
                         <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                            <Navigation className="h-5 w-5 text-teal-500 dark:text-teal-400" />
+                          <CardTitle className="flex items-center gap-2 text-gray-300">
+                            <Navigation className="h-5 w-5 text-teal-400" />
                             {t("CurrentPosition") || "Current Position"}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
+                        <CardContent className="space-y-4">
                           <motion.div variants={buttonVariants}  whileTap="tap">
-                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-teal-400/50 text-gray-800 dark:text-teal-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-[#f2b230] transition-all">
+                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-teal-500/10 text-teal-300 font-medium hover:bg-teal-500/20 transition-all hover:scale-[1.02]">
                               {isGettingLocation ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -647,22 +488,22 @@ export function ItemListingForm() {
                               exit={{ opacity: 0, height: 0 }}
                               transition={{ duration: 0.3 }}
                             >
-                            <Card className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 mt-2">
+                            <Card className="rounded-lg border border-gray-700 bg-gray-800/50 mt-4">
                               <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                <CardTitle className="flex items-center gap-2 text-gray-300">
                                   <MapPin className="h-5 w-5 text-[#f2b230]" />
                                   {t("SelectedPosition") || "Selected Position"}
                                 </CardTitle>
                               </CardHeader>
                               <CardContent className="space-y-2">
                                 <div className="space-y-1">
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-gray-400">
                                     <strong>{t("Name") || "Name"}:</strong> {selectedPosition.name}
                                   </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-gray-400">
                                     <strong>{t("Latitude") || "Latitude"}:</strong> {selectedPosition.lat.toFixed(6)}
                                   </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-gray-400">
                                     <strong>{t("Longitude") || "Longitude"}:</strong> {selectedPosition.lng.toFixed(6)}
                                   </p>
                                 </div>
@@ -673,35 +514,187 @@ export function ItemListingForm() {
                         </AnimatePresence>
                       </Card>
                     </motion.div>
+
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">{t("price") || "Price"}</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 500" {...field} type="number" min={1} className="rounded-lg bg-gray-800 border-gray-700 text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-teal-200 transition-all" />
+                          </FormControl>
+                          <FormDescription></FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">{t("Country") || "Country"}</FormLabel>
+                          <FormControl>
+                            <Select
+                              multiple
+                              searchable
+                              onValueChange={field.onChange}
+                              defaultValue={field.value || []}
+                            >
+                              <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-50">
+                                <SelectValue placeholder={t("SelectCountry") || "Select country/countries"} />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-800 border-gray-700 text-gray-50">
+                                {countriesList.map((country) => (
+                                  <SelectItem key={country} value={country} className="text-right">
+                                    { t(country) || country }
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">{t("City") || "City"}</FormLabel>
+                          <FormControl>
+                            <Input placeholder={t("e.g., Sohage") || "e.g., Sohage"} {...field} className="rounded-lg bg-gray-800 border-gray-700 text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-teal-200 transition-all" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="street"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">{t("Street") || "Street"}</FormLabel>
+                          <FormControl>
+                            <Input placeholder={t("egOmarebnElkhtab") || "e.g., Omar ebn Elkhtab"} {...field} className="rounded-lg bg-gray-800 border-gray-700 text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-teal-200 transition-all" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="text-gray-400">{t("description") || "Description"}</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={
+                              t("Describeyouritemndetailincludingconditionfeaturesandanyrelevanthistory") ||
+                              "Describe your item in detail, including condition, features, and any relevant history."
+                            }
+                            className="min-h-[120px] rounded-lg bg-gray-800 border-gray-700 text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-teal-200 transition-all"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-gray-500">
+                          {t("detailsprovidethemorelikelyfindgoodswap") ||
+                            "The more details you provide, the more likely you are to find a good swap."}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">{t("category") || "Category"}</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                            <FormControl>
+                              <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-50">
+                                <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-gray-800 border-gray-700 text-gray-50">
+                              {categoriesName.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {t(category) || category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="condition"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">{t("Condition") || "Condition"}</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-50">
+                                <SelectValue placeholder={t("SelectCondition") || "Select condition"} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-gray-800 border-gray-700 text-gray-50">
+                              {itemsStatus.map((condition) => (
+                                <SelectItem key={condition} value={condition} className="capitalize">
+                                  {t(condition) || condition}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <Button
                     type="button"
                     onClick={() => setStep(2)}
                     disabled={!isStep1Valid}
-                    className="w-full py-2 rounded-xl bg-[#f2b230] text-gray-900 font-semibold shadow-md hover:bg-[#f2b230]/90 transition-all"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] text-white font-semibold shadow-md hover:from-[#3db6a7] hover:to-[#2ea89a] transition-all"
                   >
                     {t("Continue") || "Continue"}
                   </Button>
                 </motion.div>
               )}
               {step === 2 && (
-                <motion.div className="space-y-2" variants={itemVariants}>
+                <motion.div className="space-y-6" variants={itemVariants}>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <FormField
                       control={form.control}
                       name="allowed_categories"
                       render={() => (
                         <FormItem>
-                          <div className="mb-2">
-                            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-300">
+                          <div className="mb-4">
+                            <FormLabel className="text-base font-semibold text-gray-300">
                               {t("Whatwillyouacceptinreturn") || "What will you accept in return?"}
                             </FormLabel>
-                            <FormDescription className="text-gray-500 dark:text-gray-400">
+                            <FormDescription className="text-gray-400">
                               {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange") ||
                                 "Select the categories of items you're willing to accept in exchange"}
                             </FormDescription>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             {allowedCategories.map((category) => {
                               const isAll = category === "all"
                               const selected = form.getValues("allowed_categories") || []
@@ -715,7 +708,7 @@ export function ItemListingForm() {
                                   render={({ field }) => (
                                     <FormItem
                                       key={category}
-                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 shadow-sm dark:hover:border-[#f2b230] hover:border-[#f2b230] transition-all"
+                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-gray-700 bg-gray-800 p-4 shadow-sm hover:border-[#f2b230] transition-all"
                                     >
                                       <FormControl>
                                         <Checkbox
@@ -736,7 +729,7 @@ export function ItemListingForm() {
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal capitalize text-gray-800 dark:text-gray-300">
+                                      <FormLabel className="font-normal capitalize text-gray-300">
                                         {t(category) || category}
                                       </FormLabel>
                                     </FormItem>
@@ -751,15 +744,15 @@ export function ItemListingForm() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-50">{t("ImagesValue") || "Images & Value"}</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <h2 className="text-2xl font-semibold text-gray-50">{t("ImagesValue") || "Images & Value"}</h2>
+                    <p className="text-sm text-gray-400">
                       {t("Uploadclearphotosofyouritemandsetitsestimatedvalue") ||
                         "Upload clear photos of your item and set its estimated value"}
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <FormLabel className="font-semibold text-gray-800 dark:text-gray-300">{t("ItemImages") || "Item Images"}</FormLabel>
+                  <div className="space-y-4">
+                    <FormLabel className="font-semibold text-gray-300">{t("ItemImages") || "Item Images"}</FormLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       <AnimatePresence>
                         {imageUrls.map((url, index) => (
@@ -771,7 +764,7 @@ export function ItemListingForm() {
                             exit="hidden"
                             whileHover="hover"
                           >
-                            <Card className="relative overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                            <Card className="relative overflow-hidden rounded-xl shadow-md border border-gray-700 bg-gray-800">
                               <div className="aspect-square relative">
                                 <Image
                                   src={url || "/placeholder.svg"}
@@ -803,13 +796,13 @@ export function ItemListingForm() {
                       {images.length < MAX_IMAGES && (
                         <motion.div 
                         variants={imageUploadVariants} initial="hidden" animate="visible" whileHover="hover">
-                          <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-[#f2b230] dark:hover:border-[#f2b230] hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
+                          <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-600 bg-gray-800/50 hover:border-teal-400 hover:bg-gray-800 transition-all shadow-sm">
                             <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
                               <label htmlFor="image-upload" className="cursor-pointer text-center">
-                                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-                                  <Upload className="h-6 w-6   text-[#f2b230] dark:text-[#f2b230]" />
+                                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700">
+                                  <Upload className="h-6 w-6 text-teal-400" />
                                 </div>
-                                <p className="text-xs text-[#f2b230] dark:text-[#f1ab1e] font-semibold">{t("Clicktoupload") || "Click to upload"}</p>
+                                <p className="text-sm text-[8px]  text-teal-400 font-semibold">{t("Clicktoupload") || "Click to upload"}</p>
                                 <input
                                   id="image-upload"
                                   type="file"
@@ -824,19 +817,19 @@ export function ItemListingForm() {
                         </motion.div>
                       )}
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {t("Uploadupto") || "Upload up to"} <span className="font-bold text-[#f2b230] dark:text-[#f2b230]">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
+                    <p className="mt-2 text-xs text-gray-500">
+                      {t("Uploadupto") || "Upload up to"} <span className="font-bold text-teal-400">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
                     </p>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <FormField
                       control={form.control}
                       name="value_estimate"
                       render={({ field }) => (
                         <FormItem>
                           <div className="flex items-center justify-between gap-2">
-                            <FormLabel className="font-semibold text-gray-800 dark:text-gray-300">{t("aIExpectedPrice") || "Estimated Value"} ({t("le")})</FormLabel>
+                            <FormLabel className="font-semibold text-gray-300">{t("aIExpectedPrice") || "Estimated Value"} ({t("le")})</FormLabel>
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -847,7 +840,7 @@ export function ItemListingForm() {
                                       size="sm"
                                       onClick={() => {requestAiPriceEstimate() }}
                                       disabled={isEstimating}
-                                      className="h-8 gap-1 rounded-lg border-gray-300 dark:border-[#f2b230] bg-white dark:bg-[#f2b230] text-black dark:text-[#3e3e3e] hover:bg-[#f2ae27] dark:hover:bg-[#f2b230] hover:border-[#f2b230] dark:hover:border-[#f2b230] transition-all"
+                                      className="h-8 gap-1 rounded-lg border-teal-400/50 bg-gray-800 text-teal-300 hover:bg-gray-700"
                                     >
                                       {isEstimating ? (
                                         <>
@@ -873,12 +866,12 @@ export function ItemListingForm() {
                             </TooltipProvider>
                           </div>
                           <FormControl>
-                            <Input type="number" min="0" step="1" {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input type="number" min="0" step="1" {...field} className="rounded-lg bg-gray-800 border-gray-700 text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-teal-200 transition-all" />
                           </FormControl>
                           <AnimatePresence>
                             {aiPriceEstimation !== null && (
                               <motion.p
-                                className="text-xs text-[#f2b230] dark:text-[#f2b230] font-semibold"
+                                className="text-xs text-teal-500 dark:text-teal-400 font-semibold"
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
@@ -887,7 +880,7 @@ export function ItemListingForm() {
                               </motion.p>
                             )}
                           </AnimatePresence>
-                          <FormDescription className="text-gray-500 dark:text-gray-400">
+                          <FormDescription className="text-gray-500">
                             {t("Setfairmarketvaluetohelpfacilitatebalancedswaps") ||
                               "Set a fair market value to help facilitate balanced swaps."}
                           </FormDescription>
@@ -896,18 +889,18 @@ export function ItemListingForm() {
                       )}
                     />
                   </div>
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-col sm:flex-row gap-4">
                         <Button
                           type="button"
                           onClick={() => setStep(1)}
-                          className="w-full py-2 rounded-xl bg-gray-200 text-gray-800 font-semibold shadow-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-600 transition-all"
+                          className="w-full py-3 rounded-xl bg-gray-900 text-gray-50 font-semibold shadow-md hover:bg-gray-600 transition-all"
                         >
                           {t("Back") || "Back"}
                         </Button>
                         <Button
                           type="submit"
                           disabled={!isStep2Valid || isSubmitting}
-                          className="w-full py-2 rounded-xl bg-[#f2b230] text-gray-900 font-semibold shadow-md hover:bg-[#f2b230]/90 transition-all"
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
                         >
                           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("save") || "Save"}
                         </Button>

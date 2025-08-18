@@ -451,3 +451,11 @@
 .animate-count-up {
   animation: countUp 1s forwards;
 }
+
+
+input[type=number] {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+  code:red
+}

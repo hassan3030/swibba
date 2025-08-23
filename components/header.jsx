@@ -30,7 +30,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/lib/theme-provider"
 import { removeCookie, getCookie, decodedToken } from "@/callAPI/utiles"
-import { getOfferById, getOffersNotifications, getWishList, getMessage } from "@/callAPI/swap"
+import { getOfferById, getOffersNotifications, getWishList, getMessage, getMessagesByUserId } from "@/callAPI/swap"
 import { categoriesName } from "@/lib/data"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
@@ -142,21 +142,43 @@ export function Header() {
   }
 
   const getWishlist = async () => {
-    const { id } = await decodedToken()
+    const token = await getCookie()
+    if (!token) {
+      setWishlistLength(0)
+      return
+    }
+    const decoded = await decodedToken(token)
+    if (!decoded) {
+      setWishlistLength(0)
+      return
+    }
+    const { id } = decoded
     const wishList = await getWishList(id)
     setWishlistLength(Array.isArray(wishList.data) ? wishList.count : 0)
   }
 
   const getChat = async () => {
-    const { id } = await decodedToken()
-    const chat = await getMessage(id)
+    const token = await getCookie()
+    if (!token) {
+      setChatLength(0)
+      return
+    }
+    const decoded = await decodedToken(token)
+    if (!decoded) {
+      setChatLength(0)
+      return
+    }
+    const { id } = decoded
+    const chat = await getMessagesByUserId(id)
     setChatLength(Array.isArray(chat.data) ? chat.data.length : 0)
   }
 
   const getOffers = async () => {
     const token = await getCookie()
     if (token) {
-      const { id } = await decodedToken()
+      const decoded = await decodedToken(token)
+      if (!decoded) return
+      const { id } = decoded
       const offers = await getOfferById(id)
 
       const filteredOffers = Array.isArray(offers.data)

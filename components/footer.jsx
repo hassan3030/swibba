@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Facebook, Instagram, Twitter } from "lucide-react"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
+import Image from "next/image"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -66,7 +67,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <motion.div variants={itemVariants}>
             <motion.h3
-              className="text-4xl mb-2 font-bold bg-gradient-to-r from-yellow-400 to-red-500 bg-clip-text text-transparent"
+              className="text-4xl mb-2 font-bold text-primary"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
@@ -157,7 +158,7 @@ export function Footer() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              &copy; {new Date().getFullYear()} SWIBBA. {t("allRightsReserved")}
+              &copy; {new Date().getFullYear()}<Image className="inline-block w-5 h-5 rounded-full mx-1 -mt-1" src="/logoheader.png" alt="swibba" width={100} height={100} /> <span className="text-primary">SWIBBA</span> {t("allRightsReserved")}
             </motion.p>
           </div>
         </motion.div>

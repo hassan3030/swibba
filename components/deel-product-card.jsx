@@ -155,9 +155,10 @@ export function DeelProductCard({
   const handleGetWishItem = async () => {
     try {
       const user = await decodedToken()
+      if (!user?.id) return
       const WishItem = await getWishList(user.id)
-      if (WishItem.data && user.id) {
-        const isItem = WishItem.data.find((i) => i.item_id == id) ? true : false
+      if (WishItem?.success && Array.isArray(WishItem.data)) {
+        const isItem = WishItem.data.some((i) => i.item_id == id)
         setSwitchHeart(isItem)
       }
     } catch (error) {
@@ -168,19 +169,28 @@ export function DeelProductCard({
   const handleAddWishItem = async () => {
     try {
       const user = await decodedToken()
+      if (!user?.id) {
+        toast({
+          title: t("faildWish") || "Login required",
+          description: t("pleaseLoginWish") || "Please login to manage your wishlist.",
+          variant: "destructive",
+        })
+        return
+      }
       const WishItem = await getWishList(user.id)
-      const WishItemId = WishItem.data.filter((i) => i.item_id == id)
-      if (WishItem.data && user.id) {
-        const isItem = WishItem.data.find((i) => i.item_id == id)
-        if (isItem) {
-          await deleteWishList(WishItemId[0]?.id)
-          setSwitchHeart(false)
-          toast({
-            title: t("successAddWish") || "Success",
-            description: t("deletedWishDesc") || "Removed from wishlist",
-          })
-        } else {
-          await addWishList(id, user.id)
+      const items = Array.isArray(WishItem?.data) ? WishItem.data : []
+      const existing = items.find((i) => i.item_id == id)
+
+      if (existing) {
+        await deleteWishList(existing.id)
+        setSwitchHeart(false)
+        toast({
+          title: t("successAddWish") || "Success",
+          description: t("deletedWishDesc") || "Removed from wishlist",
+        })
+      } else {
+        const res = await addWishList(id, user.id)
+        if (res?.success) {
           setSwitchHeart(true)
           toast({
             title: t("successAddWish") || "Success",
@@ -299,9 +309,9 @@ export function DeelProductCard({
             </motion.h3>
 
             {/* Price */}
-            <motion.div className="mb-2" variants={priceVariants}>
+            <motion.div className="mb-2 " variants={priceVariants}>
               <div className="flex items-baseline gap-1">
-                <motion.span className="text-lg font-bold line-clamp-1" whileHover="pulse" variants={priceVariants}>
+                <motion.span className="text-lg font-bold line-clamp-1 text-secondary2" whileHover="pulse" variants={priceVariants}>
                   {Number(price).toLocaleString('en-US')} LE
                 </motion.span>
               </div>

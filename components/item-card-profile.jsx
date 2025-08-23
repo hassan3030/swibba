@@ -236,16 +236,7 @@ export function ItemCardProfile({
               <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{name}</h3>
             </motion.div>
 
-            <motion.div
-              className="flex items-center whitespace-nowrap text-sm font-semibold text-green-500 mb-1"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="px-1">{t("aIExpectedPrice")}: </span>
-         
-              <span className="px-1 overflow-ellipsis"> {Number(value_estimate).toLocaleString('en-US')} LE</span>
-            </motion.div>
+           
 
             <motion.p
               className="mb-1 line-clamp-1 overflow-ellipsis text-sm text-muted-foreground first-letter:capitalize"
@@ -257,12 +248,22 @@ export function ItemCardProfile({
             </motion.p>
 
             <motion.div
-              className="flex items-center max-w-[150px] line-clamp-1 overflow-hidden whitespace-nowrap text-sm font-semibold text-green-500"
+              className="flex items-center max-w-[150px] line-clamp-1 overflow-hidden whitespace-nowrap text-sm font-semibold text-secondary2"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              {t("price")}: {Number(price).toLocaleString('en-US')} LE
+              {t("price")}:{Number(price).toLocaleString('en-US')} LE
+            </motion.div>
+
+            <motion.div
+              className="flex items-center whitespace-nowrap text-sm font-semibold text-secondary2/90 mb-1"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span>{t("aIExpectedPrice")}:</span>
+              <span className=" overflow-ellipsis">{Number(value_estimate).toLocaleString('en-US')} LE</span>
             </motion.div>
           </CardContent>
 

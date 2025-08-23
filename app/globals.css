@@ -4,81 +4,93 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    
+    /* Light mode - Base colors */
+    --background: 0 0% 100%;        /* #FFFFFF - Pure white background */
+    --foreground: 222.2 84% 4.9%;   /* #0F1729 - Dark text color */
+    --card: 0 0% 100%;              /* #FFFFFF - White card background */
+    --card-foreground: 222.2 84% 4.9%; /* #0F1729 - Dark text on cards */
+    --popover: 0 0% 100%;           /* #FFFFFF - White popover background */
+    --popover-foreground: 222.2 84% 4.9%; /* #0F1729 - Dark text on popovers */
+    /* Warm color palette - Orange/Yellow tones */
+    --primary: 40 89% 57%;          /* #F5A623 - Main orange/yellow */
+    --primary-foreground: 0 0% 0%;  /* #000000 - Black text on primary */
 
-    /* Orange/Yellow palette */
-    --primary: 40 89% 57%;
-    --primary-foreground: 0 0% 0%;
+    --secondary: 32 89% 57%;        /* #F58A23 - Darker orange */
+    --secondary-foreground: 0 0% 0%; /* #000000 - Black text on secondary */
 
-    --secondary: 32 89% 57%;
-    --secondary-foreground: 0 0% 0%;
+    --accent: 27 89% 57%;           /* #F57323 - Deep orange accent */
+    --accent-foreground: 0 0% 0%;   /* #000000 - Black text on accent */
 
-    --accent: 27 89% 57%;
-    --accent-foreground: 0 0% 0%;
+    /* Success/Price */
+    --secondary2: 152 63% 42%;      /* #27AE60 - Green for success/price */
+    --secondary2-foreground: 0 0% 100%; /* #FFFFFF - Text on secondary2 */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* UI Elements */
+    --muted: 210 40% 96.1%;         /* #F1F5F9 - Subtle background */
+    --muted-foreground: 215.4 16.3% 46.9%; /* #64748B - Muted text */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;    /* #EF4444 - Error/warning red */
+    --destructive-foreground: 210 40% 98%; /* #F8FAFC - Light text on destructive */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 40 89% 57%;
+    /* Borders and Input elements */
+    --border: 214.3 31.8% 91.4%;    /* #E2E8F0 - Border color */
+    --input: 214.3 31.8% 91.4%;     /* #E2E8F0 - Input borders */
+    --ring: 40 89% 57%;             /* #F5A623 - Focus ring color */
 
-    --radius: 0.5rem;
+    --radius: 0.5rem;               /* 8px border radius */
   }
 
+  /* Custom pulse animation for loading states */
   @keyframes pulse-custom {
-  0%, 100% {
-    opacity: 1;
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
   }
-  50% {
-    opacity: 0.8;
-  }
-}
 
-.animate-pulse-custom {
-  animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
+  .animate-pulse-custom {
+    animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 
   .dark {
-    /* DeelDeal-inspired dark mode colors */
-    --background: 0 0% 7%; /* #121212 - Very dark background */
-    --foreground: 0 0% 98%; /* #fafafa - Light text */
+    /* Dark mode - Base colors */
+    --background: 0 0% 7%;          /* #121212 - Very dark background */
+    --foreground: 0 0% 98%;         /* #FAFAFA - Light text */
 
-    --card: 0 0% 10%; /* #1a1a1a - Slightly lighter card background */
-    --card-foreground: 0 0% 98%; /* #fafafa - Light text */
+    --card: 0 0% 10%;               /* #1A1A1A - Card background */
+    --card-foreground: 0 0% 98%;    /* #FAFAFA - Light text on cards */
 
-    --popover: 0 0% 10%; /* #1a1a1a - Matching card background */
-    --popover-foreground: 0 0% 98%; /* #fafafa - Light text */
+    --popover: 0 0% 10%;            /* #1A1A1A - Popover background */
+    --popover-foreground: 0 0% 98%; /* #FAFAFA - Light text on popovers */
 
-    /* Primary color - gold accent like in the image */
-    --primary: 45 93% 47%; /* #f5b014 - Gold/yellow accent */
-    --primary-foreground: 0 0% 10%; /* #1a1a1a - Dark text on primary */
+    /* Gold accent colors */
+    --primary: 45 93% 47%;          /* #F5B014 - Gold accent */
+    --primary-foreground: 0 0% 10%; /* #1A1A1A - Dark text on primary */
 
-    /* Secondary color - darker gold */
-    --secondary: 36 91% 43%; /* #d99212 - Darker gold */
-    --secondary-foreground: 0 0% 98%; /* #fafafa - Light text */
+    --secondary: 36 91% 43%;        /* #D99212 - Darker gold */
+    --secondary-foreground: 0 0% 98%; /* #FAFAFA - Light text on secondary */
 
-    /* Accent color - brighter gold */
-    --accent: 45 100% 60%; /* #ffcc33 - Brighter gold */
-    --accent-foreground: 0 0% 10%; /* #1a1a1a - Dark text */
+    --accent: 45 100% 60%;          /* #FFCC33 - Bright gold */
+    --accent-foreground: 0 0% 10%;  /* #1A1A1A - Dark text on accent */
 
-    --muted: 0 0% 15%; /* #262626 - Muted background */
-    --muted-foreground: 0 0% 65%; /* #a6a6a6 - Muted text */
+    /* Success/Price */
+    --secondary2: 152 63% 42%;      /* #27AE60 - Green for success/price */
+    --secondary2-foreground: 0 0% 100%; /* #FFFFFF - Text on secondary2 */
 
-    --destructive: 0 84% 60%; /* Red for destructive actions */
-    --destructive-foreground: 0 0% 98%; /* #fafafa - Light text */
+    /* UI Elements - Dark mode */
+    --muted: 0 0% 15%;              /* #262626 - Muted background */
+    --muted-foreground: 0 0% 65%;   /* #A6A6A6 - Muted text */
 
-    --border: 0 0% 18%; /* #2e2e2e - Border color */
-    --input: 0 0% 18%; /* #2e2e2e - Input background */
-    --ring: 45 93% 47%; /* #f5b014 - Gold accent for focus rings */
+    --destructive: 0 84% 60%;       /* #E11D48 - Error red */
+    --destructive-foreground: 0 0% 98%; /* #FAFAFA - Light text on destructive */
+
+    /* Borders and Input elements - Dark mode */
+    --border: 0 0% 18%;             /* #2E2E2E - Border color */
+    --input: 0 0% 18%;              /* #2E2E2E - Input background */
+    --ring: 45 93% 47%;             /* #F5B014 - Focus ring color */
   }
 }
 
@@ -107,6 +119,8 @@
   [dir="rtl"] {
     direction: rtl;
     text-align: right;
+    /* Reverse Tailwind horizontal spacing in RTL */
+    --tw-space-x-reverse: 1;
   }
 
   [dir="ltr"] {

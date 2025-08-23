@@ -171,7 +171,7 @@ export default function ProductPage() {
               >
                 <Badge
                   variant="outline"
-                  className="bg-[#49c5b6] text-white border-[#49c5b6] hover:bg-[#3db6a7] hover:text-white hover:border-[#3db6a7]"
+                  className="text-primary border-primary/90 hover:cursor-pointer hover:scale-105 "
                 >
                   {t(product.status_item)}
                 </Badge>
@@ -186,21 +186,21 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-secondary2/90">
               <div className="flex items-baseline">
-                <span className="text-sm font-medium text-[#404553]">LE</span>
+                <span className="text-sm font-medium ">{t("le")}</span>
                 <motion.span
-                  className="text-4xl font-bold text-[#404553]"
+                  className="text-4xl font-bold "
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
                 >
-                  {Number(product.price).toLocaleString()}
+                  {Number(product.price).toLocaleString('en-US')}
                 </motion.span>
               </div>
             </div>
-            <div className="text-xs text-[#49c5b6]">
-              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: LE{Number(product.price).toLocaleString()}
+            <div className="text-xs text-secondary2/85 ">
+              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}:{Number(product.price).toLocaleString('en-US')} {t("le")}
             </div>
           </motion.div>
 
@@ -222,10 +222,10 @@ export default function ProductPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="flex items-center gap-3">
-              <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"} />
+            <div className="flex items-center gap-3 border-primary/70">
+              <motion.div  whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
+                <Avatar className="h-12 w-12 ">
+                  <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"}  />
                   <AvatarFallback>{name ? name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
               </motion.div>
@@ -312,7 +312,7 @@ export default function ProductPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="grid gap-2"
+                    className="grid gap-2 text-primary"
                   >
                     {t(product.category)}
                   </motion.div>
@@ -325,13 +325,13 @@ export default function ProductPage() {
                     transition={{ duration: 0.2 }}
                   >
                     {product.status_swap === "available" ? (
-                      <p className="text-green-600">
-                        {t("statusSwap")}:
+                      <p className="text-primary/85 mx-1">
+                        {t("statusSwap")}: 
                         {t("availableItems")}
                       </p>
                     ) : (
-                      <p className="text-red-600">
-                        {t("statusSwap")}: 
+                      <p className="text-destructive mx-1">
+                        {t("statusSwap")}:
                         {t("unAvailableItems")}
                       </p>
                     )}

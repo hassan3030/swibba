@@ -269,7 +269,7 @@ const CustomerService = () => {
                         id="name"
                         placeholder={t("yourName")}
                         required
-                        className="transition-all duration-200 focus:scale-[1.02]"
+                        className="transition-all duration-200 focus:scale-[1.02] hover:border-primary"
                       />
                     </motion.div>
                     <motion.div className="space-y-2" variants={itemVariants}>
@@ -281,7 +281,7 @@ const CustomerService = () => {
                         type="email"
                         placeholder={t("yourEmail")}
                         required
-                        className="transition-all duration-200 focus:scale-[1.02]"
+                        className="transition-all duration-200 focus:scale-[1.02] hover:border-primary"
                       />
                     </motion.div>
                     <motion.div className="space-y-2" variants={itemVariants}>
@@ -292,7 +292,7 @@ const CustomerService = () => {
                         id="phone_number"
                         placeholder={t("phoneNumberPlaceholder")}
                         required
-                        className="transition-all duration-200 focus:scale-[1.02]"
+                        className="transition-all duration-200 focus:scale-[1.02] hover:border-primary"
                       />
                     </motion.div>
                     <motion.div className="space-y-2" variants={itemVariants}>
@@ -302,7 +302,7 @@ const CustomerService = () => {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         rows={4}
-                        className="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 focus:scale-[1.02]"
+                        className="w-full min-h-[120px] hover:border-primary rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 focus:scale-[1.02]"
                         placeholder={t("messagePlaceholder")}
                         required
                       />
@@ -382,11 +382,11 @@ const ContactCard = ({ icon, title, description, actionText, onClick }) => {
       <Card className="transition-all hover:shadow-md h-full">
         <CardContent className="pt-6">
           <motion.div
-            className="rounded-full bg-primary/10 dark:bg-primary/20 p-3 w-12 h-12 flex items-center justify-center mb-4"
+            className="rounded-full bg-primary/90 text-muted p-3 w-12 h-12 flex items-center justify-center mb-4"
             variants={iconVariants}
             whileHover="hover"
           >
-            <div className="text-primary dark:text-primary-foreground">{icon}</div>
+            <div className="text-primary-foreground ">{icon}</div>
           </motion.div>
           <h3 className="text-xl font-medium mb-2">{title}</h3>
           <p className="text-muted-foreground mb-4">{description}</p>

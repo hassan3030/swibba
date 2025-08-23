@@ -20,6 +20,7 @@ import { getCookie } from "@/callAPI/utiles"
 import HeroSection from "@/components/hero-section"
 import Link from "next/link"
 import HomePageSpinner from "@/components/home-page-spinner"
+import Image from "next/image"
 
 // Enhanced Animation variants
 const containerVariants = {
@@ -238,7 +239,7 @@ useEffect(()=>{
   return (
    <Link href={url}>
     <motion.div
-      className="relative overflow-hidden rounded-xl shadow-lg group"
+      className="relative overflow-hidden rounded-xl shadow-lg group max-h-72 "
       whileHover={{ y: -10, scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
@@ -252,8 +253,10 @@ useEffect(()=>{
       />
       
       <div className="relative aspect-[4/5] overflow-hidden">
-        <img 
-          src={imageUrl || "/placeholder.svg?height=400&width=300"} 
+        <Image 
+          width={100}
+          height={100}
+          src={imageUrl || "/placeholder.svg"} 
           alt={t(title)||title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
@@ -388,9 +391,8 @@ export default function Home() {
     {isLoading && <HomePageSpinner />}
     {showSwitchHeart?(<FloatingActionButton/>):''}
 
-      <main className="min-h-screen dark:bg-[#121212] relative overflow-hidden">
+      <main className="min-h-screen dark:bg-[#121212] relative overflow-hidden ">
         <FloatingParticles />
-
         {/* Hero Section */}
         <HeroSection/>
        
@@ -421,13 +423,7 @@ export default function Home() {
               className="text-2xl md:text-3xl font-bold text-center mb-2"
               variants={shimmerVariants}
               animate="animate"
-              style={{
-                background: "linear-gradient(90deg, #333 25%, #49c5b6 50%, #333 75%)",
-                backgroundSize: "200% 100%",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
+             
             >
               {t('JoinThousandsofHappySwapers') || 'Join Thousands of Happy Swapers'}
    
@@ -454,7 +450,7 @@ export default function Home() {
                   }}
                 />
                 <motion.div  
-                  className="relative z-10 p-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg"
+                  className="relative z-10 p-4 rounded-full bg-primary shadow-lg"
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
@@ -463,7 +459,7 @@ export default function Home() {
               </motion.div>
               <AnimatedCounter
                 value={Number(usersCount)}
-                className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
+                className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent"
               />
               <motion.div
                 className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
@@ -473,7 +469,7 @@ export default function Home() {
                
               </motion.div>
               <motion.div
-                className="w-12 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mt-2"
+                className="w-12 h-1 bg-secondary rounded-full mt-2"
                 initial={{ width: 0 }}
                 animate={{ width: 48 }}
                 transition={{ delay: 1, duration: 0.8 }}
@@ -500,7 +496,7 @@ export default function Home() {
                   }}
                 />
                 <motion.div
-                  className="relative z-10 p-4 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-lg"
+                  className="relative z-10 p-4 rounded-full bg-primary shadow-lg"
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
@@ -510,7 +506,7 @@ export default function Home() {
               <AnimatedCounter
                shape={false}
                 value={99.9}
-                className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent"
+                className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent"
               />
               <motion.div
                 className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
@@ -520,7 +516,7 @@ export default function Home() {
       
               </motion.div>
               <motion.div
-                className="w-12 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full mt-2"
+                className="w-12 h-1 bg-secondary rounded-full mt-2"
                 initial={{ width: 0 }}
                 animate={{ width: 48 }}
                 transition={{ delay: 1.2, duration: 0.8 }}
@@ -547,7 +543,7 @@ export default function Home() {
                   }}
                 />
                 <motion.div
-                  className="relative z-10 p-4 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg"
+                  className="relative z-10 p-4 rounded-full bg-primary shadow-lg"
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
@@ -556,7 +552,7 @@ export default function Home() {
               </motion.div>
               <AnimatedCounter
                 value={ Number(itemsCount)}
-                className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent"
+                className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent"
               />
               <motion.div
                 className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
@@ -565,7 +561,7 @@ export default function Home() {
                {t('ItemsSwaps')||'Items Swaps'}
               </motion.div>
               <motion.div
-                className="w-12 h-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full mt-2"
+                className="w-12 h-1 bg-secondary rounded-full mt-2"
                 initial={{ width: 0 }}
                 animate={{ width: 48 }}
                 transition={{ delay: 1.4, duration: 0.8 }}
@@ -576,9 +572,9 @@ export default function Home() {
 
         {/* Enhanced Categories Section */}
         <motion.section className="container pt-24  relative z-10" style={{ y: y2 }}>
-          <motion.div className="mb-12 text-center" variants={titleVariants} initial="hidden" animate="visible">
+          <motion.div className=" text-center" variants={titleVariants} initial="hidden" animate="visible">
             <motion.div
-              className="inline-flex items-center gap-2 px-4  rounded-full bg-primary/10 text-primary mb-6"
+              className="inline-flex items-center gap-2 px-4  rounded-full bg-primary/10 text-primary mb-2"
               variants={floatingVariants}
               animate="animate"
             >
@@ -586,20 +582,15 @@ export default function Home() {
               <span className="text-sm font-medium">{t('PopularCategories')||'Popular Categories'}</span>
             </motion.div>
             <motion.h2
-              className="text-4xl md:text-5xl font-bold mb-6"
-              style={{
-                background: "linear-gradient(135deg, #49c5b6 0%, #3db6a7 50%, #2da89a 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
+              className="text-4xl md:text-5xl font-bold mb-6 text-primary"
+             
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
               {t('BrowseCategories')||'Browse Categories'}
             </motion.h2>
             <motion.p
-              className="text-muted-foreground max-w-2xl mx-auto text-lg"
+              className="text max-w-2xl mx-auto text-lg pb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
@@ -644,124 +635,17 @@ export default function Home() {
           </motion.div>
         </motion.section>
 
-        {/* Enhanced Middle Banner */}
-        <motion.section
-          className="container relative z-10"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <motion.div
-            className="overflow-hidden rounded-2xl bg-gradient-to-r from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] border border-[#333] relative shadow-2xl"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            <div className="absolute inset-0 overflow-hidden">
-              <motion.div
-                className="absolute inset-0 bg-[url('/placeholder.svg?height=200&width=1200')] opacity-10 bg-cover bg-center"
-                animate={{
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{
-                  duration: 20,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80" />
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10"
-                animate={{
-                  opacity: [0.1, 0.3, 0.1],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                }}
-              />
-            </div>
-
-            <div className="container relative flex min-h-[200px] flex-col items-center justify-center py-12 text-center md:min-h-[250px] z-10">
-              <motion.div
-                className="absolute top-4 left-4"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              >
-                <Star className="h-6 w-6 text-primary/30" />
-              </motion.div>
-              <motion.div
-                className="absolute top-8 right-8"
-                animate={{ rotate: -360 }}
-                transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              >
-                <Sparkles className="h-8 w-8 text-primary/20" />
-              </motion.div>
-
-              <motion.h3
-                className="text-3xl md:text-4xl font-bold text-white mb-8"
-                style={{
-                  background: "linear-gradient(135deg, #ffffff 0%, #49c5b6 50%, #ffffff 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                {t('ReadytoTradeYourItems') || 'Ready to Trade Your Items?'}
-
-              </motion.h3>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                whileHover={{ scale: 1.1, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  className="bg-gradient-to-r from-primary to-primary/80 text-white hover:from-primary/90 hover:to-primary/70 font-bold px-10 py-6 text-xl rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => {
-                    router.push("/products")
-                  }}
-                >
-                  <motion.span
-                    animate={{
-                      backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "linear",
-                    }}
-                    style={{
-                      background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)",
-                      backgroundSize: "200% 100%",
-                    }}
-                    className="inline-block"
-                  >
-                    {t("swapNow") || "Swap Now"}
-                  </motion.span>
-                </Button>
-              </motion.div>
-            </div>
-          </motion.div>
-        </motion.section>
-
         {/* NEW: Featured Collections Section */}
         <motion.section 
-          className="container relative z-10"
+          className="container relative z-10 -mt-12"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
         >
-          <motion.div className="mb-12 pt-10 text-center" variants={titleVariants} initial="hidden" animate="visible">
+          <motion.div className="my-0 pt-0 text-center" variants={titleVariants} initial="hidden" animate="visible">
             <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-2"
               variants={floatingVariants}
               animate="animate"
             >
@@ -769,13 +653,7 @@ export default function Home() {
               <span className="text-sm font-medium">{t('CuratedForYou')||"Curated For You"}</span>
             </motion.div>
             <motion.h2
-              className="text-4xl md:text-5xl font-bold mb-6"
-              style={{
-                background: "linear-gradient(135deg, #6A0572 0%, #AB83A1 50%, #49c5b6 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
+              className="text-4xl md:text-5xl font-bold mb-2 text-primary/70"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
@@ -783,7 +661,7 @@ export default function Home() {
 
             </motion.h2>
             <motion.p
-              className="text-muted-foreground max-w-2xl mx-auto text-lg"
+              className="text-muted-foreground max-w-2xl pb-4 mx-auto text-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
@@ -793,7 +671,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid grid-cols-1  sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 lg:grid-cols-4 gap-6"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -804,33 +682,19 @@ export default function Home() {
                 key={collection.title}
                 variants={collectionCardVariants}
                 custom={index}
+               
               >
                 <FeaturedCollectionCard {...collection} />
               </motion.div>
             ))}
           </motion.div>
 
-          <motion.div 
-            className="flex justify-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
-          >
-           <Link href='categories'>
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-medium rounded-full px-8"
-            >
-              {t('ViewAllCollections')||'View All Collections'}
-            </Button>
-           </Link>
-          </motion.div>
+         
         </motion.section>
 
         {/* Enhanced Products Section */}
         <motion.section
-          className="container  relative z-10"
+          className="container  relative z-10 mt-12"
           id="items"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}

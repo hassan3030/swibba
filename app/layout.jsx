@@ -31,7 +31,7 @@ export default async function  RootLayout({ children }) {
   const pathname = headers().get("/chat");
 
   return (
-    <html lang="ar" className={cairo.variable} dir="ltr">
+    <html lang="en" dir="ltr" suppressHydrationWarning className={cairo.variable}>
       <body className={cairo.className}>
    <ThemeProvider>
           <LanguageProvider>

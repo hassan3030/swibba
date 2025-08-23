@@ -1,5 +1,10 @@
 export const translations = {
   en  :{
+   CannotSwapWithYourself:"Cannot Swap With Yourself",
+   YouCannotSwapItemsWithYourOwnAccount: "You cannot swap items with your own account",
+    BrowseOtherProducts: "Browse Other Products",
+
+
 
 Pleasefillallrequiredfields:"Please fill all required fields correctly before submitting.",
 Locationrequesttimedout:"Location request timed out",
@@ -953,6 +958,10 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    CannotSwapWithYourself:" لا يمكن تبديل مع نفسك",
+    YouCannotSwapItemsWithYourOwnAccount: "لا يمكن تبديل العناصر مع حسابك الخاص",
+     BrowseOtherProducts: "تصفح منتجات أخرى",
+
     Pleasefillallrequiredfields:"يرجى ملء جميع الحقول المطلوبة بشكل صحيح قبل الإرسال.",
     Locationrequesttimedout:"طلب الموقع قد استغرق وقتًا طويلاً",
     Preparingamazingitems:"تحضير عناصر مذهلة لك",

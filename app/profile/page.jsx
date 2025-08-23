@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, MapPin, Verified, ArrowLeftRight, Package, Clock, Settings, ArrowLeft, BellDot } from "lucide-react"
+import { Star, MapPin, Verified, ArrowLeftRight, Package, Settings, ArrowLeft,  } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
@@ -17,7 +17,8 @@ import { decodedToken, getCookie } from "@/callAPI/utiles"
 import Notifications from "@/app/notifications/page"
 import Cart from "@/app/cart/page"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-
+import { BiCartDownload } from "react-icons/bi";
+import { TbShoppingCartUp } from "react-icons/tb";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -289,7 +290,7 @@ export default function ProfilePage() {
           </Button>
         </motion.div>
         <motion.h1
-          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
+          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -302,18 +303,18 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <motion.div variants={itemVariants}>
           <motion.div variants={cardVariants} whileHover="hover" className="h-full">
-            <Card className="h-full shadow-lg hover:shadow-2xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+            <Card className="h-full shadow-lg hover:shadow-2xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-muted">
               <CardHeader className="flex flex-row items-center gap-4 pb-4">
                 <motion.div variants={avatarVariants} whileHover="hover" className="relative">
-                  <Avatar className="h-16 w-16 ring-4 ring-[#49c5b6]/20 shadow-lg">
+                  <Avatar className="h-16 w-16 ring-4 ring-primary/20 shadow-lg">
                     <AvatarImage src={avatarPath || "/placeholder.svg"} alt={full_name} />
-                    <AvatarFallback className="bg-gradient-to-br from-[#49c5b6] to-[#3db6a7] text-white font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground font-bold">
                       {full_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <motion.div className="absolute -top-1 -right-1" variants={badgeVariants} whileHover="hover">
                     {user?.verified && (
-                      <Verified className="h-5 w-5 text-[#49c5b6] bg-white rounded-full p-1 shadow-md" />
+                      <Verified className="h-5 w-5 text-primary bg-background rounded-full p-1 shadow-md" />
                     )}
                   </motion.div>
                 </motion.div>
@@ -324,12 +325,12 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
-                      <CardTitle className="capitalize text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                      <CardTitle className="capitalize text-lg font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                         {full_name}
                       </CardTitle>
                     </motion.div>
                   </div>
-                  <CardDescription className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  <CardDescription className="mt-1 text-sm text-muted-foreground">
                     {/* Additional description can go here */}
                   </CardDescription>
                 </div>
@@ -337,7 +338,7 @@ export default function ProfilePage() {
               <CardContent>
                 <div className="space-y-4">
                   <motion.div
-                    className="flex items-center gap-2 text-sm p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                    className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/50"
                     variants={statsVariants}
                     whileHover="hover"
                   >
@@ -345,7 +346,7 @@ export default function ProfilePage() {
                       animate={{ rotate: [0, 10, -10, 0] }}
                       transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3 }}
                     >
-                      <MapPin className="h-4 w-4 text-[#49c5b6]" />
+                      <MapPin className="h-4 w-4 text-primary" />
                     </motion.div>
                     <span className="font-medium">
 
@@ -391,7 +392,7 @@ export default function ProfilePage() {
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       variant="outline"
-                      className="w-full bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] text-white border-0 hover:from-[#3db6a7] hover:to-[#2ea89a] shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground border-0 hover:from-secondary hover:to-accent shadow-lg hover:shadow-xl transition-all duration-300"
                       asChild
                     >
                       <Link href={`profile/settings/editProfile`}>{t("editProfile") || "Edit Profile"}</Link>
@@ -407,7 +408,7 @@ export default function ProfilePage() {
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-              <div className="w-full bg-gradient-to-r p-2 from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900  rounded-xl shadow-lg">
+              <div className="w-full bg-gradient-to-r p-2 from-muted to-muted/80 rounded-xl shadow-lg">
                 <TabsList className="grid w-full grid-cols-4 bg-transparent  rounded-xl overflow-hidden ">
                   {[
                     { value: "items", icon: Package, label: t("yourProducts"), count: myAvailableItems.length },
@@ -417,10 +418,10 @@ export default function ProfilePage() {
                       label: t("itemsInOffers") || "Items In Offers",
                       count: myUnavailableItems.length,
                     },
-                    { value: "offers", icon: Clock, label: t("sendoffers") || "Send Offers", count: userOffers.length },
+                    { value: "offers", icon: TbShoppingCartUp, label: t("sendoffers") || "Send Offers", count: userOffers.length },
                     {
                       value: "notifications",
-                      icon: BellDot,
+                      icon: BiCartDownload,
                       label: t("notifications") || "Notifications",
                       count: notificationsLength,
                     },
@@ -438,14 +439,14 @@ export default function ProfilePage() {
                           >
                             <TabsTrigger
                               value={tab.value}
-                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all duration-300 w-full min-w-0 relative group bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200/50 dark:hover:bg-gray-700/50"
+                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2 data-[state=active]:bg-background dark:data-[state=active]:bg-card data-[state=active]:shadow-md transition-all duration-300 w-full min-w-0 relative group bg-muted/50 hover:bg-muted/80 transition-all duration-300"
                             >
                               <tab.icon className="h-4 w-4 flex-shrink-0" />
                               <span className="hidden md:inline text-xs lg:text-sm font-medium truncate">
                                 {tab.label}
                               </span>
                               <motion.span
-                                className="ml-auto rounded-full bg-[#49c5b6] text-white px-1.5 py-0.5 text-xs font-bold flex-shrink-0 min-w-[20px] text-center"
+                                className="ml-auto rounded-full bg-primary text-primary-foreground px-1.5 py-0.5 text-xs font-bold flex-shrink-0 min-w-[20px] text-center"
                                 initial={{ scale: 0 }}
                                 variants={badgeVariants}
                                 whileHover="hover"
@@ -455,14 +456,14 @@ export default function ProfilePage() {
                                 {tab.count}
                               </motion.span>
                               {/* Mobile indicator for active state */}
-                              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-[#49c5b6] rounded-full opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300 md:hidden" />
+                              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300 md:hidden" />
                             </TabsTrigger>
                           </motion.div>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="bg-[#49c5b6] text-white lg:hidden text-xs z-50">
+                        <TooltipContent side="bottom" className="bg-primary text-primary-foreground lg:hidden text-xs z-50">
                           <div className="flex flex-col gap-1">
                             <p className="font-medium">{tab.label}</p>
-                            <p className="text-white">{tab.count} items</p>
+                            <p className="text-primary-foreground">{tab.count} items</p>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -477,14 +478,14 @@ export default function ProfilePage() {
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="items">
                   <div className="flex items-center justify-between mb-4">
                     <motion.h2
-                      className="text-xl font-bold bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
+                      className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                     >
                       {t("myItems") || "My Items"}
                     </motion.h2>
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button asChild size="sm" className="bg-[#49c5b6] hover:bg-[#3db6a7] shadow-lg">
+                      <Button asChild size="sm" className="bg-primary hover:bg-secondary shadow-lg">
                         <Link href="/profile/items">
                           <Settings className="mr-2 h-4 w-4" />
                           {t("manageItems") || "Manage Items"}
@@ -507,7 +508,7 @@ export default function ProfilePage() {
               <TabsContent value="offers" className="mt-6" key={crypto.randomUUID()}>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="offers">
                   <motion.h2
-                    className="mb-4 text-xl font-bold bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
+                    className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                   >
@@ -526,7 +527,7 @@ export default function ProfilePage() {
               <TabsContent value="notifications" className="mt-6" key={crypto.randomUUID()}>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="notifications">
                   <motion.h2
-                    className="mb-4 text-xl font-bold bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
+                    className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                   >
@@ -551,7 +552,7 @@ export default function ProfilePage() {
                   key="unavailableItems"
                 >
                   <motion.h2
-                    className="mb-4 text-xl font-bold bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
+                    className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                   >
@@ -562,7 +563,7 @@ export default function ProfilePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+                    <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted">
                       <CardContent className="p-6">
                         {myUnavailableItems.length > 0 ? (
                           <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} />
@@ -573,7 +574,7 @@ export default function ProfilePage() {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.3 }}
                           >
-                            <div className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 p-8 text-center bg-gray-50 dark:bg-gray-800/50">
+                            <div className="rounded-lg border-2 border-dashed border-border p-8 text-center bg-muted/50">
                               <motion.p
                                 className="text-center text-sm text-muted-foreground"
                                 animate={{ opacity: [0.5, 1, 0.5] }}

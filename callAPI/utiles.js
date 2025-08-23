@@ -1,9 +1,9 @@
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 
-export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://deel-deal-directus.csiwm3.easypanel.host/items"
-export const baseURL = process.env.BASE_URL || "https://deel-deal-directus.csiwm3.easypanel.host"
 export const STATIC_ADMIN_TOKEN = process.env.STATIC_ADMIN_TOKEN || 'Q25pLQ8ZQqLbf3pbnUDs2Al4NDRad6-u'
+export const baseURL = process.env.BASE_URL || "https://dev-dashboard.swibba.com/"
+export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items"
 
 // Enhanced error handling utility
 const handleApiError = (error, context) => {

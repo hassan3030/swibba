@@ -19,8 +19,8 @@ import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { useTranslations } from "@/lib/use-translations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { TbShoppingCartUp } from "react-icons/tb";
 import {
-  ShoppingCart,
   Calendar,
   Trash2,
   Handshake,
@@ -139,7 +139,7 @@ const Cart = () => {
       case "completed":
         return "bg-blue-500"
       case "rejected":
-        return "bg-red-500"
+        return "bg-destructive"
       default:
         return "bg-gray-500"
     }
@@ -165,7 +165,9 @@ const Cart = () => {
       const user_from = await getUserById(offer.from_user_id)
       const user_to = await getUserById(offer.to_user_id)
       usersSwaper.push(user_from.data, user_to.data)
-      offerItems.push(...offerItem.data)
+      if (offerItem?.success && Array.isArray(offerItem.data)) {
+        offerItems.push(...offerItem.data)
+      }
     }
 
     for (const item of offerItems) {
@@ -470,7 +472,7 @@ const Cart = () => {
                 count: offers.filter((o) => o.status_offer === "rejected").length,
                 icon: BadgeX,
                 label: t("rejected") || "Rejected",
-                color: "text-red-500",
+                color: "text-destructive",
               },
             ].map((stat, index) => (
               <motion.div
@@ -532,7 +534,7 @@ const Cart = () => {
                                 offer.cash_adjustment > 0
                                   ? "text-green-500"
                                   : offer.cash_adjustment < 0
-                                    ? "text-red-500"
+                                    ? "text-destructive"
                                     : "text-gray-500"
                               }`}
                             >
@@ -694,7 +696,7 @@ const Cart = () => {
                         ) : (
                          
                           <motion.div
-                            className="text-center text-red-600"
+                            className="text-center text-destructive"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -792,7 +794,7 @@ const Cart = () => {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
                 >
-                  <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <TbShoppingCartUp className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 </motion.div>
                 <h3 className="text-xl font-semibold mb-2">{t("NoCart") || "No Cart"}</h3>
                 <p className="text-muted-foreground">

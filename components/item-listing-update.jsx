@@ -324,34 +324,15 @@ export function ItemListingUpdate(props) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center min-h-screen bg-white   dark:bg-[#121212]  py-2 px-2 md:px-2 "
+      className="flex items-center justify-center min-h-screen bg-background py-2 px-2 md:px-2 "
     >
       <div className="w-full">
         <Form {...form} >
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 ">
-            <div className="grid gap-2  md:grid-cols-1 rounded-2xl shadow-xl bg-white dark:bg-[#111826] p-6 md:p-10 border border-gray-200 dark:border-gray-800">
+            <div className="grid gap-2  md:grid-cols-1 rounded-2xl shadow-xl bg-card text-card-foreground p-6 md:p-10 border border-border">
               <div className="grid gap-8 md:grid-cols-1">
                 {step === 1 && (
                   <motion.div className="space-y-6" variants={sectionVariants}>
-                    {/* <div className="space-y-2">
-                      <motion.h2
-                        className="text-2xl font-bold bg-gradient-to-r text-[rgb(242,178,48)] bg-clip-text text-transparent"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        {t("ItemDetails")}
-                      </motion.h2>
-                      <motion.p
-                        className="text-base text-gray-500 dark:text-gray-400"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 }}
-                      >
-                        {t("ProvideDetailsAboutYourItem")}
-                      </motion.p>
-                    </div> */}
-
                     <div className="grid gap-4">
                       {/* Name field */}
                       <FormField
@@ -365,11 +346,11 @@ export function ItemListingUpdate(props) {
                                 <Input
                                   placeholder={t("NamePlaceholder")}
                                   {...field}
-                                  className="transition-all duration-200 dark:bg-[#1f2a38]  dark:border-[#374152]  focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                  className="transition-all duration-200 bg-background border-input focus:ring-2 focus:ring-ring/20 focus:border-ring"
                                 />
                               </motion.div>
                             </FormControl>
-                            <FormDescription className="text-gray-500 dark:text-gray-400"> {t("BeSpecificAboutBrandModelAndKeyFeatures")}</FormDescription>
+                            <FormDescription className="text-muted-foreground"> {t("BeSpecificAboutBrandModelAndKeyFeatures")}</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -390,7 +371,7 @@ export function ItemListingUpdate(props) {
                                   placeholder={t("EnterPrice")}
                                   {...field}
                                   type="number"
-                                  className="transition-all duration-200 dark:bg-[#1f2a38]  dark:border-[#374152] focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                  className="transition-all duration-200 bg-background border-input focus:ring-2 focus:ring-ring/20 focus:border-ring"
                                 />
                               </motion.div>
                             </FormControl>
@@ -413,10 +394,10 @@ export function ItemListingUpdate(props) {
                                 defaultValue={field.value || ""}
                               
                               >
-                                <SelectTrigger className="dark:bg-[#1f2a38]  dark:border-[#374152]     ">
+                                <SelectTrigger className="bg-background border-input">
                                   <SelectValue placeholder={t("SelectCountry")} />
                                 </SelectTrigger>
-                                <SelectContent className="dark:bg-[#1f2a38]  dark:border-[#374152]     ">
+                                <SelectContent className="bg-background border-input">
                                   {countriesList.map((country) => (
                                     <SelectItem key={country} value={country} className="text-right ">
                                       {t(country)}
@@ -442,7 +423,7 @@ export function ItemListingUpdate(props) {
                                 <Input
                                   placeholder={t("CityPlaceholder")}
                                   {...field}
-                                  className="transition-all duration-200 dark:bg-[#1f2a38]  dark:border-[#374152]  focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                  className="transition-all duration-200 bg-background border-input focus:ring-2 focus:ring-ring/20 focus:border-ring"
                                 />
                               </motion.div>
                             </FormControl>
@@ -463,7 +444,7 @@ export function ItemListingUpdate(props) {
                                 <Input
                                   placeholder={t("StreetPlaceholder")}
                                   {...field}
-                                  className="transition-all duration-200 focus:ring-2 dark:bg-[#1f2a38]  dark:border-[#374152]  focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                  className="focus:ring-2 bg-background border-input focus:ring-ring/20 focus:border-ring"
                                 />
                               </motion.div>
                             </FormControl>
@@ -483,12 +464,12 @@ export function ItemListingUpdate(props) {
                               <motion.div variants={inputVariants} whileFocus="focus">
                                 <Textarea
                                   placeholder={t("DescribeYourItemInDetail")}
-                                  className="min-h-[120px] rounded-lg dark:bg-[#1f2a38]  dark:border-[#374152]  bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all"
+                                  className="min-h-[120px] rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
                                   {...field}
                                 />
                               </motion.div>
                             </FormControl>
-                            <FormDescription className="text-gray-500 dark:text-gray-400">
+                            <FormDescription className="text-muted-foreground">
                               {t("BeSpecificAboutBrandModelAndKeyFeatures")}
                             </FormDescription>
                             <FormMessage />
@@ -507,7 +488,7 @@ export function ItemListingUpdate(props) {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <motion.div variants={inputVariants} whileFocus="focus">
-                                    <SelectTrigger className="rounded-lg bg-white dark:bg-[#1f2a38] border-gray-300 dark:border-[#374152] text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
+                                    <SelectTrigger className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                                       <SelectValue placeholder={t("SelectACategory")} />
                                     </SelectTrigger>
                                   </motion.div>
@@ -534,7 +515,7 @@ export function ItemListingUpdate(props) {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <motion.div variants={inputVariants} whileFocus="focus">
-                                    <SelectTrigger className="rounded-lg bg-white dark:bg-[#1f2a38] border-gray-300 dark:border-[#374152] text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
+                                    <SelectTrigger className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                                       <SelectValue placeholder={t("SelectCondition")} />
                                     </SelectTrigger>
                                   </motion.div>
@@ -557,7 +538,7 @@ export function ItemListingUpdate(props) {
                       type="button"
                       onClick={() => setStep(2)}
                       disabled={!isStep1Valid}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
+                      className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
                     >
                       {t("continue")}
                     </Button>
@@ -568,7 +549,7 @@ export function ItemListingUpdate(props) {
                     {/* Images & Value */}
                     <div>
                       <FormLabel className="flex items-center gap-2">
-                        <ImageIcon className="h-4 w-4 text-[#f2b230]" />
+                        <ImageIcon className="h-4 w-4 text-primary" />
                         {t("images")}
                       </FormLabel>
                       <div className="mt-2 grid grid-cols-3 gap-4">
@@ -619,22 +600,22 @@ export function ItemListingUpdate(props) {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-[#f2b230] dark:hover:border-[#f2b230] hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
+                            <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/50 hover:border-primary hover:bg-muted transition-all shadow-sm">
                               <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
                                 <label htmlFor="image-upload" className="cursor-pointer text-center">
                                   <motion.div
-                                    className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#f2b230]/10"
+                                    className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"
                                     whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}
                                   >
-                                    <Upload className="h-5 w-5 text-[#f2b230]" />
+                                    <Upload className="h-5 w-5 text-primary" />
                                   </motion.div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{t("Clicktoupload")}</p>
+                                  <p className="text-xs text-muted-foreground">{t("Clicktoupload")}</p>
                                   <input
                                     id="image-upload"
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
                                     multiple
-                                    className="hidden dark:bg-[#1f2a38]  dark:border-[#374152] "
+                                    className="hidden bg-background border-input"
                                     onChange={handleImageUpload}
                                   />
                                 </label>
@@ -663,7 +644,7 @@ export function ItemListingUpdate(props) {
                               <FormLabel className="text-base">
                                 {t("Whatwillyouacceptinreturn")}
                               </FormLabel>
-                              <FormDescription className="text-gray-500 dark:text-gray-400">
+                              <FormDescription className="text-muted-foreground">
                                 {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange")}
                               </FormDescription>
                             </div>
@@ -681,7 +662,7 @@ export function ItemListingUpdate(props) {
                                     render={({ field }) => (
                                       <FormItem
                                         key={category}
-                                        className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3 dark:bg-[#1f2a38]  dark:border-[#374152]  hover:scale-105"
+                                        className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3 bg-muted border-input hover:scale-105"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -785,14 +766,14 @@ export function ItemListingUpdate(props) {
                                   min="0"
                                   step="1"
                                   {...field}
-                                  className="transition-all dark:bg-[#1f2a38]  dark:border-[#374152]  duration-200 focus:ring-2 focus:ring-[#f2b230]/20 focus:border-[#f2b230]"
+                                  className="transition-all bg-background border-input duration-200 focus:ring-2 focus:ring-ring/20 focus:border-ring"
                                 />
                               </motion.div>
                             </FormControl>
                             <AnimatePresence>
                               {aiPriceEstimation !== null && (
                                 <motion.p
-                                  className="text-xs text-[#f2b230] font-medium"
+                                  className="text-xs text-primary font-medium"
                                   initial={{ opacity: 0, y: -10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: -10 }}
@@ -801,7 +782,7 @@ export function ItemListingUpdate(props) {
                                 </motion.p>
                               )}
                             </AnimatePresence>
-                            <FormDescription className="text-gray-500 dark:text-gray-400">{t("SetAFairMarketValue")}</FormDescription>
+                            <FormDescription className="text-muted-foreground">{t("SetAFairMarketValue")}</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -811,7 +792,7 @@ export function ItemListingUpdate(props) {
                       <Button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
+                        className="w-full py-3 rounded-xl bg-muted text-muted-foreground font-semibold shadow-md hover:bg-muted/80 transition-all"
                       >
                         {t("goBack")}
                       </Button>
@@ -819,7 +800,7 @@ export function ItemListingUpdate(props) {
                         onClick={() => onSubmit()}
                         type="submit"
                         disabled={!isStep2Valid}
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#f2b230] to-[#967b43] text-white font-semibold shadow-md hover:from-[#ecb649] hover:to-[#8b5b3a] transition-all"
+                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
                       >
                         {t("save")}
                       </Button>

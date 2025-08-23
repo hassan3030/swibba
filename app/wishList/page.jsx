@@ -163,7 +163,7 @@ const Wishlist = () => {
           </div>
         </div>
         <motion.div variants={heartVariants} animate="beat">
-          <Heart className="h-8 w-8 text-red-500 fill-current" />
+          <Heart className="h-8 w-8 text-destructive fill-current" />
         </motion.div>
       </motion.header>
 
@@ -273,7 +273,7 @@ const WishlistCard = ({ item, onRemove }) => {
               <CardTitle className="text-lg capitalize">{item.name}</CardTitle>
             </motion.div>
             <motion.span
-              className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded capitalize"
+              className="text-xs text-primary border border-secondary/90 px-2 py-1 rounded capitalize"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}

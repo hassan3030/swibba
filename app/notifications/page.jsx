@@ -24,6 +24,8 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog"
+import { BiCartDownload } from "react-icons/bi";
+
 import {
   Calendar,
   Trash2,
@@ -38,7 +40,6 @@ import {
   BadgeX,
   CheckCheck,
   Loader,
-  BellDot,
   CircleDot,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -154,7 +155,9 @@ const Notifications = () => {
       const user_from = await getUserById(offer.from_user_id)
       const user_to = await getUserById(offer.to_user_id)
       usersSwaper.push(user_from.data, user_to.data)
-      offerItems.push(...offerItem.data)
+      if (offerItem?.success && Array.isArray(offerItem.data)) {
+        offerItems.push(...offerItem.data)
+      }
     }
 
     for (const item of offerItems) {
@@ -366,7 +369,7 @@ const Notifications = () => {
           {[
             {
               count: offers.length,
-              icon: BellDot,
+              icon: BiCartDownload,
               label: t("AllNotifications") || "All Notifications",
               color: "text-blue-500",
             },
@@ -392,7 +395,7 @@ const Notifications = () => {
               count: offers.filter((o) => o.status_offer === "rejected").length,
               icon: BadgeX,
               label: t("rejected") || "Rejected",
-              color: "text-red-500",
+              color: "text-destructive",
             },
           ].map((stat, index) => (
             <motion.div
@@ -454,7 +457,7 @@ const Notifications = () => {
                               offer.cash_adjustment > 0
                                 ? "text-green-500"
                                 : offer.cash_adjustment < 0
-                                  ? "text-red-500"
+                                  ? "text-destructive"
                                   : "text-gray-500"
                             }`}
                           >
@@ -740,7 +743,7 @@ const Notifications = () => {
                         </motion.div>
                       ) : (
                         <motion.div
-                          className="text-center text-red-600"
+                          className="text-center text-destructive" 
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -846,7 +849,7 @@ const Notifications = () => {
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
               >
-                <BellDot className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <BiCartDownload className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
               </motion.div>
               <h3 className="text-xl font-semibold mb-2">
                 {t("no") || "No"} {t("notifications") || "notifications"}

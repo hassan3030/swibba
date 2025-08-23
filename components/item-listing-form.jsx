@@ -109,10 +109,13 @@ export function ItemListingForm() {
     category: z.enum(categoriesName),
     condition: z.string(),
     value_estimate: z.coerce.number().positive(t("Valuemustbegreaterthan0") || "Value must be greater than 0"),
-    allowedCategories: z
+    allowed_categories: z
       .array(z.enum(allowedCategories))
       .min(1, t("Selectatleastonecategory") || "Select at least one category"),
-      price:  z.coerce.number().positive(t("Pricecannotbenegative") || "Price cannot be negative"),
+    price: z.coerce.number().positive(t("Pricecannotbenegative") || "Price cannot be negative"),
+    country: z.string().min(1, t("SelectCountry") || "Select country"),
+    city: z.string().min(1, t("Cityisrequired") || "City is required"),
+    street: z.string().min(1, t("Streetisrequired") || "Street is required"),
   })
 
   const form = useForm({
@@ -131,6 +134,8 @@ export function ItemListingForm() {
       street: "",
       user_id: "",
     },
+    mode: "onBlur",
+    reValidateMode: "onChange",
   })
 
   const handleImageUpload = (e) => {
@@ -360,7 +365,8 @@ export function ItemListingForm() {
       await handleSubmit();
       console.log("Form data:", data);
       console.log("Images:", images);
-      // No navigation or refresh here
+      // After successful add, go back to step 1
+      setStep(1)
     } catch (error) {
       console.error("Error creating item:", error);
       toast({
@@ -372,7 +378,7 @@ export function ItemListingForm() {
       setIsSubmitting(false);
     }
   };
-
+  
   const getCurrentPosition = () => {
     setIsGettingLocation(true)
 
@@ -464,6 +470,7 @@ export function ItemListingForm() {
       form.reset()
       setImages([])
       setImageUrls([])
+      setStep(1)
     } catch (err) {
       console.error(err)
       toast({
@@ -471,6 +478,7 @@ export function ItemListingForm() {
         description: err.message || t("Erroraddingitem") || "Error adding item.",
         variant: "destructive",
       })
+      throw err
     }
   }
 
@@ -493,23 +501,19 @@ export function ItemListingForm() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center min-h-screen w-full py-2 px-0 sm:px-0 lg:px-8 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50"
+      className="flex items-center justify-center min-h-screen w-full py-2 px-0 sm:px-0 lg:px-8 bg-background text-foreground"
     >
       <div className="w-full ">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit()}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-2 px-0"
           >
-            <div className="grid gap-2 max-[370px]:px-1  md:grid-cols-1 rounded-2xl shadow-xl bg-white dark:bg-gray-900 p-6 md:p-10 border border-gray-200 dark:border-gray-800">
+            <div className="grid gap-2 max-[370px]:px-1  md:grid-cols-1 rounded-2xl shadow-xl bg-card text-card-foreground p-6 md:p-10 border border-border">
               {step === 1 && (
                 <motion.div className="space-y-2 max-[370px]:mx-2 max-[370px]:max-w-[calc(100%-theme(spacing.6))]" variants={itemVariants}>
                   <div className="space-y-2">
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-50 tracking-tight">{t("ItemDetails") || "Item Details"}</h2>
-                    {/* <p className="text-base text-gray-500 dark:text-gray-400">
-                      {t("Providedetailedinformationunderstandoffering") ||
-                        "Provide detailed information about your item to help others understand what you're offering."}
-                    </p> */}
+                    <h2 className="text-3xl font-bold text-foreground tracking-tight">{t("ItemDetails") || "Item Details"}</h2>
                   </div>
 
                   <div className="grid w-full gap-2 ">
@@ -519,11 +523,11 @@ export function ItemListingForm() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Name") || "Name"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("Name") || "Name"}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MacBook Pro 16-inch 2021" {...field} className="rounded-lg   bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input placeholder="e.g., MacBook Pro 16-inch 2021" {...field} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
                           </FormControl>
-                          <FormDescription className="text-gray-500 dark:text-gray-400">
+                          <FormDescription className="text-muted-foreground">
                             {t("Bespecificaboutbrandmodelkeyfeatures") ||
                               "Be specific about brand, model, and key features."}
                           </FormDescription>
@@ -531,20 +535,17 @@ export function ItemListingForm() {
                         </FormItem>
                       )}
                     />
-
-                
+                    
 
                     <FormField
                       control={form.control}
                       name="price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("price") || "Price"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("price") || "Price"}</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 500" {...field} type="number" min={1}      
-                      className="rounded-lg bg-white dark:bg-gray-800 border-gray-300
-                       dark:border-gray-700 text-gray-900 dark:text-gray-50
-                        focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all "
+                      className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
                         />
                        
                           </FormControl>
@@ -559,18 +560,16 @@ export function ItemListingForm() {
                       name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Country") || "Country"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("Country") || "Country"}</FormLabel>
                           <FormControl>
                             <Select
-                              multiple
-                              searchable
                               onValueChange={field.onChange}
-                              defaultValue={field.value || []}
+                              defaultValue={field.value || ""}
                             >
-                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
+                              <SelectTrigger className="bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                                 <SelectValue placeholder={t("SelectCountry") || "Select country/countries"} />
                               </SelectTrigger>
-                              <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50">
+                              <SelectContent className="bg-background border-input text-foreground">
                                 {countriesList.map((country) => (
                                   <SelectItem key={country} value={country} className="text-right">
                                     { t(country) || country }
@@ -589,9 +588,9 @@ export function ItemListingForm() {
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("City") || "City"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("City") || "City"}</FormLabel>
                           <FormControl>
-                            <Input placeholder={t("e.g., Sohage") || "e.g., Sohage"} {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input placeholder={t("e.g., Sohage") || "e.g., Sohage"} {...field} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -603,9 +602,9 @@ export function ItemListingForm() {
                       name="street"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Street") || "Street"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("Street") || "Street"}</FormLabel>
                           <FormControl>
-                            <Input placeholder={t("egOmarebnElkhtab") || "e.g., Omar ebn Elkhtab"} {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input placeholder={t("egOmarebnElkhtab") || "e.g., Omar ebn Elkhtab"} {...field} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -618,18 +617,18 @@ export function ItemListingForm() {
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel className="text-gray-700 dark:text-gray-400">{t("description") || "Description"}</FormLabel>
+                        <FormLabel className="text-foreground">{t("description") || "Description"}</FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder={
                               t("Describeyouritemndetailincludingconditionfeaturesandanyrelevanthistory") ||
                               "Describe your item in detail, including condition, features, and any relevant history."
                             }
-                            className="min-h-[120px] rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all"
+                            className="min-h-[120px] rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription className="text-gray-500 dark:text-gray-400">
+                        <FormDescription className="text-muted-foreground">
                           {t("detailsprovidethemorelikelyfindgoodswap") ||
                             "The more details you provide, the more likely you are to find a good swap."}
                         </FormDescription>
@@ -644,14 +643,14 @@ export function ItemListingForm() {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("category") || "Category"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("category") || "Category"}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                             <FormControl>
-                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
+                              <SelectTrigger className="bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                                 <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50">
+                            <SelectContent className="bg-background border-input text-foreground">
                               {categoriesName.map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {t(category) || category}
@@ -669,14 +668,14 @@ export function ItemListingForm() {
                       name="condition"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 dark:text-gray-400">{t("Condition") || "Condition"}</FormLabel>
+                          <FormLabel className="text-foreground">{t("Condition") || "Condition"}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230]">
+                              <SelectTrigger className="bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                                 <SelectValue placeholder={t("SelectCondition") || "Select condition"} />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50">
+                            <SelectContent className="bg-background border-input text-foreground">
                               {itemsStatus.map((condition) => (
                                 <SelectItem key={condition} value={condition} className="capitalize">
                                   {t(condition) || condition}
@@ -692,16 +691,16 @@ export function ItemListingForm() {
                     
                   </div>
     <motion.div variants={itemVariants}>
-                      <Card className="rounded-xl shadow-md bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <Card className="rounded-xl shadow-md bg-muted border-border">
                         <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                            <Navigation className="h-5 w-5 text-teal-500 dark:text-teal-400" />
+                          <CardTitle className="flex items-center gap-2 text-primary">
+                            <Navigation className="h-5 w-5 text-primary" />
                             {t("CurrentPosition") || "Current Position"}
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <motion.div variants={buttonVariants}  whileTap="tap">
-                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-teal-400/50 text-gray-800 dark:text-teal-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-[#f2b230] transition-all">
+                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-secondary/80 border border-primary text-secondary-foreground font-medium transition-all">
                               {isGettingLocation ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -725,22 +724,22 @@ export function ItemListingForm() {
                               exit={{ opacity: 0, height: 0 }}
                               transition={{ duration: 0.3 }}
                             >
-                            <Card className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 mt-2">
+                            <Card className="rounded-lg border border-border bg-card/50 mt-2">
                               <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                                  <MapPin className="h-5 w-5 text-[#f2b230]" />
+                                <CardTitle className="flex items-center gap-2 text-card-foreground">
+                                  <MapPin className="h-5 w-5 text-primary" />
                                   {t("SelectedPosition") || "Selected Position"}
                                 </CardTitle>
                               </CardHeader>
                               <CardContent className="space-y-2">
                                 <div className="space-y-1">
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-muted-foreground">
                                     <strong>{t("Name") || "Name"}:</strong> {selectedPosition.name}
                                   </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-muted-foreground">
                                     <strong>{t("Latitude") || "Latitude"}:</strong> {selectedPosition.lat.toFixed(6)}
                                   </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-muted-foreground">
                                     <strong>{t("Longitude") || "Longitude"}:</strong> {selectedPosition.lng.toFixed(6)}
                                   </p>
                                 </div>
@@ -756,7 +755,7 @@ export function ItemListingForm() {
                     type="button"
                     onClick={() => setStep(2)}
                     disabled={!isStep1Valid}
-                    className="w-full py-2 rounded-xl bg-[#f2b230] text-gray-900 font-semibold shadow-md hover:bg-[#f2b230]/90 transition-all"
+                    className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
                   >
                     {t("continue") || "Continue"}
                   </Button>
@@ -772,10 +771,10 @@ export function ItemListingForm() {
                       render={() => (
                         <FormItem>
                           <div className="mb-2">
-                            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-300">
+                            <FormLabel className="text-base font-semibold text-foreground">
                               {t("Whatwillyouacceptinreturn") || "What will you accept in return?"}
                             </FormLabel>
-                            <FormDescription className="text-gray-500 dark:text-gray-400">
+                            <FormDescription className="text-muted-foreground">
                               {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange") ||
                                 "Select the categories of items you're willing to accept in exchange"}
                             </FormDescription>
@@ -794,7 +793,7 @@ export function ItemListingForm() {
                                   render={({ field }) => (
                                     <FormItem
                                       key={category}
-                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 shadow-sm dark:hover:border-[#f2b230] hover:border-[#f2b230] transition-all"
+                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-border bg-muted p-4 shadow-sm hover:border-primary transition-all"
                                     >
                                       <FormControl>
                                         <Checkbox
@@ -815,7 +814,7 @@ export function ItemListingForm() {
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal capitalize text-gray-800 dark:text-gray-300">
+                                      <FormLabel className="font-normal capitalize text-foreground">
                                         {t(category) || category}
                                       </FormLabel>
                                     </FormItem>
@@ -830,15 +829,15 @@ export function ItemListingForm() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-50">{t("ImagesValue") || "Images & Value"}</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <h2 className="text-2xl font-semibold text-foreground">{t("ImagesValue") || "Images & Value"}</h2>
+                    <p className="text-sm text-muted-foreground">
                       {t("Uploadclearphotosofyouritemandsetitsestimatedvalue") ||
                         "Upload clear photos of your item and set its estimated value"}
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <FormLabel className="font-semibold text-gray-800 dark:text-gray-300">{t("ItemImages") || "Item Images"}</FormLabel>
+                    <FormLabel className="font-semibold text-foreground">{t("ItemImages") || "Item Images"}</FormLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       <AnimatePresence>
                         {imageUrls.map((url, index) => (
@@ -850,7 +849,7 @@ export function ItemListingForm() {
                             exit="hidden"
                             whileHover="hover"
                           >
-                            <Card className="relative overflow-hidden rounded-xl shadow-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                            <Card className="relative overflow-hidden rounded-xl shadow-md border border-border bg-card">
                               <div className="aspect-square relative">
                                 <Image
                                   src={url || "/placeholder.svg"}
@@ -882,13 +881,13 @@ export function ItemListingForm() {
                       {images.length < MAX_IMAGES && (
                         <motion.div 
                         variants={imageUploadVariants} initial="hidden" animate="visible" whileHover="hover">
-                          <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-[#f2b230] dark:hover:border-[#f2b230] hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm">
+                          <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/50 hover:border-primary hover:bg-muted transition-all shadow-sm">
                             <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
                               <label htmlFor="image-upload" className="cursor-pointer text-center">
-                                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-                                  <Upload className="h-6 w-6   text-[#f2b230] dark:text-[#f2b230]" />
+                                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                                  <Upload className="h-6 w-6 text-primary" />
                                 </div>
-                                <p className="text-xs text-[#f2b230] dark:text-[#f1ab1e] font-semibold">{t("Clicktoupload") || "Click to upload"}</p>
+                                <p className="text-xs text-primary font-semibold">{t("Clicktoupload") || "Click to upload"}</p>
                                 <input
                                   id="image-upload"
                                   type="file"
@@ -903,8 +902,8 @@ export function ItemListingForm() {
                         </motion.div>
                       )}
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {t("Uploadupto") || "Upload up to"} <span className="font-bold text-[#f2b230] dark:text-[#f2b230]">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {t("Uploadupto") || "Upload up to"} <span className="font-bold text-primary">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
                     </p>
                   </div>
 
@@ -925,7 +924,7 @@ export function ItemListingForm() {
                                       size="sm"
                                       onClick={() => {requestAiPriceEstimate() }}
                                       disabled={isEstimating}
-                                      className="h-8 gap-1 rounded-lg  max-[370px]:min-w-[100%]  border-gray-300 dark:border-[#f2b230] bg-white dark:bg-[#f2b230] text-black dark:text-[#3e3e3e] hover:bg-[#f2ae27] dark:hover:bg-[#f2b230] hover:border-[#f2b230] dark:hover:border-[#f2b230] transition-all"
+                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-muted hover:border-primary transition-all"
                                     >
                                       {isEstimating ? (
                                         <>
@@ -952,12 +951,12 @@ export function ItemListingForm() {
                             </TooltipProvider>
                           </div>
                           <FormControl>
-                            <Input type="number" min="0" step="1" {...field} className="rounded-lg bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-50 focus:border-[#f2b230] focus:ring-2 focus:ring-[#f2b230] transition-all" />
+                            <Input type="number" min="0" step="1" {...field} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
                           </FormControl>
                           <AnimatePresence>
                             {aiPriceEstimation !== null && (
                               <motion.p
-                                className="text-xs text-[#f2b230] dark:text-[#f2b230] font-semibold"
+                                className="text-xs text-secondary2 font-semibold"
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
@@ -966,7 +965,7 @@ export function ItemListingForm() {
                               </motion.p>
                             )}
                           </AnimatePresence>
-                          <FormDescription className="text-gray-500 dark:text-gray-400">
+                          <FormDescription className="text-muted-foreground">
                             {t("Setfairmarketvaluetohelpfacilitatebalancedswaps") ||
                               "Set a fair market value to help facilitate balanced swaps."}
                           </FormDescription>
@@ -979,17 +978,14 @@ export function ItemListingForm() {
                         <Button
                           type="button"
                           onClick={() => setStep(1)}
-                          className="w-full py-2 rounded-xl bg-gray-200 text-gray-800 font-semibold shadow-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-600 transition-all"
+                          className="w-full py-2 rounded-xl bg-muted text-muted-foreground font-semibold shadow-md hover:bg-muted/80 transition-all"
                         >
                           {t("Back") || "Back"}
                         </Button>
                         <Button
                           type="submit"
-                        onClick={() => {
-                      handleSubmit()
-                    }}
                           disabled={!isStep2Valid || isSubmitting}
-                          className="w-full py-2 rounded-xl bg-[#f2b230] text-gray-900 font-semibold shadow-md hover:bg-[#f2b230]/90 transition-all"
+                          className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
                         >
                           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("save") || "Save"}
                         </Button>

@@ -49,7 +49,14 @@ export const getOfferById = async (id) => {
       throw new Error("User ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Offers?filter[from_user_id][_eq]=${id}&sort=-date_created`)
+    const auth = await validateAuth()
+
+    const response = await axios.get(`${baseItemsURL}/Offers?filter[from_user_id][_eq]=${id}&sort=-date_created`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
     console.log("Sent offers retrieved successfully for user:", id)
     return {
@@ -71,7 +78,14 @@ export const getOffersNotifications = async (id) => {
       throw new Error("User ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Offers?filter[to_user_id][_eq]=${id}&sort=-date_created`)
+    const auth = await validateAuth()
+
+    const response = await axios.get(`${baseItemsURL}/Offers?filter[to_user_id][_eq]=${id}&sort=-date_created`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
     console.log("Received offers retrieved successfully for user:", id)
     return {
@@ -628,7 +642,14 @@ export const getOfferItemsByOfferId = async (offer_id) => {
       throw new Error("Offer ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${offer_id}`)
+    const auth = await validateAuth()
+
+    const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${offer_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
     return {
       success: true,
@@ -783,7 +804,14 @@ export const getMessage = async (offer_id) => {
       throw new Error("Offer ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Chat?filter[offer_id][_eq]=${offer_id}&sort=date_created`)
+    const auth = await validateAuth()
+
+    const response = await axios.get(`${baseItemsURL}/Chat?filter[offer_id][_eq]=${offer_id}&sort=date_created`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
     return {
       success: true,
@@ -797,10 +825,47 @@ export const getMessage = async (offer_id) => {
   }
 }
 
+// Get messages by user (either sent or received)
+export const getMessagesByUserId = async (user_id) => {
+  try {
+    if (!user_id) {
+      throw new Error("User ID is required")
+    }
+
+    const auth = await validateAuth()
+
+    // Fetch messages where user is either sender or recipient
+    const response = await axios.get(
+      `${baseItemsURL}/Chat?filter[_or][0][from_user_id][_eq]=${user_id}&filter[_or][1][to_user_id][_eq]=${user_id}&sort=-date_created`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      },
+    )
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      user_id,
+      message: "User messages retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Messages By User ID")
+  }
+}
+
 // Get all messages
 export const getAllMessage = async () => {
   try {
-    const response = await axios.get(`${baseItemsURL}/Chat?sort=-date_created`)
+    const auth = await validateAuth()
+    const response = await axios.get(`${baseItemsURL}/Chat?sort=-date_created`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
     return {
       success: true,
@@ -821,7 +886,7 @@ export const addWishList = async (item_id, user_id) => {
     const auth = await validateAuth()
     if (!item_id || !user_id) {
       throw new Error("Item ID and user ID are required")
-    }
+    } 
 
     // // Check if item already in wishlist
     // const existingResponse = await axios.get(
@@ -865,7 +930,14 @@ export const getWishList = async (user_id) => {
       throw new Error("User ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/WishList?filter[user_id][_eq]=${user_id}`)
+    const auth = await validateAuth()
+
+    const response = await axios.get(`${baseItemsURL}/WishList?filter[user_id][_eq]=${user_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
     return {
       success: true,

@@ -151,7 +151,7 @@ const paginatedItems = Array.isArray(displayedItems)
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="border pr-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20 focus:border-primary/20"
+              className="border pr-10 transition-all duration-300 focus:ring-2 hover:border-primary/90  focus:ring-primary/20 focus:border-primary/20"
             />
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             </motion.div>

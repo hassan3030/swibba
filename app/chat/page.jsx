@@ -218,7 +218,7 @@ const Messages = () => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <Card
-                        className={`cursor-pointer transition-all duration-200 ${
+                        className={`cursor-pointer transition-all duration-200 mt-1 mx-1 ${
                           selectedOffer?.id === offer.id ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"
                         }`}
                         onClick={() => setSelectedOffer(offer)}

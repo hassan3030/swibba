@@ -438,11 +438,11 @@ export default function ProfileSettingsPage() {
     >
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div className="absolute top-20 right-10 text-[#49c5b6]/5" variants={floatingVariants} animate="float">
+        <motion.div className="absolute top-20 right-10 text-primary/5" variants={floatingVariants} animate="float">
           <Settings className="h-32 w-32" />
         </motion.div>
         <motion.div
-          className="absolute bottom-20 left-10 text-[#3db6a7]/5"
+          className="absolute bottom-20 left-10 text-secondary/5"
           variants={floatingVariants}
           animate="float"
           transition={{ delay: 2 }}
@@ -455,7 +455,7 @@ export default function ProfileSettingsPage() {
       <motion.div className="inline mb-6 relative z-10" variants={headerVariants}>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
           <Button
-            className="mb-2 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+            className="mb-2 shadow-lg hover:shadow-xl transition-all duration-300 bg-background/80 backdrop-blur-sm"
             variant="outline"
             size="sm"
             onClick={() => router.back()}
@@ -468,7 +468,7 @@ export default function ProfileSettingsPage() {
           </Button>
         </motion.div>
         <motion.h1
-          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] bg-clip-text text-transparent"
+          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -482,7 +482,7 @@ export default function ProfileSettingsPage() {
           {/* Sidebar */}
           <motion.div className="md:col-span-1" variants={itemVariants}>
             <motion.div variants={cardVariants} whileHover="hover" className="sticky top-8">
-              <TabsList className="flex h-auto w-full flex-col items-start justify-start bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-lg border-0 p-2 rounded-xl">
+              <TabsList className="flex h-auto w-full flex-col items-start justify-start bg-gradient-to-br from-card to-muted shadow-lg border-0 p-2 rounded-xl">
                 {[
                   { value: "profile", icon: User, label: t("profile") || "Profile" },
                   { value: "preferences", icon: Globe, label: t("preferences") || "Preferences" },
@@ -500,7 +500,7 @@ export default function ProfileSettingsPage() {
                   >
                     <TabsTrigger
                       value={tab.value}
-                      className="w-full justify-start text-left data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#49c5b6] data-[state=active]:to-[#3db6a7] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg"
+                      className="w-full justify-start text-left data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg"
                     >
                       <motion.div
                         animate={{ rotate: [0, 5, -5, 0] }}
@@ -522,14 +522,14 @@ export default function ProfileSettingsPage() {
               <TabsContent value="profile" key='profile'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="profile">
                   <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-                      <CardHeader className="bg-gradient-to-r from-[#49c5b6]/10 to-[#3db6a7]/10">
+                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted overflow-hidden">
+                      <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
                         >
-                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                             {t("profileInformation") || "Profile Information"}
                           </CardTitle>
                           <CardDescription className="text-base">
@@ -548,7 +548,7 @@ export default function ProfileSettingsPage() {
                             transition={{ delay: 0.3 }}
                           >
                             <motion.div
-                              className="relative h-24 w-24 overflow-hidden rounded-full ring-4 ring-[#49c5b6]/20 shadow-xl"
+                              className="relative h-24 w-24 overflow-hidden rounded-full ring-4 ring-primary/20 shadow-xl"
                               variants={avatarVariants}
                               whileHover="hover"
                             >
@@ -562,7 +562,7 @@ export default function ProfileSettingsPage() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <div className="flex items-center justify-center h-full w-full bg-gray-100">
+                                <div className="flex items-center justify-center h-full w-full bg-muted">
                                   <Image
                                     src="/placeholder-user.jpg"
                                     alt={t("NoAvatar") || "No Avatar"}
@@ -570,16 +570,16 @@ export default function ProfileSettingsPage() {
                                     height={96}
                                     className="h-full w-full object-cover absolute inset-0"
                                   />
-                                  <span className="absolute inset-0 flex items-center justify-center text-gray-500 font-semibold">
+                                  <span className="absolute inset-0 flex items-center justify-center text-muted-foreground font-semibold">
                                   {`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("NoAvatar") }` || "No Avatar"}
                                   </span>
                                 </div>
                               )}
                               <motion.div
-                                className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300"
+                                className="absolute inset-0 bg-foreground/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300"
                                 whileHover={{ opacity: 1 }}
                               >
-                                <Camera className="h-6 w-6 text-white" />
+                                <Camera className="h-6 w-6 text-background" />
                               </motion.div>
                             </motion.div>
                           </motion.div>
@@ -595,7 +595,7 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="first_name"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("firstName") || "First Name"}
                                 </Label>
@@ -605,7 +605,7 @@ export default function ProfileSettingsPage() {
                                     name="first_name"
                                     value={first_name}
                                     onChange={(e) => setFirstName(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -613,7 +613,7 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="last_name"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("LastName") || "Last Name"}
                                 </Label>
@@ -623,7 +623,7 @@ export default function ProfileSettingsPage() {
                                     name="last_name"
                                     value={last_name}
                                     onChange={(e) => setLasttName(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -635,7 +635,7 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="country"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Country") || "Country"}
                                 </Label>
@@ -660,7 +660,7 @@ export default function ProfileSettingsPage() {
 
                               {/* City field */}
                               <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label htmlFor="city" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label htmlFor="city" className="text-sm font-medium text-foreground">
                                   {t("City") || "City"}
                                 </Label>
                                 <motion.div whileFocus="focus">
@@ -669,7 +669,7 @@ export default function ProfileSettingsPage() {
                                     name="city"
                                     value={city}
                                     onChange={(e) => setCity(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -678,7 +678,7 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="street"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Street") || "Street"}
                                 </Label>
@@ -688,7 +688,7 @@ export default function ProfileSettingsPage() {
                                     name="street"
                                     value={street}
                                     onChange={(e) => setStreet(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -697,7 +697,7 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="post_code"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("PstalCode") || "Postal Code"}
                                 </Label>
@@ -707,7 +707,7 @@ export default function ProfileSettingsPage() {
                                     name="post_code"
                                     value={post_code}
                                     onChange={(e) => setPostCode(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -734,7 +734,7 @@ export default function ProfileSettingsPage() {
                                         type="button"
                                         onClick={getCurrentPosition}
                                         disabled={isGettingLocation}
-                                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
+                                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-background shadow-lg"
                                       >
                                         {isGettingLocation ? (
                                           <>
@@ -763,7 +763,7 @@ export default function ProfileSettingsPage() {
                                           exit={{ opacity: 0, height: 0 }}
                                           transition={{ duration: 0.3 }}
                                         >
-                                          <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                          <Card className="bg-background/50 backdrop-blur-sm">
                                             <CardHeader>
                                               <CardTitle className="flex items-center gap-2 text-base">
                                                 <MapPin className="h-4 w-4 text-green-600" />
@@ -810,7 +810,7 @@ export default function ProfileSettingsPage() {
                             {/* Contact and Personal Info */}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <Label htmlFor="email" className="text-sm font-medium text-foreground">
                                   {t("email") || "Email"}
                                 </Label>
                                 <Input
@@ -819,14 +819,14 @@ export default function ProfileSettingsPage() {
                                   name="email"
                                   type="email"
                                   value={email || ""}
-                                  className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+                                  className="bg-muted cursor-not-allowed"
                                 />
                               </motion.div>
 
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="phone_number"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("phoneNumber") || "Phone Number"}
                                 </Label>
@@ -836,7 +836,7 @@ export default function ProfileSettingsPage() {
                                     name="phone_number"
                                     value={phone_number}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -847,7 +847,7 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="avatar"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Avatar") || "Avatar"}
                                 </Label>
@@ -858,7 +858,7 @@ export default function ProfileSettingsPage() {
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => setAvatar(e.target.files[0])}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -866,12 +866,12 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="gender"
-                                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Gender") || "Gender"}
                                 </Label>
                                 <Select value={gender} onValueChange={(value) => setGender(value)}>
-                                  <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent">
+                                  <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent">
                                     <SelectValue placeholder={t("SelectGender") || "Select Gender"} />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -886,7 +886,7 @@ export default function ProfileSettingsPage() {
                             <motion.div className="space-y-2" variants={inputVariants}>
                               <Label
                                 htmlFor="description"
-                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                className="text-sm font-medium text-foreground"
                               >
                                 {t("descriptionProfile") || "Description"}
                               </Label>
@@ -897,7 +897,7 @@ export default function ProfileSettingsPage() {
                                   value={description}
                                   onChange={(e) => setDescription(e.target.value)}
                                   rows={4}
-                                  className="transition-all duration-300 focus:ring-2 focus:ring-[#49c5b6] focus:border-transparent resize-none"
+                                  className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
                                   placeholder="Tell others about yourself..."
                                 />
                               </motion.div>
@@ -905,12 +905,12 @@ export default function ProfileSettingsPage() {
                           </motion.div>
                         </form>
                       </CardContent>
-                      <CardFooter className="flex justify-end bg-gray-50 dark:bg-gray-800/50">
+                      <CardFooter className="flex justify-end bg-muted/50">
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="bg-gradient-to-r from-[#49c5b6] to-[#3db6a7] hover:from-[#3db6a7] hover:to-[#2ea89a] text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-accent text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             {isLoading ? (
                               <span className="flex items-center gap-2">
@@ -931,9 +931,9 @@ export default function ProfileSettingsPage() {
               <TabsContent value="preferences" key='preferences'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="preferences">
                   <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
                       <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10">
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                           {t("preferences") || "Preferences"}
                         </CardTitle>
                         <CardDescription className="text-base">
@@ -948,7 +948,7 @@ export default function ProfileSettingsPage() {
                           animate="visible"
                         >
                           <motion.div
-                            className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700"
+                            className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-muted to-muted/80"
                             variants={itemVariants}
                             whileHover={{ scale: 1.02 }}
                           >
@@ -972,11 +972,11 @@ export default function ProfileSettingsPage() {
                           </motion.div>
                         </motion.div>
                       </CardContent>
-                      <CardFooter className="flex justify-end bg-gray-50 dark:bg-gray-800/50">
+                      <CardFooter className="flex justify-end bg-muted/50">
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={handleSubmit}
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-background shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             {t("SaveChanges") || "Save Changes"}
                           </Button>
@@ -990,9 +990,9 @@ export default function ProfileSettingsPage() {
               <TabsContent value="security"  key='security'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="security">
                   <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
                       <CardHeader className="bg-gradient-to-r from-red-500/10 to-orange-500/10">
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent flex items-center gap-2">
+                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2">
                           <motion.div
                             animate={{ rotate: [0, -5, 5, 0] }}
                             transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3 }}
@@ -1064,7 +1064,7 @@ export default function ProfileSettingsPage() {
                               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                                 <Button
                                   onClick={updatePassword}
-                                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-background shadow-lg hover:shadow-xl transition-all duration-300"
                                 >
                                   {t("UpdatePassword") || "Update Password"}
                                 </Button>
@@ -1073,10 +1073,10 @@ export default function ProfileSettingsPage() {
                           </motion.div>
 
                           <motion.div
-                            className="space-y-4 pt-8 border-t border-gray-200 dark:border-gray-700"
+                            className="space-y-4 pt-8 border-t border-border"
                             variants={itemVariants}
                           >
-                            <h3 className="font-medium text-lg text-red-600 dark:text-red-400">
+                            <h3 className="font-medium text-lg text-destructive">
                               {t("DeleteAccount") || "Delete Account"}
                             </h3>
                             <p className="text-sm text-muted-foreground">
@@ -1101,9 +1101,9 @@ export default function ProfileSettingsPage() {
               <TabsContent value="add"  key='add'  >
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="add">
                   <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
                       <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent flex items-center gap-2">
+                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2">
                           <motion.div
                             animate={{ rotate: [0, 90, 0] }}
                             transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3 }}

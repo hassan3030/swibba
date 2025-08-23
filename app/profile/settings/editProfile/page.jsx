@@ -716,25 +716,25 @@ export default function ProfileSettingsPage() {
                             {/* Location Services */}
                             <motion.div variants={inputVariants}>
                               <motion.div variants={cardVariants} whileHover="hover">
-                                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-700">
+                                <Card className="bg-background  ">
                                   <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-lg">
                                       <motion.div
                                         animate={{ rotate: [0, 360] }}
                                         transition={{ repeat: Number.POSITIVE_INFINITY, duration: 8, ease: "linear" }}
                                       >
-                                        <Navigation className="h-5 w-5 text-blue-600" />
+                                        <Navigation className="h-5 w-5 text-primary" />
                                       </motion.div>
                                       {t("CurrentPosition") || "Current Position"}
                                     </CardTitle>
                                   </CardHeader>
                                   <CardContent className="space-y-4">
-                                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                    <motion.div  whileHover="hover" whileTap="tap">
                                       <Button
                                         type="button"
                                         onClick={getCurrentPosition}
                                         disabled={isGettingLocation}
-                                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-background shadow-lg"
+                                        className="w-full bg-secondary text-background shadow-lg"
                                       >
                                         {isGettingLocation ? (
                                           <>

@@ -465,7 +465,7 @@ export default function Home() {
                 className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
                 variants={statsItemVariants}
               >
-                {t('ActiveSwapers')|| 'Active Swapers'}
+                {t('ActiveSwapers')|| 'Swapers'}
                
               </motion.div>
               <motion.div

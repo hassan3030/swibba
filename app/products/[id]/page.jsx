@@ -130,13 +130,13 @@ export default function ProductPage() {
 
   return (
     <motion.div
-      className="container py-5"
+      className="container py-3 sm:py-5 px-4 sm:px-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="mb-6 flex items-center gap-2"
+        className="mb-4 sm:mb-6 flex items-center gap-2"
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
@@ -150,28 +150,33 @@ export default function ProductPage() {
         </motion.div>
       </motion.div>
 
-      <motion.div className="grid gap-8 md:grid-cols-2" variants={containerVariants} initial="hidden" animate="visible">
+      <motion.div className="grid gap-4 md:gap-6 md:grid-cols-2" variants={containerVariants} initial="hidden" animate="visible">
         {/* Product Gallery */}
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="order-1 md:order-1">
           <ProductGallery images={images} productName={product.name} />
         </motion.div>
 
         {/* Product Info */}
-        <motion.div className="flex flex-col gap-4" variants={itemVariants}>
+        <motion.div className="flex flex-col gap-3 sm:gap-4 order-2 md:order-2" variants={itemVariants}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-bold capitalize">{product.name}</h1>
-                <p className="text-sm text-muted-foreground">{t(product.category)}</p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3">
+                  {product.name}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1 truncate">
+                  {t(product.category)}
+                </p>
               </div>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
+                className="flex-shrink-0"
               >
                 <Badge
                   variant="outline"
-                  className="text-primary border-primary/90 hover:cursor-pointer hover:scale-105 "
+                  className="text-primary border-primary/90 hover:cursor-pointer hover:scale-105 text-xs sm:text-sm px-2 py-1"
                 >
                   {t(product.status_item)}
                 </Badge>
@@ -186,71 +191,78 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="flex items-center gap-3 text-secondary2/90">
-              <div className="flex items-baseline">
-                <span className="text-sm font-medium ">{t("le")}</span>
+            <div className="flex items-center gap-2 sm:gap-3 text-secondary2/90">
+              <div className="flex items-baseline min-w-0">
+                <span className="text-xs sm:text-sm font-medium flex-shrink-0">{t("le")}</span>
                 <motion.span
-                  className="text-4xl font-bold "
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold truncate ml-1"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
+                  title={Number(product.price).toLocaleString('en-US')}
                 >
                   {Number(product.price).toLocaleString('en-US')}
                 </motion.span>
               </div>
             </div>
-            <div className="text-xs text-secondary2/85 ">
-              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}:{Number(product.price).toLocaleString('en-US')} {t("le")}
+            <div className="text-xs text-secondary2/85 line-clamp-2">
+              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: {Number(product.price).toLocaleString('en-US')} {t("le")}
             </div>
           </motion.div>
 
-          <motion.p
-            className="text-muted-foreground line-clamp-2"
+          <motion.div
+            className="text-muted-foreground text-sm sm:text-base leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            {t("description")} : {product.description}
-          </motion.p>
+            <span className="font-medium block mb-1">{t("description")}:</span>
+            <div className="text-break-responsive whitespace-pre-wrap leading-relaxed line-clamp-1 overflow-ellipsis">
+              {product.description}
+            </div>
+          </motion.div>
 
           <Separator />
 
           {/* Owner */}
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-start gap-2 sm:gap-3"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="flex items-center gap-3 border-primary/70">
-              <motion.div  whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
-                <Avatar className="h-12 w-12 ">
-                  <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"}  />
-                  <AvatarFallback>{name ? name.charAt(0) : "U"}</AvatarFallback>
+            <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+              <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="flex-shrink-0">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                  <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"} />
+                  <AvatarFallback className="text-xs sm:text-sm">{name ? name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
               </motion.div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{name || "Unknown"}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-semibold text-sm sm:text-base truncate" title={name || "Unknown"}>
+                    {name || "Unknown"}
+                  </span>
                   {user?.Verified && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.7, type: "spring", stiffness: 400 }}
+                      className="flex-shrink-0"
                     >
-                      <Verified className="h-4 w-4 text-[#49c5b6]" />
+                      <Verified className="h-3 w-3 sm:h-4 sm:w-4 text-[#49c5b6]" />
                     </motion.div>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
                     <span>{(user?.ratings ?? 0).toFixed(1)}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <ArrowLeftRight className="h-4 w-4" />
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <ArrowLeftRight className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="px-1">{user?.completedSwaps ?? 0}</span>
-                    <span className="px-1">{t("swaps")}</span>
+                    <span className="px-1 truncate">{t("swaps")}</span>
                   </div>
                 </div>
               </div>
@@ -261,23 +273,23 @@ export default function ProductPage() {
 
           {/* Add to Cart Section */}
           <motion.div
-            className="grid gap-4"
+            className="grid gap-3 sm:gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               {product.status_swap === "available" && product.user_id !== tokenId && (
                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                  <Button className="w-full" onClick={makeSwap}>
+                  <Button className="w-full text-sm sm:text-base" onClick={makeSwap}>
                     <Repeat className="h-4 w-4 mr-2" />
                     {t("swap")}
                   </Button>
                 </motion.div>
               )}
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                <Link href={`/products`}>
-                  <Button variant="secondary" className="w-full">
+                <Link href={`/products`} className="block w-full">
+                  <Button variant="secondary" className="w-full text-sm sm:text-base">
                     {t("goBack")}
                   </Button>
                 </Link>
@@ -285,52 +297,62 @@ export default function ProductPage() {
             </div>
           </motion.div>
 
-          <Separator className="my-4" />
+          <Separator className="my-3 sm:my-4" />
 
           {/* Product Details Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
-            <Tabs defaultValue="features">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="features">{t("features")}</TabsTrigger>
-                <TabsTrigger value="Category">{t("category")}</TabsTrigger>
-                <TabsTrigger value="swap_status">{t("statusSwap")}</TabsTrigger>
+            <Tabs defaultValue="features" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+                <TabsTrigger value="features" className="text-xs  sm:text-sm px-2 py-2 h-auto">
+                  {t("features")}
+                </TabsTrigger>
+                <TabsTrigger value="Category" className="text-xs sm:text-sm px-2 py-2 h-auto">
+                  {t("category")}
+                </TabsTrigger>
+                <TabsTrigger value="swap_status" className="text-xs sm:text-sm px-2 py-2 h-auto">
+                  {t("statusSwap")}
+                </TabsTrigger>
               </TabsList>
-              <AnimatePresence mode="wait"  >
-                <TabsContent value="features" className="mt-4" key={crypto.randomUUID()}>
+              <AnimatePresence mode="wait">
+                <TabsContent value="features" className="mt-3 sm:mt-4" key={crypto.randomUUID()}>
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
+                    className="text-sm sm:text-base w-full"
                   >
-                    {product.description}
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                      {product.description}
+                    </div>
                   </motion.div>
                 </TabsContent>
-                <TabsContent value="Category" className="mt-4" key={crypto.randomUUID()}>
+                <TabsContent value="Category" className="mt-3 sm:mt-4" key={crypto.randomUUID()}>
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="grid gap-2 text-primary"
+                    className="grid gap-2 text-primary text-sm sm:text-base"
                   >
                     {t(product.category)}
                   </motion.div>
                 </TabsContent>
-                <TabsContent value="swap_status" className="mt-4" key={crypto.randomUUID()}>
+                <TabsContent value="swap_status" className="mt-3 sm:mt-4" key={crypto.randomUUID()}>
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
+                    className="text-sm sm:text-base"
                   >
                     {product.status_swap === "available" ? (
-                      <p className="text-primary/85 mx-1">
+                      <p className="text-primary/85 mx-1 line-clamp-2">
                         {t("statusSwap")}: 
                         {t("availableItems")}
                       </p>
                     ) : (
-                      <p className="text-destructive mx-1">
+                      <p className="text-destructive mx-1 line-clamp-2">
                         {t("statusSwap")}:
                         {t("unAvailableItems")}
                       </p>

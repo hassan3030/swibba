@@ -171,12 +171,12 @@ const ItemCard = ({ item }) => {
             >
               <div className="flex flex-col items-start gap-1">
                 <motion.span
-                  className="inline-flex items-center gap-2 rounded bg-orange-50 px-2 py-1 text-base font-bold text-orange-700 shadow-sm"
+                  className="inline-flex items-center gap-2 rounded bg-background  px-2 py-1 text-base font-bold text-secondary2 shadow-sm"
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
                   {t("aIExpectedPrice")}:
-                  <span className="text-lg font-extrabold text-orange-900">
+                  <span className="text-lg font-extrabold text-secondary2">
                     {item.value_estimate} {t("currencyLE") || "LE"}
                   </span>
                 </motion.span>

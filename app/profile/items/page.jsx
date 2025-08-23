@@ -158,7 +158,7 @@ export default function ManageItemsPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
-                <motion.div
+                {/* <motion.div
                   className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -169,7 +169,7 @@ export default function ManageItemsPage() {
                       <TabsTrigger value="active">{t("activeItems") || "Active Items"}</TabsTrigger>
                     </motion.div>
                   </TabsList>
-                </motion.div>
+                </motion.div> */}
 
                 <TabsContent value="active" className="mt-6">
                   <AnimatePresence mode="popLayout">

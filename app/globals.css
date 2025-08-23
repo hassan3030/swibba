@@ -54,7 +54,14 @@
   .animate-pulse-custom {
     animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-
+  .text-break-responsive {
+    overflow-wrap: break-word;      /* Modern browsers */
+    word-break: break-word;         /* IE/Edge support */
+    hyphens: auto;                  /* Automatic hyphenation */
+    -webkit-hyphens: auto;          /* Safari support */
+    -ms-hyphens: auto;              /* IE support */
+  }
+  
   .dark {
     /* Dark mode - Base colors */
     --background: 0 0% 7%;          /* #121212 - Very dark background */

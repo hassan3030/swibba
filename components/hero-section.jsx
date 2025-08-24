@@ -150,8 +150,10 @@ import Image from "next/image";
                     }}
                     className="relative w-full h-full"
                   >
-                    <img
+                    <Image 
                       src={image.src}
+                      width={100}
+                      height={100}
                       alt={image.alt}
                       className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                     />

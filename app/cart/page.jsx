@@ -45,6 +45,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import SwapRating from "@/components/reviews"
+import Image from "next/image"
 
 // Animation variants
 const containerVariants = {
@@ -844,7 +845,9 @@ export const CardItemSwap = ({ id, name, description, price, status_item, images
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3 }}
         >
-          <img
+          <Image
+            width={100}
+            height={100}
             src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
             alt={name}
             className="w-full h-full object-cover"

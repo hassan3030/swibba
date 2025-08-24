@@ -51,6 +51,7 @@ import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import SwapRating from "@/components/reviews"
+import Image from "next/image"
 
 // Animation variants
 const containerVariants = {
@@ -901,7 +902,9 @@ const CardItemSwap = ({ id, name, description, price, status_item, images, delet
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3 }}
         >
-          <img
+          <Image
+            width={100}
+            height={100}
             src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
             alt={name}
             className="w-full h-full object-cover"

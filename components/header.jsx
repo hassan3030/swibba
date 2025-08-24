@@ -409,7 +409,9 @@ export function Header() {
                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                       <Button variant="ghost" size="sm" className="gap-2 hover:text-primary dark:hover:text-primary">
                         {user?.avatar ? (
-                          <img
+                          <Image
+                            width={100}
+                            height={100}
                             src={
                               `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar || "/placeholder.svg"}` || "/placeholder.svg"
                             }

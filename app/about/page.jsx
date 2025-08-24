@@ -1,18 +1,11 @@
 "use client";
-import {useState , useEffect} from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Users, Award } from "lucide-react";
 import { useTranslations } from "@/lib/use-translations";
 import { teamMembers } from "../../lib/data";
 import Image from 'next/image';
-
 const AboutPage = () => {
-  
-  
     const { t } = useTranslations();
-
-
-
   return (
     <>
 <div className="container mx-auto py-10 px-4 max-w-6xl">
@@ -124,10 +117,6 @@ const AboutPage = () => {
         </div>
       </section>
     </div> 
-
-
- 
-  
 
     </>
  )

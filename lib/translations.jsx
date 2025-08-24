@@ -312,8 +312,10 @@ SelectCountry: "Select a country",
            "Launched our award-winning platform that has transformed how our clients manage their business.":"Launched our award-winning platform that has transformed how our clients manage their business.",
      "OurHistoryToday":"Today",
            "Continuing our journey of growth and innovation, serving thousands of satisfied customers worldwide.":"Continuing our journey of growth and innovation, serving thousands of satisfied customers worldwide.",
-
           "OurLeadershipTeam":"Our Leadership Team",
+          "Omar Nasr":"Omar Nasr",
+          "Senior Front-End Developer":"Senior Front-End Developer",
+          "Passionate about building interactive, high-quality user interfaces with clean, maintainable code.":"Software Developer | Passionate About Building Interactive & Scalable Web Applications.",
                //--------------------------------------
 
      Pricecannotbenegative:"Price cannot be negative",
@@ -958,6 +960,10 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    "Omar Nasr":"عمر ناصر",
+    "Senior Front-End Developer":"مطور واجهة متقدم",
+    "Passionate about building interactive, high-quality user interfaces with clean, maintainable code.":"شغوف ببناء واجهات مستخدم تفاعلية وعالية الجودة مع أكواد نظيفة وقابلة للصيانة.مطور برمجيات | شغوف ببناء تطبيقات ويب تفاعلية وقابلة للتوسع.",
+    
     CannotSwapWithYourself:" لا يمكن تبديل مع نفسك",
     YouCannotSwapItemsWithYourOwnAccount: "لا يمكن تبديل العناصر مع حسابك الخاص",
      BrowseOtherProducts: "تصفح منتجات أخرى",

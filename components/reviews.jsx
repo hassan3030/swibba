@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById } from "@/callAPI/users"
 import { getCurrentUserId } from "@/callAPI/utiles"
+import Image from "next/image"
 
 // Animation variants 
 const cardVariants = {
@@ -219,7 +220,9 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
             transition={{ delay: 0.4, type: "spring", stiffness: 200, damping: 20 }}
           >
             {userAvatar && (
-              <motion.img
+              <Image
+                width={100}
+                height={100}
                 src={userAvatar}
                 alt={userName}
                 className="w-12 h-12 rounded-full object-cover shadow-lg"

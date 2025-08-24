@@ -11,6 +11,7 @@ import { getProductById, getImageProducts } from "@/callAPI/products"
 import { decodedToken } from "@/callAPI/utiles"
 import { useTranslations } from "@/lib/use-translations"
 import LoadingSpinner from '@/components/loading-spinner'
+import Image from "next/image"
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -239,13 +240,18 @@ const WishlistCard = ({ item, onRemove }) => {
       <Card className="group hover:shadow-lg transition-shadow overflow-hidden">
         <CardHeader className="p-0">
           <div className="relative overflow-hidden">
-            <motion.img
-              src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
-              alt={item.name}
-              className="w-full h-48 object-cover rounded-t-lg"
-              whileHover={{ scale: 1.05 }}
+           
+
+<Image
+            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
+            width={100}
+            height={100}
+            alt={item.name}
+            className="w-full h-48 object-cover rounded-t-lg"
+             whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
-            />
+          />
+
             <motion.div className="absolute top-2 right-2" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Button
                 variant="outline"

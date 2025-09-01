@@ -1,5 +1,11 @@
 export const translations = {
   en  :{
+  Youhavenotupdatedanyfield: "You have not updated any field.",
+
+
+ Pleasetranslatethedescriptionstreetcity: "Please translate the description, street, and city.",
+ FailedtogetAITranslatePleasetryagainorenteryourowntranslate: "Failed to get AI translate. Please try again or enter your own translate.",
+
    CannotSwapWithYourself:"Cannot Swap With Yourself",
    YouCannotSwapItemsWithYourOwnAccount: "You cannot swap items with your own account",
     BrowseOtherProducts: "Browse Other Products",
@@ -960,6 +966,13 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    Youhavenotupdatedanyfield: "لم تقم بتحديث أي حقل.",
+
+    Pleasetranslatethedescriptionstreetcity: "يرجى ترجمة الوصف والشارع والمدينة.",
+    FailedtogetAITranslatePleasetryagainorenteryourowntranslate: "فشل في الحصول على ترجمة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى أو إدخال ترجمتك الخاصة.",
+   
+
+
     "Omar Nasr":"عمر ناصر",
     "Senior Front-End Developer":"مطور واجهة متقدم",
     "Passionate about building interactive, high-quality user interfaces with clean, maintainable code.":"شغوف ببناء واجهات مستخدم تفاعلية وعالية الجودة مع أكواد نظيفة وقابلة للصيانة.مطور برمجيات | شغوف ببناء تطبيقات ويب تفاعلية وقابلة للتوسع.",

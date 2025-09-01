@@ -13,6 +13,9 @@ import { useToast } from "@/components/ui/use-toast"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
 import { decodedToken, getCookie  , setTarget} from "@/callAPI/utiles"
 
+import { useLanguage } from "@/lib/language-provider"
+ 
+
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -110,19 +113,22 @@ export function DeelProductCard({
   name,
   price,
   images,
+  translations,
   status_item,
   showSwitchHeart = true,
 }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [switchHeart, setSwitchHeart] = useState(false)
-  const [bigImage, setBigImage] = useState("")
+  // const [bigImage, setBigImage] = useState(images || [])
   const [loading, setLoading] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const { isRTL, toggleLanguage } = useLanguage()
 
   const { t } = useTranslations()
   const { toast } = useToast()
   const router = useRouter()
+  
 
   const makeSwap = async (e) => {
     e.preventDefault()
@@ -141,16 +147,16 @@ export function DeelProductCard({
     }
   }
 
-  const getDataImage = async () => {
-    try {
-      const image = await getImageProducts(images)
-      setBigImage(image?.data[0].directus_files_id )
-    } catch (error) {
-      console.error("Error loading image:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // const getDataImage = async () => {
+  //   try {
+  //     const image = await getImageProducts(images)
+  //     setBigImage(image?.data[0].directus_files_id )
+  //   } catch (error) {
+  //     console.error("Error loading image:", error)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const handleGetWishItem = async () => {
     try {
@@ -220,22 +226,33 @@ export function DeelProductCard({
     }, 2000)
   }
 
-  useEffect(() => {
-    getDataImage()
-  }, [images])
+  // useEffect(() => {
+  //   // setBigImage(images)
+  //   // getDataImage()
+  //   // console.error("bigImage", bigImage)
+  // }, [images])
 
-  useEffect(() => {
+      useEffect(() => {
+        // console.log("i am in the  deel product card translations", translations)
+        // console.log("i am in the  deel product card images", images)
+        // console.log("i am in the  deel product card images", images[0])
+        // console.log("i am in the  deel product card images", images[0]?.directus_files_id)
+        // console.log("i am in the  deel product card bigImage", bigImage)
+
+        // setBigImage(images[0]?.directus_files_id || "")
     handleGetWishItem()
   }, [switchHeart])
 
   return (
     <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover" className="group">
+    
+      
       <Link href={`/products/${id}`}>
         <div className="group relative flex w-[150px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
           {/* Image container */}
           <div className="relative aspect-square overflow-hidden">
             <AnimatePresence>
-              {loading ? (
+              {/* {loading ? (
                 <motion.div
                   initial={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -243,17 +260,18 @@ export function DeelProductCard({
                 >
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </motion.div>
-              ) : (
+              ) : ( */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                   className="relative w-full h-full"
                 >
+                 
                   <motion.div variants={imageVariants} className="w-full h-full">
                     <Image
-                      src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
-                      alt={name}
+                      src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}`}
+                      alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                       fill
                       className=" transition-transform duration-300 object-fill"
                       placeholder="blur"
@@ -263,7 +281,7 @@ export function DeelProductCard({
                     />
                   </motion.div>
                 </motion.div>
-              )}
+              {/* )} */}
             </AnimatePresence>
 
             {/* Heart button above photo */}
@@ -305,7 +323,7 @@ export function DeelProductCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
             >
-              {name}
+              {(!isRTL ? translations[0]?.name: translations[1]?.name) || name}
             </motion.h3>
 
             {/* Price */}

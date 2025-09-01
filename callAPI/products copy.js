@@ -22,7 +22,7 @@ export const getAvailableAndUnavailableProducts = async (user_id, available = tr
 
     const status = available ? "available" : "unavailable";
     const response = await axios.get(
-      `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}?fields=*,translations.*,images.*`,
+      `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}`,
       { headers }
     );
 
@@ -42,118 +42,46 @@ export const getAvailableAndUnavailableProducts = async (user_id, available = tr
 export const getProducts = async (filters = {}) => {
   try {
     const token = await getCookie()
-    let response;
+    let url
     const queryParams = new URLSearchParams()
 
     if (!token) {
       // Public access - show only available items
-    response = await axios.get(`${baseItemsURL}/Items`,
-      {
-        params: {
-          fields: "*,images.*,translations.*",
-          filter: {
-            status_swap: { _neq: "unavailable" },
-          }
-        }
-      })
+      queryParams.append("filter[status_swap][_neq]", "unavailable")
     } else {
       // Authenticated access - exclude user's own items and unavailable items
       const decoded = await decodedToken()
       if (decoded?.id) {
-        response = await axios.get(`${baseItemsURL}/Items`,
-          {
-            params: {
-              fields: "*,images.*,translations.*",
-              filter: {
-                user_id: { _neq: `${decoded.id}` },
-                status_swap: { _neq: "unavailable" },
-              }
-            }
-          })
+        queryParams.append("filter[user_id][_neq]", decoded.id)
+        queryParams.append("filter[status_swap][_neq]", "unavailable")
       } else {
-        response = await axios.get(`${baseItemsURL}/Items`,
-          {
-            params: {
-              fields: "*,images.*,translations.*",
-              filter: {
-                status_swap: { _neq: "unavailable" },
-              }
-            }
-          })
+        queryParams.append("filter[status_swap][_neq]", "unavailable")
       }
     }
 
     // Add additional filters
     if (filters.category) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*",
-            filter: {
-              category: { _eq: encodeURIComponent(filters.category) },
-            }
-          }
-        })
+      queryParams.append("filter[category][_eq]", encodeURIComponent(filters.category))
     }
     if (filters.min_price) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*",
-            filter: {
-              price: { _gte: filters.min_price },
-            }
-          }
-        })
+      queryParams.append("filter[price][_gte]", filters.min_price)
     }
     if (filters.max_price) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*",
-            filter: {
-              price: { _lte: filters.max_price },
-            }
-          }
-        })
+      queryParams.append("filter[price][_lte]", filters.max_price)
     }
     if (filters.search) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*",
-            filter: {
-              name: { _contains: encodeURIComponent(filters.search) },
-            }
-          }
-        })
+      queryParams.append("filter[name][_contains]", encodeURIComponent(filters.search))
     }
     if (filters.sort) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*",
-            sort: filters.sort,
-          }
-        })
+      queryParams.append("sort", filters.sort)
     }
     if (filters.limit) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*",
-            limit: filters.limit,
-          }
-        })
+      queryParams.append("limit", filters.limit)
     }
-// handle pathname
-    // url = `${baseItemsURL}/Items?${queryParams.toString()}?fields=*,translations.*,images.*`
-    // url = `${baseItemsURL}/Items?fields=*,translations.*,images.*`
-    //  url = `${baseItemsURL}/Items?fields=*,translations.*,images.*`
-  
-    console.log("response", response)
-    console.error("response.data.data[0].images", response.data.images)
-    console.error("response.data.data[0].images", response.data.images)
+
+    url = `${baseItemsURL}/Items?${queryParams.toString()}`
+    const response = await axios.get(url)
+
     console.log("Products retrieved successfully, count:", response.data.data?.length || 0)
     return {
       success: true,
@@ -221,12 +149,8 @@ export const getProductById = async (id) => {
       throw new Error("Product ID is required")
     }
 
-    // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
-    const response = await axios.get(
-      `${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`
-    );
-    console.log("response", response)
-    console.log("response.data.data", response.data.data)
+    const response = await axios.get(`${baseItemsURL}/Items/${id}`)
+
     if (!response.data.data) {
       throw new Error("Product not found")
     }
@@ -251,7 +175,7 @@ export const getProductById = async (id) => {
 }
 
 // Get top price products with enhanced filtering
-export const getProductTopPrice = async (limit = 10) => {
+export const getProductTopPrice = async (limit = 5) => {
   try {
     const decoded = await decodedToken()
     let url
@@ -260,12 +184,12 @@ export const getProductTopPrice = async (limit = 10) => {
     queryParams.append("filter[status_swap][_eq]", "available")
     queryParams.append("sort", "-price")
     queryParams.append("limit", limit.toString())
-    
+
     if (decoded?.id) {
       queryParams.append("filter[user_id][_neq]", decoded.id)
     }
 
-    url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*`
+    url = `${baseItemsURL}/Items?${queryParams.toString()}`
     const response = await axios.get(url)
 
     console.log("Top price products retrieved successfully, count:", response.data.data?.length || 0)
@@ -295,7 +219,7 @@ export const getProductSearchFilter = async (filter) => {
     queryParams.append("filter[_and][1][_or][1][description][_contains]", encodeURIComponent(cleanFilter))
     queryParams.append("filter[_and][1][_or][2][category][_contains]", encodeURIComponent(cleanFilter))
 
-    const url = `${baseItemsURL}/Items?${queryParams.toString()}?fields=*,translations.*,images.*`
+    const url = `${baseItemsURL}/Items?${queryParams.toString()}`
     const response = await axios.get(url)
 
     console.log("Search completed, results:", response.data.data?.length || 0)
@@ -319,16 +243,13 @@ export const getProductByCategory = async (category) => {
     }
 
     const cleanCategory = category.trim()
-    const response = await axios.get(`${baseItemsURL}/Items`,
-      {
-        params: {
-          fields: "*,images.*,translations.*",
-          filter: {
-            category: { _eq: cleanCategory },
-            status_swap: { _neq: "unavailable" },
-          }
-        }
-      })
+    const queryParams = new URLSearchParams()
+
+    queryParams.append("filter[status_swap][_neq]", "unavailable")
+    queryParams.append("filter[category][_eq]", encodeURIComponent(cleanCategory))
+
+    const url = `${baseItemsURL}/Items?${queryParams.toString()}`
+    const response = await axios.get(url)
 
     console.log("Products by category retrieved successfully, count:", response.data.data?.length || 0)
     return {
@@ -352,18 +273,7 @@ export const getProductByUserId = async () => {
         throw new Error("Authentication required")
       }
 
-      const response = await axios.get(` ${baseItemsURL}/Items` ,
-      {
-        params: {
-          fields: "*,images.*,translations.*",
-          filter: {
-            user_id: { _eq:`${decoded.id}` },
-          }
-        }
-      }
-      )
-
-        // /?filter[user_id][_eq]=?fields=*,translations.*,images.*`)
+      const response = await axios.get(`${baseItemsURL}/Items/?filter[user_id][_eq]=${decoded.id}`)
 
       console.log("User products retrieved successfully, count:", response.data.data?.length || 0)
       return {
@@ -391,7 +301,7 @@ export const getProductsOwnerById = async (productId) => {
       throw new Error(userResult.error)
     }
 
-    const response = await axios.get(`${baseItemsURL}/Items/?filter[user_id][_eq]=${userResult.data.id}?fields=*,translations.*,images.*`)
+    const response = await axios.get(`${baseItemsURL}/Items/?filter[user_id][_eq]=${userResult.data.id}`)
 
     console.log("Owner products retrieved successfully, count:", response.data.data?.length || 0)
     return {
@@ -601,7 +511,7 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("Only JPEG, PNG, and WebP images are allowed")
       }
 
-      // Update the item with translations included (Directus native approach)
+      // Update the item
       const itemRes = await axios.patch(
         `${baseItemsURL}/Items/${itemId}`,
         {
@@ -620,7 +530,7 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("Failed to update product")
       }
 
-      console.log("Product updated successfully with translations, ID:", itemId)
+      console.log("Product updated successfully, ID:", itemId)
 
       // Delete existing images
       try {

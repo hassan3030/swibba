@@ -200,9 +200,21 @@ export default function ProfilePage() {
 
   const getUserProducts = async () => {
     const userPruducts = await getProductByUserId()
-    setmyUnavailableItems(userPruducts.data.filter((u) => u.status_swap === "unavailable"))
-    setmyAvailableItems(userPruducts.data.filter((u) => u.status_swap === "available"))
-    return userPruducts.data
+    
+    // Check if the API call was successful and data exists
+    if (!userPruducts || !userPruducts.success || !userPruducts.data) {
+      console.error("Failed to fetch user products:", userPruducts?.error || "Unknown error")
+      setmyUnavailableItems([])
+      setmyAvailableItems([])
+      return []
+    }
+
+    // Ensure data is an array before filtering
+    const productsData = Array.isArray(userPruducts.data) ? userPruducts.data : []
+    
+    setmyUnavailableItems(productsData.filter((u) => u.status_swap === "unavailable"))
+    setmyAvailableItems(productsData.filter((u) => u.status_swap === "available"))
+    return productsData
   }
 
   const getNotificationsLength = async () => {
@@ -439,7 +451,7 @@ export default function ProfilePage() {
                           >
                             <TabsTrigger
                               value={tab.value}
-                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2 data-[state=active]:bg-background dark:data-[state=active]:bg-card data-[state=active]:shadow-md transition-all duration-300 w-full min-w-0 relative group bg-muted/50 hover:bg-muted/80 transition-all duration-300"
+                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2 data-[state=active]:bg-background dark:data-[state=active]:bg-card data-[state=active]:shadow-md transition-all duration-300 w-full min-w-0 relative group bg-muted/50 hover:bg-muted/80"
                             >
                               <tab.icon className="h-4 w-4 flex-shrink-0" />
                               <span className="hidden md:inline text-xs lg:text-sm font-medium truncate">
@@ -473,9 +485,8 @@ export default function ProfilePage() {
               </div>
             </motion.div>
 
-            <AnimatePresence mode="wait">
-              <TabsContent value="items" className="mt-6" key={crypto.randomUUID()}>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="items">
+              <TabsContent value="items" className="mt-6">
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <div className="flex items-center justify-between mb-4">
                     <motion.h2
                       className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
@@ -505,8 +516,8 @@ export default function ProfilePage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="offers" className="mt-6" key={crypto.randomUUID()}>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="offers">
+              <TabsContent value="offers" className="mt-6">
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.h2
                     className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
@@ -524,8 +535,8 @@ export default function ProfilePage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="notifications" className="mt-6" key={crypto.randomUUID()}>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="notifications">
+              <TabsContent value="notifications" className="mt-6">
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.h2
                     className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
@@ -543,13 +554,12 @@ export default function ProfilePage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="unavailableItems" className="mt-6" key={crypto.randomUUID()}>
+              <TabsContent value="unavailableItems" className="mt-6">
                 <motion.div
                   variants={tabVariants}
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  key="unavailableItems"
                 >
                   <motion.h2
                     className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
@@ -590,7 +600,6 @@ export default function ProfilePage() {
                   </motion.div>
                 </motion.div>
               </TabsContent>
-            </AnimatePresence>
           </Tabs>
         </motion.div>
       </div>

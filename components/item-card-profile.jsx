@@ -15,6 +15,9 @@ import { decodedToken, getCookie, setTarget } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 
+import { useLanguage } from "@/lib/language-provider"
+  
+
 const cardVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: {
@@ -79,26 +82,28 @@ export function ItemCardProfile({
   status_item,
   status_swap,
   showbtn,
+  translations,
   showSwitchHeart = true,
 }) {
   const { t } = useTranslations()
   const { toast } = useToast()
   const router = useRouter()
+  const { isRTL, toggleLanguage } = useLanguage()
 
-  const [bigImage, setBigImage] = useState("")
+  // const [bigImage, setBigImage] = useState("")
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const getDataImage = async () => {
-    try {
-      const image = await getImageProducts(images)
-      setBigImage(image.data[0].directus_files_id)
-      setIsLoading(false)
-    } catch (error) {
-      console.error("Error loading image:", error)
-      setIsLoading(false)
-    }
-  }
+  // const getDataImage = async () => {
+  //   try {
+  //     const image = await getImageProducts(images)
+  //     setBigImage(image.data[0].directus_files_id)
+  //     setIsLoading(false)
+  //   } catch (error) {
+  //     console.error("Error loading image:", error)
+  //     setIsLoading(false)
+  //   }
+  // }
 
   const makeSwap = async (e) => {
     e.preventDefault()
@@ -157,12 +162,14 @@ export function ItemCardProfile({
     }
   }
 
-  useEffect(() => {
-    getDataImage()
-  }, [])
+  // useEffect(() => {
+  //   getDataImage()
+  // }, [])
 
   useEffect(() => {
     handleGetWishItem()
+    console.log("i am in the item card profile images", images)
+    console.log("i am in the item card profile images", images[0]?.directus_files_id)
   }, [switchHeart])
 
   return (
@@ -172,24 +179,22 @@ export function ItemCardProfile({
           <div className="relative">
             <div className="relative aspect-square overflow-hidden">
               <AnimatePresence>
-                {isLoading ? (
-                  <motion.div
-                    className="absolute inset-0 bg-gray-200 animate-pulse"
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  />
-                ) : (
+               
                   <motion.div
        
                    whileHover="hover">
                     <Image
-                      src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
-                      alt={name}
+                      src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}`}
+                      alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                       fill
+                      placeholder="blur"
+                      blurDataURL="/placeholder.svg?height=300&width=300"
+                      priority
+                      // onLoad={() => setImageLoaded(true)}
                       className="object-cover transition-transform duration-300"
                     />
                   </motion.div>
-                )}
+           
               </AnimatePresence>
 
               {/* Heart button */}
@@ -233,7 +238,7 @@ export function ItemCardProfile({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{name}</h3>
+              <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{!isRTL ? translations[0]?.name: translations[1]?.name || name}</h3>
             </motion.div>
 
            
@@ -244,7 +249,7 @@ export function ItemCardProfile({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              {description}
+              { (!isRTL ? translations[0]?.description: translations[1]?.description) || description}
             </motion.p>
 
             <motion.div
@@ -253,7 +258,7 @@ export function ItemCardProfile({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              {t("price")}:{Number(price).toLocaleString('en-US')} LE
+              {t("price")}:{Number(price).toLocaleString('en-US')} {t("le")}
             </motion.div>
 
             <motion.div

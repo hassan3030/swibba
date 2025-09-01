@@ -310,7 +310,7 @@ export const getUserById = async (id) => {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await axios.get(`${baseURL}/users/${id}`, { headers });
+    const response = await axios.get(`${baseURL}/users/${id}?fields=*,translations.*`, { headers });
 
     console.log("User data retrieved for ID:", id);
 
@@ -352,7 +352,7 @@ export const getUserByProductId = async (productId) => {
       throw new Error("Product ID is required")
     }
 
-    const productRes = await axios.get(`${baseItemsURL}/Items/${productId}`)
+    const productRes = await axios.get(`${baseItemsURL}/Items/${productId}?fields=*,translations.*,images.*`)
     const userId = productRes.data?.data?.user_id
      console.log('userId' , userId)
     if (!userId) {
@@ -482,7 +482,7 @@ export const getUserByProductId = async (productId) => {
 // }
 // // ----------------------------------
 // Edit profile with enhanced validation and authentication
-export const editeProfile = async (userData, authId, avatar = null) => {
+export const editeProfile = async (userData, authId, avatar = null , translations = []) => {
   try {
     return await makeAuthenticatedRequest(async () => {
       const decoded = await decodedToken()
@@ -498,8 +498,7 @@ export const editeProfile = async (userData, authId, avatar = null) => {
       if (!token) {
         throw new Error("Authentication token not found")
       }
-
-      const updateData = { ...userData }
+      const updateData = { ...userData , translations: translations }
 
       if (avatar) {
         try {

@@ -217,18 +217,18 @@ export default Wishlist
 
 // WishlistCard component
 const WishlistCard = ({ item, onRemove }) => {
-  const [bigImage, setBigImage] = useState("")
+  // const [bigImage, setBigImage] = useState("")
   const [isRemoving, setIsRemoving] = useState(false)
   const { t } = useTranslations()
 
-  const getDataImage = async () => {
-    const images2 = await getImageProducts(item.images)
-    setBigImage(images2.data[0]?.directus_files_id || "")
-  }
+  // const getDataImage = async () => {
+  //   const images2 = await getImageProducts(item.images)
+  //   setBigImage(images2.data[0]?.directus_files_id || "")
+  // }
 
-  useEffect(() => {
-    getDataImage()
-  }, [item.images])
+  // useEffect(() => {
+  //   getDataImage()
+  // }, [item.images])
 
   const handleRemove = async () => {
     setIsRemoving(true)
@@ -243,7 +243,7 @@ const WishlistCard = ({ item, onRemove }) => {
            
 
 <Image
-            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
+            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"}
             width={100}
             height={100}
             alt={item.name}

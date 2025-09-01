@@ -231,7 +231,7 @@ const paginatedItems = Array.isArray(displayedItems)
               <AnimatePresence>
                 {paginatedItems.map((item, index) => (
                   <motion.div
-                   key={crypto.randomUUID()}
+                   key={item.id || index}
                     variants={itemVariants}
                     custom={index}
                     layout

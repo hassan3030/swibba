@@ -6,7 +6,6 @@ import { useInView } from "react-intersection-observer"
 import { Users, ShieldCheck, Package, Sparkles, TrendingUp, Star } from "lucide-react"
 import  FloatingActionButton  from "@/components/floating-action-button"
 import { categories } from "@/lib/data"
-import { Button } from "@/components/ui/button"
 import { ProductCarousel } from "@/components/product-carousel"
 import { DeelProductCardSkeleton } from "@/components/DeelProductCardSkeleton"
 import { DeelProductCard } from "@/components/deel-product-card"
@@ -19,7 +18,7 @@ import {getAllUsers} from "@/callAPI/users"
 import { getCookie } from "@/callAPI/utiles"
 import HeroSection from "@/components/hero-section"
 import Link from "next/link"
-import HomePageSpinner from "@/components/home-page-spinner"
+import LoadingSpinner from "@/components/loading-spinner"
 import Image from "next/image"
 
 // Enhanced Animation variants
@@ -348,11 +347,11 @@ export default function Home() {
     const topPriceProds = await getProductTopPrice()
     setItems(prods.data)
     setTopPrice(topPriceProds.data)
-    setItemsCount(prods.count)
+    setItemsCount(prods.count || 0)
     setUsersCount( users.count || 0)
     
 
-    console.log("i am in product home ", prods)
+    console.log("i am in product home prods ", prods)
     console.log("i am in product topPrice ", topPriceProds)
     console.log("i am in itemsCount", itemsCount)
     console.log("i am in usersCount", usersCount)
@@ -388,7 +387,8 @@ export default function Home() {
 
   return (
     <>
-    {isLoading && <HomePageSpinner />}
+    {isLoading &&  <LoadingSpinner branded  fullPage={true} size="md"  />
+  }
     {showSwitchHeart?(<FloatingActionButton/>):''}
 
       <main className="min-h-screen dark:bg-[#121212] relative overflow-hidden ">

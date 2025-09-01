@@ -26,7 +26,6 @@ import {
   Sparkles,
 } from "lucide-react"
 import { editeProfile, getUserById, resetPassword } from "@/callAPI/users"
-import { useParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import { decodedToken, getCookie } from "@/callAPI/utiles"
 import { LanguageToggle } from "@/components/language-toggle"
@@ -36,6 +35,10 @@ import { useToast } from "@/components/ui/use-toast"
 import { ItemListingForm } from "@/components/item-listing-form"
 import { z } from "zod"
 import { countriesList } from "@/lib/data"
+
+import { sendMessage } from "@/callAPI/aiChat"
+import { useLanguage } from "@/lib/language-provider"
+
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -161,6 +164,13 @@ export default function ProfileSettingsPage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false);
+  //AI chat
+  const [aiResponse, setAiResponse] = useState([])
+  const [isAiProcessing, setIsAiProcessing] = useState(false)
+  const [aiInput, setAiInput] = useState("")
+  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
+  const { isRTL, toggleLanguage } = useLanguage()
+
 
   const updatePassword = async () => {
     if (!newPassword || !confirmPassword) {
@@ -205,10 +215,7 @@ export default function ProfileSettingsPage() {
   }
 
   const { theme, toggleTheme } = useTheme()
-
   const { t } = useTranslations()
-  const params = useParams()
-
   const router = useRouter()
   const [user, setUser] = useState({})
   const [avatar, setAvatar] = useState(null)
@@ -227,7 +234,8 @@ export default function ProfileSettingsPage() {
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [selectedPosition, setSelectedPosition] = useState(null)
-  const mapInstanceRef = useRef(null)
+  const [translations, setTranslations] = useState([])
+  const [originalTranslations, setOriginalTranslations] = useState([])
 
   const getUser = async () => {
     const token = await getCookie()
@@ -256,6 +264,75 @@ export default function ProfileSettingsPage() {
 
   const result = profileSchema.safeParse({ phone_number ,first_name,last_name})
 
+  
+  
+
+  useEffect(() => {
+    getUser()
+  }, [])
+
+
+  useEffect(() => {
+    setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user?.avatar}` || "/placeholder-user.jpg")
+    setFirstName(user?.first_name || "")
+    setLasttName(user?.last_name || "")
+    setGender(user?.gender || "")
+    setPhone(user?.phone_number || "")
+    setCountry(user?.country || "")
+    setPostCode(user?.post_code || "")
+    set_geo_location(user?.geo_location || {})
+    setEmail(user?.email || "")
+    setCity(user?.city || "")
+    setStreet(user?.street || "")
+    setDescription(user?.description || "")
+    setOriginalTranslations(user?.translations || [])
+ //AI translate
+ setAiInput(`Please translate the following text:
+  - Description: ${description}
+  - Street: ${street}
+  - City: ${city}
+  please return ONLY a JSON response in this format:
+  {
+  "description_translations": { "en": "...", "ar": "..." },
+  "city_translations": { "en": "...", "ar": "..." },
+  "street_translations": { "en": "...", "ar": "..." }
+  }`)
+  console.log("originalTranslations:", originalTranslations)
+  console.log("city:", city)
+  console.log("isRTL:", isRTL)
+  console.log("city:", city)
+  console.log("street:", street)
+  console.log("description:", description)
+  console.log("first_name:", first_name)
+
+
+    // Set description, city, and street based on translations and RTL
+    // if (user?.translations && user.translations.length > 0) {
+    //   const currentTranslation = user.translations.find(t => 
+    //     (!isRTL && t.languages_code === "en-US") || 
+    //     (isRTL && t.languages_code === "ar-SA")
+    //   )
+      
+    //   if (currentTranslation) {
+    //     setDescription(currentTranslation.description || user?.description || "")
+    //     setCity(currentTranslation.city || user?.city || "")
+    //     setStreet(currentTranslation.street || user?.street || "")
+    //   } else {
+    //     // Fallback to main user data if no translation for current language
+    //     setDescription(user?.description || "")
+    //     setCity(user?.city || "")
+    //     setStreet(user?.street || "")
+    //   }
+    // } else {
+    //   // No translations available, use main user data
+    //   setDescription(user?.description || "")
+    //   setCity(user?.city || "")
+    //   setStreet(user?.street || "")
+    // }
+  }, [user, isRTL])
+
+
+
   const userCollectionData = {}
   if (first_name) userCollectionData.first_name = first_name
   if (last_name) userCollectionData.last_name = last_name
@@ -268,33 +345,7 @@ export default function ProfileSettingsPage() {
   if (gender) userCollectionData.gender = gender
   if (phone_number) userCollectionData.phone_number = phone_number
   if (geo_location) userCollectionData.geo_location = geo_location
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
-
-  useEffect(() => {
-    getUser()
-  }, [])
-
-  useEffect(() => {
-    setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user?.avatar}` || "/placeholder-user.jpg")
-    setFirstName(user?.first_name || "")
-    setLasttName(user?.last_name || "")
-    setGender(user?.gender || "")
-    setPhone(user?.phone_number || "")
-    setDescription(user?.description || "")
-    setCountry(user?.country || "")
-    setCity(user?.city || "")
-    setStreet(user?.street || "")
-    setPostCode(user?.post_code || "")
-    set_geo_location(user?.geo_location || {})
-    setEmail(user?.email || "")
-  }, [user])
+  // if (translations) userCollectionData.translations = translations
 
   const [formData, setFormData] = useState({
     first_name,
@@ -307,6 +358,7 @@ export default function ProfileSettingsPage() {
     post_code,
     gender,
     geo_location,
+    translations,
   })
 
   const handleChange = (e) => {
@@ -322,28 +374,111 @@ export default function ProfileSettingsPage() {
     key => userCollectionData[key] !== user[key]
   );
 
+ 
+  const requestAiTranslate = async () => {
+    try {
+       //AI translate
+   setAiInput(`Please translate the following text:
+    - Description: ${description}
+    - Street: ${street}
+    - City: ${city}
+    please return ONLY a JSON response in this format:
+    {
+    "description_translations": { "en": "...", "ar": "..." },
+    "city_translations": { "en": "...", "ar": "..." },
+    "street_translations": { "en": "...", "ar": "..." }
+    }`)
+
+      // Check if all required fields are filled
+      if (!description || !street || !city) {
+        toast({
+          title: t("error") || "ERROR ",
+          description:
+            t("Pleasetranslatethedescriptionstreetcity") || "Please translate the description, street, and city.",
+          variant: "destructive",
+        })
+        return null
+      }
+      setIsAiProcessing(true)
+      const aiResponse = await sendMessage(aiInput, aiSystemPrompt)
+      let jsonString = aiResponse.text
+      
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+      if (jsonMatch) {
+        jsonString = jsonMatch[1]
+      }
+      
+      // Clean up any remaining markdown or extra characters
+      jsonString = jsonString.trim()
+      const jsonObject = JSON.parse(jsonString)
+      console.log("Parsed AI Translate:", jsonObject)
+
+      // Create translations in Directus format
+      let newTranslations = [
+        {
+          languages_code: "en-US",
+          description: jsonObject.description_translations.en,
+          city: jsonObject.city_translations.en,
+          street: jsonObject.street_translations.en,
+        },
+        {
+          languages_code: "ar-SA",
+          description: jsonObject.description_translations.ar,
+          city: jsonObject.city_translations.ar,
+          street: jsonObject.street_translations.ar,
+        },
+      ]
+      setAiResponse(newTranslations)
+      setIsAiProcessing(false)
+    } catch (error) {
+      console.error("Error getting AI translate:", error)
+      console.error("AI Response text:", aiResponse?.text)
+      
+      let errorMessage = t("FailedtogetAITranslatePleasetryagainorenteryourowntranslate") ||
+        "Failed to get AI translate. Please try again or enter your own translate."
+      
+      if (error instanceof SyntaxError && error.message.includes("JSON")) {
+        errorMessage = "AI response format error. Please try again."
+      }
+      
+      toast({
+        title: t("error") || "ERROR ",
+        description: errorMessage,
+        variant: "destructive",
+      })
+      return null
+    } finally {
+      setIsAiProcessing(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    await requestAiTranslate()
+    try {
 
-    if (!isDataChanged && !avatar) {
-      toast({
-        title: t("noChangeSaved") || "No changes to save",
-        description: t("Youhavenotupdatedanyfield") || "You have not updated any field.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
+      if (!isDataChanged && !avatar) {
+        toast({
+          title: t("noChangeSaved") || "No changes to save",
+          description: t("Youhavenotupdatedanyfield") || "You have not updated any field.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    if (!userCollectionData || Object.keys(userCollectionData).length === 0) {
-      toast({
-        title: "Warning",
-        description: t("noChangeSaved") || "No changes to save",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    } else {
+      if (!userCollectionData || Object.keys(userCollectionData).length === 0) {
+        toast({
+          title: "Warning",
+          description: t("noChangeSaved") || "No changes to save",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       if (!result.success) {
         toast({
           title: "Warning",
@@ -351,15 +486,26 @@ export default function ProfileSettingsPage() {
           variant: "destructive",
         });
         setIsLoading(false);
-      } else {
-        await editeProfile(userCollectionData, user.id, avatar);
-        router.refresh();
-        toast({
-          title: t("successfully") || "Success",
-          description: t("savedSuccessfully") || "Settings saved successfully!",
-        });
-        setIsLoading(false);
+        return;
       }
+
+     
+      // Get AI translations if we have translated fields
+      await editeProfile(userCollectionData, user.id, avatar, aiResponse);
+      router.refresh();
+      toast({
+        title: t("successfully") || "Success",
+        description: t("savedSuccessfully") || "Settings saved successfully!",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error)
+      toast({
+        title: t("error") || "ERROR ",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -518,9 +664,8 @@ export default function ProfileSettingsPage() {
 
           {/* Main Content */}
           <motion.div className="md:col-span-3" variants={itemVariants}>
-            <AnimatePresence mode="wait">
-              <TabsContent value="profile" key='profile'>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="profile">
+              <TabsContent value="profile">
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.div variants={cardVariants} whileHover="hover">
                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted overflow-hidden">
                       <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
@@ -667,7 +812,7 @@ export default function ProfileSettingsPage() {
                                   <Input
                                     id="city"
                                     name="city"
-                                    value={city}
+                                    value={!isRTL ? originalTranslations[0]?.city: originalTranslations[1]?.city}
                                     onChange={(e) => setCity(e.target.value)}
                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
@@ -686,7 +831,7 @@ export default function ProfileSettingsPage() {
                                   <Input
                                     id="street"
                                     name="street"
-                                    value={street}
+                                    value={!isRTL ? originalTranslations[0]?.street: originalTranslations[1]?.street}
                                     onChange={(e) => setStreet(e.target.value)}
                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
@@ -894,7 +1039,7 @@ export default function ProfileSettingsPage() {
                                 <Textarea
                                   id="description"
                                   name="description"
-                                  value={description}
+                                  value={!isRTL ? originalTranslations[0]?.description: originalTranslations[1]?.description}
                                   onChange={(e) => setDescription(e.target.value)}
                                   rows={4}
                                   className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
@@ -1098,8 +1243,8 @@ export default function ProfileSettingsPage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="add"  key='add'  >
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="add">
+              <TabsContent value="add">
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.div variants={cardVariants} whileHover="hover">
                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
                       <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
@@ -1126,7 +1271,6 @@ export default function ProfileSettingsPage() {
                   </motion.div>
                 </motion.div>
               </TabsContent>
-            </AnimatePresence>
           </motion.div>
         </div>
       </Tabs>

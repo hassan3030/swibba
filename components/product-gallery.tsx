@@ -153,7 +153,7 @@ export function ProductGallery({ images, productName }) {
         {/* Image counter */}
         {images.length > 1 && (
           <motion.div
-            className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs font-medium"
+            className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs font-medium z-10"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}

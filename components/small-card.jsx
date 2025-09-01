@@ -23,16 +23,16 @@ export default function SmallCard({item}) {
 const [bigImage , setBigImage] =  useState('')
 // console.log("product" , product  )
 
-  const getDataImage = async () => {
-  const images2 = await getImageProducts(item?.images)
-  setBigImage(images2.data[0].directus_files_id)
-  console.log('i am in single product ' , images)
-}
+//   const getDataImage = async () => {
+//   const images2 = await getImageProducts(item?.images)
+//   setBigImage(images2.data[0].directus_files_id)
+//   console.log('i am in single product ' , images)
+// }
 
-   useEffect(() => {
-    getDataImage()
-  }
-  )
+//    useEffect(() => {
+//     getDataImage()
+//   }
+//   )
 
   return (
     <div className="container py-8">
@@ -59,7 +59,7 @@ const [bigImage , setBigImage] =  useState('')
                       >
                         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                           <Image
-                          src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
+                          src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"}
                          alt={item.name} fill className="object-cover" />
                         </div>
                         <div className="flex-1">

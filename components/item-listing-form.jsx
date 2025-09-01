@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState , useEffect} from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -20,6 +20,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { addProduct } from "@/callAPI/products"
+import { sendMessage } from "@/callAPI/aiChat"
+import { useLanguage } from "@/lib/language-provider"
+import {  decodedToken } from "@/callAPI/utiles"
+import { getUserById } from "@/callAPI/users"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -88,10 +92,19 @@ export function ItemListingForm() {
   const [isEstimating, setIsEstimating] = useState(false)
   const [geo_location, set_geo_location] = useState({})
   const [isGettingLocation, setIsGettingLocation] = useState(false)
-  const [currentPosition, setCurrentPosition] = useState(null)
+  const [currentPosition, setCurrentPosition] = useState(null) 
   const [selectedPosition, setSelectedPosition] = useState(null)
+//AI chat
+  const [aiResponse, setAiResponse] = useState(null)
+  const [isAiProcessing, setIsAiProcessing] = useState(false)
+  const [aiInput, setAiInput] = useState("")
+  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
+  const [aiReply, setAiReply] = useState(null)
+  const [user, setUser] = useState()
+
   const { toast } = useToast()
   const { t } = useTranslations()
+  const { isRTL, toggleLanguage } = useLanguage()
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
   const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp" ]
@@ -108,7 +121,7 @@ export function ItemListingForm() {
       .max(2000, t("Descriptionmustbelessthan2000characters") || "Description must be less than 2000 characters"),
     category: z.enum(categoriesName),
     condition: z.string(),
-    value_estimate: z.coerce.number().positive(t("Valuemustbegreaterthan0") || "Value must be greater than 0"),
+    // value_estimate: z.coerce.number().positive(t("Valuemustbegreaterthan0") || "Value must be greater than 0"),
     allowed_categories: z
       .array(z.enum(allowedCategories))
       .min(1, t("Selectatleastonecategory") || "Select at least one category"),
@@ -125,7 +138,7 @@ export function ItemListingForm() {
       description: "",
       category: "",
       status_item: "excellent",
-      value_estimate: 0,
+      value_estimate:aiPriceEstimation || 0,
       allowed_categories: [],
       status_swap: "available",
       price: 1,
@@ -137,11 +150,25 @@ export function ItemListingForm() {
     mode: "onBlur",
     reValidateMode: "onChange",
   })
+const getUser = async () => {
+  const decoded = await decodedToken()
+  if (decoded) {
+    const user = await getUserById(decoded.id)
+    setUser(user.data)
+  }
+}
+// const { isRTL, toggleLanguage } = useLanguage()
 
+  useEffect(() => {
+    getUser()
+    console.error("user", user)
+    // console.error("isRTL", isRTL)
+    // console.error("toggleLanguage", toggleLanguage)
+  }, [isRTL])
   const handleImageUpload = (e) => {
-    // Require all main form fields before allowing image upload
-    const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
-    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
+    // Require basic form fields before allowing image upload
+    const { name, description, category, condition, price, country, city, street } = form.getValues();
+    if (!name || !description || !category || !condition || !price || !country || !city || !street) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleasefillallitemdetailsbeforeuploadingimages") || "Please fill all item details before uploading images.",
@@ -202,101 +229,83 @@ export function ItemListingForm() {
 
   const requestAiPriceEstimate = async () => {
     const { name, description, category, condition, price } = form.getValues()
-
-    if (!name || !description || !category || !condition) {
-      toast({
-        title: t("error") || "ERROR ",
-        description:
-          t("PleasedescriptioncategoryconditionAIpriceestimate") ||
-          "Please fill in the item name, description, category, and condition for an AI price estimate.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsEstimating(true)
-
+  
     try {
-      // Simulate AI processing time
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      
-      // Base price factors - either from user input or category-based defaults
-      const basePrice = parseFloat(price) || getCategoryBasePrice(category)
-      
-      // Condition factors - how condition affects value
-      const conditionFactors = {
-        "new": 1.0,
-        "excellent": 0.85,
-        "good": 0.7,
-        "fair": 0.5,
-        "poor": 0.3
+      // Check if all required fields are filled
+      if (!name || !description || !category || !condition || !price || 
+          !geo_location || Object.keys(geo_location).length === 0 || 
+          !images || images.length === 0) {
+        toast({
+          title: t("error") || "ERROR ",
+          description:
+            t("PleasefillnamedesccatcondpricegeoimagesAI") ||
+            "Please fill in the item name, description, category, condition, price, location and upload at least one image for AI price estimation.",
+          variant: "destructive",
+        })
+        return
       }
-      
-      // Category-specific depreciation rates
-      const categoryDepreciationRates = {
-        "electronics": 0.25, // Electronics depreciate faster
-        "clothing": 0.4,
-        "furniture": 0.15,
-        "books": 0.1,
-        "toys": 0.2,
-        "sports": 0.15,
-        "automotive": 0.2,
-        "jewelry": 0.05, // Jewelry holds value better
-        "collectibles": 0.05,
-        "art": 0.02
-      }
-      
-      // Market demand multiplier (could be based on real market data)
-      const marketDemandMultiplier = getMarketDemandMultiplier(category)
-      
-      // Image quality factor (placeholder - in a real system this would analyze images)
-      const imageQualityFactor = images.length > 0 ? 1.05 : 0.95
-      
-      // Calculate the estimated value
-      let estimatedValue = basePrice
-      
-      // Apply condition adjustment
-      const conditionFactor = conditionFactors[condition] || 0.7
-      estimatedValue *= conditionFactor
-      
-      // Apply category-specific depreciation
-      const depreciationRate = categoryDepreciationRates[category] || 0.2
-      estimatedValue *= (1 - depreciationRate)
-      
-      // Apply market demand
-      estimatedValue *= marketDemandMultiplier
-      
-      // Apply image quality factor
-      estimatedValue *= imageQualityFactor
-      
-      // Add slight randomness to make it feel more "AI-like" (±5%)
-      const randomFactor = 0.95 + (Math.random() * 0.1)
-      estimatedValue *= randomFactor
-      
-      // Round to nearest whole number
-      const finalEstimate = Math.round(estimatedValue)
-      
-      setAiPriceEstimation(finalEstimate)
-      form.setValue("value_estimate", finalEstimate)
-      
-      console.log("AI Price Estimation Details:", {
-        basePrice,
-        condition,
-        conditionFactor,
-        category,
-        depreciationRate,
-        marketDemandMultiplier,
-        imageQualityFactor,
-        randomFactor,
-        finalEstimate
-      })
+else{
+      setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
+        Item Details:
+        - Name: ${name}
+        - Description: ${description}
+        - Location: ${JSON.stringify(geo_location)}
+        - Category: ${category}
+        - Base Price Reference: ${price} EGP
+        - Condition: ${condition}
+        
+        Please examine the uploaded images carefully and provide:
+        1. Visual condition assessment based on the images
+        2. Brand/model identification if visible
+        3. Quality and wear analysis from the images
+        4. Market value estimation considering visual condition
+        
+        please return ONLY a JSON response in this format:
+        {
+        "estimated_price": [number in EGP],
+        "name_translations": { "en": "...", "ar": "..." },
+        "description_translations": { "en": "...", "ar": "..." },
+        "city_translations": { "en": "...", "ar": "..." },
+        "street_translations": { "en": "...", "ar": "..." }
+        }`)
+          
+      setIsEstimating(true)
+    const aiResponse = await sendMessage(aiInput, aiSystemPrompt)
+    let jsonString = aiResponse.text
+    
+    // Extract JSON from markdown code blocks if present
+    const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      jsonString = jsonMatch[1]
+    }
+    
+    // Clean up any remaining markdown or extra characters
+    jsonString = jsonString.trim()
+    
+    const jsonObject = JSON.parse(jsonString)
+    console.log("Parsed AI Response:", jsonObject)
+    console.log("Estimated Price:", jsonObject.estimated_price)
+    console.log("Name Translations:", jsonObject.name_translations)
+    console.log("Description Translations:", jsonObject.description_translations)
+    
+    setAiResponse(jsonObject)
+    setAiPriceEstimation(jsonObject.estimated_price)
+    setIsEstimating(false)
+    }
     } catch (error) {
       console.error("Error getting AI price estimate:", error)
+      console.error("AI Response text:", aiResponse?.text)
+      
+      let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
+        "Failed to get AI price estimate. Please try again or enter your own estimate."
+      
+      if (error instanceof SyntaxError && error.message.includes("JSON")) {
+        errorMessage = "AI response format error. Please try again."
+      }
+      
       toast({
         title: t("error") || "ERROR ",
-        description:
-          t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
-          "Failed to get AI price estimate. Please try again or enter your own estimate.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -305,42 +314,12 @@ export function ItemListingForm() {
   }
   
   // Helper function to get base price by category
-  const getCategoryBasePrice = (category) => {
-    const basePrices = {
-      "electronics": 500,
-      "clothing": 50,
-      "furniture": 200,
-      "books": 15,
-      "toys": 25,
-      "sports": 75,
-      "automotive": 300,
-      "jewelry": 200,
-      "collectibles": 100,
-      "art": 150
-    }
-    return basePrices[category] || 100
-  }
   
-  // Helper function to simulate market demand
-  const getMarketDemandMultiplier = (category) => {
-    // Simulated market demand (in a real app, this could come from an API)
-    const marketDemand = {
-      "electronics": 1.2, // High demand
-      "clothing": 0.9,
-      "furniture": 0.85,
-      "books": 0.7,
-      "toys": 0.8,
-      "sports": 1.1,
-      "automotive": 0.95,
-      "jewelry": 1.15,
-      "collectibles": 1.3, // Very high demand
-      "art": 1.25
-    }
-    return marketDemand[category] || 1.0
-  }
-
+  
+  
   const onSubmit = async (data, event) => {
     if (event) event.preventDefault();
+
     const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
     if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
       toast({
@@ -456,9 +435,33 @@ export function ItemListingForm() {
     }
 
     try {
-      const payload = { ...form.getValues(), geo_location }
+    getUser()
+
+      const payload = { 
+        ...form.getValues(), 
+        user_email: user.email,
+        geo_location,
+        value_estimate: aiPriceEstimation ,
+        translations: [
+          {
+            languages_code: "en-US",
+            name: aiResponse.name_translations.en,
+            description: aiResponse.description_translations.en,
+            city: aiResponse.city_translations.en,
+            street: aiResponse.street_translations.en,
+          },
+          {
+            languages_code: "ar-SA",
+            name: aiResponse.name_translations.ar,
+            description: aiResponse.description_translations.ar,
+            city: aiResponse.city_translations.ar,
+            street: aiResponse.street_translations.ar,
+          },
+        ],
+      }
       console.log("Payload:", payload)
       console.log("geo_location:", geo_location)
+      console.log("aiPriceEstimation:", aiPriceEstimation)
 
       await addProduct(payload, files)
 
@@ -470,6 +473,10 @@ export function ItemListingForm() {
       form.reset()
       setImages([])
       setImageUrls([])
+      set_geo_location({})
+      setSelectedPosition(null)
+      setAiResponse(null)
+      setAiPriceEstimation(null)
       setStep(1)
     } catch (err) {
       console.error(err)
@@ -485,16 +492,21 @@ export function ItemListingForm() {
   const [step, setStep] = useState(1);
 
   // Validation for step 1 fields
-  const isStep1Valid = form.watch("name")?.length >= 3 &&
+  const isStep1Valid = 
+    form.watch("name")?.length >= 3 &&
     form.watch("description")?.length >= 20 &&
     !!form.watch("category") &&
     !!form.watch("condition") &&
-    !!form.watch("price");
-
+    !!form.watch("price") &&
+    Object.keys(geo_location).length > 0 
+    
+   
   // Validation for step 2 fields
   const isStep2Valid = images.length > 0 &&
-    !!form.watch("value_estimate") &&
-    form.watch("allowed_categories")?.length > 0;
+    aiPriceEstimation !== null &&
+    aiPriceEstimation > 0 &&
+    form.watch("allowed_categories")?.length > 0 &&
+    images.length > 0;
 
   return (
     <motion.div
@@ -751,6 +763,8 @@ export function ItemListingForm() {
                         </AnimatePresence>
                       </Card>
                     </motion.div>
+
+
                   <Button
                     type="button"
                     onClick={() => setStep(2)}
@@ -828,14 +842,8 @@ export function ItemListingForm() {
                       )}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-foreground">{t("ImagesValue") || "Images & Value"}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {t("Uploadclearphotosofyouritemandsetitsestimatedvalue") ||
-                        "Upload clear photos of your item and set its estimated value"}
-                    </p>
-                  </div>
 
+                  
                   <div className="space-y-2">
                     <FormLabel className="font-semibold text-foreground">{t("ItemImages") || "Item Images"}</FormLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -906,6 +914,13 @@ export function ItemListingForm() {
                       {t("Uploadupto") || "Upload up to"} <span className="font-bold text-primary">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
                     </p>
                   </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-semibold text-foreground">{t("AIValueEstimation") || "AI Value Estimation"}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {t("GetAIpoweredpriceestimateandchooseacceptablecategories") ||
+                        "Get AI-powered price estimate and choose acceptable categories"}
+                    </p>
+                  </div>
 
                   <div className="space-y-2">
                     <FormField
@@ -950,13 +965,11 @@ export function ItemListingForm() {
 
                             </TooltipProvider>
                           </div>
-                          <FormControl>
-                            <Input type="number" min="0" step="1" {...field} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
-                          </FormControl>
+                          
                           <AnimatePresence>
                             {aiPriceEstimation !== null && (
                               <motion.p
-                                className="text-xs text-secondary2 font-semibold"
+                                className="text-md text-secondary2 font-semibold"
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}

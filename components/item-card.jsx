@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowLeftRight, ChevronRight, Heart, Star } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils"
+import { useCardTranslation } from "@/components/with-translation"
+import { useLanguage } from "@/lib/language-provider"
+  
+
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -94,6 +98,11 @@ const itemVariants = {
 export function ItemCard({ item }) {
   const [isSaved, setIsSaved] = useState(false)
   const router = useRouter()
+  
+  // Use translation hook for item name and description
+  const { translatedData } = useCardTranslation(item);
+  const translatedName = translatedData.name || item.name;
+  const translatedDescription = translatedData.description || item.description;
 
   const handleSaveClick = (e) => {
     e.preventDefault()
@@ -119,7 +128,7 @@ export function ItemCard({ item }) {
             <motion.div className="relative aspect-square overflow-hidden" variants={imageVariants}>
               <Image
                 src="/placeholder.svg?height=400&width=400"
-                alt={item.name}
+                alt={translatedName}
                 fill
                 className="object-cover transition-transform duration-300"
               />
@@ -159,7 +168,7 @@ export function ItemCard({ item }) {
           <CardContent className="p-4">
             <motion.div className="mb-2 flex items-start justify-between gap-2" variants={itemVariants}>
               <Link href={`/items/${item.id}`} className="group">
-                <h3 className="line-clamp-1 font-semibold group-hover:text-primary transition-colors">{item.name}</h3>
+                <h3 className="line-clamp-1 font-semibold group-hover:text-primary transition-colors">{translatedName}</h3>
               </Link>
               <motion.div
                 className="flex items-center whitespace-nowrap text-sm font-semibold text-foreground"
@@ -171,7 +180,7 @@ export function ItemCard({ item }) {
             </motion.div>
 
             <motion.p className="mb-3 line-clamp-2 text-sm text-muted-foreground" variants={itemVariants}>
-              {item.description}
+              {translatedDescription}
             </motion.p>
 
             <motion.div className="mb-3" variants={itemVariants}>
@@ -182,11 +191,11 @@ export function ItemCard({ item }) {
             <motion.div className="flex items-center justify-between" variants={itemVariants}>
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={item?.avatar || "/placeholder.svg"} alt={item.name} />
-                  <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={item?.avatar || "/placeholder.svg"} alt={translatedName} />
+                  <AvatarFallback>{translatedName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="font-medium">{item.name}</span>
+                  <span className="font-medium">{translatedName}</span>
                   <div className="flex items-center">
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                     <span>{(item?.ratings ?? 0).toFixed(1)}</span>

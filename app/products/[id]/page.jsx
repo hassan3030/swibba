@@ -15,7 +15,7 @@ import { getProductById, getImageProducts } from "@/callAPI/products"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
-
+import { useLanguage } from "@/lib/language-provider"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -61,7 +61,7 @@ export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id
-
+  const { isRTL, toggleLanguage } = useLanguage()
   const getToken = async () => {
     const fullToken = await decodedToken()
     setTokenId(fullToken.id)
@@ -74,15 +74,14 @@ export default function ProductPage() {
       try {
         const prod = await getProductById(id)
         if (!prod.data) {
-          notFound()
-          return null
+         return notFound()
+          
         }
         setProduct(prod.data)
 
         // Images
         if (prod.data.images && prod.data.images.length > 0) {
-          const images2 = await getImageProducts(prod.data.images)
-          const filesArray = images2.data.map((item) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
+          const filesArray = prod.data.images.map((item ) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
           setImages(filesArray)
         } else {
           setImages([])
@@ -162,7 +161,7 @@ export default function ProductPage() {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3">
-                  {product.name}
+                  {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1 truncate">
                   {t(product.category)}
@@ -218,7 +217,7 @@ export default function ProductPage() {
           >
             <span className="font-medium block mb-1">{t("description")}:</span>
             <div className="text-break-responsive whitespace-pre-wrap leading-relaxed line-clamp-1 overflow-ellipsis">
-              {product.description}
+              {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
             </div>
           </motion.div>
 
@@ -313,8 +312,7 @@ export default function ProductPage() {
                   {t("statusSwap")}
                 </TabsTrigger>
               </TabsList>
-              <AnimatePresence mode="wait">
-                <TabsContent value="features" className="mt-3 sm:mt-4" key={crypto.randomUUID()}>
+                <TabsContent value="features" className="mt-3 sm:mt-4">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -323,11 +321,11 @@ export default function ProductPage() {
                     className="text-sm sm:text-base w-full"
                   >
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
-                      {product.description}
+                      {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
                     </div>
                   </motion.div>
                 </TabsContent>
-                <TabsContent value="Category" className="mt-3 sm:mt-4" key={crypto.randomUUID()}>
+                <TabsContent value="Category" className="mt-3 sm:mt-4">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -338,7 +336,7 @@ export default function ProductPage() {
                     {t(product.category)}
                   </motion.div>
                 </TabsContent>
-                <TabsContent value="swap_status" className="mt-3 sm:mt-4" key={crypto.randomUUID()}>
+                <TabsContent value="swap_status" className="mt-3 sm:mt-4">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -359,7 +357,6 @@ export default function ProductPage() {
                     )}
                   </motion.div>
                 </TabsContent>
-              </AnimatePresence>
             </Tabs>
           </motion.div>
         </motion.div>

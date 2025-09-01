@@ -65,18 +65,18 @@ const imageVariants = {
 
 const ItemCard = ({ item }) => {
   const { toast } = useToast()
-  const [bigImage, setBigImage] = useState("")
+  // const [bigImage, setBigImage] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const { t } = useTranslations()
   const router = useRouter()
 
-  const getDataImage = async () => {
-    if (item.images) {
-      const images2 = await getImageProducts(item.images)
-      setBigImage(images2.data[0]?.directus_files_id || "")
-    }
-  }
+  // const getDataImage = async () => {
+  //   if (item.images) {
+  //     const images2 = await getImageProducts(item.images)
+  //     setBigImage(images2.data[0]?.directus_files_id || "")
+  //   }
+  // }
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -99,9 +99,9 @@ const ItemCard = ({ item }) => {
     }
   }
 
-  useEffect(() => {
-    getDataImage()
-  }, [item.images])
+  // useEffect(() => {
+  //   getDataImage()
+  // }, [item.images])
 
   return (
     <motion.div
@@ -119,7 +119,7 @@ const ItemCard = ({ item }) => {
           whileHover="hover"
         >
           <Image
-            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` || "/placeholder.svg"}
+            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"}
             alt={item.name}
             fill
             className="rounded-t-lg object-cover sm:rounded-l-lg sm:rounded-tr-none"

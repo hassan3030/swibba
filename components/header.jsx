@@ -17,8 +17,6 @@ import {
   LogOut,
   PlusCircle,
   HandPlatter,
-  Maximize2,
-  Minimize2
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -124,6 +122,22 @@ export function Header() {
   const pathname = usePathname()
 
   const toggleMenu = () => setIsMenuOpen((prev) => !prev)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY >= 150) {
+        setShowTopBar(false);
+        setShowCategoriesBar(false);
+      } else {
+        setShowTopBar(true);
+        setShowCategoriesBar(true);
+      }
+    }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+
 
   const handlegetProductSearchFilter = () => {
     const filterTrim = filter.trim()
@@ -274,7 +288,7 @@ export function Header() {
         </AnimatePresence>
 
         {/* Main header */}
-        <div className="container py-4">
+        <div className="container py-2">
           <div className="flex items-center justify-between gap-4">
             {/* Mobile toggles */}
             <motion.div
@@ -636,14 +650,6 @@ export function Header() {
                   </motion.div>
 
 
-                   <Button 
-      variant="" 
-      size="sm" 
-      onClick={() => {setShowTopBar(!showTopBar) ;  setShowCategoriesBar(!showCategoriesBar)}}
-      className="flex items-center text-xs bg-transparent hover:bg-transparent hover:text-[#f2b230] hover:scale-105 dark:text-white dark:hover:text-[#f2b230] transition-transform duration-300"
-    >
-      {showTopBar ? <Minimize2 className="h-5 w-5" /> : < Maximize2 className="h-5 w-5" />}
-    </Button>
                 </>
               ) : null}
             </motion.div>

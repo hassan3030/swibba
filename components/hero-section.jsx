@@ -46,7 +46,7 @@ import Image from "next/image";
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <motion.div
-            variants={fadeIn("up")}
+            // variants={fadeIn("up")}
             initial="hidden"
             animate="visible"
             className="space-y-8"
@@ -127,7 +127,7 @@ import Image from "next/image";
 
           {/* Floating Images */}
           <div className={`relative hidden lg:block -mt-72 lg:mr-32 `}>
-            <div className="absolute inset-0 ">
+            <div className="absolute inset-0 bg-transparent">
               {heroImages.map((image, index) => (
                 <motion.div
                   key={index}
@@ -138,7 +138,7 @@ import Image from "next/image";
                     delay: image.delay,
                     ease: "easeOut",
                   }}
-                  className={`absolute ${image.className} rounded-2xl shadow-2xl overflow-hidden group cursor-pointer`}
+                  className={`absolute ${image.className} bg-transparent rounded-2xl  overflow-hidden group cursor-pointer`}
                 >
                   <motion.div
                     variants={floatingAnimation}

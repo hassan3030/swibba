@@ -818,20 +818,20 @@ const Cart = () => {
 
 export default Cart
 
-export const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem }) => {
+export const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem,translations }) => {
   const router = useRouter()
-  const [bigImage, setBigImage] = useState("")
+  // const [bigImage, setBigImage] = useState("")
   const { t } = useTranslations()
 
-  useEffect(() => {
-    const getDataImage = async () => {
-      if (images) {
-        const images2 = await getImageProducts(images)
-        setBigImage(images2.data[0]?.directus_files_id || "")
-      }
-    }
-    getDataImage()
-  }, [images])
+  // useEffect(() => {
+  //   const getDataImage = async () => {
+  //     if (images) {
+  //       const images2 = await getImageProducts(images)
+  //       setBigImage(images2.data[0]?.directus_files_id || "")
+  //     }
+  //   }
+  //   getDataImage()
+  // }, [images])
 
   const handleView = (id) => {
     router.push(`/products/${id}`)
@@ -848,7 +848,7 @@ export const CardItemSwap = ({ id, name, description, price, status_item, images
           <Image
             width={100}
             height={100}
-            src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
+            src={images[0]?.directus_files_id ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}` : "/placeholder.svg"}
             alt={name}
             className="w-full h-full object-cover"
           />

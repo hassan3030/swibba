@@ -5,6 +5,7 @@ import Link from "next/link"
 import { motion} from "framer-motion"
 import { useTranslations } from "@/lib/use-translations"
 
+
 const cardVariants = {
   hidden: { opacity: 0, scale: 0.9 },
   visible: {
@@ -56,6 +57,8 @@ const textVariants = {
 
 export function CategoryCard({ name, imageSrc }) {
   const { t } = useTranslations()
+  
+
 
   return (
     <Link href={`categories/${name}`} className="group block">

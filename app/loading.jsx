@@ -2,9 +2,9 @@ import LoadingSpinner from '@/components/loading-spinner'
 
 const LoadingPage = () => {
   return (
-    <div>
-      <LoadingSpinner/>
-    </div>
+   <>
+       <LoadingSpinner branded  fullPage={true} size="md"  />
+   </> // <LoadingSpinner fullPage={true} size="md" text="Loading..." />
   );
 };
 

@@ -5,23 +5,25 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package } from "lucide-react"
+import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin } from "lucide-react"
 import Image from "next/image"
-
 import { Button } from "@/components/ui/button"
 import { getImageProducts } from "@/callAPI/products"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { categoriesName, itemsStatus, allowedCategories, countriesList } from "@/lib/data"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import { updateProduct } from "@/callAPI/products"
+import { sendMessage } from "@/callAPI/aiChat"
+import { useLanguage } from "@/lib/language-provider"
+// import {  decodedToken } from "@/callAPI/utiles"
+// import { getUserById } from "@/callAPI/users"
 
 // Animation variants
 const containerVariants = {
@@ -67,6 +69,18 @@ const imageVariants = {
   },
 }
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+}
+
 const inputVariants = {
   focus: {
     scale: 1.02,
@@ -92,12 +106,17 @@ export function ItemListingUpdate(props) {
     value_estimate,
     allowed_categories,
     status_swap,
+    geo_location: initialGeoLocation,
     price,
     city,
     country,
     street,
     images,
+    translations,
   } = props
+  console.log("itemData", images[0].directus_files_id)
+  console.log("translations", translations)
+  console.log("props", props)
   const router = useRouter()
   const [imagesFile, setImagesFile] = useState([])
   const [imageUrls, setImageUrls] = useState([])
@@ -109,6 +128,25 @@ export function ItemListingUpdate(props) {
   const [step, setStep] = useState(1)
   const { toast } = useToast()
   const { t } = useTranslations()
+  const [geoLocation, setGeoLocation] = useState(initialGeoLocation || {})
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [selectedPosition, setSelectedPosition] = useState(
+    initialGeoLocation && Object.keys(initialGeoLocation).length > 0 
+      ? initialGeoLocation 
+      : null
+  )
+  const [currentPosition, setCurrentPosition] = useState(null) 
+
+//AI chat
+  const [aiResponse, setAiResponse] = useState(null)
+  const [isAiProcessing, setIsAiProcessing] = useState(false)
+  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
+  const [aiReply, setAiReply] = useState(null)
+  const [aiInput, setAiInput] = useState("")
+  const [user, setUser] = useState()
+  const [originalTranslations, setOriginalTranslations] = useState(null)
+  const { isRTL, toggleLanguage } = useLanguage()
+
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
   const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
@@ -125,8 +163,12 @@ export function ItemListingUpdate(props) {
       .max(2000, "Description must be less than 2000 characters"),
     category: z.enum(categories),
     condition: z.string(),
-    value_estimate: z.coerce.number().positive("Value must be greater than 0"),
+    // value_estimate: z.coerce.number().positive("Value must be greater than 0"),
     allowedCategories: z.array(z.enum(allowedCat)).min(1, "Select at least one category"),
+    price: z.coerce.number().positive(t("Pricecannotbenegative") || "Price cannot be negative"),
+    country: z.string().min(1, t("SelectCountry") || "Select country"),
+    city: z.string().min(1, t("Cityisrequired") || "City is required"),
+    street: z.string().min(1, t("Streetisrequired") || "Street is required"),
   })
 
   // Get images
@@ -147,22 +189,101 @@ export function ItemListingUpdate(props) {
     fetchImages()
   }, [images])
 
+  const getCurrentPosition = () => {
+    setIsGettingLocation(true)
+
+    if (!navigator.geolocation) {
+      toast({
+        title: "Error",
+        description: t("geolocationNotSupported") || "Geolocation is not supported by this browser",
+        variant: "destructive",
+      })
+      setIsGettingLocation(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          name: "Current Location",
+        }
+        setCurrentPosition(pos)
+        setSelectedPosition(pos)
+
+        setGeoLocation({
+          lat: pos.lat,
+          lng: pos.lng,
+          accuracy: pos.accuracy,
+          name: pos.name,
+        })
+
+        setIsGettingLocation(false)
+        toast({
+          title: t("CurrentLocationFound") || "Current location found",
+          description: `${t("Latitude")}: ${pos.lat.toFixed(6)}, ${t("Longitude")}: ${pos.lng.toFixed(6)}`,
+        })
+      },
+      (error) => {
+        let message = t("Unabletoretrieveyourlocation") || "Unable to retrieve your location"
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = t("Locationaccessdeniedbyuser") || "Location access denied by user"
+            break
+          case error.POSITION_UNAVAILABLE:
+            message = t("Locationinformationisunavailable") || "Location information is unavailable"
+            break
+          case error.TIMEOUT:
+            message = t("Locationrequesttimedout") || "Location request timed out"
+            break
+        }
+        toast({
+          title: t("LocationError") || "Location Error",
+          description: message,
+          variant: "destructive",
+        })
+        setIsGettingLocation(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      },
+    )
+  }
+
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: name,
-      description: description,
-      category: category,
-      status_item: status_item,
-      value_estimate: value_estimate || 0,
-      allowed_categories: allowed_categories,
-      status_swap: status_swap,
-      price: price,
-      city: city,
-      country: country,
-      street: street,
-    },
+          defaultValues: {
+        name: translations ? (!isRTL ? translations[0]?.name : translations[1]?.name) || name : name,
+        description: translations ? (!isRTL ? translations[0]?.description : translations[1]?.description) || description : description,
+        category: category,
+        status_item: status_item,
+        value_estimate: value_estimate || 0,
+        allowed_categories: allowed_categories,
+        status_swap: status_swap,
+        price: price,
+        country: country,
+        city: translations ? (!isRTL ? translations[0]?.city : translations[1]?.city) || city : city,
+        street: translations ? (!isRTL ? translations[0]?.street : translations[1]?.street) || street : street,
+        geo_location: initialGeoLocation,
+      },
   })
+
+ 
+  // Store original translations for comparison
+  useEffect(() => {
+    if (translations && translations.length > 0) {
+      setOriginalTranslations(translations)
+    }
+  }, [translations])
+
+  // language direction
+  useEffect(() => {
+
+  }, [isRTL])
 
   const handleImageUpload = (e) => {
     if (!e.target.files || e.target.files.length === 0) return
@@ -209,37 +330,124 @@ export function ItemListingUpdate(props) {
     setImageUrls((prev) => prev.filter((_, i) => i !== index))
   }
 
+  // const requestAiPriceEstimate = async () => {
+  //   const { name, description, category, status_item } = form.getValues()
+  //   console.log("Requesting AI estimate for:", { name, description, category, status_item })
+
+  //   if (!name || !description || !category || !status_item) {
+  //     toast({
+  //       title: t("error") || "ERROR",
+  //       description: "Please fill in the item name, description, category, and condition for an AI price estimate.",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
+
+  //   setIsEstimating(true)
+
+  //   try {
+  //     await new Promise((resolve) => setTimeout(resolve, 1500))
+  //     const mockEstimate = Math.floor(Math.random() * 1000) + 100
+  //     setAiPriceEstimation(mockEstimate)
+  //     form.setValue("value_estimate", mockEstimate)
+  //   } catch (error) {
+  //     console.error("Error getting AI price estimate:", error)
+  //     toast({
+  //       title: t("error") || "ERROR",
+  //       description: "Failed to get AI price estimate. Please try again or enter your own estimate.",
+  //       variant: "destructive",
+  //     })
+  //   } finally {
+  //     setIsEstimating(false)
+  //   }
+  // }
   const requestAiPriceEstimate = async () => {
-    const { name, description, category, status_item } = form.getValues()
-    console.log("Requesting AI estimate for:", { name, description, category, status_item })
-
-    if (!name || !description || !category || !status_item) {
-      toast({
-        title: t("error") || "ERROR",
-        description: "Please fill in the item name, description, category, and condition for an AI price estimate.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsEstimating(true)
-
+    const { name, description, category, condition, price } = form.getValues()
+  
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      const mockEstimate = Math.floor(Math.random() * 1000) + 100
-      setAiPriceEstimation(mockEstimate)
-      form.setValue("value_estimate", mockEstimate)
+      // Check if all required fields are filled
+      if (!name || !description || !category || !condition || !price || 
+          !geoLocation || Object.keys(geoLocation).length === 0 
+          // || !images || images.length === 0
+        ) {
+        toast({
+          title: t("error") || "ERROR ",
+          description:
+            t("PleasefillnamedesccatcondpricegeoimagesAI") ||
+            "Please fill in the item name, description, category, condition, price, location and upload at least one image for AI price estimation.",
+          variant: "destructive",
+        })
+        return
+      }
+else{
+      setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
+        Item Details:
+        - Name: ${name}
+        - Description: ${description}
+        - Location: ${JSON.stringify(geoLocation)}
+        - Category: ${category}
+        - Base Price Reference: ${price} EGP
+        - Condition: ${condition}
+        
+        Please examine the uploaded images carefully and provide:
+        1. Visual condition assessment based on the images
+        2. Brand/model identification if visible
+        3. Quality and wear analysis from the images
+        4. Market value estimation considering visual condition
+        
+        please return ONLY a JSON response in this format:
+        {
+        "estimated_price": [number in EGP],
+        "name_translations": { "en": "...", "ar": "..." },
+        "description_translations": { "en": "...", "ar": "..." },
+        "city_translations": { "en": "...", "ar": "..." },
+        "street_translations": { "en": "...", "ar": "..." }
+        }`)
+          
+      setIsEstimating(true)
+    const aiResponse = await sendMessage(aiInput, aiSystemPrompt)
+    let jsonString = aiResponse.text
+    
+    // Extract JSON from markdown code blocks if present
+    const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      jsonString = jsonMatch[1]
+    }
+    
+    // Clean up any remaining markdown or extra characters
+    jsonString = jsonString.trim()
+    
+    const jsonObject = JSON.parse(jsonString)
+    console.log("Parsed AI Response:", jsonObject)
+    console.log("Estimated Price:", jsonObject.estimated_price)
+    console.log("Name Translations:", jsonObject.name_translations)
+    console.log("Description Translations:", jsonObject.description_translations)
+    
+    setAiResponse(jsonObject)
+    setAiPriceEstimation(jsonObject.estimated_price)
+    setIsEstimating(false)
+    }
     } catch (error) {
       console.error("Error getting AI price estimate:", error)
+      console.error("AI Response text:", aiResponse?.text)
+      
+      let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
+        "Failed to get AI price estimate. Please try again or enter your own estimate."
+      
+      if (error instanceof SyntaxError && error.message.includes("JSON")) {
+        errorMessage = "AI response format error. Please try again."
+      }
+      
       toast({
-        title: t("error") || "ERROR",
-        description: "Failed to get AI price estimate. Please try again or enter your own estimate.",
+        title: t("error") || "ERROR ",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
       setIsEstimating(false)
     }
   }
+
 
   const onSubmit = async (data) => {
     if (imagesFile.length === 0) {
@@ -271,7 +479,77 @@ export function ItemListingUpdate(props) {
 
   const handleSubmit = async () => {
     const files = imagesFile
-    const payload = { ...form.getValues() }
+    const formValues = form.getValues()
+    
+    // Prepare translations in Directus format
+    let translationsToSend = []
+    
+    if (aiResponse && aiResponse.name_translations) {
+      // AI provided new translations - send all
+      translationsToSend = [
+        {
+          languages_code: "en-US",
+          name: aiResponse.name_translations.en,
+          description: aiResponse.description_translations.en,
+          city: aiResponse.city_translations.en,
+          street: aiResponse.street_translations.en,
+        },
+        {
+          languages_code: "ar-SA",
+          name: aiResponse.name_translations.ar,
+          description: aiResponse.description_translations.ar,
+          city: aiResponse.city_translations.ar,
+          street: aiResponse.street_translations.ar,
+        },
+      ]
+    } else if (originalTranslations && originalTranslations.length > 0) {
+      // Update translations based on current form values
+      const currentName = formValues.name
+      const currentDescription = formValues.description
+      const currentCity = formValues.city
+      const currentStreet = formValues.street
+      
+      // Create updated translations array - send all translations with current language updated
+      translationsToSend = originalTranslations.map(translation => {
+        if ((!isRTL && translation.languages_code === "en-US") || 
+            (isRTL && translation.languages_code === "ar-SA")) {
+          // This is the current language - use form values
+          return {
+            ...translation,
+            name: currentName,
+            description: currentDescription,
+            city: currentCity,
+            street: currentStreet,
+          }
+        } else {
+          // Keep original translation for the other language
+          return translation
+        }
+      })
+    } else {
+      // No existing translations - create new ones for current language only
+      const currentName = formValues.name
+      const currentDescription = formValues.description
+      const currentCity = formValues.city
+      const currentStreet = formValues.street
+      
+      translationsToSend = [
+        {
+          languages_code: isRTL ? "ar-SA" : "en-US",
+          name: currentName,
+          description: currentDescription,
+          city: currentCity,
+          street: currentStreet,
+        }
+      ]
+    }
+    
+    const payload = {  
+      ...formValues, 
+      geo_location: geoLocation, 
+      value_estimate: aiPriceEstimation,
+      translations: translationsToSend.length > 0 ? translationsToSend : undefined
+    }
 
     if (files.length === 0) {
       toast({
@@ -283,11 +561,15 @@ export function ItemListingUpdate(props) {
     }
 
     try {
+      console.log("Payload being sent:", payload)
+      console.log("Translations being sent:", translationsToSend)
+      
       const updateItem = await updateProduct(payload, files, id)
-      if (updateItem) {
+      if (updateItem.success) {
+        const hasTranslations = translationsToSend.length > 0
         toast({
           title: t("successfully") || "Successfully",
-          description: "Item updated successfully with images!",
+          description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`,
         })
       }
     } catch (err) {
@@ -534,6 +816,70 @@ export function ItemListingUpdate(props) {
                         />
                       </div>
                     </div>
+
+                    <motion.div variants={itemVariants}>
+                      <Card className="rounded-xl shadow-md bg-muted border-border">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-primary">
+                            <Navigation className="h-5 w-5 text-primary" />
+                            {t("CurrentPosition") || "Current Position"}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <motion.div variants={buttonVariants}  whileTap="tap">
+                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-secondary/80 border border-primary text-secondary-foreground font-medium transition-all">
+                              {isGettingLocation ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  {t("GettingLocation") || "Getting Location..."}
+                                </>
+                              ) : (
+                                <>
+                                  <MapPin className="mr-2 h-4 w-4" />
+                                  {t("GetCurrentLocation") || "Get Current Location"}
+                                </>
+                              )}
+                            </Button>
+                          </motion.div>
+                        </CardContent>
+
+                        <AnimatePresence>
+                          {selectedPosition && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                            <Card className="rounded-lg border border-border bg-card/50 mt-2">
+                              <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-card-foreground">
+                                  <MapPin className="h-5 w-5 text-primary" />
+                                  {t("SelectedPosition") || "Selected Position"}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-2">
+                                <div className="space-y-1">
+                                  <p className="text-sm text-muted-foreground">
+                                    <strong>{t("Name") || "Name"}:</strong> {selectedPosition.name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    <strong>{t("Latitude") || "Latitude"}:</strong> {selectedPosition.lat.toFixed(6)}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    <strong>{t("Longitude") || "Longitude"}:</strong> {selectedPosition.lng.toFixed(6)}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                            </motion.div>
+                          )}
+
+                        </AnimatePresence>
+                      </Card>
+                    </motion.div>
+
+
                     <Button
                       type="button"
                       onClick={() => setStep(2)}

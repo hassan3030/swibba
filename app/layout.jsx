@@ -2,6 +2,8 @@ import { Inter , Cairo } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { MobileHeader } from "@/components/mobile-header"
+import { MobileFooter } from "@/components/mobile-footer"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { LanguageProvider } from "@/lib/language-provider"
 import { headers } from "next/headers";
@@ -112,10 +114,29 @@ export default async function  RootLayout({ children }) {
    <ThemeProvider>
           <LanguageProvider>
                 <div className="flex min-h-screen flex-col">
-                  <Header />
-                  <div className="flex-1">{children}</div>
-                  {/* handle it  */}
-                  {pathname==null ?(<Footer />):null}
+                  {/* Desktop Header - Hidden on mobile */}
+                  <div className="hidden md:block">
+                    <Header />
+                  </div>
+                  
+                  {/* Mobile Header */}
+                  <div className="block md:hidden">
+                    <MobileHeader />
+                  </div>
+                  
+                  <div className="flex-1 pb-16 md:pb-0">{children}</div>
+                  
+                  {/* Desktop Footer - Hidden on mobile */}
+                  {pathname==null && (
+                    <div className="hidden md:block">
+                      <Footer />
+                    </div>
+                  )}
+                  
+                  {/* Mobile Footer */}
+                  <div className="block md:hidden">
+                    <MobileFooter />
+                  </div>
                 </div>
                 <Toaster />
           </LanguageProvider>

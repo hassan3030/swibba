@@ -471,7 +471,7 @@ export const addProduct = async (payload, files) => {
       }
 
       // Validate file types
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "video/mp4", "video/mov", "video/avi", "video/mkv", "video/webm", "video/flv", "video/wmv", "video/mpeg", "video/mpg", "video/m4v", "video/m4a", "video/m4b", "video/m4p", "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a", "audio/m4b", "audio/m4p"]
       const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type))
       if (invalidFiles.length > 0) {
         throw new Error("Only JPEG, PNG, and WebP images are allowed")

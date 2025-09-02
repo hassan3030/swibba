@@ -1,5 +1,5 @@
 "use client"
-import { MessageCircle } from "lucide-react"
+import { MessageCircle, Verified } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -420,8 +420,8 @@ export function Header() {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                      <Button variant="ghost" size="sm" className="gap-2 hover:text-primary dark:hover:text-primary">
+                    <motion.div variants={buttonVariants} whileHover="hover" >
+                      <Button variant="ghost" size="sm" className="gap-2 hover:text-primary dark:hover:text-primary border border-none">
                         {user?.avatar ? (
                           <Image
                             width={100}
@@ -723,16 +723,23 @@ export function Header() {
                             className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
                             onClick={() => setIsMenuOpen(false)}
                             >
-                            <div className="flex items-center gap-2 p-2">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage
-                              src={user?.avatar || "/placeholder.svg"}
-                              alt={user?.first_name || t("account")}
-                              />
-                              <AvatarFallback className="bg-primary text-black dark:bg-primary dark:text-black">
-                              {String(user?.first_name).charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="flex items-center gap-2 p-2 border border-none">
+                            <div className="relative">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage
+                                src={user?.avatar || "/placeholder.svg"}
+                                alt={user?.first_name || t("account")}
+                                />
+                                <AvatarFallback className="bg-primary text-black dark:bg-primary dark:text-black">
+                                {String(user?.first_name).charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              {user?.verified && (
+                                <div className="absolute -top-1 -right-1">
+                                  <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                                </div>
+                              )}
+                            </div>
                             <div className="flex flex-col">
                               <p className="text-sm font-medium"> {(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</p>
                               <p className="text-xs text-muted-foreground">{user?.email || ""}</p>

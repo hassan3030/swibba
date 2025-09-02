@@ -3,8 +3,9 @@
 import { useState , useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, ArrowRight, Check } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getMediaType } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Tabs, TabsContent } from "@/components/ui/tabs"
@@ -58,9 +59,41 @@ const [bigImage , setBigImage] =  useState('')
                         // onClick={() => handleAvailableItemSelect(item.id)}
                       >
                         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                          <Image
-                          src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"}
-                         alt={item.name} fill className="object-cover" />
+                          {(() => {
+                            const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"
+                            const mediaType = getMediaType(mediaUrl)
+                            
+                            if (mediaType === 'video') {
+                              return (
+                                <div className="relative w-full h-full">
+                                  <video
+                                    src={mediaUrl}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    playsInline
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                    <Play className="h-3 w-3 text-white fill-current" />
+                                  </div>
+                                </div>
+                              )
+                            } else if (mediaType === 'audio') {
+                              return (
+                                <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                                  <div className="text-white text-sm">🎵</div>
+                                </div>
+                              )
+                            } else {
+                              return (
+                                <Image
+                                  src={mediaUrl}
+                                  alt={item.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              )
+                            }
+                          })()}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">

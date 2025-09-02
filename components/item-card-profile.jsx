@@ -7,8 +7,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Heart, Repeat } from "lucide-react"
+import { Heart, Repeat, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { getMediaType } from "@/lib/utils"
 import { getImageProducts } from "@/callAPI/products"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
 import { decodedToken, getCookie, setTarget } from "@/callAPI/utiles"
@@ -16,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 
 import { useLanguage } from "@/lib/language-provider"
+import { getKYC } from "@/callAPI/users"
   
 
 const cardVariants = {
@@ -109,14 +111,25 @@ export function ItemCardProfile({
     e.preventDefault()
     e.stopPropagation()
     const token = await getCookie()
-
+    const decoded = await decodedToken(token)
     if (token) {
-      router.push(`/swap/${id}`)
-    } else {
+      const kyc = await getKYC(decoded.id) /// ------------- take id user
+      if (kyc.data === false) {
+        toast({
+          title: t("faildSwap") || "Failed Swap",
+            description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+            variant: "destructive",
+        })
+      }
+      else {
+        router.push(`/swap/${id}`)
+      }
+    }
+    else {
        await setTarget(id)
       toast({
         title: t("faildSwap") || "Failed Swap",
-        description: t("DescFaildSwapLogin"),
+        description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
         variant: "destructive",
       })
       router.push(`/auth/login`)
@@ -183,16 +196,51 @@ export function ItemCardProfile({
                   <motion.div
        
                    whileHover="hover">
-                    <Image
-                      src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}`}
-                      alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
-                      fill
-                      placeholder="blur"
-                      blurDataURL="/placeholder.svg?height=300&width=300"
-                      priority
-                      // onLoad={() => setImageLoaded(true)}
-                      className="object-cover transition-transform duration-300"
-                    />
+{(() => {
+                      const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}`
+                      const mediaType = getMediaType(mediaUrl)
+                      
+                      if (mediaType == 'video') {
+                        return (
+                          <div className="relative w-full h-full">
+                            <video
+                              src={mediaUrl}
+                              className="w-full h-full object-cover transition-transform duration-300"
+                              muted
+                              loop
+                              playsInline
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                              <div className="bg-white/90 rounded-full p-2 group-hover:scale-110 transition-transform">
+                                <Play className="h-5 w-5 text-gray-800 fill-current" />
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      } else if (mediaType === 'audio') {
+                        return (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                            <div className="text-center text-white">
+                              <div className="text-3xl mb-1">🎵</div>
+                              <div className="text-xs font-medium">Audio</div>
+                            </div>
+                          </div>
+                        )
+                      } else {
+                        return (
+                          <Image
+                            src={mediaUrl}
+                            alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
+                            fill
+                            placeholder="blur"
+                            blurDataURL="/placeholder.svg?height=300&width=300"
+                            priority
+                            // onLoad={() => setImageLoaded(true)}
+                            className="object-cover transition-transform duration-300"
+                          />
+                        )
+                      }
+                    })()}
                   </motion.div>
            
               </AnimatePresence>
@@ -238,7 +286,7 @@ export function ItemCardProfile({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{!isRTL ? translations[0]?.name: translations[1]?.name || name}</h3>
+              <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{!isRTL ? (translations[0]?.name): (translations[1]?.name|| name) }</h3>
             </motion.div>
 
            

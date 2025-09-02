@@ -122,6 +122,14 @@
 
 /* RTL Support Styles */
 @layer utilities {
+  /* Mobile safe area utilities */
+  .safe-area-padding-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom);
+  }
   /* RTL Direction Support */
   [dir="rtl"] {
     direction: rtl;

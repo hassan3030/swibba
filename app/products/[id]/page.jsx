@@ -13,7 +13,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getProductById, getImageProducts } from "@/callAPI/products"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
-import { getUserByProductId } from "@/callAPI/users"
+import { getKYC, getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
 
@@ -111,8 +111,19 @@ export default function ProductPage() {
 
   const makeSwap = async () => {
     const token = await getCookie()
+    const decoded = await decodedToken(token)
     if (token) {
-      router.push(`/swap/${id}`)
+      const kyc = await getKYC(decoded.id) /// ------------- take id user
+      if (kyc.data === false) {
+        toast({
+          title: t("faildSwap") || "Failed Swap",
+          description: t("DescFaildSwapKYC") || "KYC is required for swap. Please complete your KYC.",
+          variant: "destructive",
+        })
+      }
+      else {
+        router.push(`/swap/${id}`)
+      }
     } else {
       toast({
         title: t("faildSwap") || "Failed Swap",
@@ -231,11 +242,21 @@ export default function ProductPage() {
             transition={{ delay: 0.6 }}
           >
             <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-              <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="flex-shrink-0">
+              <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="flex-shrink-0 relative">
                 <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                   <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"} />
                   <AvatarFallback className="text-xs sm:text-sm">{name ? name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
+                {user?.Verified && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5 shadow-sm" />
+                  </motion.div>
+                )}
               </motion.div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 min-w-0">

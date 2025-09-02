@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArrowLeftRight, ChevronRight, Heart, Star } from "lucide-react"
+import { ArrowLeftRight, ChevronRight, Heart, Star, Play, Verified } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils"
+import { cn, formatCurrency, formatRelativeTime, getMediaType } from "@/lib/utils"
 import { useCardTranslation } from "@/components/with-translation"
 import { useLanguage } from "@/lib/language-provider"
   
@@ -126,12 +126,49 @@ export function ItemCard({ item }) {
         <div className="relative">
           <Link href={`/items/${item.id}`}>
             <motion.div className="relative aspect-square overflow-hidden" variants={imageVariants}>
-              <Image
-                src="/placeholder.svg?height=400&width=400"
-                alt={translatedName}
-                fill
-                className="object-cover transition-transform duration-300"
-              />
+              {(() => {
+                const mediaUrl = item?.images?.[0]?.directus_files_id 
+                  ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0].directus_files_id}`
+                  : "/placeholder.svg?height=400&width=400"
+                const mediaType = getMediaType(mediaUrl)
+                
+                if (mediaType === 'video') {
+                  return (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={mediaUrl}
+                        className="w-full h-full object-cover transition-transform duration-300"
+                        muted
+                        loop
+                        playsInline
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                        <div className="bg-white/90 rounded-full p-2 group-hover:scale-110 transition-transform">
+                          <Play className="h-6 w-6 text-gray-800 fill-current" />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                } else if (mediaType === 'audio') {
+                  return (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <div className="text-4xl mb-2">🎵</div>
+                        <div className="text-sm font-medium">Audio File</div>
+                      </div>
+                    </div>
+                  )
+                } else {
+                  return (
+                    <Image
+                      src={mediaUrl}
+                      alt={translatedName}
+                      fill
+                      className="object-cover transition-transform duration-300"
+                    />
+                  )
+                }
+              })()}
             </motion.div>
           </Link>
 
@@ -190,10 +227,22 @@ export function ItemCard({ item }) {
 
             <motion.div className="flex items-center justify-between" variants={itemVariants}>
               <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={item?.avatar || "/placeholder.svg"} alt={translatedName} />
-                  <AvatarFallback>{translatedName.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={item?.avatar || "/placeholder.svg"} alt={translatedName} />
+                    <AvatarFallback>{translatedName.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  {item?.Verified && (
+                    <motion.div
+                      className="absolute -top-0.5 -right-0.5"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.3, type: "spring", stiffness: 400 }}
+                    >
+                      <Verified className="h-3 w-3 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                    </motion.div>
+                  )}
+                </div>
                 <div className="flex items-center gap-1 text-xs">
                   <span className="font-medium">{translatedName}</span>
                   <div className="flex items-center">

@@ -41,6 +41,7 @@ import {
   CheckCheck,
   Loader,
   CircleDot,
+  Verified,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useTranslations } from "@/lib/use-translations"
@@ -484,7 +485,7 @@ const Notifications = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 + 0.2 }}
                         >
-                          <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
+                          <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="relative">
                             <Avatar className="h-10 w-10 border">
                               <AvatarImage
                                 src={
@@ -502,6 +503,11 @@ const Notifications = () => {
                                   "User"}
                               </AvatarFallback>
                             </Avatar>
+                            {userSwaps.find((u) => u.id === offer.from_user_id)?.verified && (
+                              <div className="absolute -top-1 -right-1">
+                                <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                              </div>
+                            )}
                           </motion.div>
 
                           <div>

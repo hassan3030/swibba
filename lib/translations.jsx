@@ -1,7 +1,10 @@
 export const translations = {
   en  :{
-  Youhavenotupdatedanyfield: "You have not updated any field.",
 
+    DescFaildSwapKYC: "Required information for swap. Please complete your information.",
+    DescFaildSwapLogin: "Invalid swap without login. Please try to login.",
+
+  Youhavenotupdatedanyfield: "You have not updated any field.",
 
  Pleasetranslatethedescriptionstreetcity: "Please translate the description, street, and city.",
  FailedtogetAITranslatePleasetryagainorenteryourowntranslate: "Failed to get AI translate. Please try again or enter your own translate.",
@@ -463,6 +466,7 @@ SelectCountry: "Select a country",
     NoCart: "No Cart",
     YoureallcaughtupNewAddincartwillappearhere: "You re all caught up! New Add in cart will appear here.",
     MakeSwap: "Make Swap",
+
 
 
 
@@ -966,6 +970,10 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    DescFaildSwapKYC: "يرجى إكمال التحقق من الهوية قبل التبديل.",
+    DescFaildSwapLogin: "لا يمكن تبديل العناصر دون تسجيل الدخول. يرجى تسجيل الدخول.",
+
+
     Youhavenotupdatedanyfield: "لم تقم بتحديث أي حقل.",
 
     Pleasetranslatethedescriptionstreetcity: "يرجى ترجمة الوصف والشارع والمدينة.",

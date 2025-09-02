@@ -326,6 +326,43 @@ export const getUserById = async (id) => {
   }
 };
 
+
+export const getKYC = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("User ID is required")
+    }
+   const user = await getUserById(id)
+   if (!user.success) {
+    throw new Error(user.error)
+   }
+   else {
+    const {first_name, last_name, email , phone_number, avatar, country, city, street, post_code, geo_location} = user.data
+    if(!first_name || !last_name || !email || !phone_number || !avatar || !country || !city || !street || !post_code || !geo_location) {
+      console.log("User data is required for KYC")
+      return {
+        success: false,
+        data: false,
+        error: "User data is required for KYC",
+        message: "User data is required for KYC",
+      }
+    }
+    else {
+      console.log("User data for KYC:", user.data)
+      console.log(" data for KYC: stable for verification")
+      return {
+        success: true,
+        data: true,
+        message: "KYC retrieved successfully",
+      }
+    }
+  }
+   
+  } catch (error) {
+    return handleApiError(error, "Get KYC")
+  }
+}
+
 // Get all user 
 export const getAllUsers = async () => {
   try {

@@ -106,9 +106,9 @@ export function ItemListingForm() {
   const { t } = useTranslations()
   const { isRTL, toggleLanguage } = useLanguage()
 
-  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp" ]
-  const MAX_IMAGES = 3
+  const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
+  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp" , "video/mp4" , "video/mov" , "video/avi" , "video/mkv" , "video/webm" , "video/flv" , "video/wmv" , "video/mpeg" , "video/mpg" , "video/m4v" , "video/m4a" , "video/m4b" , "video/m4p" , "video/m4v" , "video/m4a" , "video/m4b" , "video/m4p", "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a", "audio/m4b", "audio/m4p"]
+  const MAX_IMAGES = 4
 
   const formSchema = z.object({
     name: z
@@ -899,7 +899,7 @@ else{
                                 <input
                                   id="image-upload"
                                   type="file"
-                                  accept="image/jpeg,image/png,image/webp"
+                                  accept="image/jpeg,image/png,image/webp,video/mp4,video/mov,video/avi,video/mkv,video/webm,video/flv,video/wmv,video/mpeg,video/mpg,video/m4v,video/m4a,video/m4b,video/m4p,audio/mp3,audio/wav,audio/ogg,audio/m4a,audio/m4b,audio/m4p"
                                   multiple
                                   className="hidden"
                                   onChange={handleImageUpload}

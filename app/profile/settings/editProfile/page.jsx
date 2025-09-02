@@ -235,6 +235,9 @@ export default function ProfileSettingsPage() {
   const [currentPosition, setCurrentPosition] = useState(null)
   const [selectedPosition, setSelectedPosition] = useState(null)
   const [translations, setTranslations] = useState([])
+  const [completed_data,set_completed_data] = useState('false')
+  const [verified,setVerified] = useState('false')
+
   const [originalTranslations, setOriginalTranslations] = useState([])
 
   const getUser = async () => {
@@ -242,7 +245,8 @@ export default function ProfileSettingsPage() {
     if (token) {
       const { id } = await decodedToken(token)
       const userData = await getUserById(id)
-      setUser(userData.data)
+      setUser(userData.data)  
+      setVerified(userData.data.verified)
     }
   }
 
@@ -286,6 +290,8 @@ export default function ProfileSettingsPage() {
     setStreet(user?.street || "")
     setDescription(user?.description || "")
     setOriginalTranslations(user?.translations || [])
+    set_completed_data(user?.completed_data || 'false')
+    setVerified(user?.verified || 'false')
  //AI translate
  setAiInput(`Please translate the following text:
   - Description: ${description}
@@ -345,6 +351,8 @@ export default function ProfileSettingsPage() {
   if (gender) userCollectionData.gender = gender
   if (phone_number) userCollectionData.phone_number = phone_number
   if (geo_location) userCollectionData.geo_location = geo_location
+  if (completed_data) userCollectionData.completed_data = completed_data
+  
   // if (translations) userCollectionData.translations = translations
 
   const [formData, setFormData] = useState({
@@ -359,6 +367,8 @@ export default function ProfileSettingsPage() {
     gender,
     geo_location,
     translations,
+    completed_data,
+    verified,
   })
 
   const handleChange = (e) => {
@@ -457,9 +467,16 @@ export default function ProfileSettingsPage() {
     e.preventDefault();
     setIsLoading(true);
     await requestAiTranslate()
+    const { first_name, last_name, phone_number, description, city, country, street, post_code, gender, geo_location } = formData
+    if(first_name || last_name || phone_number || description || city || country || street || post_code || gender || geo_location) {
+      set_completed_data('true')
+    }
+    else {
+      set_completed_data('false')
+    }
     try {
 
-      if (!isDataChanged && !avatar) {
+      if (!isDataChanged && !avatar && !completed_data) {
         toast({
           title: t("noChangeSaved") || "No changes to save",
           description: t("Youhavenotupdatedanyfield") || "You have not updated any field.",

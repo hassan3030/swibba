@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/use-translations"
 
-import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell } from "lucide-react"
+import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -227,7 +227,7 @@ const Messages = () => {
                           <div className="flex items-start space-x-3">
                             <div className="flex items-center text-sm">
                               <motion.div
-                                className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0"
+                                className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 relative"
                                 whileHover={{ scale: 1.1 }}
                                 transition={{ type: "spring", stiffness: 400 }}
                               >
@@ -241,6 +241,11 @@ const Messages = () => {
                                   />
                                   <AvatarFallback>{offer.partner_name?.[0] || "U"}</AvatarFallback>
                                 </Avatar>
+                                {offer.partner_verified && (
+                                  <div className="absolute -top-1 -right-1">
+                                    <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                                  </div>
+                                )}
                               </motion.div>
                               <div className="flex flex-col ml-2">
                                 <span className="px-1 text-gray-400 capitalize">{offer.partner_name || ""}</span>
@@ -291,6 +296,11 @@ const Messages = () => {
                         />
                         <AvatarFallback>{partner.first_name?.[0] || "U"}</AvatarFallback>
                       </Avatar>
+                      {partner.verified && (
+                        <div className="absolute -top-1 -right-1">
+                          <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                        </div>
+                      )}
                     </motion.div>
                   </div>
 

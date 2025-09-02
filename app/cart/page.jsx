@@ -32,6 +32,7 @@ import {
   BadgeX,
   Scale,
   CircleDot,
+  Verified,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -594,21 +595,28 @@ const Cart = () => {
                               transition={{ delay: 0.3 }}
                             >
                                <div className="flex items-center gap-3 my-2 md:mt-0">
-                            <Avatar className="h-10 w-10 border">
-                              <AvatarImage
-                                src={
-                                  `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
-                                    userSwaps.find((u) => u.id === offer.to_user_id)?.avatar || "/placeholder.svg"
-                                  }` || "/placeholder.svg"
-                                }
-                                alt={
-                                  userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"
-                                }
-                              />
-                              <AvatarFallback>
-                                {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
-                              </AvatarFallback>
-                            </Avatar>
+                            <div className="relative">
+                              <Avatar className="h-10 w-10 border">
+                                <AvatarImage
+                                  src={
+                                    `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
+                                      userSwaps.find((u) => u.id === offer.to_user_id)?.avatar || "/placeholder.svg"
+                                    }` || "/placeholder.svg"
+                                  }
+                                  alt={
+                                    userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"
+                                  }
+                                />
+                                <AvatarFallback>
+                                  {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              {userSwaps.find((u) => u.id === offer.to_user_id)?.verified && (
+                                <div className="absolute -top-1 -right-1">
+                                  <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                                </div>
+                              )}
+                            </div>
                             <div>
                               <div className="font-semibold text-base capitalize">
                                 {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).slice(0, 10)) )|| t("account")} `}

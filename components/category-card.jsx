@@ -61,16 +61,16 @@ export function CategoryCard({ name, imageSrc }) {
 
 
   return (
-    <Link href={`categories/${name}`} className="group block">
+    <Link href={`categories/${name}`} className="group block ">
       <motion.div
-        className="flex flex-col items-center gap-2"
+        className="flex flex-col items-center gap-2 rounded-full"
         variants={cardVariants}
         initial="hidden"
         animate="visible"
         whileHover="hover"
       >
         <motion.div
-          className="relative aspect-square w-full overflow-hidden rounded-md bg-muted transition-all group-hover:shadow-md"
+          className="relative aspect-square w-[80px] overflow-hidden rounded-full bg-muted transition-all group-hover:shadow-md"
           variants={imageVariants}
         >
           <Image

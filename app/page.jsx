@@ -599,8 +599,111 @@ export default function Home() {
             </motion.p>
           </motion.div>
 
+          {/* Mobile Layout: 2-1-2 pattern for 5 categories */}
+          <div className="block md:hidden">
+            <motion.div
+              className="grid gap-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {/* First row: 2 cards */}
+              <div className="grid grid-cols-2 gap-4">
+                {isLoadingCat
+                  ? Array.from({ length: 2 }).map((_, i) => (
+                      <motion.div
+                        key={i}
+                        variants={itemVariants}
+                        whileHover={{ y: -10 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      >
+                        <DeelProductCardSkeleton />
+                      </motion.div>
+                    ))
+                  : categories.slice(0, 2).map((category, index) => (
+                      <motion.div
+                        key={category.name}
+                        variants={itemVariants}
+                        custom={index}
+                        whileHover={{
+                          y: -15,
+                          scale: 1.05,
+                          rotateY: 5,
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      >
+                        <CategoryCard {...category} />
+                      </motion.div>
+                    ))}
+              </div>
+
+              {/* Second row: 1 centered card */}
+              <div className="flex justify-center">
+                <div className="w-1/2">
+                  {isLoadingCat ? (
+                    <motion.div
+                      variants={itemVariants}
+                      whileHover={{ y: -10 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                      <DeelProductCardSkeleton />
+                    </motion.div>
+                  ) : categories.length > 2 ? (
+                    <motion.div
+                      key={categories[2].name}
+                      variants={itemVariants}
+                      custom={2}
+                      whileHover={{
+                        y: -15,
+                        scale: 1.05,
+                        rotateY: 5,
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                      <CategoryCard {...categories[2]} />
+                    </motion.div>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Third row: 2 cards */}
+              <div className="grid grid-cols-2 gap-4">
+                {isLoadingCat
+                  ? Array.from({ length: 2 }).map((_, i) => (
+                      <motion.div
+                        key={i + 3}
+                        variants={itemVariants}
+                        whileHover={{ y: -10 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      >
+                        <DeelProductCardSkeleton />
+                      </motion.div>
+                    ))
+                  : categories.slice(3, 5).map((category, index) => (
+                      <motion.div
+                        key={category.name}
+                        variants={itemVariants}
+                        custom={index + 3}
+                        whileHover={{
+                          y: -15,
+                          scale: 1.05,
+                          rotateY: 5,
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      >
+                        <CategoryCard {...category} />
+                      </motion.div>
+                    ))}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Desktop Layout: Original grid */}
           <motion.div
-            className="grid grid-cols-3 gap-6 sm:grid-cols-4 md:grid-cols-6"
+            className="hidden md:grid grid-cols-3 gap-6 sm:grid-cols-4 md:grid-cols-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"

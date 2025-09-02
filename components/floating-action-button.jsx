@@ -86,12 +86,12 @@ export default  function  FloatingActionButton() {
   };
  
   return (
-  <div className="fixed bottom-6 right-6 z-50  ">
+  <div className="fixed bottom-20 right-6 z-50 md:bottom-6">
       {/* Menu Items */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute bottom-16 right-0 flex flex-col gap-3"
+            className="absolute bottom-16 right-0 flex flex-col gap-3 "
             variants={menuVariants}
             initial="closed"
             animate="open"

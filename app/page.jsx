@@ -399,14 +399,14 @@ export default function Home() {
 
         {/* Enhanced Stats Section */}
         <motion.section
-          className="container py-4 relative z-10"
+          className="container pt-4 relative z-10"
           variants={statsContainerVariants}
           initial="hidden"
           animate="visible"
           ref={ref}
         >
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
@@ -571,7 +571,7 @@ export default function Home() {
         </motion.section>
 
         {/* Enhanced Categories Section */}
-        <motion.section className="container pt-24  relative z-10" style={{ y: y2 }}>
+        <motion.section className="container pt-24  relative z-10 " >
           <motion.div className=" text-center" variants={titleVariants} initial="hidden" animate="visible">
             <motion.div
               className="inline-flex items-center gap-2 px-4  rounded-full bg-primary/10 text-primary mb-2"
@@ -608,7 +608,7 @@ export default function Home() {
               animate="visible"
             >
               {/* First row: 2 cards */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 {isLoadingCat
                   ? Array.from({ length: 2 }).map((_, i) => (
                       <motion.div
@@ -669,7 +669,7 @@ export default function Home() {
               </div>
 
               {/* Third row: 2 cards */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 {isLoadingCat
                   ? Array.from({ length: 2 }).map((_, i) => (
                       <motion.div
@@ -701,15 +701,15 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Desktop Layout: Original grid */}
+          {/* Desktop Layout: Enhanced grid for 10 categories */}
           <motion.div
-            className="hidden md:grid grid-cols-3 gap-6 sm:grid-cols-4 md:grid-cols-6"
+            className="hidden md:grid grid-cols-5 gap-2 lg:grid-cols-10 "
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             {isLoadingCat
-              ? Array.from({ length: 6 }).map((_, i) => (
+              ? Array.from({ length: 10 }).map((_, i) => (
                   <motion.div
                     key={i}
                     variants={itemVariants}
@@ -719,7 +719,7 @@ export default function Home() {
                     <DeelProductCardSkeleton />
                   </motion.div>
                 ))
-              : categories.slice(0, 6).map((category, index) => (
+              : categories.slice(0, 10).map((category, index) => (
                   <motion.div
                     key={category.name}
                     variants={itemVariants}
@@ -738,66 +738,10 @@ export default function Home() {
           </motion.div>
         </motion.section>
 
-        {/* NEW: Featured Collections Section */}
-        <motion.section 
-          className="container relative z-10 -mt-12"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.div className="my-0 pt-0 text-center" variants={titleVariants} initial="hidden" animate="visible">
-            <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-2"
-              variants={floatingVariants}
-              animate="animate"
-            >
-              <Sparkles className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('CuratedForYou')||"Curated For You"}</span>
-            </motion.div>
-            <motion.h2
-              className="text-4xl md:text-5xl font-bold mb-2 text-primary/70"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              {t('FeaturedCollections')|| 'Featured Collections'}
-
-            </motion.h2>
-            <motion.p
-              className="text-muted-foreground max-w-2xl pb-4 mx-auto text-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >  {t('Discoverourhandpickedcollectionsofexceptionalitemscuratedbyourexpertteam')|| 'Discover our handpicked collections of exceptional items curated by our expert team'}
-             
-            </motion.p>
-          </motion.div>
-
-          <motion.div 
-            className="grid grid-cols-1  sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 lg:grid-cols-4 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-          >
-            {featuredCollections.map((collection, index) => (
-              <motion.div
-                key={collection.title}
-                variants={collectionCardVariants}
-                custom={index}
-               
-              >
-                <FeaturedCollectionCard {...collection} />
-              </motion.div>
-            ))}
-          </motion.div>
-
-         
-        </motion.section>
 
         {/* Enhanced Products Section */}
         <motion.section
-          className="container  relative z-10 mt-12"
+          className="container  relative z-10 mt-6"
           id="items"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}

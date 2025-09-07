@@ -197,7 +197,7 @@ export function ItemCardProfile({
        
                    whileHover="hover">
 {(() => {
-                      const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}`
+                      const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id || ''}`
                       const mediaType = getMediaType(mediaUrl)
                       
                       if (mediaType == 'video') {

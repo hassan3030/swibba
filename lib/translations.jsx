@@ -1,20 +1,45 @@
 export const translations = {
   en  :{
+    Quantitycannotbenegative: "Quantity cannot be negative",
+    quantityofyouritem: "Quantity of your item",
+     "AI request failed after all retry attempts":     "AI request failed after all retry attempts",
+    "AI price estimation successful after": "AI price estimation successful after",
+           AIpriceestimationsuccessfulafter: "AI price estimation successful after",
+    FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate: "Failed to get AI price estimate. Please try again or enter your own estimate.",
+           AIrequestfailedafterallretryattempts: "AI request failed after all retry attempts",  
+    FailedtocreateitemPleasetryagain: "Failed to create item. Please try again.",
+      AIrequestfailedafterallretryattempts : "AI request failed after all retry attempts",
+            Pleaseuploaleastimageyouritem: "Please upload at least one image of your item.",
+            Pleasefillallfieldsandselectatleastoneimage: "Please fill all fields and select at least one image.",
+            Errorupdatingitem: "Error updating item.",
+     quantityLessThanOne: "Quantity less than one",
+            quantityLessThanOneDescription: "Quantity less than one. Please contact the seller.",
+           quantityExceeded: "Quantity exceeded",
+            quantityExceededDescription: "Quantity exceeded. Please contact the seller.",
+    
+     totalPrice: "Total Price",
+           attempts: "attempts", 
+     sendItems: "Send Items",
+    receivedItems: "Received Items", 
+     browse: "Browse",
+    add: "Add",
+        verified: "Verified Account",
 
+/////////////////////////////////
+
+    soldOut: "Sold Out",
+    quantity: "Quantity",
+    Home: "Home",
+    Manageyourpaymentmethods: "Manage your payment methods",
+    payment: "Payment & Wallet",
     DescFaildSwapKYC: "Required information for swap. Please complete your information.",
     DescFaildSwapLogin: "Invalid swap without login. Please try to login.",
-
   Youhavenotupdatedanyfield: "You have not updated any field.",
-
  Pleasetranslatethedescriptionstreetcity: "Please translate the description, street, and city.",
  FailedtogetAITranslatePleasetryagainorenteryourowntranslate: "Failed to get AI translate. Please try again or enter your own translate.",
-
    CannotSwapWithYourself:"Cannot Swap With Yourself",
    YouCannotSwapItemsWithYourOwnAccount: "You cannot swap items with your own account",
     BrowseOtherProducts: "Browse Other Products",
-
-
-
 Pleasefillallrequiredfields:"Please fill all required fields correctly before submitting.",
 Locationrequesttimedout:"Location request timed out",
 noCompletedSwaps: "No completed swaps",
@@ -970,6 +995,36 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    Quantitycannotbenegative: "الكمية لا يمكن أن تكون سالبة",
+    quantityofyouritem: "كمية العنصر الخاص بك",
+     "AI request failed after all retry attempts":     "فشل في إرسال الطلب بعد جميع المحاولات",
+    "AI price estimation successful after": "تم الحصول على تقدير سعر مدعوم بالذكاء الاصطناعي بناءً على تفاصيل العنصر الخاص بك",
+           AIpriceestimationsuccessfulafter: "تم الحصول على تقدير سعر مدعوم بالذكاء الاصطناعي بناءً على تفاصيل العنصر الخاص بك",
+    FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate: "فشل في الحصول على تقدير سعر مدعوم بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى أو إدخال تقديرك الخاص.",
+           AIrequestfailedafterallretryattempts: "فشل في إرسال الطلب بعد جميع المحاولات",  
+    FailedtocreateitemPleasetryagain: "فشل في إنشاء العنصر. يرجى المحاولة مرة أخرى.",
+      AIrequestfailedafterallretryattempts : "فشل في إنشاء العنصر. يرجى المحاولة مرة أخرى.",
+            Pleaseuploaleastimageyouritem: "يرجى تحميل صورة واحدة على الأقل.",
+            Pleasefillallfieldsandselectatleastoneimage: "يرجى ملء جميع الحقول واختيار صورة واحدة على الأقل.",
+            Errorupdatingitem: "فشل في تحديث العنصر. يرجى المحاولة مرة أخرى.",
+     quantityLessThanOne: "الكمية أقل من واحد",
+            quantityLessThanOneDescription: "الكمية أقل من واحد. يرجى الاتصال بالبائع.",
+           quantityExceeded: "الكمية أكثر من المتوفر",
+            quantityExceededDescription: "الكمية أكثر من المتوفر. يرجى الاتصال بالبائع.",
+    
+     totalPrice: "السعر الكلي",
+           attempts: "محاولات", 
+     sendItems: "إرسال العناصر",
+    receivedItems: "العناصر المستلمة", 
+     browse: "تصفح",
+    add: "إضافة",
+        verified: "الحساب الموثوق به",
+
+    soldOut: "تم البيع",
+    quantity: "الكمية",
+    Home: "الرئيسية",
+    Manageyourpaymentmethods: "إدارة وسائل الدفع الخاصة بك",
+    payment: "الدفع والمحفظة",
     DescFaildSwapKYC: "يرجى إكمال التحقق من الهوية قبل التبديل.",
     DescFaildSwapLogin: "لا يمكن تبديل العناصر دون تسجيل الدخول. يرجى تسجيل الدخول.",
 

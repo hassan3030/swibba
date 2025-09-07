@@ -79,7 +79,7 @@ export function MobileFooter() {
     {
       href: "/",
       icon: Home,
-      label: t("home") || "Home",
+      label: t("Home") || "Home",
       isActive: pathname === "/",
     },
     {
@@ -129,10 +129,10 @@ export function MobileFooter() {
               animate={item.isActive ? "active" : "inactive"}
               className={`relative flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                 item.isSpecial
-                  ? "bg-[#f5b014] text-white w-12 h-12 rounded-full"
+                  ? "bg-primary text-white w-10 h-10 rounded-full  "
                   : item.isActive
-                  ? "text-[#f5b014]"
-                  : "text-muted-foreground hover:text-[#f5b014]"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
               }`}
             >
               <motion.div
@@ -141,20 +141,20 @@ export function MobileFooter() {
                 className="relative"
               >
                 <item.icon 
-                  className={`h-6 w-6 ${
+                  className={`h-5 w-5 ${
                     item.isSpecial ? "text-white" : ""
                   }`} 
                 />
-                {item.badge && item.badge > 0 && (
+                {item.badge && item.badge > 0 ? (
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-red-500 text-white text-xs">
                     {item.badge > 9 ? "9+" : item.badge}
                   </Badge>
-                )}
+                ) : ''}
               </motion.div>
               {!item.isSpecial && (
                 <span 
-                  className={`text-xs mt-1 font-medium ${
-                    item.isActive ? "text-[#f5b014]" : "text-muted-foreground"
+                  className={`text-xs mt-1 font-medium  ${
+                    item.isActive ? "text-primary" : "text-muted-foreground"
                   }`}
                 >
                   {item.label}

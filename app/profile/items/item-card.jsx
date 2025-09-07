@@ -1,6 +1,6 @@
 "use client"
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import {  useState } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Eye, MoreHorizontal } from "lucide-react"
@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
-import { deleteProduct, getImageProducts } from "@/callAPI/products"
+import { deleteProduct } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
 
 // Animation variants
@@ -216,18 +216,20 @@ const ItemCard = ({ item }) => {
                       {t("view")}
                     </Link>
                   </DropdownMenuItem>
+                  {item.status_swap === "available" && (
                   <DropdownMenuItem asChild>
                     <Link href={`settings/editItem/${item.id}`} className="flex items-center w-full">
                       <Edit className="mr-2 h-4 w-4" />
                       {t("edit")}
                     </Link>
                   </DropdownMenuItem>
+                  )}
                   {item.status_swap === "available" && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)} className="text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
-                        {t("delete")}
+                        {t("soldOut")||"Sold Out"}
                       </DropdownMenuItem>
                     </>
                   )}

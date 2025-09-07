@@ -126,7 +126,7 @@ export default function ManageItemsPage() {
           </Button>
         </motion.div>
         <motion.h1
-          className="mx-2 text-3xl font-bold inline"
+          className="mx-2 mb-2 text-3xl font-bold inline"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -135,7 +135,7 @@ export default function ManageItemsPage() {
         </motion.h1>
       </motion.div>
 
-      <motion.div className="grid grid-cols-1 gap-8" variants={containerVariants} initial="hidden" animate="visible">
+      <motion.div className="grid grid-cols-1 gap-8 mt-2" variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={cardVariants}>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
@@ -204,7 +204,7 @@ export default function ManageItemsPage() {
                         </motion.div>
                       </motion.div>
                     ) : (
-                      <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                      <motion.div className="space-y-4 " variants={containerVariants} initial="hidden" animate="visible">
                         {items.map((item, index) => (
                           <motion.div
                             key={item.id}

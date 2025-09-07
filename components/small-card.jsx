@@ -7,42 +7,18 @@ import { ArrowLeft, ArrowRight, Check, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMediaType } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
-import { getImageProducts } from "@/callAPI/products"
 
 
 
 export default function SmallCard({item}) {
-  const [selectedUserItems, setSelectedUserItems] = useState([])
-  const [selectedAvailableItem, setSelectedAvailableItem] = useState(null)
-  const [swapStep, setSwapStep] = useState(1)
-  const { isRTL } = useLanguage()
-  const { t } = useTranslations()
-const [bigImage , setBigImage] =  useState('')
-// console.log("product" , product  )
-
-//   const getDataImage = async () => {
-//   const images2 = await getImageProducts(item?.images)
-//   setBigImage(images2.data[0].directus_files_id)
-//   console.log('i am in single product ' , images)
-// }
-
-//    useEffect(() => {
-//     getDataImage()
-//   }
-//   )
-
+ 
   return (
     <div className="container py-8">
-      
-
       <Tabs defaultValue="swap">
-      
-
-        <TabsContent value="swap">
+              <TabsContent value="swap">
    
             <div className="grid gap-8 md:grid-cols-2">
            
@@ -60,14 +36,18 @@ const [bigImage , setBigImage] =  useState('')
                       >
                         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                           {(() => {
-                            const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"
-                            const mediaType = getMediaType(mediaUrl)
+                            const mediaUrl = {
+                              id: item.images[0]?.directus_files_id.id,
+                              type: item.images[0]?.directus_files_id.type,
+                              url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}`
+                            }
+                            const mediaType = getMediaType(mediaUrl.type)
                             
                             if (mediaType === 'video') {
                               return (
                                 <div className="relative w-full h-full">
                                   <video
-                                    src={mediaUrl}
+                                    src={mediaUrl.url}
                                     className="w-full h-full object-cover"
                                     muted
                                     playsInline
@@ -86,7 +66,7 @@ const [bigImage , setBigImage] =  useState('')
                             } else {
                               return (
                                 <Image
-                                  src={mediaUrl}
+                                  src={mediaUrl.url}
                                   alt={item.name}
                                   fill
                                   className="object-cover"

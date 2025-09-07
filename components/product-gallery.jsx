@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { getMediaType } from "@/lib/utils"
 
 const imageVariants = {
-  enter: (direction: number) => ({
+  enter: (direction) => ({
     x: direction > 0 ? 1000 : -1000,
     opacity: 0,
     scale: 0.9,
@@ -19,7 +19,7 @@ const imageVariants = {
     opacity: 1,
     scale: 1,
   },
-  exit: (direction: number) => ({
+  exit: (direction) => ({
     zIndex: 0,
     x: direction < 0 ? 1000 : -1000,
     opacity: 0,
@@ -50,12 +50,7 @@ const buttonVariants = {
   tap: { scale: 0.9 },
 }
 
-interface ProductGalleryProps {
-  images: string[]
-  productName: string
-}
-
-export function ProductGallery({ images, productName }: ProductGalleryProps) {
+export function ProductGallery({ images, productName }) {
   const [currentImage, setCurrentImage] = useState(0)
   const [direction, setDirection] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -71,7 +66,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
     setCurrentImage((prev) => (prev - 1 + images.length) % images.length)
   }
 
-  const selectImage = (index: number) => {
+  const selectImage = (index) => {
     setDirection(index > currentImage ? 1 : -1)
     setCurrentImage(index)
     // Reset video controls when switching media
@@ -79,7 +74,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   }
 
   const togglePlayPause = () => {
-    const videoElement = document.querySelector(`#gallery-video-${currentImage}`) as HTMLVideoElement
+    const videoElement = document.querySelector(`#gallery-video-${currentImage}`)
     if (videoElement) {
       if (isPlaying) {
         videoElement.pause()
@@ -91,7 +86,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   }
 
   const toggleMute = () => {
-    const videoElement = document.querySelector(`#gallery-video-${currentImage}`) as HTMLVideoElement
+    const videoElement = document.querySelector(`#gallery-video-${currentImage}`)
     if (videoElement) {
       videoElement.muted = !isMuted
       setIsMuted(!isMuted)
@@ -122,14 +117,19 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             className="absolute inset-0"
           >
 {(() => {
-              const currentMedia = images[currentImage] || "/placeholder.svg"
-              const mediaType = getMediaType(currentMedia)
+              const currentMedia = {
+                id: images[currentImage]?.directus_files_id.id || '',
+                type: images[currentImage]?.directus_files_id.type || '',
+                url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
+              }
+              // Determine media type based on URL
+              const mediaType = getMediaType(currentMedia.type)
               
               if (mediaType === 'video') {
                 return (
                   <video
                     id={`gallery-video-${currentImage}`}
-                    src={currentMedia}
+                    src={currentMedia.url}
                     className="w-full h-full object-contain"
                     muted={isMuted}
                     playsInline
@@ -145,7 +145,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                       <div className="text-lg font-medium mb-4">Audio File</div>
                       <audio
                         id={`gallery-audio-${currentImage}`}
-                        src={currentMedia}
+                        src={currentMedia.url}
                         controls
                         className="w-64"
                       />
@@ -155,7 +155,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               } else {
                 return (
                   <Image
-                    src={currentMedia}
+                    src={currentMedia.url}
                     alt={`${productName} - Image ${currentImage + 1}`}
                     fill
                     className="object-contain"
@@ -205,8 +205,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
         {/* Video controls */}
         {(() => {
-          const currentMedia = images[currentImage] || "/placeholder.svg"
-          const mediaType = getMediaType(currentMedia)
+          const currentMedia = {
+            id: images[currentImage]?.directus_files_id.id || '',
+            type: images[currentImage]?.directus_files_id.type || '',
+            url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
+          }
+          // Determine media type based on URL
+          const mediaType = getMediaType(currentMedia.type)
           
           if (mediaType === 'video') {
             return (
@@ -258,7 +263,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          {images.map((image: string, index: number) => (
+          {images.map((image, index) => (
             <motion.button
               key={index}
               className={`relative aspect-square h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-md border-2 transition-all duration-200 flex-shrink-0 ${
@@ -272,13 +277,18 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               whileTap={{ scale: 0.95 }}
             >
 {(() => {
-                const mediaType = getMediaType(image)
+                const imageUrl = {
+                  id: image.directus_files_id.id,
+                  type: image.directus_files_id.type,
+                  url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${image.directus_files_id.id}`
+                }
+                const mediaType = getMediaType(imageUrl.type)
                 
                 if (mediaType === 'video') {
                   return (
                     <>
                       <video
-                        src={image}
+                        src={imageUrl.url}
                         className="w-full h-full object-cover"
                         muted
                         playsInline
@@ -297,7 +307,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 } else {
                   return (
                     <Image
-                      src={image || "/placeholder.svg"}
+                      src={imageUrl.url || "/placeholder.svg"}
                       alt={`${productName} thumbnail ${index + 1}`}
                       fill
                       className="object-cover"

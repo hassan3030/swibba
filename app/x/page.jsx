@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 
 export default function ChatBox() {
@@ -22,7 +23,8 @@ export default function ChatBox() {
   }
 
   return (
-    <div className="p-4">
+    <>
+      <div className="p-4">
       <input
         className="border p-2 mr-2"
         value={input}
@@ -34,5 +36,10 @@ export default function ChatBox() {
       </button>
       <div className="mt-4">{reply}</div>
     </div>
+
+
+    <Image src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/5a5299c4-7bfa-4571-a74e-c87a0a25539e`} alt="logo" width={100} height={100} />
+    </>
+  
   );
 }

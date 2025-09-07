@@ -24,6 +24,7 @@ import {
   Camera,
   Lock,
   Sparkles,
+  CreditCard,
 } from "lucide-react"
 import { editeProfile, getUserById, resetPassword } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
@@ -38,6 +39,7 @@ import { countriesList } from "@/lib/data"
 
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
+import PaymentPage from "@/app/payment/page"
 
 // Animation variants
 const containerVariants = {
@@ -651,6 +653,7 @@ export default function ProfileSettingsPage() {
                   { value: "preferences", icon: Globe, label: t("preferences") || "Preferences" },
                   { value: "security", icon: Shield, label: t("security") || "Security" },
                   { value: "add", icon: CirclePlus, label: t("addItem") || "Add Item" },
+                  { value: "payment", icon: CreditCard, label: t("payment") || "Payment" },
                 ].map((tab, index) => (
                   <motion.div
                     key={tab.value}
@@ -1282,6 +1285,36 @@ export default function ProfileSettingsPage() {
                         <motion.div
                         >
                           <ItemListingForm className="w-full p-0"/>
+                        </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </motion.div>
+              </TabsContent>
+              <TabsContent value="payment" key='payment'>
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="payment">
+                  <motion.div variants={cardVariants} whileHover="hover">
+                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
+                      <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2">
+                          {t("payment") || "Payment"}
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                          {t("Manageyourpaymentmethods") || "Manage your payment methods"}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-8">
+                        <motion.div
+                          className="space-y-8"
+                          variants={containerVariants}
+                          initial="hidden"
+                          animate="visible"
+                        >
+                          <motion.div className="space-y-4" variants={itemVariants}>
+                            <div className="space-y-4">
+                              <PaymentPage showHeader={false} />
+                            </div>
+                          </motion.div>
                         </motion.div>
                       </CardContent>
                     </Card>

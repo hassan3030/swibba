@@ -7,27 +7,29 @@ import {
   Menu, 
   X, 
   Search, 
-  MessageCircle, 
-  Bell,
   Home,
   Info,
+  User,
   Shield,
   Settings,
   LogOut,
-  User,
-  Verified
+  Verified,
+  Wallet,
+  Plus,
+  MessageCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTranslations } from "@/lib/use-translations"
 import { useRouter } from "next/navigation"
 import { getCookie, decodedToken, removeCookie } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
 import { getOffersNotifications, getMessagesByUserId } from "@/callAPI/swap"
 import Image from "next/image"
-
+import { BiCartDownload } from "react-icons/bi";
+import { TbShoppingCartUp } from "react-icons/tb";
 const slideVariants = {
   closed: {
     x: "-100%",
@@ -115,10 +117,14 @@ export function MobileHeader() {
   }
 
   const menuItems = [
-    { icon: Home, label: t("home") || "Home", href: "/" },
-    { icon: Info, label: t("howItWorks") || "How it Works", href: "/about" },
-    { icon: Shield, label: t("safety") || "Safety", href: "/about" },
-    { icon: Info, label: t("about") || "About", href: "/about" },
+    { icon: Home, label: t("Home") || "Home", href: "/" },
+    { icon: Plus, label: t("add") || "Add", href: "/profile/settings/editItem/new" },
+    { icon: TbShoppingCartUp, label: t("sendItems") || "Send Items", href: "/send-items" },
+    { icon: BiCartDownload, label: t("receivedItems") || "Received Items", href: "/recived-items" },
+    { icon: Search, label: t("browse") || "Browse", href: "/products" },
+    { icon: MessageCircle, label: t("messages") || "Messages", href: "/chat" },
+    { icon: User, label: t("profile") || "Profile", href: "/profile" },
+    { icon: Settings, label: t("settings") || "Settings", href: "/profile/settings" },
   ]
 
   return (
@@ -144,10 +150,11 @@ export function MobileHeader() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-lg bg-[#f5b014] flex items-center justify-center">
+              {/* <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-white font-bold text-lg">S</span>
               </div>
-              <span className="font-bold text-lg ml-2 text-[#f5b014]">Swibba</span>
+              <span className="font-bold text-lg ml-2 text-primary">Swibba</span> */}
+              <Image src="/hero-section-logo.png" alt="Swibba" width={100} height={100} className="h-full" />
             </div>
           </Link>
 
@@ -168,12 +175,12 @@ export function MobileHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => router.push("/notifications")}
+                onClick={() => router.push("/recived-items")}
                 className="relative h-10 w-10"
               >
-                <Bell className="h-5 w-5" />
+                <BiCartDownload className="h-5 w-5" />
                 {notificationCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-[#f5b014] text-white text-xs">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-primary text-white text-xs">
                     {notificationCount > 9 ? "9+" : notificationCount}
                   </Badge>
                 )}
@@ -209,10 +216,10 @@ export function MobileHeader() {
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
                   <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-lg bg-[#f5b014] flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                       <span className="text-white font-bold text-lg">S</span>
                     </div>
-                    <span className="font-bold text-lg text-[#f5b014]">Swibba</span>
+                    <span className="font-bold text-lg text-primary">Swibba</span>
                   </div>
                   <Button
                     variant="ghost"
@@ -237,13 +244,26 @@ export function MobileHeader() {
                             src={user?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}` : "/placeholder.svg"}
                             alt={user?.first_name || t("account")}
                           />
-                          <AvatarFallback className="bg-[#f5b014] text-white">
+                          <AvatarFallback className="bg-primary text-white">
                             {String(user?.first_name).charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         {user?.verified && (
                           <div className="absolute -top-1 -right-1">
-                            <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div>
+                                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="bg-primary text-primary-foreground">
+                                  <p className="text-sm">
+                                    {t("verified") || "Verified Account"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         )}
                       </div>
@@ -260,7 +280,7 @@ export function MobileHeader() {
                 ) : (
                   <div className="p-4 border-b space-y-3">
                     <Button
-                      className="w-full bg-[#f5b014] hover:bg-[#e09d0f] text-white"
+                      className="w-full bg-primary hover:bg-[#e09d0f] text-white"
                       onClick={() => {
                         setIsMenuOpen(false)
                         router.push("/auth/login")
@@ -270,7 +290,7 @@ export function MobileHeader() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-full border-[#f5b014] text-[#f5b014] hover:bg-[#f5b014] hover:text-white"
+                      className="w-full border-primary text-primary hover:bg-primary hover:text-white"
                       onClick={() => {
                         setIsMenuOpen(false)
                         router.push("/auth/register")
@@ -290,7 +310,7 @@ export function MobileHeader() {
                       className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <item.icon className="h-5 w-5 text-[#f5b014]" />
+                      <item.icon className="h-5 w-5 text-primary" />
                       <span className="font-medium">{item.label}</span>
                     </Link>
                   ))}
@@ -298,11 +318,20 @@ export function MobileHeader() {
                   {user && (
                     <>
                       <Link
+                        href="/payment"
+                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Wallet className="h-5 w-5 text-primary" />
+                        <span className="font-medium">{t("payment") || "Payment & Wallet"}</span>
+                      </Link>
+                      
+                      <Link
                         href="/profile/settings"
                         className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Settings className="h-5 w-5 text-[#f5b014]" />
+                        <Settings className="h-5 w-5 text-primary" />
                         <span className="font-medium">{t("settings") || "Settings"}</span>
                       </Link>
                       

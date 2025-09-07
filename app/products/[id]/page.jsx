@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { notFound, useRouter, useParams } from "next/navigation"
-import { ArrowLeft, ArrowLeftRight, Repeat, Star, Verified } from "lucide-react"
+import { ArrowLeft, ArrowLeftRight, Repeat, Star, Verified, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { ProductGallery } from "@/components/product-gallery"
 import { useTranslations } from "@/lib/use-translations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getProductById, getImageProducts } from "@/callAPI/products"
+import { getProductById } from "@/callAPI/products"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { getKYC, getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
@@ -57,6 +57,9 @@ export default function ProductPage() {
   const [name, setName] = useState("")
   const [tokenId, setTokenId] = useState()
   const [avatar, setAvatar] = useState("")
+  const [quantity, setQuantity] = useState(1)
+  const [originalquantity, setOriginalquantity] = useState(1)
+  const [totalPrice, setTotalPrice] = useState(0)
   const { t } = useTranslations()
   const params = useParams()
   const router = useRouter()
@@ -65,6 +68,48 @@ export default function ProductPage() {
   const getToken = async () => {
     const fullToken = await decodedToken()
     setTokenId(fullToken.id)
+  }
+
+  // Calculate total price whenever price or quantity changes
+  useEffect(() => {
+    if (product?.price) {
+      const price = parseFloat(product.price) || 0
+      setQuantity(product.quantity)
+      setOriginalquantity(product.quantity)
+      const total = price * quantity
+      setTotalPrice(total)
+    }
+  }, [product?.price, originalquantity])
+
+  // Quantity handlers
+  const increaseQuantity = () => {
+    if (quantity >= originalquantity) {
+      toast({
+        title: t("quantityExceeded") || "Quantity exceeded",
+        description: t("quantityExceededDescription") || "Quantity exceeded. Please contact the seller.",
+        variant: "destructive",
+      })
+    }
+    else {
+      setQuantity(prev => prev + 1)
+      const total = product.price * quantity
+      setTotalPrice(total)
+    }
+  }
+
+  const decreaseQuantity = () => {
+    if (quantity <= 1) {
+      toast({
+        title: t("quantityLessThanOne") || "Quantity less than one",
+        description: t("quantityLessThanOneDescription") || "Quantity less than one. Please contact the seller.",
+        variant: "destructive",
+      })
+    }
+    else {
+      setQuantity(prev => prev > 1 ? prev - 1 : 1)
+      const total = product.price * quantity
+      setTotalPrice(total)
+    }
   }
 
   // Fetch product and related data
@@ -81,8 +126,8 @@ export default function ProductPage() {
 
         // Images
         if (prod.data.images && prod.data.images.length > 0) {
-          const filesArray = prod.data.images.map((item ) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
-          setImages(filesArray)
+          // const filesArray = prod.data.images.map((item ) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
+          setImages(prod.data.images)
         } else {
           setImages([])
         }
@@ -218,13 +263,87 @@ export default function ProductPage() {
             <div className="text-xs text-secondary2/85 line-clamp-2">
               {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: {Number(product.price).toLocaleString('en-US')} {t("le")}
             </div>
+            <div className="text-xs text-secondary2/85 line-clamp-2">
+              {t("quantity")}: {Number(originalquantity).toLocaleString('en-US')}
+            </div>
+          </motion.div>
+
+          {/* Quantity Selector */}
+          <motion.div
+            className="flex flex-col gap-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{t("quantity") || "Quantity"}:</span>
+              <div className="flex items-center gap-3">
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={decreaseQuantity}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+                <motion.span
+                  className="text-lg font-semibold min-w-[2rem] text-center"
+                  key={quantity}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  {quantity}
+                </motion.span>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={increaseQuantity}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Total Price Display */}
+            {totalPrice > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t("totalPrice") || "Total Price"}:
+                  </span>
+                  <motion.span
+                    className="text-xl font-bold text-primary"
+                    key={totalPrice}
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    {totalPrice.toLocaleString('en-US')} {t("le") || "EGP"}
+                  </motion.span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {Number(product.price).toLocaleString('en-US')} × {quantity} = {totalPrice.toLocaleString('en-US')}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           <motion.div
             className="text-muted-foreground text-sm sm:text-base leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
           >
             <span className="font-medium block mb-1">{t("description")}:</span>
             <div className="text-break-responsive whitespace-pre-wrap leading-relaxed line-clamp-1 overflow-ellipsis">

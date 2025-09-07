@@ -11,7 +11,6 @@ import { ArrowLeftRight, ChevronRight, Heart, Star, Play, Verified } from "lucid
 import { useRouter } from "next/navigation"
 import { cn, formatCurrency, formatRelativeTime, getMediaType } from "@/lib/utils"
 import { useCardTranslation } from "@/components/with-translation"
-import { useLanguage } from "@/lib/language-provider"
   
 
 
@@ -127,16 +126,18 @@ export function ItemCard({ item }) {
           <Link href={`/items/${item.id}`}>
             <motion.div className="relative aspect-square overflow-hidden" variants={imageVariants}>
               {(() => {
-                const mediaUrl = item?.images?.[0]?.directus_files_id 
-                  ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0].directus_files_id}`
-                  : "/placeholder.svg?height=400&width=400"
-                const mediaType = getMediaType(mediaUrl)
+                const mediaUrl = {
+                  id: item.images[0]?.directus_files_id.id,
+                  type: item.images[0]?.directus_files_id.type,
+                  url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}`
+                }
+                const mediaType = getMediaType(mediaUrl.type)
                 
                 if (mediaType === 'video') {
                   return (
                     <div className="relative w-full h-full">
                       <video
-                        src={mediaUrl}
+                        src={mediaUrl.url}
                         className="w-full h-full object-cover transition-transform duration-300"
                         muted
                         loop
@@ -161,7 +162,7 @@ export function ItemCard({ item }) {
                 } else {
                   return (
                     <Image
-                      src={mediaUrl}
+                      src={mediaUrl.url || "/placeholder.svg"}
                       alt={translatedName}
                       fill
                       className="object-cover transition-transform duration-300"

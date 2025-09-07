@@ -107,8 +107,35 @@ export function ItemListingForm() {
   const { isRTL, toggleLanguage } = useLanguage()
 
   const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
-  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp" , "video/mp4" , "video/mov" , "video/avi" , "video/mkv" , "video/webm" , "video/flv" , "video/wmv" , "video/mpeg" , "video/mpg" , "video/m4v" , "video/m4a" , "video/m4b" , "video/m4p" , "video/m4v" , "video/m4a" , "video/m4b" , "video/m4p", "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a", "audio/m4b", "audio/m4p"]
-  const MAX_IMAGES = 4
+  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", 
+                                "image/jpg",
+                                "image/png", 
+                                "image/webp" , 
+                                "video/mp4" , 
+                                "video/mov" , 
+                                "video/avi" , 
+                                "video/mkv" , 
+                                "video/webm" , 
+                                "video/flv" , 
+                                "video/wmv" , 
+                                "video/mpeg" , 
+                                "video/mpg" , 
+                                "video/m4v" ,
+                                "video/m4a" ,
+                                "video/m4b" , 
+                                "video/m4p" , 
+                                "video/m4v" , 
+                                "video/m4a" , 
+                                "video/m4b" , 
+                                "video/m4p", 
+                                "audio/mp3", 
+                                "audio/wav", 
+                                "audio/ogg", 
+                                "audio/m4a", 
+                                "audio/m4b", 
+                                "audio/m4p"
+      ]
+  const MAX_IMAGES = 6
 
   const formSchema = z.object({
     name: z
@@ -129,6 +156,7 @@ export function ItemListingForm() {
     country: z.string().min(1, t("SelectCountry") || "Select country"),
     city: z.string().min(1, t("Cityisrequired") || "City is required"),
     street: z.string().min(1, t("Streetisrequired") || "Street is required"),
+    quantity: z.coerce.number().positive(t("Quantitycannotbenegative") || "Quantity cannot be negative"),
   })
 
   const form = useForm({
@@ -142,6 +170,7 @@ export function ItemListingForm() {
       allowed_categories: [],
       status_swap: "available",
       price: 1,
+      quantity: 1,
       city: "",
       country: "",
       street: "",
@@ -167,8 +196,8 @@ const getUser = async () => {
   }, [isRTL])
   const handleImageUpload = (e) => {
     // Require basic form fields before allowing image upload
-    const { name, description, category, condition, price, country, city, street } = form.getValues();
-    if (!name || !description || !category || !condition || !price || !country || !city || !street) {
+    const { name, description, category, condition, price, country, city, street, quantity } = form.getValues();
+    if (!name || !description || !category || !condition || !price || !country || !city || !street || !quantity) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleasefillallitemdetailsbeforeuploadingimages") || "Please fill all item details before uploading images.",
@@ -270,37 +299,63 @@ else{
         }`)
           
       setIsEstimating(true)
-    const aiResponse = await sendMessage(aiInput, aiSystemPrompt)
-    let jsonString = aiResponse.text
-    
-    // Extract JSON from markdown code blocks if present
-    const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonString = jsonMatch[1]
-    }
-    
-    // Clean up any remaining markdown or extra characters
-    jsonString = jsonString.trim()
-    
-    const jsonObject = JSON.parse(jsonString)
-    console.log("Parsed AI Response:", jsonObject)
-    console.log("Estimated Price:", jsonObject.estimated_price)
-    console.log("Name Translations:", jsonObject.name_translations)
-    console.log("Description Translations:", jsonObject.description_translations)
-    
-    setAiResponse(jsonObject)
-    setAiPriceEstimation(jsonObject.estimated_price)
-    setIsEstimating(false)
+      
+      // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
+      const aiResponse = await sendMessage(aiInput, aiSystemPrompt, 3, 1000)
+      
+      // Check if AI request was successful
+      if (!aiResponse.success) {
+        throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts")
+      }
+      
+      let jsonString = aiResponse.text
+      
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+      if (jsonMatch) {
+        jsonString = jsonMatch[1]
+      }
+      
+      // Clean up any remaining markdown or extra characters
+      jsonString = jsonString.trim()
+      
+      const jsonObject = JSON.parse(jsonString)
+      console.log("Parsed AI Response:", jsonObject)
+      console.log("Estimated Price:", jsonObject.estimated_price)
+      console.log("Name Translations:", jsonObject.name_translations)
+      console.log("Description Translations:", jsonObject.description_translations)
+      
+      // Validate the parsed response
+      if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
+        throw new Error("AI returned invalid price estimation")
+      }
+      
+      setAiResponse(jsonObject)
+      setAiPriceEstimation(jsonObject.estimated_price)
+      
+      // Show success message with attempt info
+      if (aiResponse.attempt > 1) {
+        toast({
+          title: t("success") || "Success",
+          description: `${t("AIpriceestimationsuccessfulafter") || "AI price estimation successful after"} ${aiResponse.attempt} ${t("attempts") || "attempts"}!`,
+          variant: "default",
+        })
+      }
+      
+      setIsEstimating(false)
     }
     } catch (error) {
       console.error("Error getting AI price estimate:", error)
-      console.error("AI Response text:", aiResponse?.text)
       
       let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
         "Failed to get AI price estimate. Please try again or enter your own estimate."
       
       if (error instanceof SyntaxError && error.message.includes("JSON")) {
-        errorMessage = "AI response format error. Please try again."
+        errorMessage = "AI response format error. The AI returned invalid JSON format."
+      } else if (error.message.includes("retry attempts")) {
+        errorMessage = "AI service is currently unavailable. All retry attempts failed. Please try again later."
+      } else if (error.message.includes("invalid price")) {
+        errorMessage = "AI returned invalid price estimation. Please enter your own estimate."
       }
       
       toast({
@@ -320,8 +375,8 @@ else{
   const onSubmit = async (data, event) => {
     if (event) event.preventDefault();
 
-    const { name, description, category, condition, price, country, city, street, allowed_categories } = form.getValues();
-    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0) {
+    const { name, description, category, condition, price, country, city, street, allowed_categories, quantity } = form.getValues();
+    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0 || !quantity) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleasefillallitemdetails") || "Please fill all item details before submitting.",
@@ -350,7 +405,7 @@ else{
       console.error("Error creating item:", error);
       toast({
         title: t("error") || "ERROR ",
-        description: "Failed to create item. Please try again.",
+        description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -497,7 +552,8 @@ else{
     form.watch("description")?.length >= 20 &&
     !!form.watch("category") &&
     !!form.watch("condition") &&
-    !!form.watch("price") &&
+    !!form.watch("price") && 
+    !!form.watch("quantity") &&
     Object.keys(geo_location).length > 0 
     
    
@@ -506,6 +562,8 @@ else{
     aiPriceEstimation !== null &&
     aiPriceEstimation > 0 &&
     form.watch("allowed_categories")?.length > 0 &&
+    form.watch("quantity") &&
+    form.watch("quantity") > 0 &&
     images.length > 0;
 
   return (
@@ -566,7 +624,19 @@ else{
                         </FormItem>
                       )}
                     />
-
+                    <FormField
+                      control={form.control}
+                      name="quantity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">{t("quantity") || "Quantity"}</FormLabel>
+                          <FormControl>
+                            <Input placeholder={t("quantityofyouritem") || "Quantity of your item"} {...field} type="number" min={1} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={form.control}
                       name="country"
@@ -622,6 +692,8 @@ else{
                         </FormItem>
                       )}
                     />
+
+                   
                   </div>
 
                   <FormField

@@ -120,7 +120,7 @@ const messageVariants = {
   },
 }
 
-const Notifications = () => {
+const RecivedItems = () => {
   const [offers, setOffers] = useState([])
   const [swapItems, setSwapItems] = useState([])
   const [userSwaps, setUserSwaps] = useState([])
@@ -878,7 +878,7 @@ const Notifications = () => {
   )
 }
 
-export default Notifications
+export default RecivedItems
 
 // CardItemSwap component
 const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem ,translations}) => {

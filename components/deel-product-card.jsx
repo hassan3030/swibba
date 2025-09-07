@@ -114,13 +114,13 @@ export function DeelProductCard({
   price,
   images,
   translations,
+  quantity,
   status_item,
   showSwitchHeart = true,
 }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [switchHeart, setSwitchHeart] = useState(false)
-  // const [bigImage, setBigImage] = useState(images || [])
   const [loading, setLoading] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
@@ -158,16 +158,7 @@ export function DeelProductCard({
     }
   }
 
-  // const getDataImage = async () => {
-  //   try {
-  //     const image = await getImageProducts(images)
-  //     setBigImage(image?.data[0].directus_files_id )
-  //   } catch (error) {
-  //     console.error("Error loading image:", error)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
+
 
   const handleGetWishItem = async () => {
     try {
@@ -237,11 +228,6 @@ export function DeelProductCard({
     }, 2000)
   }
 
-  // useEffect(() => {
-  //   // setBigImage(images)
-  //   // getDataImage()
-  //   // console.error("bigImage", bigImage)
-  // }, [images])
 
       useEffect(() => {
         // console.log("i am in the  deel product card translations", translations)
@@ -279,14 +265,18 @@ export function DeelProductCard({
                   className="relative w-full h-full"
                 >
                   {(() => {
-                    const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}`
-                    const mediaType = getMediaType(mediaUrl)
+                    const mediaUrl = {
+                      id: images[0]?.directus_files_id.id,
+                      type: images[0]?.directus_files_id.type,
+                      url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+                    }
+                    const mediaType = getMediaType(mediaUrl.type)
                     
                     if (mediaType === 'video') {
                       return (
                         <motion.div variants={imageVariants} className="w-full h-full relative">
                           <video
-                            src={mediaUrl}
+                            src={mediaUrl.url}
                             className="w-full h-full object-cover transition-transform duration-300"
                             muted
                             loop
@@ -309,7 +299,7 @@ export function DeelProductCard({
                             <div className="text-sm font-medium">Audio File</div>
                           </div>
                           <audio
-                            src={mediaUrl}
+                            src={mediaUrl.url}
                             className="hidden"
                             onLoadedData={() => setImageLoaded(true)}
                           />
@@ -319,7 +309,7 @@ export function DeelProductCard({
                       return (
                         <motion.div variants={imageVariants} className="w-full h-full">
                           <Image
-                            src={mediaUrl}
+                            src={mediaUrl.url || "/placeholder.svg"}
                             alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                             fill
                             className="transition-transform duration-300 object-fill"
@@ -379,14 +369,20 @@ export function DeelProductCard({
             </motion.h3>
 
             {/* Price */}
-            <motion.div className="mb-2 " variants={priceVariants}>
+            <motion.div className="mb-1 " variants={priceVariants}>
               <div className="flex items-baseline gap-1">
                 <motion.span className="text-lg font-bold line-clamp-1 text-secondary2" whileHover="pulse" variants={priceVariants}>
                   {Number(price).toLocaleString('en-US')} LE
                 </motion.span>
               </div>
             </motion.div>
-
+            <motion.div className="mb-2 " variants={priceVariants}>
+              <div className="flex items-baseline gap-1">
+                <motion.span className="text-lg font-bold line-clamp-1 text-secondary2" whileHover="pulse" variants={priceVariants}>
+                {t("quantity")}: {Number(quantity).toLocaleString('en-US')} 
+                </motion.span>
+              </div>
+            </motion.div>
             {/* Swap button */}
             <motion.div
               className="mt-auto"

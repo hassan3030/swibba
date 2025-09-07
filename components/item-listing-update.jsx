@@ -113,6 +113,7 @@ export function ItemListingUpdate(props) {
     street,
     images,
     translations,
+    quantity,
   } = props
   console.log("itemData", images[0].directus_files_id)
   console.log("translations", translations)
@@ -169,6 +170,7 @@ export function ItemListingUpdate(props) {
     country: z.string().min(1, t("SelectCountry") || "Select country"),
     city: z.string().min(1, t("Cityisrequired") || "City is required"),
     street: z.string().min(1, t("Streetisrequired") || "Street is required"),
+    quantity: z.coerce.number().positive(t("Quantitycannotbenegative") || "Quantity cannot be negative"),
   })
 
   // Get images
@@ -269,6 +271,7 @@ export function ItemListingUpdate(props) {
         city: translations ? (!isRTL ? translations[0]?.city : translations[1]?.city) || city : city,
         street: translations ? (!isRTL ? translations[0]?.street : translations[1]?.street) || street : street,
         geo_location: initialGeoLocation,
+        quantity: quantity,
       },
   })
 
@@ -405,7 +408,14 @@ else{
         }`)
           
       setIsEstimating(true)
-    const aiResponse = await sendMessage(aiInput, aiSystemPrompt)
+    // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
+    const aiResponse = await sendMessage(aiInput, aiSystemPrompt, 3, 1000)
+    
+    // Check if AI request was successful
+    if (!aiResponse.success) {
+      throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts")
+    }
+    
     let jsonString = aiResponse.text
     
     // Extract JSON from markdown code blocks if present
@@ -423,19 +433,37 @@ else{
     console.log("Name Translations:", jsonObject.name_translations)
     console.log("Description Translations:", jsonObject.description_translations)
     
+    // Validate the parsed response
+    if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
+      throw new Error("AI returned invalid price estimation")
+    }
+    
     setAiResponse(jsonObject)
     setAiPriceEstimation(jsonObject.estimated_price)
+    
+    // Show success message with attempt info
+    if (aiResponse.attempt > 1) {
+      toast({
+        title: t("success") || "Success",
+        description: `AI price estimation successful after ${aiResponse.attempt} attempts!`,
+        variant: "default",
+      })
+    }
+    
     setIsEstimating(false)
     }
     } catch (error) {
       console.error("Error getting AI price estimate:", error)
-      console.error("AI Response text:", aiResponse?.text)
       
       let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
         "Failed to get AI price estimate. Please try again or enter your own estimate."
       
       if (error instanceof SyntaxError && error.message.includes("JSON")) {
-        errorMessage = "AI response format error. Please try again."
+        errorMessage = "AI response format error. The AI returned invalid JSON format."
+      } else if (error.message.includes("retry attempts")) {
+        errorMessage = "AI service is currently unavailable. All retry attempts failed. Please try again later."
+      } else if (error.message.includes("invalid price")) {
+        errorMessage = "AI returned invalid price estimation. Please enter your own estimate."
       }
       
       toast({
@@ -453,7 +481,7 @@ else{
     if (imagesFile.length === 0) {
       toast({
         title: t("error") || "ERROR",
-        description: "Please upload at least one image of your item.",
+        description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
         variant: "destructive",
       })
       return
@@ -469,7 +497,7 @@ else{
       console.error("Error creating item:", error)
       toast({
         title: t("error") || "ERROR",
-        description: "Failed to create item. Please try again.",
+        description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -554,7 +582,7 @@ else{
     if (files.length === 0) {
       toast({
         title: t("error") || "ERROR",
-        description: "Please fill all fields and select at least one image.",
+        description: t("Pleasefillallfieldsandselectatleastoneimage") || "Please fill all fields and select at least one image.",
         variant: "destructive",
       })
       return
@@ -576,7 +604,7 @@ else{
       console.error(err)
       toast({
         title: t("error") || "ERROR",
-        description: `${err.message}` || "Error updating item.",
+        description: `${err.message}` || t("Errorupdatingitem") || "Error updating item.",
       })
     }
   }
@@ -590,7 +618,8 @@ else{
     !!form.watch("price") &&
     !!form.watch("country") &&
     !!form.watch("city") &&
-    !!form.watch("street")
+      !!form.watch("street") &&
+    !!form.watch("quantity")
 
   const isStep2Valid =
     imagesFile.length > 0 &&
@@ -661,6 +690,30 @@ else{
                           </FormItem>
                         )}
                       />
+
+                      {/* Quantity field */}
+                      <FormField
+                        control={form.control}
+                        name="quantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("quantity")||"Quantity"}</FormLabel>
+
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  placeholder={t("quantityofyouritem")||"Quantity of your item"}
+                                  {...field}
+                                  type="number"
+                                  className="transition-all duration-200 bg-background border-input focus:ring-2 focus:ring-ring/20 focus:border-ring"
+
+                                />
+                              </motion.div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                        />
 
                       {/* Country field - searchable list */}
                       <FormField

@@ -7,15 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, MapPin, Verified, ArrowLeftRight, Package, Settings, ArrowLeft,  } from "lucide-react"
+import { Star, MapPin, Verified, ArrowLeftRight, Package, Settings, ArrowLeft, BadgeX,  } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
 import { getProductByUserId, getProductById } from "@/callAPI/products"
 import { getOfferById, getOfferItemsByOfferId, getOffersNotifications, getReview } from "@/callAPI/swap"
 import { decodedToken, getCookie } from "@/callAPI/utiles"
-import Notifications from "@/app/notifications/page"
-import Cart from "@/app/cart/page"
+import RecivedItems from "@/app/recived-items/page"
+import SendItems from "@/app/send-items/page"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
@@ -146,7 +146,7 @@ export default function ProfilePage() {
   const [rate, setRate] = useState(0)
   const [products, setProducts] = useState([])
   const [avatarPath, setAvatarPath] = useState("")
-  const [full_name, setFullName] = useState(`${user?.first_name} ${user?.last_name}` || "")
+  const [full_name, setFullName] = useState("")
   const [userOffers, setUserOffers] = useState([])
   const [notificationsLength, setNotificationsLength] = useState(0)
   const [myAvailableItems, setmyAvailableItems] = useState([])
@@ -269,6 +269,7 @@ export default function ProfilePage() {
     getNotificationsLength()
     getUser()
     getOffers()
+    setFullName(`${user?.first_name || ""} ${user?.last_name || ""}`.trim())
     getUserProducts().then((data) => {
       setProducts(data)
     })
@@ -279,9 +280,10 @@ export default function ProfilePage() {
     if (user) {
       handleGetBreviousRating(user.id)
       setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}`)
-      setFullName(`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")} 
-            ${(String(user?.last_name).length <= 11 ? (String(user?.last_name)) : (String(user?.last_name).slice(0, 10)) )|| ""}`.trim()
-          )
+      const firstName = String(user?.first_name || "")
+      const lastName = String(user?.last_name || "")
+      
+      setFullName(`${firstName.length <= 11 ? firstName : firstName.slice(0, 10)} ${lastName.length <= 11 ? lastName : lastName.slice(0, 10)}`.trim())
     }
   }, [user])
   // -------------------------------------
@@ -325,9 +327,24 @@ export default function ProfilePage() {
                     </AvatarFallback>
                   </Avatar>
                   <motion.div className="absolute -top-1 -right-1" variants={badgeVariants} whileHover="hover">
-                    {user?.verified && (
-                      <Verified className="h-5 w-5 text-primary bg-background rounded-full p-1 shadow-md" />
-                    )}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div>
+                            {user?.verified ? (
+                              <Verified className="h-5 w-5 text-primary bg-background rounded-full p-1 shadow-md" />
+                            ) : (
+                              <BadgeX className="h-5 w-5 text-red-500 bg-background rounded-full p-1 shadow-md" />
+                            )}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-primary text-primary-foreground">
+                          <p className="text-sm">
+                            {user?.verified ? (t("verified") || "Verified Account") : (t("notVerified") || "Not Verified")}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </motion.div>
                 </motion.div>
                 <div className="flex-1">
@@ -338,7 +355,7 @@ export default function ProfilePage() {
                       transition={{ delay: 0.4 }}
                     >
                       <CardTitle className="capitalize text-lg font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                        {full_name}
+                        {full_name || t("account") || "Account"}
                       </CardTitle>
                     </motion.div>
                   </div>
@@ -361,9 +378,10 @@ export default function ProfilePage() {
                       <MapPin className="h-4 w-4 text-primary" />
                     </motion.div>
                     <span className="font-medium">
-
-                      {user?.country &&  user?.city && user?.street? "":  `${t("noAddress") || "No address provided"}`}
-                      {`${user?.country || ''} ${user?.city || ''} ${user?.street || ''}`}
+                      {user?.country || user?.city || user?.street ? 
+                        `${user?.country || ""} ${user?.city || ""} ${user?.street || ""}`.trim() :
+                        (t("noAddress") || "No address provided")
+                      }
                     </span>
                   </motion.div>
 
@@ -379,7 +397,7 @@ export default function ProfilePage() {
                       <Star className="h-4 w-4 text-yellow-500" />
                     </motion.div>
                     <span className="font-medium">
-                      {rate ? `${rate} / 5.0 ${t("Rating") || "Rating"}` : t("noRate") || "No ratings yet"}
+                      {rate ? `${rate} / 5.0 ${t("Rating") || "Rating"}` : (t("noRate") || "No ratings yet")}
                     </span>
                   </motion.div>
 
@@ -395,9 +413,9 @@ export default function ProfilePage() {
                       <ArrowLeftRight className="h-4 w-4 text-blue-500" />
                     </motion.div>
                     <span className="font-medium">
-                      {!user?.completedSwaps
-                        ? `${t("noCompletedSwaps")|| "No completed swaps"}`
-                        : `${user?.completedSwaps == 0 ? t("no") : user?.completedSwaps} ${t("completedSwaps") || "Completed swaps"}`}{" "}
+                      {!user?.completedSwaps || user?.completedSwaps === 0
+                        ? (t("noCompletedSwaps") || "No completed swaps")
+                        : `${user?.completedSwaps || 0} ${t("completedSwaps") || "Completed swaps"}`}
                     </span>
                   </motion.div>
 
@@ -408,6 +426,13 @@ export default function ProfilePage() {
                       asChild
                     >
                       <Link href={`profile/settings/editProfile`}>{t("editProfile") || "Edit Profile"}</Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground border-0 hover:from-secondary hover:to-accent shadow-lg hover:shadow-xl transition-all duration-300"
+                      asChild
+                    >
+                      <Link href={`/payment`}>{t("payment") || "Payment"}</Link>
                     </Button>
                   </motion.div>
                 </div>
@@ -530,7 +555,7 @@ export default function ProfilePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Cart />
+                    <SendItems />
                   </motion.div>
                 </motion.div>
               </TabsContent>
@@ -549,7 +574,7 @@ export default function ProfilePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Notifications />
+                    <RecivedItems />
                   </motion.div>
                 </motion.div>
               </TabsContent>

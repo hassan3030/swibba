@@ -72,8 +72,8 @@ const menuItems = [
   { icon: MessageSquare, label: "Messages", color: "bg-blue-500",  href:"/chat"},
   { icon: Heart, label: "Favorites", color: "bg-red-500" , href:"/wishList"},
   { icon: User, label: "Profile", color: "bg-green-500" , href:"/profile"},
-  { icon:TbShoppingCartUp , label: "Send offers", color: "bg-blue-500", href:"/cart" },
-  { icon: BiCartDownload, label: "Received offers", color: "bg-red-500" , href:"/notifications"},
+  { icon:TbShoppingCartUp , label: "Send offers", color: "bg-blue-500", href:"/send-items" },
+  { icon: BiCartDownload, label: "Received offers", color: "bg-red-500" , href:"/recived-items"},
   { icon: Settings, label: "Settings Profile", color: "bg-green-500", href:"/profile/settings/editProfile" },
   { icon: PlusCircle, label: "Add Item", color: "bg-blue-500", href:"/profile/settings/editItem/new" },
 ];

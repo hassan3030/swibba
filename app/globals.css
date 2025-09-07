@@ -486,5 +486,96 @@ input[type=number] {
   -moz-appearance: textfield;
   -webkit-appearance: none;
   appearance: none;
-  code:red
+}
+
+/* Custom scrollbar styling to match site colors */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Remove scrollbar arrows/buttons */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Remove scrollbar arrows/buttons */
+::-ms-scrollbar-button:single-button {
+  display: none;
+}
+/* Remove scrollbar arrows/buttons */
+::-o-scrollbar-button {
+  display: none;
+}
+/* Remove scrollbar arrows/buttons */
+
+
+/* Dark mode scrollbars */
+.dark ::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary)) transparent;
+}
+
+/* Dark mode Firefox scrollbars */
+.dark * {
+  scrollbar-color: hsl(var(--primary)) hsl(var(--muted));
+}
+
+/* Sidebar color overrides */
+.bg-sidebar {
+  background-color:transparent !important;
+}
+
+.text-sidebar-foreground {
+  color: hsl(var(--foreground)) !important;
+}
+
+.border-sidebar-border {
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Dark mode sidebar colors */
+.dark .bg-sidebar {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .text-sidebar-foreground {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .border-sidebar-border {
+  border-color: hsl(var(--border)) !important;
 }

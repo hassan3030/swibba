@@ -17,6 +17,20 @@ import {
   LogOut,
   PlusCircle,
   HandPlatter,
+  Home,
+  BookOpen,
+  Laptop,
+  Gem,
+  Car,
+  Smartphone,
+  Shirt,
+  Sofa,
+  Sparkles,
+  Gamepad2,
+  Dumbbell,
+  Stethoscope,
+  Armchair,
+  Heart as PetIcon
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -100,6 +114,24 @@ const badgeVariants = {
   animate: { scale: 1 },
   exit: { scale: 0 },
   transition: { type: "spring", stiffness: 500, damping: 15 },
+}
+
+// Category icons mapping
+const categoryIcons = {
+  realestate: Home,
+  books: BookOpen,
+  software: Laptop,
+  jewelry: Gem,
+  automotive: Car,
+  electronics: Smartphone,
+  fashion: Shirt,
+  home: Sofa,
+  beauty: Sparkles,
+  toys: Gamepad2,
+  sports: Dumbbell,
+  health: Stethoscope,
+  furniture: Armchair,
+  pets: PetIcon
 }
 
 export function Header() {
@@ -515,7 +547,7 @@ export function Header() {
                 <>
                   {/* Notifications */}
                   <motion.div custom={5} variants={itemVariants}>
-                    <Link href="/notifications" className="relative">
+                    <Link href="/recived-items" className="relative">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
@@ -544,7 +576,7 @@ export function Header() {
 
                   {/* Cart */}
                   <motion.div custom={6} variants={itemVariants}>
-                    <Link href="/cart" className="relative">
+                    <Link href="/send-items" className="relative">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
@@ -773,7 +805,7 @@ export function Header() {
                       </Link>
                      
                       <Link
-                        href="/cart"
+                        href="/send-items"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
                         onClick={() => setIsMenuOpen(false)}
                       >
@@ -851,29 +883,60 @@ export function Header() {
           </AnimatePresence>
         </div>
 
-        {/* Categories navigation */}
+        {/* Enhanced Categories navigation */}
         {
           showCategoriesBar?( <motion.div
-          className="border-t bg-background dark:bg-[#121212] dark:border-[#2a2a2a]"
+          className="border-t bg-gradient-to-r from-background via-muted/30 to-background dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <div className="container overflow-x-auto scrollbar-hide">
-            <nav className="flex space-x-4 py-2">
-              {categoriesName.map((category, i) => (
-                <motion.div key={i} custom={i} variants={itemVariants} initial="hidden" animate="visible">
-                  <Link
-                    href={`/categories/${category}`}
-                    className={cn(
-                      "whitespace-nowrap px-3 py-1 text-sm capitalize transition-colors hover:text-primary",
-                      pathname === category ? "text-primary font-medium" : "text-muted-foreground",
-                    )}
-                  >
-                    {t(category)}
-                  </Link>
-                </motion.div>
-              ))}
+            <nav className="flex space-x-2 py-3">
+              {categoriesName.slice(0, 10).map((category, i) => {
+                const IconComponent = categoryIcons[category]
+                return (
+                  <motion.div key={i} custom={i} variants={itemVariants} initial="hidden" animate="visible">
+                    <Link
+                      href={`/categories/${category}`}
+                      className={cn(
+                        "relative whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 flex items-center gap-2",
+                        pathname === `/categories/${category}` 
+                          ? "text-primary-foreground bg-primary shadow-md" 
+                          : "text-muted-foreground hover:text-primary hover:bg-primary/10 bg-background/50 hover:shadow-sm border border-border/50"
+                      )}
+                    >
+                      {IconComponent && <IconComponent className="w-4 h-4 relative z-10" />}
+                      <span className="relative z-10 hidden sm:inline">{t(category)}</span>
+                      {pathname === `/categories/${category}` && (
+                        <motion.div
+                          className="absolute inset-0 bg-primary rounded-full"
+                          layoutId="activeCategory"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </Link>
+                  </motion.div>
+                )
+              })}
+              
+              {/* View All Categories Link */}
+              <motion.div 
+                custom={categoriesName.length} 
+                variants={itemVariants} 
+                initial="hidden" 
+                animate="visible"
+                className="mt-1"
+              >
+                <Link
+                  href="/categories"
+                  className="whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 text-primary hover:bg-primary/10 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 shadow-sm"
+                >
+                  <span className="relative z-10 ">{t('viewAll') || 'View All'}</span>
+                </Link>
+              </motion.div>
             </nav>
           </div>
         </motion.div>):''

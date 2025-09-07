@@ -22,7 +22,7 @@ export const getAvailableAndUnavailableProducts = async (user_id, available = tr
 
     const status = available ? "available" : "unavailable";
     const response = await axios.get(
-      `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}?fields=*,translations.*,images.*`,
+      `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}&fields=*,translations.*,images.*,images.directus_files_id.*`,
       { headers }
     );
 
@@ -50,7 +50,7 @@ export const getProducts = async (filters = {}) => {
     response = await axios.get(`${baseItemsURL}/Items`,
       {
         params: {
-          fields: "*,images.*,translations.*",
+          fields: "*,images.*,translations.*,images.directus_files_id.*",
           filter: {
             status_swap: { _neq: "unavailable" },
           }
@@ -63,7 +63,7 @@ export const getProducts = async (filters = {}) => {
         response = await axios.get(`${baseItemsURL}/Items`,
           {
             params: {
-              fields: "*,images.*,translations.*",
+              fields: "*,images.*,translations.*,images.directus_files_id.*",
               filter: {
                 user_id: { _neq: `${decoded.id}` },
                 status_swap: { _neq: "unavailable" },
@@ -74,7 +74,7 @@ export const getProducts = async (filters = {}) => {
         response = await axios.get(`${baseItemsURL}/Items`,
           {
             params: {
-              fields: "*,images.*,translations.*",
+              fields: "*,images.*,translations.*,images.directus_files_id.*",
               filter: {
                 status_swap: { _neq: "unavailable" },
               }
@@ -88,7 +88,7 @@ export const getProducts = async (filters = {}) => {
       response = await axios.get(`${baseItemsURL}/Items`,
         {
           params: {
-            fields: "*,images.*,translations.*",
+            fields: "*,images.*,translations.*,images.directus_files_id.*",
             filter: {
               category: { _eq: encodeURIComponent(filters.category) },
             }
@@ -99,7 +99,7 @@ export const getProducts = async (filters = {}) => {
       response = await axios.get(`${baseItemsURL}/Items`,
         {
           params: {
-            fields: "*,images.*,translations.*",
+            fields: "*,images.*,translations.*,images.directus_files_id.*",
             filter: {
               price: { _gte: filters.min_price },
             }
@@ -110,7 +110,7 @@ export const getProducts = async (filters = {}) => {
       response = await axios.get(`${baseItemsURL}/Items`,
         {
           params: {
-            fields: "*,images.*,translations.*",
+            fields: "*,images.*,translations.*,images.directus_files_id.*",
             filter: {
               price: { _lte: filters.max_price },
             }
@@ -121,7 +121,7 @@ export const getProducts = async (filters = {}) => {
       response = await axios.get(`${baseItemsURL}/Items`,
         {
           params: {
-            fields: "*,images.*,translations.*",
+            fields: "*,images.*,translations.*,images.directus_files_id.*",
             filter: {
               name: { _contains: encodeURIComponent(filters.search) },
             }
@@ -132,7 +132,7 @@ export const getProducts = async (filters = {}) => {
       response = await axios.get(`${baseItemsURL}/Items`,
         {
           params: {
-            fields: "*,images.*,translations.*",
+            fields: "*,images.*,translations.*,images.directus_files_id.*",
             sort: filters.sort,
           }
         })
@@ -141,7 +141,7 @@ export const getProducts = async (filters = {}) => {
       response = await axios.get(`${baseItemsURL}/Items`,
         {
           params: {
-            fields: "*,images.*,translations.*",
+            fields: "*,images.*,translations.*,images.directus_files_id.*",
             limit: filters.limit,
           }
         })
@@ -153,7 +153,7 @@ export const getProducts = async (filters = {}) => {
   
     console.log("response", response)
     console.error("response.data.data[0].images", response.data.images)
-    console.error("response.data.data[0].images", response.data.images)
+    console.error("response.data.data[0].images", response.data.images.directus_files_id)
     console.log("Products retrieved successfully, count:", response.data.data?.length || 0)
     return {
       success: true,
@@ -223,7 +223,7 @@ export const getProductById = async (id) => {
 
     // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
     const response = await axios.get(
-      `${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`
+      `${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*,images.directus_files_id.*`
     );
     console.log("response", response)
     console.log("response.data.data", response.data.data)
@@ -265,7 +265,7 @@ export const getProductTopPrice = async (limit = 10) => {
       queryParams.append("filter[user_id][_neq]", decoded.id)
     }
 
-    url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*`
+    url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*,images.directus_files_id.*`
     const response = await axios.get(url)
 
     console.log("Top price products retrieved successfully, count:", response.data.data?.length || 0)
@@ -295,7 +295,7 @@ export const getProductSearchFilter = async (filter) => {
     queryParams.append("filter[_and][1][_or][1][description][_contains]", encodeURIComponent(cleanFilter))
     queryParams.append("filter[_and][1][_or][2][category][_contains]", encodeURIComponent(cleanFilter))
 
-    const url = `${baseItemsURL}/Items?${queryParams.toString()}?fields=*,translations.*,images.*`
+    const url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*,images.directus_files_id.*`
     const response = await axios.get(url)
 
     console.log("Search completed, results:", response.data.data?.length || 0)
@@ -322,7 +322,7 @@ export const getProductByCategory = async (category) => {
     const response = await axios.get(`${baseItemsURL}/Items`,
       {
         params: {
-          fields: "*,images.*,translations.*",
+          fields: "*,images.*,translations.*,images.directus_files_id.*",
           filter: {
             category: { _eq: cleanCategory },
             status_swap: { _neq: "unavailable" },
@@ -355,7 +355,7 @@ export const getProductByUserId = async () => {
       const response = await axios.get(` ${baseItemsURL}/Items` ,
       {
         params: {
-          fields: "*,images.*,translations.*",
+          fields: "*,images.*,translations.*,images.directus_files_id.*",
           filter: {
             user_id: { _eq:`${decoded.id}` },
           }
@@ -391,7 +391,7 @@ export const getProductsOwnerById = async (productId) => {
       throw new Error(userResult.error)
     }
 
-    const response = await axios.get(`${baseItemsURL}/Items/?filter[user_id][_eq]=${userResult.data.id}?fields=*,translations.*,images.*`)
+    const response = await axios.get(`${baseItemsURL}/Items?filter[user_id][_eq]=${userResult.data.id}&fields=*,translations.*,images.*,images.directus_files_id.*`)
 
     console.log("Owner products retrieved successfully, count:", response.data.data?.length || 0)
     return {

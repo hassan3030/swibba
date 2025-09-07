@@ -140,20 +140,27 @@ export const deleteOfferById = async (id) => {
 
       const items = itemsResult.data
 
-      // Restore item availability
+      // Restore item availability and quantities
       const restorePromises = items.map(async (item) => {
         if (item.item_id) {
           try {
+            // Get current item state
+            const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.item_id}`)
+            const currentItem = itemResponse.data.data
+            const currentQuantity = currentItem.quantity || 0
+            const offerQuantity = item.quantity || 1
+            const restoredQuantity = currentQuantity + offerQuantity
+
             await axios.patch(`${baseItemsURL}/Items/${item.item_id}`, {
+              quantity: restoredQuantity,
               status_swap: "available",
-            },
-            {
+            }, {
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${auth.token}`,
               },
             })
-            return { item_id: item.item_id, success: true }
+            return { item_id: item.item_id, success: true, restored_quantity: restoredQuantity }
           } catch (error) {
             console.warn(`Failed to restore item ${item.item_id}:`, error.message)
             return { item_id: item.item_id, success: false, error: error.message }
@@ -450,14 +457,13 @@ export const completedOfferById = async (id_offer) => {
   }
 }
 
-// Add offer with transaction-like behavior
-export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owner_prods,email_user_from, email_user_to,) => {
+// Add offer with transaction-like behavior and quantity support
+export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owner_prods, email_user_from, email_user_to) => {
   let offer_id = null
   const createdItemIds = []
   const updatedItemIds = []
 
   try {
-  
     return await makeAuthenticatedRequest(async () => {
       // Validation
       if (!to_user_id) {
@@ -469,19 +475,47 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       }
 
       const auth = await validateAuth()
-      const allItems = [...(user_prods || []), ...(owner_prods || [])]
+      
+      // Handle both old format (array of IDs) and new format (array of objects with quantities)
+      const processItems = (items) => {
+        return items.map(item => {
+          if (typeof item === 'object' && item.itemId) {
+            return {
+              itemId: item.itemId,
+              quantity: item.quantity || 1,
+              totalPrice: item.totalPrice || 0
+            }
+          } else {
+            return {
+              itemId: item,
+              quantity: 1,
+              totalPrice: 0
+            }
+          }
+        })
+      }
 
-      // Validate all items exist and are available
-      for (const itemId of allItems) {
-        const itemResponse = await axios.get(`${baseItemsURL}/Items/${itemId}`)
-        const item = itemResponse.data.data
+      const processedUserProds = processItems(user_prods || [])
+      const processedOwnerProds = processItems(owner_prods || [])
+      const allProcessedItems = [...processedUserProds, ...processedOwnerProds]
 
-        if (!item) {
-          throw new Error(`Item ${itemId} not found`)
+      // Validate all items exist and have sufficient quantity
+      for (const item of allProcessedItems) {
+        const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.itemId}`)
+        const itemData = itemResponse.data.data
+
+        if (!itemData) {
+          throw new Error(`Item ${item.itemId} not found`)
         }
 
-        if (item.status_swap !== "available") {
-          throw new Error(`Item ${itemId} is not available for swapping`)
+        if (itemData.status_swap !== "available") {
+          throw new Error(`Item ${item.itemId} is not available for swapping`)
+        }
+
+        // Check if requested quantity is available
+        const availableQuantity = itemData.quantity || 1
+        if (item.quantity > availableQuantity) {
+          throw new Error(`Requested quantity ${item.quantity} exceeds available quantity ${availableQuantity} for item ${item.itemId}`)
         }
       }
 
@@ -503,38 +537,60 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       offer_id = offerRes.data.data.id
       console.log("Offer created successfully, ID:", offer_id)
 
-      // Add items to the offer
-      for (const itemId of allItems) {
-        const ownerResult = await getUserByProductId(itemId)
+      // Add items to the offer with quantity information
+      for (const item of allProcessedItems) {
+        const ownerResult = await getUserByProductId(item.itemId)
         if (!ownerResult.success) {
-          throw new Error(`Failed to get owner for item ${itemId}`)
+          throw new Error(`Failed to get owner for item ${item.itemId}`)
         }
 
         const offerItemResponse = await axios.post(`${baseURL}/items/Offer_Items`, {
           offer_id,
-          item_id: itemId,
+          item_id: item.itemId,
           offered_by: ownerResult.data.id,
+          quantity: item.quantity,
+          total_price: item.totalPrice,
           email_user_from,
           email_user_to,
-        },{
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      })
+        }, {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        })
 
         createdItemIds.push(offerItemResponse.data.data.id)
       }
 
-      // Update items status to unavailable
-      for (const itemId of allItems) {
-        await axios.patch(`${baseItemsURL}/Items/${itemId}`, {
-          status_swap: "unavailable",
-        },{
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      })
-        updatedItemIds.push(itemId)
+      // Update items quantity and availability status
+      for (const item of allProcessedItems) {
+        const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.itemId}`)
+        const currentItem = itemResponse.data.data
+        const currentQuantity = currentItem.quantity || 1
+        const newQuantity = currentQuantity - item.quantity
+
+        if (newQuantity <= 0) {
+          // If all quantity is taken, mark as unavailable
+          await axios.patch(`${baseItemsURL}/Items/${item.itemId}`, {
+            quantity: 0,
+            status_swap: "unavailable",
+          }, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          })
+        } else {
+          // If partial quantity is taken, update quantity but keep available
+          await axios.patch(`${baseItemsURL}/Items/${item.itemId}`, {
+            quantity: newQuantity,
+            status_swap: "available",
+          }, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          })
+        }
+        
+        updatedItemIds.push(item.itemId)
       }
 
 
@@ -556,15 +612,24 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
 
     try {
       const auth = await validateAuth()
-      // Restore item statuses
-      for (const itemId of updatedItemIds) {
-        await axios.patch(`${baseItemsURL}/Items/${itemId}`, {
-          status_swap: "available",
-        },{
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      })
+      // Restore item quantities and statuses
+      for (const item of allProcessedItems.filter(item => updatedItemIds.includes(item.itemId))) {
+        try {
+          const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.itemId}`)
+          const currentItem = itemResponse.data.data
+          const restoredQuantity = (currentItem.quantity || 0) + item.quantity
+          
+          await axios.patch(`${baseItemsURL}/Items/${item.itemId}`, {
+            quantity: restoredQuantity,
+            status_swap: "available",
+          }, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          })
+        } catch (restoreError) {
+          console.warn(`Failed to restore item ${item.itemId}:`, restoreError.message)
+        }
       }
 
       // Delete created offer items
@@ -663,7 +728,7 @@ export const getOfferItemsByOfferId = async (offer_id) => {
   }
 }
 
-// Delete offer item by ID
+// Delete offer item by ID with quantity restoration
 export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, offer_id) => {
   try {
     const auth = await validateAuth()
@@ -672,16 +737,27 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
         throw new Error("Offer item ID and item ID are required")
       }
 
-      // Restore item availability
+      // Get the offer item to retrieve quantity information
+      const offerItemResponse = await axios.get(`${baseItemsURL}/Offer_Items/${id}`)
+      const offerItem = offerItemResponse.data.data
+      const offerQuantity = offerItem.quantity || 1
+
+      // Get current item state and restore quantity
+      const itemResponse = await axios.get(`${baseItemsURL}/Items/${idItemItself}`)
+      const currentItem = itemResponse.data.data
+      const currentQuantity = currentItem.quantity || 0
+      const restoredQuantity = currentQuantity + offerQuantity
+
+      // Restore item availability and quantity
       await axios.patch(`${baseItemsURL}/Items/${idItemItself}`, {
+        quantity: restoredQuantity,
         status_swap: "available",
-      },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-              },
-            })
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
 
       // Delete offer item
       await axios.delete(`${baseItemsURL}/Offer_Items/${id}`,
@@ -712,6 +788,8 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
         data: {
           deleted_offer_item_id: id,
           restored_item_id: idItemItself,
+          restored_quantity: restoredQuantity,
+          offer_quantity: offerQuantity,
           cash_adjustment_updated: cashAdjustment !== null && !isNaN(cashAdjustment),
         },
         message: "Offer item deleted successfully",

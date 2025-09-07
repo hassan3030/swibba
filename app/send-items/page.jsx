@@ -107,7 +107,7 @@ const buttonVariants = {
   tap: { scale: 0.95 },
 }
 
-const Cart = () => {
+const SendItems = () => {
   const [offers, setOffers] = useState([])
   const [swapItems, setSwapItems] = useState([])
   const [userSwaps, setUserSwaps] = useState([])
@@ -824,7 +824,7 @@ const Cart = () => {
   )
 }
 
-export default Cart
+export default SendItems
 
 export const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem,translations }) => {
   const router = useRouter()

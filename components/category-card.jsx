@@ -59,29 +59,30 @@ export function CategoryCard({ name, imageSrc }) {
   const { t } = useTranslations()
   
 
-
   return (
-    <Link href={`categories/${name}`} className="group block ">
+    <Link href={`categories/${name}`} className="group block">
       <motion.div
-        className="flex flex-col items-center gap-2 rounded-full"
+        className="flex flex-col items-center gap-3 pr-4 pl-2  rounded-xl bg-gradient-to-b from-background to-muted/30 shadow-sm  hover:shadow-lg transition-all duration-300"
         variants={cardVariants}
         initial="hidden"
         animate="visible"
         whileHover="hover"
       >
         <motion.div
-          className="relative aspect-square w-[80px] overflow-hidden rounded-full bg-muted transition-all group-hover:shadow-md"
+          className="relative aspect-square w-[70px] md:w-[80px] overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-primary/10 shadow-lg group-hover:shadow-xl transition-all duration-300"
           variants={imageVariants}
         >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full" />
           <Image
             src={imageSrc || "/placeholder.svg?height=200&width=200"}
             alt={name}
             fill
-            className="object-cover transition-transform duration-300"
+            className="object-cover transition-transform duration-300 rounded-full p-2"
           />
+          <div className="absolute inset-0 rounded-full ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300" />
         </motion.div>
         <motion.span
-          className="text-center text-sm font-medium capitalize transition-colors"
+          className="text-center text-xs md:text-sm font-semibold capitalize transition-colors text-foreground/80 group-hover:text-primary"
           variants={textVariants}
           whileHover="hover"
         >

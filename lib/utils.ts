@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function isVideoFile(url: string): boolean {
   if (!url) return false
-  const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv', '.mpeg', '.mpg', '.m4v']
+  const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv', '.mpeg', '.mpg', '.m4v','.video']
   const lowercaseUrl = url.toLowerCase()
   return videoExtensions.some(ext => lowercaseUrl.includes(ext))
 }
@@ -20,7 +20,7 @@ export function isVideoFile(url: string): boolean {
  */
 export function isAudioFile(url: string): boolean {
   if (!url) return false
-  const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.m4b', '.m4p']
+  const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.m4b', '.m4p', '.m4v','.m4a', '.m4b', '.m4p' ,'audio' ]
   const lowercaseUrl = url.toLowerCase()
   return audioExtensions.some(ext => lowercaseUrl.includes(ext))
 }
@@ -30,7 +30,7 @@ export function isAudioFile(url: string): boolean {
  */
 export function isImageFile(url: string): boolean {
   if (!url) return false
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg']
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.heic','image']
   const lowercaseUrl = url.toLowerCase()
   return imageExtensions.some(ext => lowercaseUrl.includes(ext))
 }

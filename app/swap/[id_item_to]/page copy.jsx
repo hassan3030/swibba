@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeftRight, Package, Users, Info, MessageCircle, AlertCircle, Plus, Minus } from "lucide-react"
+import { ArrowLeftRight, Package, Users, Info, MessageCircle, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import Image from "next/image" 
@@ -95,16 +95,15 @@ export default function SwapPage() {
   const [otherItems, setOtherItems] = useState([])
   const [selectedMyItems, setSelectedMyItems] = useState([])
   const [selectedOtherItems, setSelectedOtherItems] = useState([])
-  const [itemQuantities, setItemQuantities] = useState({}) // Track quantities for each item
-  const [itemTotalPrices, setItemTotalPrices] = useState({}) // Track total prices for each item
   const [swapHistory, setSwapHistory] = useState([])
   const [usersOffer, setUsersOffer] = useState([])
   const [allowedCategories, setAllowedCategories] = useState([])
   const [showHint, setShowHint] = useState(false)
+  const [message, setMessage] = useState("")
+  const [name, setName] = useState("")
   const [disabledOffer, setDisabledOffer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [currentUserId, setCurrentUserId] = useState(null)
-  const [otherUserId, setOtherUserId] = useState(null)
+  const [sameUser, setSameUser] = useState([])
   const { toast } = useToast()
   const { t } = useTranslations()
   const [myEmail, setMyEmail] = useState("")
@@ -126,59 +125,28 @@ export default function SwapPage() {
 
   // Fetch my items
   const getMyItems = useCallback(async () => {
-    try {
     const token = await getCookie()
     if (token) {
       const { id } = await decodedToken()
-        setCurrentUserId(id)
-        console.log("Current user ID:", id)
+      setSameUser([...sameUser, id])
       const myProductsData = await getAvailableAndUnavailableProducts(id)
-        console.log("My products data:", myProductsData)
-        if (myProductsData.success && myProductsData.data) {
       setMyItems(myProductsData.data)
-        } else {
-          console.error("Failed to fetch my items:", myProductsData.error)
-          setMyItems([])
-        }
     } else {
       router.push(`/auth/login`)
-      }
-    } catch (error) {
-      console.error("Error fetching my items:", error)
-      setMyItems([])
     }
   }, [router])
 
   // Fetch other user's items
   const getOtherItems = useCallback(async () => {
-    try {
     const otherUser = await getUserByProductId(id_item_to)
+    setOtherEmail(otherUser.data.email)
+    setSameUser([...sameUser, otherUser.data.id])
     console.log("otherUser ", otherUser)
     console.log("id_item_to ", id_item_to)
-      
-      if (otherUser.success && otherUser.data) {
-        setOtherEmail(otherUser.data.email)
-        setOtherUserId(otherUser.data.id)
-        console.log("Other user ID:", otherUser.data.id)
-        
     const otherProductsData = await getAvailableAndUnavailableProducts(otherUser.data.id)
     console.log("otherProductsData ", otherProductsData)
-        
-        if (otherProductsData.success && otherProductsData.data) {
     setOtherItems(otherProductsData.data)
-        } else {
-          console.error("Failed to fetch other user's items:", otherProductsData.error)
-          setOtherItems([])
-        }
-      } else {
-        console.error("Failed to get other user info:", otherUser.error)
-        setOtherItems([])
-      }
-    } catch (error) {
-      console.error("Error fetching other user's items:", error)
-      setOtherItems([])
-    }
-  }, [id_item_to])
+  }, [])
 
   // Fetch swap history
   const getSwapHistory = useCallback(async () => {
@@ -228,43 +196,11 @@ export default function SwapPage() {
     }
   }, [])
 
-  // Quantity change handler
-  const handleQuantityChange = (itemId, quantity, totalPrice) => {
-    setItemQuantities(prev => ({
-      ...prev,
-      [itemId]: quantity
-    }))
-    setItemTotalPrices(prev => ({
-      ...prev,
-      [itemId]: totalPrice
-    }))
-  }
-
   // Selection handlers
   const handleMyItemSelect = (itemId) => {
     setSelectedMyItems((prev) => {
       const newSelection = prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
-      if (prev.includes(itemId)) {
-        setSelectedOtherItems([])
-        // Remove quantity tracking when deselected
-        setItemQuantities(prevQty => {
-          const newQty = { ...prevQty }
-          delete newQty[itemId]
-          return newQty
-        })
-        setItemTotalPrices(prevPrice => {
-          const newPrice = { ...prevPrice }
-          delete newPrice[itemId]
-          return newPrice
-        })
-      } else {
-        // Initialize quantity when selected
-        const item = myItems.find(p => p.id === itemId)
-        if (item) {
-          setItemQuantities(prev => ({ ...prev, [itemId]: 1 }))
-          setItemTotalPrices(prev => ({ ...prev, [itemId]: item.price }))
-        }
-      }
+      if (prev.includes(itemId)) setSelectedOtherItems([])
       return newSelection
     })
   }
@@ -275,40 +211,13 @@ export default function SwapPage() {
     const isAllowedCategory =
       Array.isArray(item?.allowed_categories) && item.allowed_categories.some((cat) => allowedCategories.includes(cat))
     if (isAllowedCategory || allowedCategories.length === 0) {
-      setSelectedOtherItems((prev) => {
-        const newSelection = prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
-        if (prev.includes(itemId)) {
-          // Remove quantity tracking when deselected
-          setItemQuantities(prevQty => {
-            const newQty = { ...prevQty }
-            delete newQty[itemId]
-            return newQty
-          })
-          setItemTotalPrices(prevPrice => {
-            const newPrice = { ...prevPrice }
-            delete newPrice[itemId]
-            return newPrice
-          })
-        } else {
-          // Initialize quantity when selected
-          if (item) {
-            setItemQuantities(prev => ({ ...prev, [itemId]: 1 }))
-            setItemTotalPrices(prev => ({ ...prev, [itemId]: item.price }))
-          }
-        }
-        return newSelection
-      })
+      setSelectedOtherItems((prev) => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]))
     }
   }
 
-  // Value calculation with quantity-based pricing
+  // Value calculation
   const getTotalValue = (items, products) => {
     return items.reduce((total, itemId) => {
-      const totalPrice = itemTotalPrices[itemId]
-      if (totalPrice) {
-        return total + totalPrice
-      }
-      // Fallback to original price if no quantity set
       const item = products.find((p) => p.id === itemId)
       return total + Number.parseInt(item?.price || 0)
     }, 0)
@@ -333,37 +242,13 @@ export default function SwapPage() {
     setDisabledOffer(true)
     try {
       const to_user = await getUserByProductId(id_item_to)
-      
-      // Prepare items with quantities
-      const myItemsWithQuantities = selectedMyItems.map(itemId => ({
-        itemId,
-        quantity: itemQuantities[itemId] || 1,
-        totalPrice: itemTotalPrices[itemId] || 0
-      }))
-      
-      const otherItemsWithQuantities = selectedOtherItems.map(itemId => ({
-        itemId,
-        quantity: itemQuantities[itemId] || 1,
-        totalPrice: itemTotalPrices[itemId] || 0
-      }))
-      
-      await addOffer(
-        to_user.data.id, 
-        priceDifference, 
-        myItemsWithQuantities, 
-        otherItemsWithQuantities, 
-        myEmail, 
-        otherEmail
-      )
-      
+      await addOffer(to_user.data.id, priceDifference, selectedMyItems, selectedOtherItems, myEmail, otherEmail)
       toast({
         title: t("successfully") || "Success",
         description: "Successfully created offer",
       })
       setSelectedMyItems([])
       setSelectedOtherItems([])
-      setItemQuantities({})
-      setItemTotalPrices({})
       setDisabledOffer(false)
       router.refresh()
       window.location.reload()
@@ -420,41 +305,7 @@ export default function SwapPage() {
       transition={{ duration: 0.5 }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      {!currentUserId || !otherUserId ? (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-center max-w-md mx-auto p-8"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
-            />
-            <p className="text-muted-foreground">{t("LoadingUserData") || "Loading user data..."}</p>
-          </motion.div>
-        </div>
-      ) : currentUserId === otherUserId ? (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-center max-w-md mx-auto p-8"
-          >
-            <div className="text-8xl mb-6">🚫</div>
-            <h1 className="text-3xl font-bold mb-4 text-foreground">{t("CannotSwapWithYourself") || "Cannot Swap With Yourself"}</h1>
-            <p className="text-muted-foreground mb-6 text-lg">{t("YouCannotSwapItemsWithYourOwnAccount") || "You cannot swap items with your own account"}</p>
-            <Link href="/products">
-              <Button className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-8 py-4 text-lg">
-                {t("BrowseOtherProducts") || "Browse Other Products"}
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      ) : (
+      {sameUser[0] !== sameUser[1] ? (
         <>
           <div className="container mx-auto px-4 py-8">
             {/* Header Section */}
@@ -694,11 +545,12 @@ export default function SwapPage() {
                                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                 >
                                   <Card
-                                    className={`transition-all duration-300 ${
+                                    className={`transition-all duration-300 cursor-pointer ${
                                       selectedMyItems.includes(product.id)
                                         ? "ring-2 ring-primary shadow-xl bg-primary/5 border-primary/20"
                                         : "hover:shadow-lg hover:bg-muted/50"
                                     }`}
+                                    onClick={() => handleMyItemSelect(product.id)}
                                   >
                                     <CardContent className="p-4">
                                       <div className="flex items-start space-x-4">
@@ -711,11 +563,7 @@ export default function SwapPage() {
                                             />
                                           </motion.div>
                                         </div>
-                                        <ItemCard 
-                                          {...product} 
-                                          onQuantityChange={handleQuantityChange}
-                                          selectedQuantity={itemQuantities[product.id] || 1}
-                                        />
+                                        <ItemCard {...product} />
                                       </div>
                                     </CardContent>
                                   </Card>
@@ -793,9 +641,10 @@ export default function SwapPage() {
                                         isSelected
                                           ? "ring-2 ring-accent shadow-xl bg-accent/5 border-accent/20"
                                           : isSelectable
-                                            ? "hover:shadow-lg hover:bg-muted/50"
+                                            ? "hover:shadow-lg hover:bg-muted/50 cursor-pointer"
                                             : "opacity-50 cursor-not-allowed bg-muted/30"
                                       }`}
+                                      onClick={() => isSelectable && handleOtherItemSelect(product.id)}
                                     >
                                       <CardContent className="p-4">
                                         <div className="flex items-start space-x-4">
@@ -809,11 +658,7 @@ export default function SwapPage() {
                                               />
                                             </motion.div>
                                           </div>
-                                          <ItemCard 
-                                            {...product} 
-                                            onQuantityChange={handleQuantityChange}
-                                            selectedQuantity={itemQuantities[product.id] || 1}
-                                          />
+                                          <ItemCard {...product} />
                                           {!isSelectable && (
                                             <div className="ml-auto">
                                               <AlertCircle className="h-5 w-5 text-destructive" />
@@ -936,63 +781,44 @@ export default function SwapPage() {
             </Tabs>
           </div>
         </>
+      ) : (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-md mx-auto p-8"
+          >
+            <div className="text-8xl mb-6">🚫</div>
+            <h1 className="text-3xl font-bold mb-4 text-foreground">{t("CannotSwapWithYourself") || "Cannot Swap With Yourself"}</h1>
+            <p className="text-muted-foreground mb-6 text-lg">{t("YouCannotSwapItemsWithYourOwnAccount") || "You cannot swap items with your own account"}</p>
+            <Link href="/products">
+              <Button className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-8 py-4 text-lg">
+                {t("BrowseOtherProducts") || "Browse Other Products"}
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
       )}
     </motion.div>
   )
 }
 
 // ItemCard component
-const ItemCard = ({ id, name, description, price, images, allowed_categories, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1 }) => {
-  // const [bigImage, setBigImage] = useState("")
-  const [currentQuantity, setCurrentQuantity] = useState(selectedQuantity)
-  const [totalPrice, setTotalPrice] = useState(price * selectedQuantity)
+const ItemCard = ({ id, name, description, price, images, allowed_categories, status_swap, category }) => {
+  const [bigImage, setBigImage] = useState("")
   const { t } = useTranslations()
   const { isRTL, getDirectionClass } = useRTL()
-  const { toast } = useToast()
   
-  // useEffect(() => {
-  //   const getDataImage = async () => {
-  //     if (images) {
-  //       const images2 = await getImageProducts(images)
-  //       setBigImage(images2.data[0]?.directus_files_id || "")
-  //     }
-  //   }
-  //   getDataImage()
-  // }, [images])
-
-  // Update total price when quantity changes
   useEffect(() => {
-    const total = price * currentQuantity
-    setTotalPrice(total)
-    if (onQuantityChange) {
-      onQuantityChange(id, currentQuantity, total)
+    const getDataImage = async () => {
+      if (images) {
+        const images2 = await getImageProducts(images)
+        setBigImage(images2.data[0]?.directus_files_id || "")
+      }
     }
-  }, [currentQuantity, price, id, onQuantityChange])
-
-  // Quantity handlers
-  const increaseQuantity = () => {
-    if (currentQuantity >= originalQuantity) {
-      toast({
-        title: t("quantityExceeded") || "Quantity Exceeded",
-        description: t("quantityExceededDescription") || "Cannot exceed available quantity",
-        variant: "destructive",
-      })
-    } else {
-      setCurrentQuantity(prev => prev + 1)
-    }
-  }
-
-  const decreaseQuantity = () => {
-    if (currentQuantity <= 1) {
-      toast({
-        title: t("minimumQuantity") || "Minimum Quantity",
-        description: t("minimumQuantityDescription") || "Minimum quantity is 1",
-        variant: "destructive",
-      })
-    } else {
-      setCurrentQuantity(prev => prev - 1)
-    }
-  }
+    getDataImage()
+  }, [images])
 
   const getConditionColor = (itemsStatus) => {
     switch (itemsStatus) {
@@ -1019,7 +845,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
     >
       <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
         <Image
-          src={images ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}` : "/placeholder.svg"}
+          src={bigImage ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${bigImage}` : "/placeholder.svg"}
           alt={name}
           className="w-24 h-24 object-cover rounded-xl flex-shrink-0 shadow-md"
           width={96}
@@ -1093,72 +919,10 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
               </motion.div>
             ))}
         </motion.div>
-        
-        {/* Quantity Controls */}
         <motion.div
-          className="flex items-center justify-between mt-3 p-3 bg-muted/30 rounded-lg"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          className="text-2xl font-bold text-secondary2"
         >
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">{t("quantity") || "Quantity"}</span>
-            <span className="text-sm font-medium">{originalQuantity} {t("items") || "items"}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-6 w-6 rounded-full"
-                onClick={decreaseQuantity}
-                disabled={currentQuantity <= 1}
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-            </motion.div>
-            
-            <motion.span
-              className="text-sm font-semibold min-w-[1.5rem] text-center"
-              key={currentQuantity}
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              {currentQuantity}
-            </motion.span>
-            
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-6 w-6 rounded-full"
-                onClick={increaseQuantity}
-                disabled={currentQuantity >= originalQuantity}
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Price Display */}
-        <motion.div
-          className="flex items-center justify-between mt-2"
-          key={totalPrice}
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">{t("unitPrice") || "Unit Price"}</span>
-            <span className="text-sm font-medium">{Number(price).toLocaleString()} {t("LE")}</span>
-          </div>
-          <div className="flex flex-col text-right">
-            <span className="text-xs text-muted-foreground">{t("totalPrice") || "Total Price"}</span>
-            <span className="text-lg font-bold text-secondary2">{Number(totalPrice).toLocaleString()} {t("LE")}</span>
-          </div>
+          {price} {t("LE")}
         </motion.div>
       </div>
     </motion.div>

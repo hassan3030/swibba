@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { ItemListingUpdate } from "@/components/item-listing-update"
+import { ItemUpdate } from "@/components/item-update"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { getProductById } from "@/callAPI/products"
@@ -123,7 +123,7 @@ export default function EditItemPage({ params }) {
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} >
-        {item && <ItemListingUpdate {...item} />}
+        {item && <ItemUpdate {...item} />}
       </motion.div>
     </motion.div>
   )

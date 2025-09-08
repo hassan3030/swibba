@@ -146,6 +146,7 @@ export function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [showTopBar, setShowTopBar] = useState(true)
   const [showCategoriesBar, setShowCategoriesBar] = useState(true)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const router = useRouter()
   const { isRTL, toggleLanguage } = useLanguage()
@@ -157,12 +158,15 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY >= 150) {
+      const scrollY = window.scrollY;
+      if (scrollY >= 100) {
         setShowTopBar(false);
         setShowCategoriesBar(false);
+        setIsScrolled(true);
       } else {
         setShowTopBar(true);
         setShowCategoriesBar(true);
+        setIsScrolled(false);
       }
     }
     window.addEventListener("scroll", handleScroll);
@@ -285,7 +289,11 @@ export function Header() {
     <>
 
       <motion.header
-        className="sticky top-0 z-50 w-full border-b bg-background shadow-sm dark:bg-[#121212] dark:border-[#2a2a2a]"
+        className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
+          isScrolled 
+            ? "bg-background/95 backdrop-blur-md shadow-lg dark:bg-[#121212]/95" 
+            : "bg-background shadow-sm dark:bg-[#121212]"
+        } dark:border-[#2a2a2a]`}
         variants={navVariants}
         initial="hidden"
         animate="visible"
@@ -320,8 +328,17 @@ export function Header() {
         </AnimatePresence>
 
         {/* Main header */}
-        <div className="container py-2">
-          <div className="flex items-center justify-between gap-4">
+        <div className={`container transition-all duration-300 ${
+          isScrolled ? "py-3" : "py-2"
+        }`}>
+          <motion.div 
+            className="flex items-center justify-between gap-4"
+            animate={{
+              y: isScrolled ? 0 : 0,
+              scale: isScrolled ? 0.98 : 1,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
             {/* Mobile toggles */}
             <motion.div
               className="flex items-center gap-2 lg:hidden"
@@ -355,20 +372,25 @@ export function Header() {
             </motion.div>
 
             {/* Logo */}
- <motion.div variants={logoVariants} initial="hidden" animate="visible" whileHover="hover">
+            <motion.div 
+              variants={logoVariants} 
+              initial="hidden" 
+              animate="visible" 
+              whileHover="hover"
+              className={`transition-all duration-300 ${isScrolled ? "scale-95" : "scale-100"}`}
+            >
               <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-10 w-16 items-center justify-center bg-transparent -my-3  ">
+                <div className={`flex items-center justify-center bg-transparent transition-all duration-300 ${
+                  isScrolled ? "h-8 w-14 -my-2" : "h-10 w-16 -my-3"
+                }`}>
                     <Image 
                    src="/logoheader.png" 
                    alt="Swibba Logo"
                    width={200} 
                     height={300}
-                    className="h-full w-full font-bold   "
+                    className="h-full w-full font-bold"
                      priority
                     />
-
-                  {/* <span className="text-2xl font-black gold-text-gradient">
-                  </span> */}
                 </div>
               </Link>
             </motion.div>
@@ -634,7 +656,7 @@ export function Header() {
 
                   {/* Messages */}
                   <motion.div custom={8} variants={itemVariants}>
-                    <Link href="/chat" className="relative">
+                    <Link href="/chat" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
@@ -665,7 +687,7 @@ export function Header() {
 
                   {/* Add items */}
                   <motion.div custom={9} variants={itemVariants}>
-                    <Link href="/profile/settings/editItem/new" className="relative">
+                    <Link href="/profile/settings/editItem/new" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
@@ -673,7 +695,7 @@ export function Header() {
                           className="relative hover:text-primary dark:hover:text-primary group"
                         >
                           <PlusCircle className="h-6 w-6" />
-                          <span className="pointer-events-none absolute -bottom-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-[100000] hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                             {t("addanewitem") || "  Add a new item"}
                           </span>
                         </Button>
@@ -699,7 +721,7 @@ export function Header() {
                 </Button>
               </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
 
           {/* Mobile search */}
           <motion.div
@@ -786,11 +808,11 @@ export function Header() {
                             {/* Mobile menu items */}
                        <Link
                         href="/profile/settings/editItem/new"
-                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10 z-[100000]"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <PlusCircle className="h-4 w-4" />
-                        <span>{t("addanewitem") || "Add a new item"}</span>
+                        <span className="z-[100000]">{t("addanewitem") || "Add a new item"}</span>
                       </Link>
                       <Link
                         href="/notifications"
@@ -814,11 +836,11 @@ export function Header() {
                       </Link>
                       <Link
                         href="/chat"
-                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
+                        className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10 z-[100000]"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <MessageCircle className="h-4 w-4" />
-                        <span>{`${t("messages") || "Messages"}  ${chatLength ? chatLength : ""} `}</span>
+                        <span className="z-[100000]">{`${t("messages") || "Messages"}  ${chatLength ? chatLength : ""} `}</span>
                       </Link>
                       <Link
                         href="/wishList"
@@ -884,13 +906,15 @@ export function Header() {
         </div>
 
         {/* Enhanced Categories navigation */}
-        {
-          showCategoriesBar?( <motion.div
-          className="border-t bg-gradient-to-r from-background via-muted/30 to-background dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
+        <AnimatePresence>
+          {showCategoriesBar && (
+            <motion.div
+              className="border-t bg-gradient-to-r from-background via-muted/30 to-background dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
           <div className="container overflow-x-auto scrollbar-hide">
             <nav className="flex space-x-2 py-3">
               {categoriesName.slice(0, 10).map((category, i) => {
@@ -939,8 +963,9 @@ export function Header() {
               </motion.div>
             </nav>
           </div>
-        </motion.div>):''
-        }
+            </motion.div>
+          )}
+        </AnimatePresence>
        
       </motion.header>
 

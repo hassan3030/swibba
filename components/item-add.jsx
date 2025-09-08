@@ -84,7 +84,7 @@ const buttonVariants = {
   },
 }
 
-export function ItemListingForm() {
+export function ItemAdd() {
   const [images, setImages] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)

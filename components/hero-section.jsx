@@ -64,10 +64,10 @@ import Image from "next/image";
                     lang="en"
                    src="/hero-section-logo.png"
                    alt="Swibba Logo"
-                   width={300}
-                    height={80}
+                   width={112}
+                    height={256}
                     className="font-bold text-center  animate-pulse-custom  h-28 w-64 cursor-pointer "
-                     priority
+                     
                      style={{ direction: "rtl" }}
                     />
 

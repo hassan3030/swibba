@@ -7,19 +7,18 @@ import { Users, ShieldCheck, Package, Sparkles, TrendingUp, Star } from "lucide-
 import  FloatingActionButton  from "@/components/floating-action-button"
 import { categories } from "@/lib/data"
 import { ProductCarousel } from "@/components/product-carousel"
-import { DeelProductCardSkeleton } from "@/components/DeelProductCardSkeleton"
-import { DeelProductCard } from "@/components/deel-product-card"
+import { SwibbaProductCardSkeleton } from "@/components/swibba-product-card-skeleton"
+import { SwibbaProductCard } from "@/components/swibba-product-card"
 import { CategoryCard } from "@/components/category-card"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
-import { useRouter } from "next/navigation"
-import { getProducts, getProductTopPrice , getProductByCategory } from "@/callAPI/products"
+import { getProducts, getProductTopPrice } from "@/callAPI/products"
 import {getAllUsers} from "@/callAPI/users"
 import { getCookie } from "@/callAPI/utiles"
 import HeroSection from "@/components/hero-section"
-import Link from "next/link"
 import LoadingSpinner from "@/components/loading-spinner"
-import Image from "next/image"
+// import Link from "next/link"
+// import Image from "next/image"
 
 // Enhanced Animation variants
 const containerVariants = {
@@ -223,60 +222,7 @@ const FloatingParticles = () => {
   )
 }
 
-// Featured Collection Card component
-const FeaturedCollectionCard = ({ title, imageUrl , rating, accent,  url }) => {
-  const { t } = useTranslations()
-  const [itemCount , setItemCount] = useState(0)
-const countCat = async()=>{
- const prodsCatCount = await getProductByCategory(title)
- setItemCount(prodsCatCount.count)
-}
-useEffect(()=>{
- countCat()
-},[])
 
-  return (
-   <Link href={url}>
-    <motion.div
-      className="relative overflow-hidden rounded-xl shadow-lg group max-h-72 "
-      whileHover={{ y: -10, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 z-10" />
-      <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ 
-          background: `linear-gradient(135deg, ${accent}40 0%, transparent 100%)`,
-          zIndex: 5 
-        }}
-      />
-      
-      <div className="relative aspect-[4/5] overflow-hidden">
-        <Image 
-          width={100}
-          height={100}
-          src={imageUrl || "/placeholder.svg"} 
-          alt={t(title)||title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-      </div>
-      
-      <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium text-white">
-            {itemCount} {t('items')||"Items"}
-          </div>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium text-white">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            {rating}
-          </div>
-        </div>
-        <h3 className="text-xl font-bold text-white">{t(title)||title}</h3>
-      </div>
-    </motion.div>
-   </Link>
-  )
-}
 
 export default function Home() {
   const { isRTL } = useLanguage()
@@ -296,42 +242,7 @@ export default function Home() {
   const y1 = useTransform(scrollY, [0, 300], [0, -50])
   const y2 = useTransform(scrollY, [0, 300], [0, -100])
   
-  // Featured collections data
-  const featuredCollections = [
-    { 
-      title: "realestate", 
-      imageUrl:  "/categories/realestate.jpg",
-      url:  "categories/realestate",
-      // itemCount: 24, 
-      rating: 4.8,
-      accent: "#FF6B6B" ,
-    },
-    { 
-      title: "books", 
-      imageUrl: "/categories/book.jpg",
-      url: "categories/books",
-      // itemCount: 42, 
-      rating: 4.9,
-      accent: "#4ECDC4" 
-    },
-    { 
-      title: "automotive", 
-      imageUrl: "/categories/automotive.jpg",
-      url: "categories/automotive",
-      // itemCount: 18, 
-      rating: 4.7,
-      accent: "#FFD166" 
-    },
-    { 
-      title: "electronics", 
-      imageUrl:  "/categories/electronics.jpg",
-      url:  "categories/electronics",
-      // itemCount: 15, 
-      rating: 4.9,
-      accent: "#6A0572" 
-    }
-  ]
-
+ 
   const getWishList = async () => {
     const token = await getCookie()
     if (token) {
@@ -339,7 +250,7 @@ export default function Home() {
     }
   }
 
-  const router = useRouter()
+
 
   const getData = async () => {
     const prods = await getProducts()
@@ -617,7 +528,7 @@ export default function Home() {
                         whileHover={{ y: -10 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       >
-                        <DeelProductCardSkeleton />
+                        <SwibbaProductCardSkeleton />
                       </motion.div>
                     ))
                   : categories.slice(0, 2).map((category, index) => (
@@ -647,7 +558,7 @@ export default function Home() {
                       whileHover={{ y: -10 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
-                      <DeelProductCardSkeleton />
+                      <SwibbaProductCardSkeleton />
                     </motion.div>
                   ) : categories.length > 2 ? (
                     <motion.div
@@ -678,7 +589,7 @@ export default function Home() {
                         whileHover={{ y: -10 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       >
-                        <DeelProductCardSkeleton />
+                        <SwibbaProductCardSkeleton />
                       </motion.div>
                     ))
                   : categories.slice(3, 5).map((category, index) => (
@@ -716,7 +627,7 @@ export default function Home() {
                     whileHover={{ y: -10 }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   >
-                    <DeelProductCardSkeleton />
+                    <SwibbaProductCardSkeleton />
                   </motion.div>
                 ))
               : categories.slice(0, 10).map((category, index) => (
@@ -758,7 +669,7 @@ export default function Home() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.1, duration: 0.5 }}
                     >
-                      <DeelProductCardSkeleton />
+                      <SwibbaProductCardSkeleton />
                     </motion.div>
                   ))
                 : Array.isArray(items) && items.length > 0
@@ -770,12 +681,12 @@ export default function Home() {
                         transition={{ delay: index * 0.1, duration: 0.5 }}
                         whileHover={{ y: -10 }}
                       >
-                        <DeelProductCard {...product} showSwitchHeart={showSwitchHeart} />
+                        <SwibbaProductCard {...product} showSwitchHeart={showSwitchHeart} />
                       </motion.div>
                     ))
                   : Array.from({ length: 6 }).map((_, i) => (
                       <motion.div key={i}>
-                        <DeelProductCardSkeleton />
+                        <SwibbaProductCardSkeleton />
                       </motion.div>
                     ))}
             </ProductCarousel>
@@ -800,7 +711,7 @@ export default function Home() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.1, duration: 0.5 }}
                     >
-                      <DeelProductCardSkeleton />
+                      <SwibbaProductCardSkeleton />
                     </motion.div>
                   ))
                 : Array.isArray(topPrice) && topPrice.length > 0
@@ -812,12 +723,12 @@ export default function Home() {
                         transition={{ delay: index * 0.1, duration: 0.5 }}
                         whileHover={{ y: -10 }}
                       >
-                        <DeelProductCard {...product} showSwitchHeart={showSwitchHeart} />
+                          <SwibbaProductCard {...product} showSwitchHeart={showSwitchHeart} />
                       </motion.div>
                     ))
                   : Array.from({ length: 6 }).map((_, i) => (
                       <motion.div key={i}>
-                        <DeelProductCardSkeleton />
+                        <SwibbaProductCardSkeleton />
                       </motion.div>
                     ))}
             </ProductCarousel>

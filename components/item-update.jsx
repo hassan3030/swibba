@@ -96,7 +96,7 @@ const buttonVariants = {
   tap: { scale: 0.95 },
 }
 
-export function ItemListingUpdate(props) {
+export function ItemUpdate(props) {
   const {
     id,
     name,

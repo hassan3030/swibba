@@ -108,7 +108,7 @@ const priceVariants = {
   },
 }
 
-export function DeelProductCard({
+export function SwibbaProductCard({
   id,
   name,
   price,
@@ -116,6 +116,9 @@ export function DeelProductCard({
   translations,
   quantity,
   status_item,
+  city,
+  street,
+  date_created,
   showSwitchHeart = true,
 }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -230,13 +233,6 @@ export function DeelProductCard({
 
 
       useEffect(() => {
-        // console.log("i am in the  deel product card translations", translations)
-        // console.log("i am in the  deel product card images", images)
-        // console.log("i am in the  deel product card images", images[0])
-        // console.log("i am in the  deel product card images", images[0]?.directus_files_id)
-        // console.log("i am in the  deel product card bigImage", bigImage)
-
-        // setBigImage(images[0]?.directus_files_id || "")
     handleGetWishItem()
   }, [switchHeart])
 
@@ -245,7 +241,7 @@ export function DeelProductCard({
     
       
       <Link href={`/products/${id}`}>
-        <div className="group relative flex w-[150px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
+        <div className="group relative flex lg:w-[210px] w-[150px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
           {/* Image container */}
           <div className="relative aspect-square overflow-hidden">
             <AnimatePresence>
@@ -371,18 +367,33 @@ export function DeelProductCard({
             {/* Price */}
             <motion.div className="mb-1 " variants={priceVariants}>
               <div className="flex items-baseline gap-1">
-                <motion.span className="text-lg font-bold line-clamp-1 text-secondary2" whileHover="pulse" variants={priceVariants}>
-                  {Number(price).toLocaleString('en-US')} LE
+                <motion.span className="text-lg font-bold line-clamp-1 text-secondary2">
+                  {Number(price).toLocaleString('en-US')} {t("LE") || "LE"}
                 </motion.span>
               </div>
             </motion.div>
-            <motion.div className="mb-2 " variants={priceVariants}>
+
+            {/* ------------------------------------------ */}
+           
+            <motion.div className="mb-1 " variants={priceVariants}>
               <div className="flex items-baseline gap-1">
-                <motion.span className="text-lg font-bold line-clamp-1 text-secondary2" whileHover="pulse" variants={priceVariants}>
-                {t("quantity")}: {Number(quantity).toLocaleString('en-US')} 
+                <motion.span className="text-sm  line-clamp-1 text-gray-400">
+                 {new Date(date_created).toLocaleDateString('en-US')}
                 </motion.span>
               </div>
             </motion.div>
+            <motion.div className="mb-1 " variants={priceVariants}>
+              <div className="flex items-baseline gap-1">
+                <motion.span className="text-sm  line-clamp-1 text-gray-400" >
+                {(!isRTL ? translations[0]?.city: translations[1]?.city) || city},
+                {(!isRTL ? translations[0]?.street: translations[1]?.street) || street}
+                
+                </motion.span>
+              </div>
+            </motion.div>
+         
+           
+           
             {/* Swap button */}
             <motion.div
               className="mt-auto"

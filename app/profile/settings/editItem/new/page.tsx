@@ -1,6 +1,6 @@
 "use client"
 
-import { ItemListingForm } from "@/components/item-listing-form"
+import { ItemAdd } from "@/components/item-add"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -25,7 +25,7 @@ export default function NewItemPage() {
         <h1 className="text-3xl m-1 font-bold  max-[370px]:text-xl">{t('ListNewItem')||"List a New Item"}</h1>
         <p className="text-muted-foreground m-1  max-[370px]:text-sm">{t('Createadetailedlistingtofindtheperfectswapforyouritem')||"Create a detailed listing to find the perfect swap for your item."}</p>
       </div>
-      <ItemListingForm />
+      <ItemAdd />
     </div>
   )
 }

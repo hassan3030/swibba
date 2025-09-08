@@ -243,7 +243,7 @@ const WishlistCard = ({ item, onRemove }) => {
            
 
 <Image
-            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id}` || "/placeholder.svg"}
+            src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}` || "/placeholder.svg"}
             width={100}
             height={100}
             alt={item.name}

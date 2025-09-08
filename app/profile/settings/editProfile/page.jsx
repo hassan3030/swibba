@@ -721,7 +721,6 @@ export default function ProfileSettingsPage() {
                                 <Image
                                   src={avatarPath}
                                   alt={`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}`}
-                                 
                                   width={96}
                                   height={96}
                                   className="h-full w-full object-cover"

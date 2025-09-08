@@ -35,7 +35,7 @@ const pulseVariants = {
   },
 }
 
-export function DeelProductCardSkeleton() {
+export function SwibbaProductCardSkeleton() {
   return (
     <motion.div
       className="group relative flex w-[150px] flex-col overflow-hidden rounded-md border bg-background"

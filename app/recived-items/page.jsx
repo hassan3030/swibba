@@ -12,7 +12,7 @@ import {
 } from "@/callAPI/swap"
 import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
-import { getProductById, getImageProducts } from "@/callAPI/products"
+import { getProductById } from "@/callAPI/products"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -53,6 +53,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import SwapRating from "@/components/reviews"
 import Image from "next/image"
+import { getMediaType } from "@/lib/utils"
+import { useLanguage } from "@/lib/language-provider"
 
 // Animation variants
 const containerVariants = {
@@ -131,6 +133,7 @@ const RecivedItems = () => {
     idOffer: null,
     owner: null,
     itemIdItslfe: null,
+    cashAdjustment: null,
   })
   const [chatMessages, setChatMessages] = useState([])
   const [message, setMessage] = useState("")
@@ -140,10 +143,46 @@ const RecivedItems = () => {
   const router = useRouter()
   const { t } = useTranslations()
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "accepted":
+        return "bg-green-500"
+      case "pending":
+        return "bg-yellow-500"
+      case "completed":
+        return "bg-blue-500"
+      case "rejected":
+        return "bg-destructive"
+      default:
+        return "bg-gray-500"
+    }
+  }
+
+  const handlePriceDifference = (userId, cash) => {
+    if (userId === myUserId) {
+      if (cash > 0) return `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+      if (cash < 0) return `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+      return `${t("Thepriceisequal") || "The price is equal"}`
+    } else {
+      if (cash < 0) return `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+      if (cash > 0) return `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+      return `${t("Thepriceisequal") || "The price is equal"}`
+    }
+  }
+
+  const fetchUserId = async () => {
+    const { id } = await decodedToken()
+    setMyUserId(id)
+  }
+
   // Fetch notifications where I am the to_user_id
   const getNotifications = useCallback(async () => {
+    setIsLoading(true)
     const token = await getCookie()
-    if (!token) return
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
 
     const offerItems = []
     const items = []
@@ -179,6 +218,7 @@ const RecivedItems = () => {
     setUserSwaps(uniqueUsers)
     setSwapItems(items)
     setItemsOffer(offerItems)
+    setIsLoading(false)
   }, [])
 
   // Chat
@@ -200,9 +240,23 @@ const RecivedItems = () => {
 
     const theirItems = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.offered_by === item.offered_by)
 
+    // Calculate new cash adjustment after removing this item
+    const offer = offers.find((o) => o.id === item.offer_id)
+    let newCashAdjustment = 0
+    
+    if (offer) {
+      const offerItems = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.id !== itemId) // Exclude current item
+      const myItemsAfterDelete = offerItems.filter((itm) => itm.offered_by === offer.from_user_id)
+      const theirItemsAfterDelete = offerItems.filter((itm) => itm.offered_by !== offer.from_user_id)
+      
+      const myTotal = myItemsAfterDelete.reduce((sum, itm) => sum + (Number.parseFloat(itm.price) || 0), 0)
+      const theirTotal = theirItemsAfterDelete.reduce((sum, itm) => sum + (Number.parseFloat(itm.price) || 0), 0)
+      newCashAdjustment = myTotal - theirTotal
+    }
+
     if (theirItems.length > 1) {
       try {
-        await deleteOfferItemsById(offerItemId, itemId)
+        await deleteOfferItemsById(offerItemId, itemId, newCashAdjustment, item.offer_id)
         toast({
           title: t("successfully") || "Successfully",
           description: t("Itemdeletedfromswapsuccessfully") || "Item deleted from swap successfully",
@@ -221,6 +275,7 @@ const RecivedItems = () => {
         idOffer: item.offer_id,
         owner: item.offered_by,
         itemIdItslfe: itemId,
+        cashAdjustment: newCashAdjustment,
       })
       setShowDeleteDialog(true)
     }
@@ -231,7 +286,7 @@ const RecivedItems = () => {
       await deleteOfferById(swapId)
       toast({
         title: t("successfully") || "Successfully",
-        description: t("Swapcompletedsuccessfully") || "Swap completed successfully",
+        description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
       })
       setShowDeleteDialog(false)
       getNotifications()
@@ -240,6 +295,29 @@ const RecivedItems = () => {
       toast({
         title: t("error") || "Error",
         description: t("Failedtodeleteswap") || "Failed to delete swap",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteLastItem = async () => {
+    try {
+      await deleteOfferItemsById(
+        pendingDelete.idItem, 
+        pendingDelete.itemIdItslfe, 
+        pendingDelete.cashAdjustment, 
+        pendingDelete.idOffer
+      )
+      toast({
+        title: t("successfully") || "Successfully",
+        description: t("Itemdeletedfromswapsuccessfully") || "Item deleted from swap successfully",
+      })
+      setShowDeleteDialog(false)
+      getNotifications()
+    } catch (err) {
+      toast({
+        title: t("error") || "Error",
+        description: t("Failedtodeleteitem") || "Failed to delete item",
         variant: "destructive",
       })
     }
@@ -263,30 +341,10 @@ const RecivedItems = () => {
     }
   }
 
-  const handlePriceDifference = (userId, cash) => {
-    const { id } = decodedToken()
-    if (userId === id) {
-      if (cash < 0) return `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      if (cash > 0) return `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      return `${t("Thepriceisequal") || "The price is equal"}`
-    } else {
-      if (cash > 0) return `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      if (cash < 0) return `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      return `${t("Thepriceisequal") || "The price is equal"}`
-    }
-  }
-
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      const fetchUserId = async () => {
-        const { id } = await decodedToken()
-        setMyUserId(id)
-      }
-      await Promise.all([fetchUserId(), getNotifications(), handleGetMessages()])
-      setIsLoading(false)
-    }
-    fetchData()
+    fetchUserId()
+    getNotifications()
+    handleGetMessages()
   }, [getNotifications, handleGetMessages])
 
   if (isLoading) {
@@ -328,27 +386,39 @@ const RecivedItems = () => {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 <DialogHeader>
-                  <DialogTitle>{t("DeleteSwap") || "Delete Swap"}</DialogTitle>
+                  <DialogTitle>{t("DeleteLastItem") || "Delete Last Item"}</DialogTitle>
                   <DialogDescription>
-                    {t("Areyousureyouwanttodeletethisswap") || "Are you sure you want to delete this swap?"}
+                    {t("Thisisthelastiteminthisoffer") || "This is the last item in this offer. What would you like to do?"}
                   </DialogDescription>
                 </DialogHeader>
-                <DialogFooter>
+                <DialogFooter className="flex flex-col gap-2 sm:flex-row">
                   <DialogClose asChild>
                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                       <Button
-                        variant="destructive"
-                        onClick={async () => {
-                          await handleDeleteSwap(pendingDelete.idOffer)
-                        }}
+                        variant="outline"
+                        className="mx-2"
+                        onClick={handleDeleteLastItem}
                       >
-                        {t("delete") || "Delete"}
+                        {t("DeleteItemOnly") || "Delete Item Only"}
                       </Button>
                     </motion.div>
                   </DialogClose>
                   <DialogClose asChild>
                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                      <Button variant="secondary" onClick={() => setShowDeleteDialog(false)}>
+                      <Button
+                        variant="destructive"
+                        className="mx-2"
+                        onClick={async () => {
+                          await handleDeleteSwap(pendingDelete.idOffer)
+                        }}
+                      >
+                        {t("DeleteEntireSwap") || "Delete Entire Swap"}
+                      </Button>
+                    </motion.div>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                      <Button className="mx-2" variant="secondary" onClick={() => setShowDeleteDialog(false)}>
                         {t("Cancel") || "Cancel"}
                       </Button>
                     </motion.div>
@@ -503,9 +573,9 @@ const RecivedItems = () => {
                                   "User"}
                               </AvatarFallback>
                             </Avatar>
-                            {userSwaps.find((u) => u.id === offer.from_user_id)?.verified && (
+                            {(userSwaps.find((u) => u.id === offer.from_user_id)?.verified === "true" || userSwaps.find((u) => u.id === offer.from_user_id)?.verified === true) && (
                               <div className="absolute -top-1 -right-1">
-                                <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                                <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
                               </div>
                             )}
                           </motion.div>
@@ -814,31 +884,53 @@ const RecivedItems = () => {
                       )}
 
                       {offer.status_offer === "accepted" && (
-                        <motion.div
-                          className="flex justify-around space-x-2 mt-4"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6 }}
-                        >
-                          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                setPendingDelete({
-                                  idItem: null,
-                                  idOffer: offer.id,
-                                  owner: null,
-                                })
-                                setShowDeleteDialog(true)
-                              }}
-                              className="flex items-center gap-1"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              {t("RejectSwap") || "Reject Swap"}
-                            </Button>
+                        <>
+                          {/* Waiting message for accepted swaps */}
+                          <motion.div
+                            className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                              >
+                                <Loader className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                              </motion.div>
+                              <p className="text-yellow-800 dark:text-yellow-200 font-medium">
+                                {t("YouarewaitingtocompletswapfromanotherUser") || "You are waiting to complete swap from another user"}
+                              </p>
+                            </div>
                           </motion.div>
-                        </motion.div>
+
+                          <motion.div
+                            className="flex justify-around space-x-2 mt-4"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                          >
+                            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setPendingDelete({
+                                    idItem: null,
+                                    idOffer: offer.id,
+                                    owner: null,
+                                  })
+                                  setShowDeleteDialog(true)
+                                }}
+                                className="flex items-center gap-1"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {t("RejectSwap") || "Reject Swap"}
+                              </Button>
+                            </motion.div>
+                          </motion.div>
+                        </>
                       )}
                     </CardContent>
                   </Card>
@@ -881,20 +973,10 @@ const RecivedItems = () => {
 export default RecivedItems
 
 // CardItemSwap component
-const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem ,translations}) => {
+const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity }) => {
   const router = useRouter()
-  // const [bigImage, setBigImage] = useState("")
+  const { isRTL } = useLanguage()
   const { t } = useTranslations()
-
-  // useEffect(() => {
-  //   const getDataImage = async () => {
-  //     if (images) {
-  //       const images2 = await getImageProducts(images)
-  //       setBigImage(images2.data[0]?.directus_files_id || "")
-  //     }
-  //   }
-  //   getDataImage()
-  // }, [images])
 
   const handleView = (id) => {
     router.push(`/products/${id}`)
@@ -908,22 +990,40 @@ const CardItemSwap = ({ id, name, description, price, status_item, images, delet
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3 }}
         >
-          <Image
-            width={100}
-            height={100}
-            src={images[0]?.directus_files_id ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}` : "/placeholder.svg"}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+          {(() => {
+            const mediaUrl = {
+              id: images[0]?.directus_files_id.id,
+              type: images[0]?.directus_files_id.type,
+              url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+            }
+            const mediaType = getMediaType(mediaUrl.type)
+            if (mediaType === 'video') {
+              return (
+                <video src={mediaUrl.url} alt={name} className="w-full h-full object-cover" />
+              )
+            } else if (mediaType === 'audio') {
+              return (
+                <audio src={mediaUrl.url} alt={name} className="w-full h-full object-cover" />
+              )
+            } else {
+              return (
+                <Image src={mediaUrl.url} alt={name} width={100} height={100} className="w-full h-full object-cover" />
+              )
+            }
+          })()}
+          
         </motion.div>
         <CardContent className="p-4">
-          <h4 className="font-semibold text-sm mb-1">{name}</h4>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{description}</p>
+          <h4 className="font-semibold text-sm mb-1">{!isRTL ? translations?.[0]?.name || name : translations?.[1]?.name || name}</h4>
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
+          {quantity && (
+            <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity}</p>
+          )}
           <div className="flex justify-between items-center mb-3">
             <Badge variant="outline" className="text-xs">
               {t(status_item) || status_item}
             </Badge>
-            <span className="font-bold text-primary text-sm">{price}</span>
+            <span className="font-bold text-secondary2 text-sm">{t(price) || price} {t("LE") || "LE"}</span>
           </div>
           <div className="flex gap-2">
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">

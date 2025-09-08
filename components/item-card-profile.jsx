@@ -197,14 +197,19 @@ export function ItemCardProfile({
        
                    whileHover="hover">
 {(() => {
-                      const mediaUrl = `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id || ''}`
-                      const mediaType = getMediaType(mediaUrl)
+                      const mediaUrl ={
+                        id: images[0]?.directus_files_id.id,
+                        type: images[0]?.directus_files_id.type,
+                        url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+                      }
+                      
+                      const mediaType = getMediaType(mediaUrl.type)
                       
                       if (mediaType == 'video') {
                         return (
                           <div className="relative w-full h-full">
                             <video
-                              src={mediaUrl}
+                              src={mediaUrl.url}
                               className="w-full h-full object-cover transition-transform duration-300"
                               muted
                               loop
@@ -229,7 +234,7 @@ export function ItemCardProfile({
                       } else {
                         return (
                           <Image
-                            src={mediaUrl}
+                            src={mediaUrl.url}
                             alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                             fill
                             placeholder="blur"

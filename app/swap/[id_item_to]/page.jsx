@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeftRight, Package, Users, Info, MessageCircle, AlertCircle, Plus, Minus } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image" 
-import { getAvailableAndUnavailableProducts, getImageProducts } from "@/callAPI/products"
+import { getAvailableAndUnavailableProducts } from "@/callAPI/products"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
 import { decodedToken, getCookie } from "@/callAPI/utiles"
@@ -20,6 +19,8 @@ import { removeTarget } from "@/callAPI/utiles"
 import { addOffer, getOfferById } from "@/callAPI/swap"
 import { useParams, useRouter } from "next/navigation"
 import { useRTL } from "@/hooks/use-rtl"
+import { getMediaType } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Animation variants
 const containerVariants = {
@@ -105,6 +106,7 @@ export default function SwapPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentUserId, setCurrentUserId] = useState(null)
   const [otherUserId, setOtherUserId] = useState(null)
+  const [otherUserData, setOtherUserData] = useState(null)
   const { toast } = useToast()
   const { t } = useTranslations()
   const [myEmail, setMyEmail] = useState("")
@@ -159,6 +161,7 @@ export default function SwapPage() {
       if (otherUser.success && otherUser.data) {
         setOtherEmail(otherUser.data.email)
         setOtherUserId(otherUser.data.id)
+        setOtherUserData(otherUser.data)
         console.log("Other user ID:", otherUser.data.id)
         
     const otherProductsData = await getAvailableAndUnavailableProducts(otherUser.data.id)
@@ -333,7 +336,7 @@ export default function SwapPage() {
     setDisabledOffer(true)
     try {
       const to_user = await getUserByProductId(id_item_to)
-      
+
       // Prepare items with quantities
       const myItemsWithQuantities = selectedMyItems.map(itemId => ({
         itemId,
@@ -543,8 +546,27 @@ export default function SwapPage() {
                               animate="visible"
                             >
                               <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                  <Package className="h-10 w-10 text-primary" />
+                                <div className="relative w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Avatar className="h-full w-full border">
+                                <AvatarImage
+                                  src={
+                                    otherUserData?.avatar
+                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${otherUserData.avatar}`
+                                      : "/placeholder.svg"
+                                  }
+                                  alt={otherUserData?.first_name || t("User") || "User"}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback>
+                                  {otherUserData?.first_name?.[0] || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                                 
+                                {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
+                                    <div className="absolute -top-1 -right-1 z-10">
+                                      <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 border border-background" />
+                                    </div>
+                                  )}
                                 </div>
                                 <motion.div
                                   className="text-3xl font-bold text-primary mb-1"
@@ -568,8 +590,27 @@ export default function SwapPage() {
                               </motion.div>
 
                               <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                                <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                  <Users className="h-10 w-10 text-accent" />
+                                <div className="relative w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                  <Avatar className="h-full w-full border">
+                                  <AvatarImage
+                                  src={
+                                    otherUserData?.avatar
+                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${otherUserData.avatar}`
+                                      : "/placeholder.svg"
+                                  }
+                                  alt={otherUserData?.first_name || t("User") || "User"}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback>
+                                  {otherUserData?.first_name?.[0] || "U"}
+                                </AvatarFallback> 
+                              </Avatar>
+                              
+                                  {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
+                                    <div className="absolute -top-1 -right-1 z-10">
+                                      <Verified className="h-4 w-4 text-accent bg-background rounded-full p-0.5 border border-background" />
+                                    </div>
+                                  )}
                                 </div>
                                 <motion.div
                                   className="text-3xl font-bold text-accent mb-1"
@@ -590,7 +631,6 @@ export default function SwapPage() {
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: 0.3 }}
                             >
-                              <div className="text-sm text-muted-foreground mb-2">{t("PriceDifference") || "Price Difference"}</div>
                               <motion.div
                                 className={`text-2xl font-bold p-4 rounded-lg ${
                                   priceDifference > 0
@@ -602,6 +642,8 @@ export default function SwapPage() {
                                 animate={{ scale: [1, 1.05, 1] }}
                                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                               >
+                              <div className="text-sm text-muted-foreground mb-2">{t("PriceDifference") || "Price Difference"}</div>
+
                                 {priceDifference > 0 ? "+" : ""}
                                 {Number(priceDifference).toLocaleString()} LE
                                 {priceDifference > 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Yougain") || "You gain"})</span>}
@@ -664,7 +706,7 @@ export default function SwapPage() {
                             transition={{ delay: 0.3 }}
                           >
                             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
-                              <Package className="h-6 w-6 text-primary" />
+                              <User className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                               <h2 className="text-2xl font-bold text-foreground">{t("YourProducts") || "Your Products"}</h2>
@@ -730,7 +772,7 @@ export default function SwapPage() {
                           variants={cardVariants}
                           whileHover={{ scale: 1.02 }}
                         >
-                          <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                          <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                           <p className="text-muted-foreground text-lg mb-4">{t("NoProductsFound") || "You haven't any Items yet."}</p>
                           <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                             <Button
@@ -755,7 +797,7 @@ export default function SwapPage() {
                             transition={{ delay: 0.4 }}
                           >
                             <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mr-4">
-                              <Users className="h-6 w-6 text-accent" />
+                              <User className="h-6 w-6 text-accent" />
                             </div>
                             <div>
                               <h2 className="text-2xl font-bold text-foreground">{t("AvailableProducts") || "Available Products"}</h2>
@@ -834,7 +876,7 @@ export default function SwapPage() {
                           variants={cardVariants}
                           whileHover={{ scale: 1.02 }}
                         >
-                          <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                          <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                           <p className="text-muted-foreground text-lg mb-4">{t("NoOtherProductsFound") || "He hasn't made any Items yet."}</p>
                           <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                             <Button 
@@ -882,10 +924,7 @@ export default function SwapPage() {
                                       <p className="text-sm text-muted-foreground mb-1">
                                         {new Date(swap?.date_created).toISOString().split("T")[0]}
                                       </p>
-                                      <h3 className="font-medium text-lg">
-                                        {t("Swapwith") || "Swap with:"}{" "}
-                                        {usersOffer.find((u) => u.id === swap.to_user_id)?.first_name || `Not Name`}
-                                      </h3>
+                                    
                                       <div className="mt-2 flex flex-wrap gap-2">
                                         <motion.span
                                           className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -950,16 +989,6 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
   const { isRTL, getDirectionClass } = useRTL()
   const { toast } = useToast()
   
-  // useEffect(() => {
-  //   const getDataImage = async () => {
-  //     if (images) {
-  //       const images2 = await getImageProducts(images)
-  //       setBigImage(images2.data[0]?.directus_files_id || "")
-  //     }
-  //   }
-  //   getDataImage()
-  // }, [images])
-
   // Update total price when quantity changes
   useEffect(() => {
     const total = price * currentQuantity
@@ -1017,15 +1046,44 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
       whileHover={{ x: isRTL ? -5 : 5 }}
       transition={{ type: "spring", stiffness: 400 }}
     >
-      <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }}>
-        <Image
-          src={images ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id}` : "/placeholder.svg"}
-          alt={name}
-          className="w-24 h-24 object-cover rounded-xl flex-shrink-0 shadow-md"
-          width={96}
-          height={96}
-        />
-      </motion.div>
+      {(() => {
+        const currentMedia = {
+          id: images[0]?.directus_files_id.id,
+          type: images[0]?.directus_files_id.type,
+          url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+        }
+        const mediaType = getMediaType(currentMedia.type)
+        if (mediaType === 'video') {
+          return (
+            <video
+              src={currentMedia.url}
+              className="w-24 h-24 object-cover rounded-xl flex-shrink-0 shadow-md"
+              width={96}
+              height={96}
+            />
+          )
+        } else if (mediaType === 'audio') {
+          return (
+            <audio
+              src={currentMedia.url}
+              className="w-24 h-24 object-cover rounded-xl flex-shrink-0 shadow-md"
+              width={96}
+              height={96}
+            />
+          )
+        } else {
+          return (
+            <Image
+              src={currentMedia.url}
+              alt={name}
+              className="w-24 h-24 object-cover rounded-xl flex-shrink-0 shadow-md"
+              width={96}
+              height={96}
+            />
+          )
+        }
+      })()}
+      
       <div className="flex-1 min-w-0">
         <motion.h3
           className="font-semibold text-xl mb-2 text-foreground"

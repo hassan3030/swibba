@@ -141,7 +141,7 @@ export const deleteOfferById = async (id) => {
       const items = itemsResult.data
 
       // Restore item availability and quantities
-      const restorePromises = items.map(async (item) => {
+      const restoreItems = items.map(async (item) => {
         if (item.item_id) {
           try {
             // Get current item state
@@ -168,10 +168,10 @@ export const deleteOfferById = async (id) => {
         }
       })
 
-      const restoreResults = await Promise.allSettled(restorePromises)
+      const restoreResults = await Promise.allSettled(restoreItems)
 
       // Delete offer items
-      const deleteItemPromises = items.map(async (item) => {
+      const deleteOfferItems = items.map(async (item) => {
         if (item.id) {
           try {
             await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`,
@@ -189,14 +189,14 @@ export const deleteOfferById = async (id) => {
         }
       })
 
-      await Promise.allSettled(deleteItemPromises)
+      await Promise.allSettled(deleteOfferItems)
 
       // Delete related chats
       try {
         const chatRes = await axios.get(`${baseItemsURL}/Chat?filter[offer_id][_eq]=${id}`)
         const chats = chatRes.data?.data || []
 
-        const deleteChatPromises = chats.map((chat) =>
+        const deleteChats = chats.map((chat) =>
           chat.id ? axios.delete(`${baseItemsURL}/Chat/${chat.id}`,
             {
               headers: {
@@ -206,7 +206,7 @@ export const deleteOfferById = async (id) => {
             }) : Promise.resolve(),
         )
 
-        await Promise.allSettled(deleteChatPromises)
+        await Promise.allSettled(deleteChats)
       } catch (chatError) {
         console.warn("Failed to delete some chat messages:", chatError.message)
       }
@@ -389,7 +389,7 @@ export const completedOfferById = async (id_offer) => {
       const items = itemsResult.data
 
       // Delete the actual items (they've been traded)
-      const deleteItemPromises = items.map(async (item) => {
+      const deleteItems = items.map(async (item) => {
         if (item.item_id) {
           try {
             await axios.delete(`${baseItemsURL}/Items/${item.item_id}`,
@@ -407,10 +407,10 @@ export const completedOfferById = async (id_offer) => {
         }
       })
 
-      const deleteResults = await Promise.allSettled(deleteItemPromises)
+      const deleteResults = await Promise.allSettled(deleteItems)
 
       // Delete offer items
-      const deleteOfferItemPromises = items.map(async (item) => {
+      const deleteOfferItems = items.map(async (item) => {
         if (item.id) {
           try {
             await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`,
@@ -428,7 +428,7 @@ export const completedOfferById = async (id_offer) => {
         }
       })
 
-      await Promise.allSettled(deleteOfferItemPromises)
+      await Promise.allSettled(deleteOfferItems)
 
       // Update offer status to completed
       const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
@@ -473,7 +473,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       if (!user_prods || !owner_prods || (!user_prods.length && !owner_prods.length)) {
         throw new Error("At least one item must be included in the offer")
       }
-
+ // validate my id 
       const auth = await validateAuth()
       
       // Handle both old format (array of IDs) and new format (array of objects with quantities)
@@ -597,7 +597,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       console.log("Offer created successfully with all items and message")
       return {
         success: true,
-        data: {
+          data: {
           offer_id,
           items_count: allItems.length,
           email_user_from,

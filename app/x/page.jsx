@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function ChatBox() {
   const [input, setInput] = useState("");
@@ -39,6 +40,7 @@ export default function ChatBox() {
 
 
     <Image src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/5a5299c4-7bfa-4571-a74e-c87a0a25539e`} alt="logo" width={100} height={100} />
+    <ThemeToggle />
     </>
   
   );

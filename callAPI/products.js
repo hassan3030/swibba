@@ -52,7 +52,7 @@ export const getProducts = async (filters = {}) => {
         params: {
           fields: "*,images.*,translations.*,images.directus_files_id.*",
           filter: {
-            status_swap: { _neq: "unavailable" },
+            status_swap: { _eq: "available" },
           }
         }
       })
@@ -66,7 +66,7 @@ export const getProducts = async (filters = {}) => {
               fields: "*,images.*,translations.*,images.directus_files_id.*",
               filter: {
                 user_id: { _neq: `${decoded.id}` },
-                status_swap: { _neq: "unavailable" },
+                status_swap: { _eq: "available" },
               }
             }
           })
@@ -76,7 +76,7 @@ export const getProducts = async (filters = {}) => {
             params: {
               fields: "*,images.*,translations.*,images.directus_files_id.*",
               filter: {
-                status_swap: { _neq: "unavailable" },
+                status_swap: { _eq: "available" },
               }
             }
           })
@@ -152,9 +152,7 @@ export const getProducts = async (filters = {}) => {
     //  url = `${baseItemsURL}/Items?fields=*,translations.*,images.*`
   
     console.log("response", response)
-    console.error("response.data.data[0].images", response.data.images)
-    console.error("response.data.data[0].images", response.data.images.directus_files_id)
-    console.log("Products retrieved successfully, count:", response.data.data?.length || 0)
+   
     return {
       success: true,
       data: response.data.data || [],
@@ -325,7 +323,7 @@ export const getProductByCategory = async (category) => {
           fields: "*,images.*,translations.*,images.directus_files_id.*",
           filter: {
             category: { _eq: cleanCategory },
-            status_swap: { _neq: "unavailable" },
+            status_swap: { _eq: "available" },
           }
         }
       })

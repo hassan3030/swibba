@@ -33,7 +33,7 @@ import { LanguageToggle } from "@/components/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
 import { useTheme } from "@/lib/theme-provider"
 import { useToast } from "@/components/ui/use-toast"
-import { ItemListingForm } from "@/components/item-listing-form"
+import { ItemAdd } from "@/components/item-add"
 import { z } from "zod"
 import { countriesList } from "@/lib/data"
 
@@ -1283,7 +1283,7 @@ export default function ProfileSettingsPage() {
                       <CardContent className="p-0 w-full">
                         <motion.div
                         >
-                          <ItemListingForm className="w-full p-0"/>
+                          <ItemAdd className="w-full p-0"/>
                         </motion.div>
                       </CardContent>
                     </Card>

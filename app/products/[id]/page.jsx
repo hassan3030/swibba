@@ -1,9 +1,9 @@
 "use client"
 import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import Link from "next/link"
 import { notFound, useRouter, useParams } from "next/navigation"
-import { ArrowLeft, ArrowLeftRight, Repeat, Star, Verified, Plus, Minus } from "lucide-react"
+import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,7 +12,7 @@ import { ProductGallery } from "@/components/product-gallery"
 import { useTranslations } from "@/lib/use-translations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getProductById } from "@/callAPI/products"
-import { getCookie, decodedToken } from "@/callAPI/utiles"
+import { validateAuth } from "@/callAPI/utiles"
 import { getKYC, getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
@@ -66,8 +66,8 @@ export default function ProductPage() {
   const id = params.id
   const { isRTL, toggleLanguage } = useLanguage()
   const getToken = async () => {
-    const fullToken = await decodedToken()
-    setTokenId(fullToken.id)
+    const { userId } = await validateAuth()
+    setTokenId(userId)
   }
 
   // Calculate total price whenever price or quantity changes
@@ -155,10 +155,9 @@ export default function ProductPage() {
   }, [id])
 
   const makeSwap = async () => {
-    const token = await getCookie()
-    const decoded = await decodedToken(token)
+    const { token, userId } = await validateAuth()
     if (token) {
-      const kyc = await getKYC(decoded.id) /// ------------- take id user
+      const kyc = await getKYC(userId) /// ------------- take id user
       if (kyc.data === false) {
         toast({
           title: t("faildSwap") || "Failed Swap",
@@ -190,20 +189,7 @@ export default function ProductPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div
-        className="mb-4 sm:mb-6 flex items-center gap-2"
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/products">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </motion.div>
-      </motion.div>
+     
 
       <motion.div className="grid gap-4 md:gap-6 md:grid-cols-2" variants={containerVariants} initial="hidden" animate="visible">
         {/* Product Gallery */}
@@ -366,7 +352,7 @@ export default function ProductPage() {
                   <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"} />
                   <AvatarFallback className="text-xs sm:text-sm">{name ? name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
-                {user?.Verified && (
+                {user?.Verified === "true" || user?.Verified === true ? (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -375,14 +361,14 @@ export default function ProductPage() {
                   >
                     <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5 shadow-sm" />
                   </motion.div>
-                )}
+                ) : null}
               </motion.div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold text-sm sm:text-base truncate" title={name || "Unknown"}>
                     {name || "Unknown"}
                   </span>
-                  {user?.Verified && (
+                  {user?.Verified === "true" || user?.Verified === true ? (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -391,7 +377,7 @@ export default function ProductPage() {
                     >
                       <Verified className="h-3 w-3 sm:h-4 sm:w-4 text-[#49c5b6]" />
                     </motion.div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-1">
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -460,9 +446,49 @@ export default function ProductPage() {
                     transition={{ duration: 0.2 }}
                     className="text-sm sm:text-base w-full"
                   >
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("name")}:</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                      {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
+                    </div>
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("location")}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                      {t(product.country)} - {(!isRTL ? product.translations[0]?.city: product.translations[1]?.city) || product.city} - {(!isRTL ? product.translations[0]?.street: product.translations[1]?.street) || product.street}
+                    </div>
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("listedOn")|| "Listed on"}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                      {new Date(product.date_created).toLocaleDateString('en-US')}
+                    </div>
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("category")}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                      {t(product.category)}
+                    </div>
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("price")}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2">
+                      {Number(product.price).toLocaleString('en-US')} {t("le")}
+                    </div>
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("quantity")}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                      {Number(product.quantity).toLocaleString('en-US')}
+                    </div>
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("status")}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary">
+                      {t(product.status_item)}
+                    </div>
+                    
+                    
+                    <Separator />
+
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("description")}:</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full ">
                       {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
                     </div>
+                    <Separator />
                   </motion.div>
                 </TabsContent>
                 <TabsContent value="Category" className="mt-3 sm:mt-4">

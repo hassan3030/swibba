@@ -176,9 +176,9 @@ export function Header() {
 
 
   const handlegetProductSearchFilter = () => {
-    const filterTrim = filter.trim()
-    if (filterTrim) {
-      router.push(`/filterItems/${filterTrim}`)
+    // const filterTrim = filter.trim()
+    if (filter) {
+      router.push(`/filterItems/${filter.toLocaleString().toLowerCase().trim()}`)
     }
   }
 
@@ -396,13 +396,7 @@ export function Header() {
             </motion.div>
 
 
-            {/* <motion.div variants={logoVariants} initial="hidden" animate="visible" whileHover="hover">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-10 w-32 items-center justify-center rounded-md font-bold text-black dark:text-[#f5b014] shadow-md bg-transparent">
-                  <span className="text-2xl font-black gold-text-gradient">DeelDeal</span>
-                </div>
-              </Link>
-            </motion.div> */}
+           
 
             {/* Search */}
             <motion.div

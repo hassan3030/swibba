@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { getProductSearchFilter } from "@/callAPI/products"
+import { getProductSearchFilter, getProducts } from "@/callAPI/products"
 import { ItemsList } from "@/components/items-list"
 import { useState, useEffect } from "react"
 
@@ -35,9 +35,45 @@ const FilterItemsPage = ({ params }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true)
+      
+      // Get the search term from URL params
       const { name } = await params
-      const productsData = await getProductSearchFilter(name)
-      setProducts(productsData.data)
+      const searchTerm = decodeURIComponent(name || "").trim()
+      console.log("searchTerm", searchTerm)
+      
+      // If no search term, get all products
+      if (!searchTerm) {
+        const additionalParams = {
+          limit: 3,
+          sort: "-date_created"  // Descending order by creation date
+        }
+        const productsData = await getProducts({}, additionalParams)
+        setProducts(productsData.data)
+        console.log("productsData (all)", productsData)
+      } else {
+        // Filter by search term with partial text matching across multiple fields
+        const filters = {
+          _or: [
+            { name: { _contains: searchTerm } },
+            { category: { _contains: searchTerm } },
+            { city: { _contains: searchTerm } },
+            { country: { _contains: searchTerm } },
+            { street: { _contains: searchTerm } },
+            { price: { _contains: searchTerm } }
+          ]
+        }
+        
+        // Add date-based descending sorting and limit
+        const additionalParams = {
+          limit: 100,
+          sort: "-date_created"  // Descending order by creation date
+        }
+        
+        const productsData = await getProducts(filters, additionalParams)
+        setProducts(productsData.data)
+        console.log("productsData (filtered)", productsData)
+      }
+      
       setIsLoading(false)
     }
     fetchProducts()

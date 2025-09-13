@@ -10,7 +10,9 @@ import Image from "next/image"
 import { itemsStatus, categoriesName, allowedCategories } from "@/lib/data"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-import {countriesList} from "@/lib/data"; 
+import {countriesList} from "@/lib/data";
+import { countriesListWithFlags } from "@/lib/countries-data";
+import FlagIcon from "./flag-icon"; 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +26,7 @@ import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
 import {  decodedToken } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
+import { useRouter } from "next/navigation"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -105,12 +108,13 @@ export function ItemAdd() {
   const { toast } = useToast()
   const { t } = useTranslations()
   const { isRTL, toggleLanguage } = useLanguage()
-
+  const router = useRouter()
   const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
   const ACCEPTED_IMAGE_TYPES = ["image/jpeg", 
                                 "image/jpg",
                                 "image/png", 
                                 "image/webp" , 
+                                "image/*",
                                 "video/mp4" , 
                                 "video/mov" , 
                                 "video/avi" , 
@@ -127,13 +131,16 @@ export function ItemAdd() {
                                 "video/m4v" , 
                                 "video/m4a" , 
                                 "video/m4b" , 
-                                "video/m4p", 
+                                "video/m4p",
+                                "video/*", 
                                 "audio/mp3", 
                                 "audio/wav", 
                                 "audio/ogg", 
                                 "audio/m4a", 
                                 "audio/m4b", 
-                                "audio/m4p"
+                                "audio/m4p",
+                                "audio/*",
+
       ]
   const MAX_IMAGES = 6
 
@@ -400,7 +407,7 @@ else{
       console.log("Form data:", data);
       console.log("Images:", images);
       // After successful add, go back to step 1
-      setStep(1)
+      router.push("/profile/items")
     } catch (error) {
       console.error("Error creating item:", error);
       toast({
@@ -649,12 +656,26 @@ else{
                               defaultValue={field.value || ""}
                             >
                               <SelectTrigger className="bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
-                                <SelectValue placeholder={t("SelectCountry") || "Select country/countries"} />
+                                <SelectValue placeholder={t("SelectCountry") || "Select country/countries"}>
+                                  {field.value && (
+                                    <div className="flex items-center gap-2">
+                                      <FlagIcon 
+                                        flag={countriesListWithFlags.find(c => c.name === field.value)?.flag}
+                                        countryCode={field.value}
+                                        className="text-lg"
+                                      />
+                                      <span>{t(field.value) || field.value}</span>
+                                    </div>
+                                  )}
+                                </SelectValue>
                               </SelectTrigger>
                               <SelectContent className="bg-background border-input text-foreground">
-                                {countriesList.map((country) => (
-                                  <SelectItem key={country} value={country} className="text-right">
-                                    { t(country) || country }
+                                {countriesListWithFlags.map((country) => (
+                                  <SelectItem key={country.name} value={country.name} className="text-right">
+                                    <div className="flex items-center gap-2">
+                                      <FlagIcon flag={country.flag} countryCode={country.name} className="text-lg" />
+                                      <span>{t(country.name) || country.name}</span>
+                                    </div>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -986,13 +1007,7 @@ else{
                       {t("Uploadupto") || "Upload up to"} <span className="font-bold text-primary">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
                     </p>
                   </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-foreground">{t("AIValueEstimation") || "AI Value Estimation"}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {t("GetAIpoweredpriceestimateandchooseacceptablecategories") ||
-                        "Get AI-powered price estimate and choose acceptable categories"}
-                    </p>
-                  </div>
+                  
 
                   <div className="space-y-2">
                     <FormField

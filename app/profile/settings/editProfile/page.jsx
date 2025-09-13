@@ -25,6 +25,7 @@ import {
   Lock,
   Sparkles,
   CreditCard,
+  Phone,
 } from "lucide-react"
 import { editeProfile, getUserById, resetPassword } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
@@ -36,6 +37,10 @@ import { useToast } from "@/components/ui/use-toast"
 import { ItemAdd } from "@/components/item-add"
 import { z } from "zod"
 import { countriesList } from "@/lib/data"
+import { countriesListWithFlags, validatePhoneNumber } from "@/lib/countries-data"
+import PhoneVerificationPopup from "@/components/phone-verification-popup"
+import LocationMap from "@/components/location-map"
+import FlagIcon from "@/components/flag-icon"
 
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
@@ -239,6 +244,8 @@ export default function ProfileSettingsPage() {
   const [translations, setTranslations] = useState([])
   const [completed_data,set_completed_data] = useState('false')
   const [verified,setVerified] = useState('false')
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false)
+  const [phoneValidationError, setPhoneValidationError] = useState("")
 
   const [originalTranslations, setOriginalTranslations] = useState([])
 
@@ -528,6 +535,51 @@ export default function ProfileSettingsPage() {
     }
   }
 
+  const handlePhoneVerified = (verifiedPhoneNumber) => {
+    setPhone(verifiedPhoneNumber)
+    setVerified('true')
+    toast({
+      title: t("success") || "Success",
+      description: t("phoneNumberVerified") || "Phone number has been verified successfully!",
+    })
+  }
+
+  const handleLocationSelect = (location) => {
+    set_geo_location({
+      lat: location.lat,
+      lng: location.lng,
+      accuracy: 0,
+      name: location.name || "Selected Location",
+    })
+    setSelectedPosition(location)
+    
+    toast({
+      title: t("locationSelected") || "Location Selected",
+      description: `${t("selectedLocation") || "Selected location"}: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+    })
+  }
+
+  const handlePhoneChange = (newPhone) => {
+    setPhone(newPhone)
+    
+    // Reset verification status if phone changes
+    if (verified === 'true' && newPhone !== phone_number) {
+      setVerified('false')
+    }
+    
+    // Validate phone number if it looks like it has a country code
+    if (newPhone && newPhone.startsWith('+')) {
+      const match = newPhone.match(/^(\+\d{1,4})(.*)$/)
+      if (match) {
+        const [, countryCode, phoneOnly] = match
+        const validation = validatePhoneNumber(countryCode, phoneOnly)
+        setPhoneValidationError(validation.isValid ? "" : validation.error)
+      }
+    } else {
+      setPhoneValidationError("")
+    }
+  }
+
   const getCurrentPosition = () => {
     setIsGettingLocation(true)
 
@@ -809,12 +861,26 @@ export default function ProfileSettingsPage() {
                                     onValueChange={setCountry}
                                   >
                                     <SelectTrigger>
-                                      <SelectValue placeholder={t("SelectCountry") || "Select country"} />
+                                      <SelectValue placeholder={t("SelectCountry") || "Select country"}>
+                                        {country && (
+                                          <div className="flex items-center gap-2">
+                                            <FlagIcon 
+                                              flag={countriesListWithFlags.find(c => c.name === country)?.flag}
+                                              countryCode={country}
+                                              className="text-lg"
+                                            />
+                                            <span>{t(country) || country}</span>
+                                          </div>
+                                        )}
+                                      </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {countriesList.map((c) => (
-                                        <SelectItem key={c} value={c} className="text-right">
-                                          { t(c) || c }
+                                      {countriesListWithFlags.map((c) => (
+                                        <SelectItem key={c.name} value={c.name} className="text-right">
+                                          <div className="flex items-center gap-2">
+                                            <FlagIcon flag={c.flag} countryCode={c.name} className="text-lg" />
+                                            <span>{t(c.name) || c.name}</span>
+                                          </div>
                                         </SelectItem>
                                       ))}
                                     </SelectContent>
@@ -919,6 +985,21 @@ export default function ProfileSettingsPage() {
                                       </Button>
                                     </motion.div>
 
+                                    {/* Interactive Map */}
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 20 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ delay: 0.4 }}
+                                    >
+                                      <LocationMap
+                                        latitude={selectedPosition?.lat || geo_location?.lat || 30.0444}
+                                        longitude={selectedPosition?.lng || geo_location?.lng || 31.2357}
+                                        onLocationSelect={handleLocationSelect}
+                                        height="250px"
+                                        className="shadow-lg"
+                                      />
+                                    </motion.div>
+
                                     <AnimatePresence>
                                       {selectedPosition && (
                                         <motion.div
@@ -990,19 +1071,63 @@ export default function ProfileSettingsPage() {
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="phone_number"
-                                  className="text-sm font-medium text-foreground"
+                                  className="text-sm font-medium text-foreground flex items-center gap-2"
                                 >
                                   {t("phoneNumber") || "Phone Number"}
+                                  {verified === 'true' && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      className="flex items-center gap-1 text-green-600"
+                                    >
+                                      <Shield className="h-4 w-4" />
+                                      <span className="text-xs">{t("verified") || "Verified"}</span>
+                                    </motion.div>
+                                  )}
                                 </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="phone_number"
-                                    name="phone_number"
-                                    value={phone_number}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
-                                  />
-                                </motion.div>
+                                <div className="flex gap-2">
+                                  <motion.div whileFocus="focus" className="flex-1">
+                                    <Input
+                                      id="phone_number"
+                                      name="phone_number"
+                                      value={phone_number}
+                                      onChange={(e) => handlePhoneChange(e.target.value)}
+                                      className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${phoneValidationError ? 'border-red-500 focus:border-red-500' : ''}`}
+                                      placeholder={t("enterPhoneNumber") || "Enter phone number"}
+                                    />
+                                    {phoneValidationError && (
+                                      <motion.div 
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex items-center gap-2 text-red-600 text-sm mt-1"
+                                      >
+                                        <Shield className="h-3 w-3" />
+                                        <span>{phoneValidationError}</span>
+                                      </motion.div>
+                                    )}
+                                  </motion.div>
+                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                    <Button
+                                      type="button"
+                                      variant={verified === 'true' ? "secondary" : "outline"}
+                                      size="sm"
+                                      onClick={() => setShowPhoneVerification(true)}
+                                      className={`${verified === 'true' ? 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200' : ''}`}
+                                    >
+                                      {verified === 'true' ? (
+                                        <>
+                                          <Shield className="h-4 w-4 mr-1" />
+                                          {t("reverify") || "Re-verify"}
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Phone className="h-4 w-4 mr-1" />
+                                          {t("verify") || "Verify"}
+                                        </>
+                                      )}
+                                    </Button>
+                                  </motion.div>
+                                </div>
                               </motion.div>
                             </div>
 
@@ -1323,6 +1448,15 @@ export default function ProfileSettingsPage() {
           </motion.div>
         </div>
       </Tabs>
+
+      {/* Phone Verification Popup */}
+      <PhoneVerificationPopup
+        open={showPhoneVerification}
+        onOpenChange={setShowPhoneVerification}
+        currentPhone={phone_number}
+        onVerified={handlePhoneVerified}
+        isVerified={verified === 'true'}
+      />
     </motion.div>
   )
 }

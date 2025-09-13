@@ -38,7 +38,7 @@ const pulseVariants = {
 export function SwibbaProductCardSkeleton() {
   return (
     <motion.div
-      className="group relative flex w-[150px] flex-col overflow-hidden rounded-md border bg-background"
+      className="group relative flex lg:w-[210px] w-[150px] flex-col overflow-hidden rounded-md border bg-background"
       variants={skeletonVariants}
       initial="hidden"
       animate="visible"

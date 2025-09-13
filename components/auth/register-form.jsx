@@ -8,15 +8,12 @@ import { z } from "zod"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, Loader2, UserPlus, Mail, Lock, CheckCircle } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-
 import { register } from "@/callAPI/users"
-import { decodedToken, getCookie } from "@/callAPI/utiles"
 
 // Animation variants
 const containerVariants = {
@@ -134,7 +131,7 @@ export function RegisterForm() {
           toast({
             title: t("successfully") || "Successfully",
             description:
-              t("YouraccounthasbeencreatedWelcometoDeelDeal") || "Your account has been created. Welcome to DeelDeal!",
+              t("YouraccounthasbeencreatedWelcometoSwibba") || "Your account has been created. Welcome to Swibba!",
           })
           router.push(`/profile/settings/editItem/new`)
         } else {

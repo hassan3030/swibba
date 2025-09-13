@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS */
+@import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+
+/* Emoji and Flag Support */
+.emoji-flag {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Twemoji Mozilla", "Android Emoji", "EmojiSymbols", sans-serif !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  line-height: 1.2 !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-emoji: emoji !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Ensure emoji rendering works across browsers */
+.emoji-flag,
+.emoji-support {
+  font-feature-settings: "liga" 1, "kern" 1;
+  font-synthesis: none;
+}
+
+/* Fallback for older browsers */
+@supports not (font-variant-emoji: emoji) {
+  .emoji-flag {
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", monospace;
+  }
+}
+
 @layer base {
   :root {
     

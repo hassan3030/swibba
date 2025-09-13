@@ -234,6 +234,15 @@ export const validateAuth = async () => {
   return { token, userId: decoded.id , decoded }
 }
 
+// Optional authentication - returns null if not authenticated instead of throwing error
+export const getOptionalAuth = async () => {
+  try {
+    return await validateAuth()
+  } catch (error) {
+    return { token: null, userId: null, decoded: null }
+  }
+}
+
 
 
 // Set a Target 

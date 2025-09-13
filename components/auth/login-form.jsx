@@ -143,7 +143,7 @@ export function LoginForm() {
       if (response.success) {
         toast({
           title: t("loginSuccessful") || "Login successful!",
-          description: t("welcomeBack") || "Welcome back to DeelDeal!",
+          description: t("welcomeBack") || "Welcome back to Swibba!",
         })
         router.push("/")
       }

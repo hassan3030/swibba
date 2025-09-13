@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { categoriesName, itemsStatus, allowedCategories, countriesList } from "@/lib/data"
+import { countriesListWithFlags } from "@/lib/countries-data"
+import FlagIcon from "./flag-icon"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import { updateProduct } from "@/callAPI/products"
@@ -730,12 +732,26 @@ else{
                               
                               >
                                 <SelectTrigger className="bg-background border-input">
-                                  <SelectValue placeholder={t("SelectCountry")} />
+                                  <SelectValue placeholder={t("SelectCountry")}>
+                                    {field.value && (
+                                      <div className="flex items-center gap-2">
+                                        <FlagIcon 
+                                          flag={countriesListWithFlags.find(c => c.name === field.value)?.flag}
+                                          countryCode={field.value}
+                                          className="text-lg"
+                                        />
+                                        <span>{t(field.value) || field.value}</span>
+                                      </div>
+                                    )}
+                                  </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent className="bg-background border-input">
-                                  {countriesList.map((country) => (
-                                    <SelectItem key={country} value={country} className="text-right ">
-                                      {t(country)}
+                                  {countriesListWithFlags.map((country) => (
+                                    <SelectItem key={country.name} value={country.name} className="text-right">
+                                      <div className="flex items-center gap-2">
+                                        <FlagIcon flag={country.flag} countryCode={country.name} className="text-lg" />
+                                        <span>{t(country.name) || country.name}</span>
+                                      </div>
                                     </SelectItem>
                                   ))}
                                 </SelectContent>

@@ -20,7 +20,7 @@ export default function LoginPage() {
 
       <Card className="mx-auto w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{t("Signinto")||"Sign in to"} DeelDeal</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t("Signinto")||"Sign in to"} Swibba</CardTitle>
      
           <CardDescription>
        {t("Enteryourcredentialstoaccessyouraccount")||"Enter your credentials to access your account"}

@@ -23,7 +23,7 @@ export default function RegisterPage() {
 
           </CardTitle>
           <CardDescription>
-       {t("Enteryourinformationtocreate")||"Enter your information to create a DeelDeal account"}
+        {t("Enteryourinformationtocreate")||"Enter your information to create a Swibba account"}
             
            </CardDescription>
         </CardHeader>

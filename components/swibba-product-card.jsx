@@ -144,7 +144,7 @@ export function SwibbaProductCard({
         toast({
           title: t("faildSwap") || "Failed Swap",
           description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
-          variant: "destructive",
+          variant: "default",
         })
       }
       else {
@@ -155,7 +155,7 @@ export function SwibbaProductCard({
       toast({
         title: t("faildSwap") || "Failed Swap",
         description: t("DescFaildSwapLogin") ||   "Invalid swap without login. Please try to login.",
-        variant: "destructive",
+        variant: "default",
       })
       router.push(`/auth/login`)
     }

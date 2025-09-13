@@ -1,11 +1,11 @@
 import axios from "axios"
-import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth ,STATIC_ADMIN_TOKEN} from "./utiles.js"
+import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth , getOptionalAuth , STATIC_ADMIN_TOKEN} from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 
 
 
 // Get available/unavailable products by user ID
-export const getAvailableAndUnavailableProducts = async (user_id, available = true) => {
+export const getAvailableAndUnavailableProducts = async (user_id) => {
   try {
     if (!user_id) {
       throw new Error("User ID is required");
@@ -20,139 +20,74 @@ export const getAvailableAndUnavailableProducts = async (user_id, available = tr
       Authorization: `Bearer ${token}`,
     };
 
-    const status = available ? "available" : "unavailable";
     const response = await axios.get(
-      `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}&fields=*,translations.*,images.*,images.directus_files_id.*`,
+      // `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}&fields=*,translations.*,images.*,images.directus_files_id.*`,
+      `${baseItemsURL}/Items`
+      , {
+        filter: {
+          user_id: { _eq: user_id },
+          status_swap: { _eq:  "unavailable" },
+        },
+        fields: "*,translations.*,images.*,images.directus_files_id.*",
+      },   
       { headers }
     );
 
-    console.log(`Retrieved ${status} products for user:`, user_id);
+    console.log(`Retrieved unavailable products for user:`, user_id);
     return {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
-      message: `${status} products retrieved successfully`,
+      message: `unavailable products retrieved successfully`,
     };
   } catch (error) {
     return handleApiError(error, "Get Available/Unavailable Products");
   }
 };
 
-// Get all products with smart filtering based on authentication
-export const getProducts = async (filters = {}) => {
-  try {
-    const token = await getCookie()
-    let response;
-    const queryParams = new URLSearchParams()
-
-    if (!token) {
-      // Public access - show only available items
-    response = await axios.get(`${baseItemsURL}/Items`,
-      {
-        params: {
-          fields: "*,images.*,translations.*,images.directus_files_id.*",
-          filter: {
-            status_swap: { _eq: "available" },
-          }
-        }
-      })
-    } else {
-      // Authenticated access - exclude user's own items and unavailable items
-      const decoded = await decodedToken()
-      if (decoded?.id) {
-        response = await axios.get(`${baseItemsURL}/Items`,
-          {
-            params: {
-              fields: "*,images.*,translations.*,images.directus_files_id.*",
-              filter: {
-                user_id: { _neq: `${decoded.id}` },
-                status_swap: { _eq: "available" },
-              }
-            }
-          })
-      } else {
-        response = await axios.get(`${baseItemsURL}/Items`,
-          {
-            params: {
-              fields: "*,images.*,translations.*,images.directus_files_id.*",
-              filter: {
-                status_swap: { _eq: "available" },
-              }
-            }
-          })
-      }
-    }
-
-    // Add additional filters
-    if (filters.category) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*,images.directus_files_id.*",
-            filter: {
-              category: { _eq: encodeURIComponent(filters.category) },
-            }
-          }
-        })
-    }
-    if (filters.min_price) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*,images.directus_files_id.*",
-            filter: {
-              price: { _gte: filters.min_price },
-            }
-          }
-        })
-    }
-    if (filters.max_price) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*,images.directus_files_id.*",
-            filter: {
-              price: { _lte: filters.max_price },
-            }
-          }
-        })
-    }
-    if (filters.search) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*,images.directus_files_id.*",
-            filter: {
-              name: { _contains: encodeURIComponent(filters.search) },
-            }
-          }
-        })
-    }
-    if (filters.sort) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*,images.directus_files_id.*",
-            sort: filters.sort,
-          }
-        })
-    }
-    if (filters.limit) {
-      response = await axios.get(`${baseItemsURL}/Items`,
-        {
-          params: {
-            fields: "*,images.*,translations.*,images.directus_files_id.*",
-            limit: filters.limit,
-          }
-        })
-    }
-// handle pathname
-    // url = `${baseItemsURL}/Items?${queryParams.toString()}?fields=*,translations.*,images.*`
-    // url = `${baseItemsURL}/Items?fields=*,translations.*,images.*`
-    //  url = `${baseItemsURL}/Items?fields=*,translations.*,images.*`
+// Get all products with smart filtering based on authentication and filters
+export const getProducts = async (filters = {} , additionalParams = {}) => {
+  // Get optional authentication - doesn't throw error if not authenticated
+  const { token, userId } = await getOptionalAuth()
   
-    console.log("response", response)
-   
+  // Check if filters is empty, null, or undefined
+  const hasFilters = filters && typeof filters === 'object' && Object.keys(filters).length > 0
+  
+  // Check if additionalParams is empty, null, or undefined
+  const hasAdditionalParams = additionalParams && typeof additionalParams === 'object' && Object.keys(additionalParams).length > 0
+  
+  // Build base filter
+  let baseFilter = {}
+  
+  if (token) {
+    // Authenticated access - exclude user's own items and unavailable items
+      baseFilter.status_swap = { _eq: "available" }
+      baseFilter.user_id = { _neq: `${userId}` } 
+  } else { // finished it here 
+   // Public access - show only available items
+    baseFilter.status_swap = { _eq: "available" }
+  }
+  
+
+  // Combine base filter with additional filters if they exist
+  const finalFilter = hasFilters ? { ...baseFilter, ...filters } : baseFilter
+  
+  // Build base params
+  const baseParams = {
+    fields: "*,images.*,translations.*,images.directus_files_id.*",
+    filter: finalFilter
+  }
+  
+  // Combine base params with additional params if they exist
+  const finalParams = hasAdditionalParams ? { ...baseParams, ...additionalParams } : baseParams
+  
+  let response;
+  try {
+    response = await axios.get(`${baseItemsURL}/Items`, {
+      params: finalParams
+    })
+    
+    console.log("response", response)  
     return {
       success: true,
       data: response.data.data || [],
@@ -164,53 +99,6 @@ export const getProducts = async (filters = {}) => {
   }
 }
 
-// Get product images with validation
-export const getImageProducts = async (imageIds) => {
-  try {
-    // if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
-    //   throw new Error("Image IDs array is required and must not be empty")
-    // }
-
-    // const validIds = imageIds.filter((id) => id && typeof id === "string")
-    // if (validIds.length === 0) {
-    //   throw new Error("No valid image IDs provided")
-    // }
-
-    const ids = imageIds.join(",")
-    const response = await axios.get(`${baseItemsURL}/Items_files?filter[id][_in]=${ids}`, 
-      //  {
-      //   "email": "admin@example.com",
-      //    "password": "123"
-      // } 
-    )
-
-    console.log("Product images retrieved successfully, count:", response.data.data?.length || 0)
-    return {
-      success: true,
-      data: response.data.data || [],
-      count: response.data.data?.length || 0,
-      message: "Images retrieved successfully",
-    }
-  } catch (error) {
-    return handleApiError(error, "Get Product Images")
-  }
-}
-
-// Get all product images
-export const getAllImageProducts = async () => {
-  try {
-    const response = await axios.get(`${baseItemsURL}/Items_files`)
-
-    return {
-      success: true,
-      data: response.data.data || [],
-      count: response.data.data?.length || 0,
-      message: "All images retrieved successfully",
-    }
-  } catch (error) {
-    return handleApiError(error, "Get All Product Images")
-  }
-}
 
 // Get product by ID with enhanced validation
 export const getProductById = async (id) => {
@@ -218,10 +106,14 @@ export const getProductById = async (id) => {
     if (!id) {
       throw new Error("Product ID is required")
     }
-
     // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
     const response = await axios.get(
-      `${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*,images.directus_files_id.*`
+      `${baseItemsURL}/Items/${id}`,
+      {
+        params: {
+          fields: "*,translations.*,images.*,images.directus_files_id.*"
+        }
+      }
     );
     console.log("response", response)
     console.log("response.data.data", response.data.data)
@@ -263,7 +155,13 @@ export const getProductTopPrice = async (limit = 10) => {
       queryParams.append("filter[user_id][_neq]", decoded.id)
     }
 
-    url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*,images.directus_files_id.*`
+    url = `${baseItemsURL}/Items?${queryParams.toString()}`
+    ,
+      {
+        params: {
+          fields: "*,translations.*,images.*,images.directus_files_id.*"
+        }
+      }
     const response = await axios.get(url)
 
     console.log("Top price products retrieved successfully, count:", response.data.data?.length || 0)
@@ -316,7 +214,8 @@ export const getProductByCategory = async (category) => {
       throw new Error("Category is required and must be a non-empty string")
     }
 
-    const cleanCategory = category.trim()
+    const cleanCategory = category.trim().toLowerCase()
+    console.log('getProductByCategory: Searching for category:', cleanCategory)
     const response = await axios.get(`${baseItemsURL}/Items`,
       {
         params: {
@@ -341,12 +240,192 @@ export const getProductByCategory = async (category) => {
   }
 }
 
+// Enhanced getProducts function with comprehensive filtering and pagination
+export const getProductsEnhanced = async (filters = {}) => {
+  try {
+    const token = await getCookie()
+    
+    // Build comprehensive filter object
+    const apiFilter = {}
+    const params = {
+      fields: "*,images.*,translations.*,images.directus_files_id.*",
+    }
+
+    // Base authentication filters
+    if (!token) {
+      // Public access - show only available items
+      apiFilter.status_swap = { _eq: "available" }
+    } else {
+      // Authenticated access - exclude user's own items and unavailable items
+      const { userId } = await validateAuth()
+      if (userId) {
+        apiFilter._and = [
+          { user_id: { _neq: `${userId}` } },
+          { status_swap: { _eq: "available" } }
+        ]
+      } else {
+        apiFilter.status_swap = { _eq: "available" }
+      }
+    }
+
+    // Apply additional filters
+    const additionalFilters = []
+
+    // Category filter
+    if (filters.category && filters.category !== "all") {
+      // Normalize category to lowercase for consistent filtering
+      const normalizedCategory = filters.category.toLowerCase()
+      additionalFilters.push({ category: { _eq: normalizedCategory } })
+      console.log('Enhanced API: Category filter applied:', normalizedCategory)
+    }
+
+    // Multiple categories filter
+    if (filters.categories && filters.categories.length > 0) {
+      // Normalize all categories to lowercase for consistent filtering
+      const normalizedCategories = filters.categories.map(cat => cat.toLowerCase())
+      additionalFilters.push({ category: { _in: normalizedCategories } })
+      console.log('Enhanced API: Multiple categories filter applied:', normalizedCategories)
+    }
+
+    // Search filter
+    if (filters.search) {
+      additionalFilters.push({
+        _or: [
+          { name: { _contains: filters.search } },
+          { description: { _contains: filters.search } }
+        ]
+      })
+    }
+
+    // Name filter
+    if (filters.name) {
+      additionalFilters.push({ name: { _contains: filters.name } })
+    }
+
+    // Price range filters
+    if (filters.min_price) {
+      additionalFilters.push({ price: { _gte: parseFloat(filters.min_price) } })
+    }
+    if (filters.max_price) {
+      additionalFilters.push({ price: { _lte: parseFloat(filters.max_price) } })
+    }
+
+    // Location filters
+    if (filters.country && filters.country !== "all") {
+      additionalFilters.push({ country: { _contains: filters.country } })
+    }
+    if (filters.city) {
+      additionalFilters.push({ city: { _contains: filters.city } })
+    }
+
+    // Status filters
+    if (filters.status_item && filters.status_item !== "all") {
+      additionalFilters.push({ status_item: { _eq: filters.status_item } })
+    }
+    if (filters.status_swap && filters.status_swap !== "all") {
+      additionalFilters.push({ status_swap: { _eq: filters.status_swap } })
+    }
+
+    // Date range filters
+    if (filters.date_from) {
+      additionalFilters.push({ date_created: { _gte: filters.date_from } })
+    }
+    if (filters.date_to) {
+      additionalFilters.push({ date_created: { _lte: filters.date_to } })
+    }
+
+    // Allowed categories filter
+    if (filters.allowed_categories && filters.allowed_categories.length > 0) {
+      const allowedCatFilters = filters.allowed_categories.map(cat => ({
+        allowed_categories: { _contains: cat }
+      }))
+      additionalFilters.push({ _or: allowedCatFilters })
+    }
+
+    // Combine all filters
+    if (additionalFilters.length > 0) {
+      if (apiFilter._and) {
+        apiFilter._and = [...apiFilter._and, ...additionalFilters]
+      } else if (Object.keys(apiFilter).length > 0) {
+        apiFilter._and = [apiFilter, ...additionalFilters]
+      } else {
+        apiFilter._and = additionalFilters
+      }
+    }
+
+    params.filter = apiFilter
+
+    // Pagination
+    if (filters.page && filters.limit) {
+      params.limit = parseInt(filters.limit) || 8
+      params.offset = ((parseInt(filters.page) || 1) - 1) * params.limit
+    } else if (filters.limit) {
+      params.limit = parseInt(filters.limit)
+    }
+
+    // Sorting
+    if (filters.sort) {
+      params.sort = filters.sort
+    } else {
+      params.sort = "-date_created" // Default to newest first
+    }
+
+    console.log("Enhanced API Filter params:", JSON.stringify(params, null, 2))
+
+    const response = await axios.get(`${baseItemsURL}/Items`, { params })
+    
+    let resultData = response.data.data || []
+
+    // Handle geolocation filtering client-side
+    if (filters.latitude && filters.longitude && filters.radius) {
+      resultData = resultData.filter(item => {
+        if (!item.latitude || !item.longitude) return false
+        
+        const distance = calculateDistance(
+          filters.latitude, filters.longitude,
+          parseFloat(item.latitude), parseFloat(item.longitude)
+        )
+        return distance <= (parseFloat(filters.radius) || 10)
+      })
+    }
+
+    console.log("Enhanced API Response - Total items:", resultData.length)
+    
+    return {
+      success: true,
+      data: resultData,
+      total: response.data.meta?.total_count || resultData.length,
+      count: resultData.length,
+      page: parseInt(filters.page) || 1,
+      limit: parseInt(filters.limit) || resultData.length,
+      message: "Products retrieved successfully",
+    }
+  } catch (error) {
+    console.error("getProductsEnhanced error:", error)
+    return handleApiError(error, "Get Products Enhanced")
+  }
+}
+
+// Helper function to calculate distance between two coordinates (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371 // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  const d = R * c // Distance in kilometers
+  return d
+}
+
 // Get products by current user ID
 export const getProductByUserId = async () => {
   try {
     return await makeAuthenticatedRequest(async () => {
-      const decoded = await decodedToken()
-      if (!decoded?.id) {
+      const { userId } = await validateAuth()
+      if (!userId) {
         throw new Error("Authentication required")
       }
 
@@ -355,7 +434,7 @@ export const getProductByUserId = async () => {
         params: {
           fields: "*,images.*,translations.*,images.directus_files_id.*",
           filter: {
-            user_id: { _eq:`${decoded.id}` },
+            user_id: { _eq:`${userId}` },
           }
         }
       }
@@ -368,7 +447,7 @@ export const getProductByUserId = async () => {
         success: true,
         data: response.data.data || [],
         count: response.data.data?.length || 0,
-        user_id: decoded.id,
+        user_id: userId,
         message: "User products retrieved successfully",
       }
     })
@@ -413,14 +492,14 @@ export const deleteProduct = async (id) => {
       }
 
       // Verify ownership before deletion
-      const decoded = await decodedToken()
+      const { userId } = await validateAuth()
       const productResult = await getProductById(id)
 
       if (!productResult.success) {
         throw new Error("Product not found")
       }
 
-      if (productResult.data.user_id !== decoded.id) {
+      if (productResult.data.user_id !== userId) {
         throw new Error("Unauthorized: You can only delete your own products")
       }
 
@@ -460,11 +539,9 @@ export const addProduct = async (payload, files) => {
           throw new Error(`${field} is required`)
         }
       }
-      const auth = await validateAuth()
-      const token = auth.token
-      const decoded = auth.decoded
+      const { token, userId }  = await validateAuth()
 
-      if (!token || !decoded?.id) {
+      if (!token || !userId) {
         throw new Error("Authentication required")
       }
 
@@ -480,7 +557,7 @@ export const addProduct = async (payload, files) => {
         `${baseItemsURL}/Items`,
         {
           ...payload,
-          user_id: decoded.id,
+          user_id: userId,
           status_swap: "available",
           date_created: new Date().toISOString(),
         },
@@ -575,10 +652,9 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("At least one image is required")
       }
 
-      const token = await getCookie()
-      const decoded = await decodedToken()
+      const { token, userId } = await validateAuth()
 
-      if (!token || !decoded?.id) {
+      if (!token || !userId) {
         throw new Error("Authentication required")
       }
 
@@ -588,7 +664,7 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("Product not found")
       }
 
-      if (existingProduct.data.user_id !== decoded.id) {
+      if (existingProduct.data.user_id !== userId) {
         throw new Error("Unauthorized: You can only update your own products")
       }
 

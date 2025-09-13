@@ -241,11 +241,11 @@ const Messages = () => {
                                   />
                                   <AvatarFallback>{offer.partner_name?.[0] || "U"}</AvatarFallback>
                                 </Avatar>
-                                {offer.partner_verified && (
+                                {offer.partner_verified === "true" || offer.partner_verified === true ? (
                                   <div className="absolute -top-1 -right-1">
-                                    <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
                                   </div>
-                                )}
+                                ) : null}
                               </motion.div>
                               <div className="flex flex-col ml-2">
                                 <span className="px-1 text-gray-400 capitalize">{offer.partner_name || ""}</span>
@@ -296,11 +296,11 @@ const Messages = () => {
                         />
                         <AvatarFallback>{partner.first_name?.[0] || "U"}</AvatarFallback>
                       </Avatar>
-                      {partner.verified && (
+                      {partner.verified === "true" || partner.verified === true?  (
                         <div className="absolute -top-1 -right-1">
-                          <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                          <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
                         </div>
-                      )}
+                      ) : null}
                     </motion.div>
                   </div>
 

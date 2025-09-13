@@ -503,7 +503,7 @@ SelectCountry: "Select a country",
     //auth
     TherewasaproblemcreatingyouraccountPleasetryagain:
       "There was a problem creating your account. Please try again.",
-    YouraccounthasbeencreatedWelcometoDeelDeal:
+    YouraccounthasbeencreatedWelcometoSwibba:
       "Your account has been created. Welcome to Swibba!",
     Passwordsdonotmatch: "Passwords do not match",
     Namemustbeatleast2characters: "Name must be at least 2 characters",
@@ -710,7 +710,6 @@ SelectCountry: "Select a country",
     deleteDialogDesc: "This action cannot be undone.",
     areYouSureDelete: "Are you sure you want to delete this item?",
     valueEstimate: "Value Estimate",
-    listedOn: "Listed on",
     view: "View",
     edit: "Edit",
 
@@ -748,7 +747,7 @@ SelectCountry: "Select a country",
     swap: "Swap",
     requesting: "Requesting",
     requested: "Requested",
-    searcItems: "SearItems...",
+    searchItems: "Search items...",
     goBack: "Back",
     goBackProfile: "Back to Profile",
     showAllCategories: "Show All Categories",
@@ -1358,7 +1357,7 @@ SelectCountry: "اختر الدولة",
     // ======================
     TherewasaproblemcreatingyouraccountPleasetryagain:
       "حدثت مشكلة أثناء إنشاء حسابك. يُرجى المحاولة مرة أخرى.",
-    YouraccounthasbeencreatedWelcometoDeelDeal:
+      YouraccounthasbeencreatedWelcometoSwibba:
       "تم إنشاء حسابك. أهلاً بك في Swibba!",
     Passwordsdonotmatch: "كلمة المرور غير متطابقة",
     Namemustbeatleast2characters: "يجب أن يتكون الاسم من حرفين على الأقل",
@@ -1597,7 +1596,7 @@ SelectCountry: "اختر الدولة",
     swap: "إستبدال",
     requesting: "يجري الطلب",
     requested: "طلب",
-    searcItems: "البحث عن منتج...",
+    searchItems: "البحث عن منتج...",
     goBack: "رجوع",
     noItemsFound: " لا يوجد منتجات حتي الان",
     allCategories: "كل المنتجات",

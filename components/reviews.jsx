@@ -107,8 +107,24 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
   const [myEmail, setMyEmail] = useState("")
 
   const getMyDataUser = async()=>{ 
-    const myUser = await getUserById(getCurrentUserId())
-    setMyEmail(myUser.data.email)
+    try {
+      const userId = getCurrentUserId()
+      if (!userId) {
+        console.error("No user ID available")
+        return
+      }
+      
+      const myUser = await getUserById(userId)
+      if (myUser && myUser.data && myUser.data.email) {
+        setMyEmail(myUser.data.email)
+      } else {
+        console.error("User data not found or invalid structure:", myUser)
+        setMyEmail("")
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      setMyEmail("")
+    }
   }
 
   useEffect(() => {
@@ -118,14 +134,21 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
   const checkReview = async () => {
     try {
       const {id} = await decodedToken()
-      const rev = await getReviewConditins(id, offer_id)
-      if (rev.data.can_review) {
+      if (!id) {
+        console.error("No user ID available for review check")
         setHasReviewed(false)
+        return
+      }
+      
+      const rev = await getReviewConditins(id, offer_id)
+      if (rev && rev.data && typeof rev.data.can_review === 'boolean') {
+        setHasReviewed(!rev.data.can_review)
       } else {
-        setHasReviewed(true)
+        console.error("Review data not found or invalid structure:", rev)
+        setHasReviewed(false)
       }
     } catch (error) {
-      console.log("error", error)
+      console.error("Error checking review conditions:", error)
       setHasReviewed(false)
     }
   }

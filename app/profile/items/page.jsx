@@ -76,7 +76,7 @@ export default function ManageItemsPage() {
 
   const filteredItems = async () => {
     setIsLoading(true)
-    const data = await getProductByUserId()
+    const data = await getProductByUserId("all")
     setItems(data.data)
     setIsLoading(false)
     return data.data

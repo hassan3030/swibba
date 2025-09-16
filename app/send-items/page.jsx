@@ -642,7 +642,7 @@ const SendItems = () => {
                                       animate={{ opacity: 1, scale: 1 }}
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
-                                      <CardItemSwap
+                                      <CardItemSend
                                         {...item}
                                         deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                       />
@@ -698,7 +698,7 @@ const SendItems = () => {
                                       animate={{ opacity: 1, scale: 1 }}
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
-                                      <CardItemSwap
+                                      <CardItemSend
                                         {...item}
                                         deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                       />
@@ -889,7 +889,7 @@ const SendItems = () => {
 
 export default SendItems
 
-export const CardItemSwap = ({ id, name, description, price, status_item, images, deleteItem, translations , quantity }) => {
+export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations , quantity }) => {
   const router = useRouter()
   const { isRTL, toggleLanguage } = useLanguage()
   const { t } = useTranslations()
@@ -916,42 +916,54 @@ export const CardItemSwap = ({ id, name, description, price, status_item, images
           const mediaType = getMediaType(mediaUrl.type)
           if (mediaType === 'video') {
             return (
-              <video src={mediaUrl.url} alt={name}  className="w-full h-full object-cover" />
+              <video src={mediaUrl.url} alt={isRTL ? translations[1]?.name : translations[0]?.name}  className="w-full h-full object-fill" />
             )
           } else if (mediaType === 'audio') {
             return (
-              <audio src={mediaUrl.url} alt={name}  className="w-full h-full object-cover" />
+              <audio src={mediaUrl.url} alt={isRTL ? translations[1]?.name : translations[0]?.name}  className="w-full h-full object-fill" />
             )
           } else {
             return (
-              <Image src={mediaUrl.url} alt={name} width={100} height={100} className="w-full h-full object-cover" />
+              <Image src={mediaUrl.url} alt={isRTL ? translations[1]?.name : translations[0]?.name} width={100} height={100} className="w-full h-full object-fill" />
             )
           }
          })()}
          
         
         </motion.div>
-        <CardContent className="p-4">
-          <h4 className="font-semibold text-sm mb-1">{!isRTL ? translations[0]?.name: translations[1]?.name}</h4>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{!isRTL ? translations[0]?.description: translations[1]?.description}</p>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity}</p>
-          <div className="flex justify-between items-center mb-3">
-            <Badge variant="outline" className="text-xs">
+        <CardContent className="p-3 sm:p-4">
+          <h4 className="font-semibold text-sm mb-1 line-clamp-1">{isRTL ? translations[1]?.name: translations[0]?.name}</h4>
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{isRTL ? translations[1]?.description: translations[0]?.description}</p>
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity || 1}</p>
+          <div className="flex justify-between items-center mb-3 gap-2">
+            <Badge variant="outline" className="text-xs flex-shrink-0">
               {t(status_item) || status_item}
             </Badge>
-            <span className="font-bold text-secondary2 text-sm">{t(price) || price} {t("LE") || "LE"}</span>
+            <span className="font-bold text-secondary2 text-sm truncate">{t(price) || price} {t("LE") || "LE"}</span>
           </div>
-          <div className="flex gap-2">
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full" onClick={() => handleView(id)}>
-                <Eye className="h-3 w-3 mr-1" />
-                {t("view") || "View"}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full text-xs px-2 py-1 h-8 min-h-8" 
+                onClick={() => handleView(id)}
+              >
+                <Eye className="h-3 w-3 sm:mr-1 flex-shrink-0" />
+                <span className="hidden sm:inline">{t("view") || "View"}</span>
+                <span className="sm:hidden">{t("view") || "View"}</span>
               </Button>
             </motion.div>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-              <Button variant="destructive" size="sm" className="w-full" onClick={deleteItem}>
-                <Trash2 className="h-3 w-3 mr-1" />
-                {t("delete") || "Delete"}
+            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="w-full text-xs px-2 py-1 h-8 min-h-8" 
+                onClick={deleteItem}
+              >
+                <Trash2 className="h-3 w-3 sm:mr-1 flex-shrink-0" />
+                <span className="hidden sm:inline">{t("delete") || "Delete"}</span>
+                <span className="sm:hidden">{t("delete") || "Del"}</span>
               </Button>
             </motion.div>
           </div>

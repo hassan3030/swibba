@@ -8,10 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image" 
-import { getAvailableAndUnavailableProducts } from "@/callAPI/products"
+import { getAvailableAndUnavailableProducts, getProductByUserId, getProductsOwnerById } from "@/callAPI/products"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { decodedToken, getCookie } from "@/callAPI/utiles"
+import { decodedToken, getCookie, validateAuth } from "@/callAPI/utiles"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
@@ -111,15 +111,20 @@ export default function SwapPage() {
   const { t } = useTranslations()
   const [myEmail, setMyEmail] = useState("")
   const [otherEmail, setOtherEmail] = useState("")
+  const [userData, setUserData] = useState(null)
   
   // RTL utilities
   const { isRTL, classes, getDirectionClass } = useRTL()
 
   const getMyDataUser = async()=>{ 
-    const token = await getCookie()
-    const { id } = await decodedToken(token)
-    const user = await getUserById(id)
-    setMyEmail(user.data.email)
+    try {
+      const { userId } = await validateAuth()
+      const user = await getUserById(userId)
+      setUserData(user.data)
+      setMyEmail(user.data?.email)
+    } catch (error) {
+      console.error("Error getting user data:", error)
+    }
   }
 
   useEffect(() => {
@@ -129,15 +134,14 @@ export default function SwapPage() {
   // Fetch my items
   const getMyItems = useCallback(async () => {
     try {
-    const token = await getCookie()
-    if (token) {
-      const { id } = await decodedToken()
-        setCurrentUserId(id)
-        console.log("Current user ID:", id)
-      const myProductsData = await getAvailableAndUnavailableProducts(id)
+      const { token, userId } = await validateAuth()
+      if (token) {
+        setCurrentUserId(userId)
+        console.log("Current user ID:", userId)
+        const myProductsData = await getProductByUserId()
         console.log("My products data:", myProductsData)
         if (myProductsData.success && myProductsData.data) {
-      setMyItems(myProductsData.data)
+          setMyItems(myProductsData.data)
         } else {
           console.error("Failed to fetch my items:", myProductsData.error)
           setMyItems([])
@@ -159,12 +163,12 @@ export default function SwapPage() {
     console.log("id_item_to ", id_item_to)
       
       if (otherUser.success && otherUser.data) {
-        setOtherEmail(otherUser.data.email)
-        setOtherUserId(otherUser.data.id)
+        setOtherEmail(otherUser.data?.email)
+        setOtherUserId(otherUser.data?.id)
         setOtherUserData(otherUser.data)
-        console.log("Other user ID:", otherUser.data.id)
+        console.log("Other user ID:", otherUser.data?.id)
         
-    const otherProductsData = await getAvailableAndUnavailableProducts(otherUser.data.id)
+    const otherProductsData = await getProductsOwnerById(id_item_to)
     console.log("otherProductsData ", otherProductsData)
         
         if (otherProductsData.success && otherProductsData.data) {
@@ -185,13 +189,16 @@ export default function SwapPage() {
 
   // Fetch swap history
   const getSwapHistory = useCallback(async () => {
-    const token = await getCookie()
-    if (token) {
-      const { id } = await decodedToken(token)
-      const offers = await getOfferById(id)
-      const users = await Promise.all(offers.data.map((swap) => getUserById(swap.to_user_id)))
-      setUsersOffer(users)
-      setSwapHistory(offers.data)
+    try {
+      const { token, userId } = await validateAuth()
+      if (token) {
+        const offers = await getOfferById(userId)
+        const users = await Promise.all(offers.data.map((swap) => getUserById(swap.to_user_id)))
+        setUsersOffer(users)
+        setSwapHistory(offers.data)
+      }
+    } catch (error) {
+      console.error("Error fetching swap history:", error)
     }
   }, [])
 
@@ -232,7 +239,7 @@ export default function SwapPage() {
   }, [])
 
   // Quantity change handler
-  const handleQuantityChange = (itemId, quantity, totalPrice) => {
+  const handleQuantityChange = useCallback((itemId, quantity, totalPrice) => {
     setItemQuantities(prev => ({
       ...prev,
       [itemId]: quantity
@@ -241,7 +248,7 @@ export default function SwapPage() {
       ...prev,
       [itemId]: totalPrice
     }))
-  }
+  }, [])
 
   // Selection handlers
   const handleMyItemSelect = (itemId) => {
@@ -382,16 +389,21 @@ export default function SwapPage() {
   }
 
   // Price difference display
-  const handlePriceDifference = (userId, cash) => {
-    const { id } = decodedToken()
-    if (userId === id) {
-      if (cash > 0) return `You pay: ${Math.abs(Math.ceil(cash))} LE`
-      if (cash < 0) return `You get: ${Math.abs(Math.ceil(cash))} LE`
-      return `The price is equal`
-    } else {
-      if (cash < 0) return `You pay: ${Math.abs(Math.ceil(cash))} LE`
-      if (cash > 0) return `You get: ${Math.abs(Math.ceil(cash))} LE`
-      return `The price is equal`
+  const handlePriceDifference = async (userId, cash) => {
+    try {
+      const { userId: currentUserId } = await validateAuth()
+      if (userId === currentUserId) {
+        if (cash > 0) return `You pay: ${Math.abs(Math.ceil(cash))} LE`
+        if (cash < 0) return `You get: ${Math.abs(Math.ceil(cash))} LE`
+        return `The price is equal`
+      } else {
+        if (cash < 0) return `You pay: ${Math.abs(Math.ceil(cash))} LE`
+        if (cash > 0) return `You get: ${Math.abs(Math.ceil(cash))} LE`
+        return `The price is equal`
+      }
+    } catch (error) {
+      console.error("Error in handlePriceDifference:", error)
+      return "Error calculating price difference"
     }
   }
 
@@ -527,168 +539,7 @@ export default function SwapPage() {
                     </Card>
                   </motion.div>
 
-                  {/* Swap Summary */}
-                  <AnimatePresence>
-                    {canCreateSwap && (
-                      <motion.div
-                        variants={swapSummaryVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="mb-8"
-                      >
-                        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 hover:shadow-xl transition-all duration-300">
-                          <CardContent className="p-8">
-                            <motion.div
-                              className={`flex items-center justify-between mb-6 ${classes.container}`}
-                              variants={containerVariants}
-                              initial="hidden"
-                              animate="visible"
-                            >
-                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                                <div className="relative w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <Avatar className="h-full w-full border">
-                                <AvatarImage
-                                  src={
-                                    otherUserData?.avatar
-                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${otherUserData.avatar}`
-                                      : "/placeholder.svg"
-                                  }
-                                  alt={otherUserData?.first_name || t("User") || "User"}
-                                  className="object-cover"
-                                />
-                                <AvatarFallback>
-                                  {otherUserData?.first_name?.[0] || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                                 
-                                {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
-                                    <div className="absolute -top-1 -right-1 z-10">
-                                      <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 border border-background" />
-                                    </div>
-                                  )}
-                                </div>
-                                <motion.div
-                                  className="text-3xl font-bold text-primary mb-1"
-                                  animate={{ scale: [1, 1.1, 1] }}
-                                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-                                >
-                                  {selectedMyItems.length}
-                                </motion.div>
-                                <div className="text-sm text-muted-foreground mb-2">{t("yourItems") || "Your Items"}</div>
-                                <div className="text-xl font-semibold text-secondary2">{Number(mySelectedValue).toLocaleString()} LE</div>
-                              </motion.div>
-
-                              <motion.div
-                                className="flex items-center"
-                               
-                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                              >
-                                <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-                                  <ArrowLeftRight className="h-8 w-8 text-white" />
-                                </div>
-                              </motion.div>
-
-                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                                <div className="relative w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                  <Avatar className="h-full w-full border">
-                                  <AvatarImage
-                                  src={
-                                    otherUserData?.avatar
-                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${otherUserData.avatar}`
-                                      : "/placeholder.svg"
-                                  }
-                                  alt={otherUserData?.first_name || t("User") || "User"}
-                                  className="object-cover"
-                                />
-                                <AvatarFallback>
-                                  {otherUserData?.first_name?.[0] || "U"}
-                                </AvatarFallback> 
-                              </Avatar>
-                              
-                                  {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
-                                    <div className="absolute -top-1 -right-1 z-10">
-                                      <Verified className="h-4 w-4 text-accent bg-background rounded-full p-0.5 border border-background" />
-                                    </div>
-                                  )}
-                                </div>
-                                <motion.div
-                                  className="text-3xl font-bold text-accent mb-1"
-                                  animate={{ scale: [1, 1.1, 1] }}
-                                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
-                                >
-                                  {selectedOtherItems.length}
-                                </motion.div>
-                                <div className="text-sm text-muted-foreground mb-2">{t("Theiritems") || "Their Items"}</div>
-                                <div className="text-xl font-semibold text-secondary2">{Number(otherSelectedValue).toLocaleString()} LE</div>
-                              </motion.div>
-                            </motion.div>
-
-                            {/* Price Difference */}
-                            <motion.div
-                              className="text-center mb-6"
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.3 }}
-                            >
-                              <motion.div
-                                className={`text-2xl font-bold p-4 rounded-lg ${
-                                  priceDifference > 0
-                                    ? "bg-secondary2/10 text-secondary2 border border-secondary2/20"
-                                    : priceDifference < 0
-                                      ? "bg-destructive/10 text-destructive border border-destructive/20"
-                                      : "bg-muted text-muted-foreground border border-muted"
-                                }`}
-                                animate={{ scale: [1, 1.05, 1] }}
-                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                              >
-                              <div className="text-sm text-muted-foreground mb-2">{t("PriceDifference") || "Price Difference"}</div>
-
-                                {priceDifference > 0 ? "+" : ""}
-                                {Number(priceDifference).toLocaleString()} LE
-                                {priceDifference > 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Yougain") || "You gain"})</span>}
-                                {priceDifference < 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Youpayextra") || "You pay extra"})</span>}
-                                {priceDifference === 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Equalvalue") || "Equal value"})</span>}
-                              </motion.div>
-                            </motion.div>
-
-                            <motion.div
-                              className="text-center"
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.6 }}
-                            >
-                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                <Button 
-                                  size="lg" 
-                                  className="px-12 py-6 text-lg bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-300" 
-                                  onClick={handleAddOffer} 
-                                  disabled={disabledOffer}
-                                >
-                                  {disabledOffer ? (
-                                    <>
-                                      <motion.div
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                        className={`w-5 h-5 border-2 border-white border-t-transparent rounded-full ${getDirectionClass("mr-3", "ml-3")}`}
-                                      />
-                                      {t("CreatingSwap") || "Creating Swap..."}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ArrowLeftRight className={`h-5 w-5 ${getDirectionClass("mr-3", "ml-3")}`} />
-                                      {t("Swap") || "Swap"}
-                                    </>
-                                  )}
-                                </Button>
-                              </motion.div>
-                            </motion.div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
+                
                   <motion.div
                     className="grid lg:grid-cols-2 gap-8"
                     variants={containerVariants}
@@ -889,6 +740,171 @@ export default function SwapPage() {
                         </motion.div>
                       )}
                     </motion.div>
+
+
+  {/* Swap Summary */}
+  <AnimatePresence>
+                    {canCreateSwap && (
+                      <motion.div
+                        variants={swapSummaryVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="mb-8"
+                      >
+                        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 hover:shadow-xl transition-all duration-300">
+                          <CardContent className="p-8">
+                            <motion.div
+                              className={`flex items-center justify-between mb-6 ${classes.container}`}
+                              variants={containerVariants}
+                              initial="hidden"
+                              animate="visible"
+                            >
+                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
+                                <div className="relative w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Avatar className="h-full w-full border">
+                                <AvatarImage
+                                  src={
+                                    otherUserData?.avatar
+                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userData.avatar}`
+                                      : "/placeholder.svg"
+                                  }
+                                  alt={otherUserData?.first_name || t("User") || "User"}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback>
+                                  {otherUserData?.first_name?.[0] || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                                 
+                                {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
+                                    <div className="absolute -top-1 -right-1 z-10">
+                                      <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 border border-background" />
+                                    </div>
+                                  )}
+                                </div>
+                                <motion.div
+                                  className="text-3xl font-bold text-primary mb-1"
+                                  animate={{ scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                                >
+                                  {selectedMyItems.length}
+                                </motion.div>
+                                <div className="text-sm text-muted-foreground mb-2">{t("yourItems") || "Your Items"}</div>
+                                <div className="text-xl font-semibold text-secondary2">{Number(mySelectedValue).toLocaleString()} LE</div>
+                              </motion.div>
+
+                              <motion.div
+                                className="flex items-center"
+                               
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                              >
+                                <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                                  <ArrowLeftRight className="h-8 w-8 text-white" />
+                                </div>
+                              </motion.div>
+
+                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
+                                <div className="relative w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                  <Avatar className="h-full w-full border">
+                                  <AvatarImage
+                                  src={
+                                    otherUserData?.avatar
+                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${otherUserData.avatar}`
+                                      : "/placeholder.svg"
+                                  }
+                                  alt={otherUserData?.first_name || t("User") || "User"}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback>
+                                  {otherUserData?.first_name?.[0] || "U"}
+                                </AvatarFallback> 
+                              </Avatar>
+                              
+                                  {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
+                                    <div className="absolute -top-1 -right-1 z-10">
+                                      <Verified className="h-4 w-4 text-accent bg-background rounded-full p-0.5 border border-background" />
+                                    </div>
+                                  )}
+                                </div>
+                                <motion.div
+                                  className="text-3xl font-bold text-accent mb-1"
+                                  animate={{ scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                                >
+                                  {selectedOtherItems.length}
+                                </motion.div>
+                                <div className="text-sm text-muted-foreground mb-2">{t("Theiritems") || "Their Items"}</div>
+                                <div className="text-xl font-semibold text-secondary2">{Number(otherSelectedValue).toLocaleString()} LE</div>
+                              </motion.div>
+                            </motion.div>
+
+                            {/* Price Difference */}
+                            <motion.div
+                              className="text-center mb-6"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3 }}
+                            >
+                              <motion.div
+                                className={`text-2xl font-bold p-4 rounded-lg ${
+                                  priceDifference > 0
+                                    ? "bg-secondary2/10 text-secondary2 border border-secondary2/20"
+                                    : priceDifference < 0
+                                      ? "bg-destructive/10 text-destructive border border-destructive/20"
+                                      : "bg-muted text-muted-foreground border border-muted"
+                                }`}
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                              >
+                              <div className="text-sm text-muted-foreground mb-2">{t("PriceDifference") || "Price Difference"}</div>
+
+                                {priceDifference > 0 ? "+" : ""}
+                                {Number(priceDifference).toLocaleString()} LE
+                                {priceDifference > 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Yougain") || "You gain"})</span>}
+                                {priceDifference < 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Youpayextra") || "You pay extra"})</span>}
+                                {priceDifference === 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Equalvalue") || "Equal value"})</span>}
+                              </motion.div>
+                            </motion.div>
+
+                            <motion.div
+                              className="text-center"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.6 }}
+                            >
+                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                <Button 
+                                  size="lg" 
+                                  className="px-12 py-6 text-lg bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-300" 
+                                  onClick={handleAddOffer} 
+                                  disabled={disabledOffer}
+                                >
+                                  {disabledOffer ? (
+                                    <>
+                                      <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                                        className={`w-5 h-5 border-2 border-white border-t-transparent rounded-full ${getDirectionClass("mr-3", "ml-3")}`}
+                                      />
+                                      {t("CreatingSwap") || "Creating Swap..."}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ArrowLeftRight className={`h-5 w-5 ${getDirectionClass("mr-3", "ml-3")}`} />
+                                      {t("Swap") || "Swap"}
+                                    </>
+                                  )}
+                                </Button>
+                              </motion.div>
+                            </motion.div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+
                   </motion.div>
                 </motion.div>
               </TabsContent>
@@ -981,7 +997,7 @@ export default function SwapPage() {
 }
 
 // ItemCard component
-const ItemCard = ({ id, name, description, price, images, allowed_categories, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1 }) => {
+const ItemCard = ({ id, name, description, price, images, allowed_categories,translations, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1 }) => {
   // const [bigImage, setBigImage] = useState("")
   const [currentQuantity, setCurrentQuantity] = useState(selectedQuantity)
   const [totalPrice, setTotalPrice] = useState(price * selectedQuantity)
@@ -998,8 +1014,13 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
     }
   }, [currentQuantity, price, id, onQuantityChange])
 
+  // Prevent unnecessary re-renders by memoizing the quantity change
+  const handleQuantityChangeInternal = useCallback((newQuantity) => {
+    setCurrentQuantity(newQuantity)
+  }, [])
+
   // Quantity handlers
-  const increaseQuantity = () => {
+  const increaseQuantity = useCallback(() => {
     if (currentQuantity >= originalQuantity) {
       toast({
         title: t("quantityExceeded") || "Quantity Exceeded",
@@ -1007,11 +1028,11 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
         variant: "destructive",
       })
     } else {
-      setCurrentQuantity(prev => prev + 1)
+      handleQuantityChangeInternal(currentQuantity + 1)
     }
-  }
+  }, [currentQuantity, originalQuantity, handleQuantityChangeInternal, toast, t])
 
-  const decreaseQuantity = () => {
+  const decreaseQuantity = useCallback(() => {
     if (currentQuantity <= 1) {
       toast({
         title: t("minimumQuantity") || "Minimum Quantity",
@@ -1019,9 +1040,9 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
         variant: "destructive",
       })
     } else {
-      setCurrentQuantity(prev => prev - 1)
+      handleQuantityChangeInternal(currentQuantity - 1)
     }
-  }
+  }, [currentQuantity, handleQuantityChangeInternal, toast, t])
 
   const getConditionColor = (itemsStatus) => {
     switch (itemsStatus) {
@@ -1047,12 +1068,36 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
       transition={{ type: "spring", stiffness: 400 }}
     >
       {(() => {
-        const currentMedia = {
-          id: images[0]?.directus_files_id.id,
-          type: images[0]?.directus_files_id.type,
-          url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+        // Check if images exist and have the expected structure
+        if (!images || !Array.isArray(images) || images.length === 0 || !images[0]?.directus_files_id) {
+          console.log("No valid image data found:", { images, hasImages: !!images, isArray: Array.isArray(images), length: images?.length, firstImage: images?.[0] })
+          return (
+            <div className="w-24 h-24 bg-muted rounded-xl flex-shrink-0 shadow-md flex items-center justify-center">
+              <span className="text-muted-foreground text-xs">No Image</span>
+            </div>
+          )
         }
-        const mediaType = getMediaType(currentMedia.type)
+        
+        const currentMedia = {
+          id: images[0].directus_files_id.id,
+          type: images[0].directus_files_id.type,
+          url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0].directus_files_id.id}`
+        }
+        
+        // Get media type from the MIME type
+        const mimeType = images[0].directus_files_id.type || images[0].directus_files_id.mime_type || 'image/jpeg'
+        const mediaType = getMediaType(mimeType)
+        
+        console.log("Image data:", { 
+          id: currentMedia.id, 
+          type: currentMedia.type, 
+          mimeType, 
+          mediaType, 
+          url: currentMedia.url,
+          fullImageData: images[0],
+          directusFilesId: images[0].directus_files_id
+        })
+        
         if (mediaType === 'video') {
           return (
             <video
@@ -1071,15 +1116,34 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
               height={96}
             />
           )
-        } else {
+        } else if (mediaType === 'image' || !mediaType || mediaType === 'unknown') {
+          // Default to image for unknown types or when mediaType is undefined
           return (
-            <Image
-              src={currentMedia.url}
-              alt={name}
-              className="w-24 h-24 object-cover rounded-xl flex-shrink-0 shadow-md"
-              width={96}
-              height={96}
-            />
+            <div className="w-24 h-24 rounded-xl flex-shrink-0 shadow-md overflow-hidden">
+              <Image
+                src={currentMedia.url}
+                alt={name}
+                className="w-full h-full object-cover"
+                width={96}
+                height={96}
+                onError={(e) => {
+                  console.error("Image failed to load:", currentMedia.url)
+                  // Show a placeholder instead of hiding the image
+                  e.target.src = "/placeholder.svg"
+                  e.target.alt = "Image not available"
+                }}
+                onLoad={() => {
+                  console.log("Image loaded successfully:", currentMedia.url)
+                }}
+              />
+            </div>
+          )
+        } else {
+          // Fallback for any other media type
+          return (
+            <div className="w-24 h-24 bg-muted rounded-xl flex-shrink-0 shadow-md flex items-center justify-center">
+              <span className="text-muted-foreground text-xs">Unsupported Media</span>
+            </div>
           )
         }
       })()}
@@ -1090,7 +1154,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories, st
           whileHover={{ x: isRTL ? -5 : 5 }}
           transition={{ type: "spring", stiffness: 400 }}
         >
-          {name}
+          {isRTL ? translations[1]?.name : translations[0]?.name}
         </motion.h3>
         <motion.div
           className="flex flex-wrap gap-2 mb-3"

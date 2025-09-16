@@ -317,7 +317,7 @@ const Messages = () => {
                         size="icon"
                         className="relative hover:text-primary group"
                         onClick={() => {
-                          router.push(`/cart#${selectedOffer.id}`)
+                          router.push(`/send-items#${selectedOffer.id}`)
                         }}
                       >
                         <ShoppingCart className="h-8 w-8" />
@@ -333,7 +333,7 @@ const Messages = () => {
                         size="icon"
                         className="relative hover:text-primary group"
                         onClick={() => {
-                          router.push(`/notifications#${selectedOffer.id}`)
+                          router.push(`/recived-items#${selectedOffer.id}`)
                         }}
                       >
                         <Bell className="h-8 w-8" />

@@ -1,5 +1,11 @@
 export const translations = {
   en  :{
+recivedOffers: "Recived Offers",
+myRecivedOffers: "My Recived Offers",
+///////////////////////
+    LoadingUserData: "Loading user data...",
+    noImage: "No Image",
+    unitPrice: "Unit Price",
     // items list
     dateRange: "Date Range",
     itemStatus: "Item Status",
@@ -1049,6 +1055,12 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    recivedOffers: "عروضي المستلمة",
+myRecivedOffers: "عروضي المستلمة",
+///////////////////////
+    LoadingUserData: "جاري تحميل البيانات الخاصة بالمستخدم",
+    noImage: "لا يوجد صورة",
+    unitPrice: "سعر الوحدة",
     // items list
     itemStatus: "حالة العنصر",
     useCurrentLocation: "استخدام الموقع الحالي",

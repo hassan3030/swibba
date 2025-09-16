@@ -421,25 +421,52 @@ export const getProductById = async (id) => {
   }
 }
 // Get products by current user ID
-export const getProductByUserId = async () => {
+export const getProductByUserId = async (availablity = "available") => {
   try {
     return await makeAuthenticatedRequest(async () => {
       const { userId } = await validateAuth()
       if (!userId) {
         throw new Error("Authentication required")
       }
-
-      const response = await axios.get(` ${baseItemsURL}/Items` ,
-      {
-        params: {
-          fields: "*,images.*,translations.*,images.directus_files_id.*",
-          filter: {
-            user_id: { _eq:`${userId}` },
-          }
+      let response;
+if(availablity=="available" || availablity=="unavailable"){
+  response = await axios.get(` ${baseItemsURL}/Items` ,
+    {
+      params: {
+        fields: "*,images.*,translations.*,images.directus_files_id.*",
+        filter: {
+          user_id: { _eq:`${userId}` },
+          status_swap: { _eq: availablity=="available" ? "available" : "unavailable" },
         }
       }
-      )
-        // /?filter[user_id][_eq]=?fields=*,translations.*,images.*`)
+    }
+    )
+}
+else if(availablity=="all"){
+  response = await axios.get(` ${baseItemsURL}/Items` ,
+    {
+      params: {
+        fields: "*,images.*,translations.*,images.directus_files_id.*",
+        filter: {
+          user_id: { _eq:`${userId}` },
+        }
+      }
+    }
+    )
+}
+else{
+  response = await axios.get(` ${baseItemsURL}/Items` ,
+    {
+      params: {
+        fields: "*,images.*,translations.*,images.directus_files_id.*",
+        filter: {
+          user_id: { _eq:`${userId}` },
+        }
+      }
+    }
+    )
+}
+      
 
       console.log("User products retrieved successfully, count:", response.data.data?.length || 0)
       return {
@@ -454,7 +481,7 @@ export const getProductByUserId = async () => {
     return handleApiError(error, "Get Products By User ID")
   }
 }
-
+ 
 // Get products by owner ID (via product ID)
 export const getProductsOwnerById = async (productId) => {
   try {
@@ -467,7 +494,18 @@ export const getProductsOwnerById = async (productId) => {
       throw new Error(userResult.error)
     }
 
-    const response = await axios.get(`${baseItemsURL}/Items?filter[user_id][_eq]=${userResult.data.id}&fields=*,translations.*,images.*,images.directus_files_id.*`)
+    const response = await axios.get(`${baseItemsURL}/Items`,
+      
+      {
+        params: {
+          fields: "*,translations.*,images.*,images.directus_files_id.*",
+          filter: {
+            status_swap: { _eq: "available" },
+            user_id: { _eq: userResult.data.id },
+          }
+        }
+      }
+    )
 
     console.log("Owner products retrieved successfully, count:", response.data.data?.length || 0)
     return {

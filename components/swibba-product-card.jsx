@@ -410,7 +410,7 @@ export function SwibbaProductCard({
                 <Button
                   className="w-full bg-primary-yellow text-gray-800 hover:bg-primary-orange hover:text-white transition-colors"
                   size="sm"
-                  onClick={handleAddToCart}
+                  onClick={()=>{handleAddToCart()}}
                   disabled={isAddingToCart || isAddedToCart}
                 >
                   <AnimatePresence mode="wait">

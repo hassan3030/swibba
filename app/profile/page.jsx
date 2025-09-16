@@ -13,7 +13,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
 import { getProductByUserId, getProductById } from "@/callAPI/products"
 import { getOfferById, getOfferItemsByOfferId, getOffersNotifications, getReview } from "@/callAPI/swap"
-import { decodedToken, getCookie } from "@/callAPI/utiles"
+import { decodedToken, getCookie, validateAuth } from "@/callAPI/utiles"
 import RecivedItems from "@/app/recived-items/page"
 import SendItems from "@/app/send-items/page"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -199,7 +199,9 @@ export default function ProfilePage() {
   }
 
   const getUserProducts = async () => {
-    const userPruducts = await getProductByUserId()
+    const userPruducts = await getProductByUserId("all")
+    const userPruductsAvailable = await getProductByUserId("available")
+    const userPruductsUnavailable = await getProductByUserId("unavailable")
     
     // Check if the API call was successful and data exists
     if (!userPruducts || !userPruducts.success || !userPruducts.data) {
@@ -212,15 +214,21 @@ export default function ProfilePage() {
     // Ensure data is an array before filtering
     const productsData = Array.isArray(userPruducts.data) ? userPruducts.data : []
     
-    setmyUnavailableItems(productsData.filter((u) => u.status_swap === "unavailable"))
-    setmyAvailableItems(productsData.filter((u) => u.status_swap === "available"))
+    setmyUnavailableItems(userPruductsUnavailable.data)
+    setmyAvailableItems(userPruductsAvailable.data)
     return productsData
   }
 
   const getNotificationsLength = async () => {
-    const notifications = await getOffersNotifications(id)
-    console.log("notifications", notifications.data)
-    setNotificationsLength(Array.isArray(notifications.count) ? notifications.count : 0)
+    try {
+      const { userId } = await validateAuth()
+      const notifications = await getOffersNotifications(userId)
+      console.log("notifications", notifications.count)
+      setNotificationsLength(notifications.count)
+    } catch (error) {
+      console.error("Error fetching notifications:", error)
+      setNotificationsLength(0)
+    }
   }
 
   //get offers
@@ -454,12 +462,12 @@ export default function ProfilePage() {
                       icon: Star,
                       label: t("itemsInOffers") || "Items In Offers",
                       count: myUnavailableItems.length,
-                    },
+                    }, 
                     { value: "offers", icon: TbShoppingCartUp, label: t("sendoffers") || "Send Offers", count: userOffers.length },
                     {
-                      value: "notifications",
+                      value: "recivedOffers",
                       icon: BiCartDownload,
-                      label: t("notifications") || "Notifications",
+                      label: t("recivedOffers") || "Recived Offers",
                       count: notificationsLength,
                     },
                   ].map((tab, index) => (
@@ -560,14 +568,14 @@ export default function ProfilePage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="notifications" className="mt-6">
+              <TabsContent value="recivedOffers" className="mt-6">
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.h2
                     className="mb-4 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                   >
-                    {t("myNotifications") || "My Notifications"}
+                    {t("myRecivedOffers") || "My Recived Offers"}
                   </motion.h2>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

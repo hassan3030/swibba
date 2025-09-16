@@ -134,9 +134,9 @@ const LazyStatsSection = ({ t }) => {
       setIsLoading(true)
       const loadStats = async () => {
         try {
-          const prodsCount = await getProducts({status_swap: { _eq: "available" }})
+          const products = await getProducts()
           const users = await getAllUsers()
-          setItemsCount(prodsCount.count || 0)
+          setItemsCount(products.count || 0)
           setUsersCount(users.count || 0)
           setHasLoaded(true)
           controls.start("visible")
@@ -531,7 +531,7 @@ const LazyAllProducts = ({ showSwitchHeart, t }) => {
       setIsLoading(true)
       const loadProducts = async () => {
         try {
-          const prods = await getProducts({status_swap: { _eq: "available" }}, {"limit": 15})
+          const prods = await getProducts({}, {"limit": 15})
           setItems(prods.data)
           setHasLoaded(true)
         } catch (error) {
@@ -602,7 +602,7 @@ const LazyTopDeals = ({ showSwitchHeart, t }) => {
       setIsLoading(true)
       const loadTopDeals = async () => {
         try {
-          const topPriceProds = await getProducts({status_swap: { _eq: "available" }}, {"limit": 10, "sort": "-price"})
+          const topPriceProds = await getProducts({}, {"limit": 10, "sort": "-price"})
           setTopPrice(topPriceProds.data)
           setHasLoaded(true)
         } catch (error) {

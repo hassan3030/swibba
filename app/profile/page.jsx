@@ -331,7 +331,7 @@ export default function ProfilePage() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div>
-                            {user?.verified ? (
+                            {user?.verified == "true" || user?.verified == true ? (
                               <Verified className="h-5 w-5 text-primary bg-background rounded-full p-1 shadow-md" />
                             ) : (
                               <BadgeX className="h-5 w-5 text-red-500 bg-background rounded-full p-1 shadow-md" />
@@ -340,7 +340,7 @@ export default function ProfilePage() {
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="bg-primary text-primary-foreground">
                           <p className="text-sm">
-                            {user?.verified ? (t("verified") || "Verified Account") : (t("notVerified") || "Not Verified")}
+                            {user?.verified == "true" || user?.verified == true ? (t("verified") || "Verified Account") : (t("notVerified") || "Not Verified")}
                           </p>
                         </TooltipContent>
                       </Tooltip>

@@ -27,7 +27,7 @@ import {
   CreditCard,
   Phone,
 } from "lucide-react"
-import { editeProfile, getUserById, resetPassword } from "@/callAPI/users"
+import { editeProfile, getUserById, resetPassword, updatePhoneVerification } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
 import { decodedToken, getCookie } from "@/callAPI/utiles"
 import { LanguageToggle } from "@/components/language-toggle"
@@ -535,13 +535,36 @@ export default function ProfileSettingsPage() {
     }
   }
 
-  const handlePhoneVerified = (verifiedPhoneNumber) => {
-    setPhone(verifiedPhoneNumber)
-    setVerified('true')
-    toast({
-      title: t("success") || "Success",
-      description: t("phoneNumberVerified") || "Phone number has been verified successfully!",
-    })
+  const handlePhoneVerified = async (verifiedPhoneNumber) => {
+    try {
+      // Update the phone number in the form
+      setPhone(verifiedPhoneNumber)
+      setVerified('true')
+      
+      // Update the verification status in the database
+      const token = await getCookie()
+      if (token) {
+        const decoded = await decodedToken(token)
+        if (decoded?.id) {
+          const updateResult = await updatePhoneVerification(decoded.id, verifiedPhoneNumber, true)
+          if (!updateResult.success) {
+            console.error('Failed to update phone verification status:', updateResult.error)
+          }
+        }
+      }
+      
+      toast({
+        title: t("success") || "Success",
+        description: t("phoneNumberVerified") || "Phone number has been verified successfully!",
+      })
+    } catch (error) {
+      console.error('Error updating phone verification:', error)
+      toast({
+        title: t("error") || "Error",
+        description: t("failedToUpdateVerification") || "Phone verified but failed to update status",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleLocationSelect = (location) => {
@@ -1091,6 +1114,7 @@ export default function ProfileSettingsPage() {
                                       id="phone_number"
                                       name="phone_number"
                                       value={phone_number}
+                                      type="tel"
                                       onChange={(e) => handlePhoneChange(e.target.value)}
                                       className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${phoneValidationError ? 'border-red-500 focus:border-red-500' : ''}`}
                                       placeholder={t("enterPhoneNumber") || "Enter phone number"}

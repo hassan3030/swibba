@@ -100,52 +100,12 @@ export const getProducts = async (filters = {} , additionalParams = {}) => {
 }
 
 
-// Get product by ID with enhanced validation
-export const getProductById = async (id) => {
-  try {
-    if (!id) {
-      throw new Error("Product ID is required")
-    }
-    // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
-    const response = await axios.get(
-      `${baseItemsURL}/Items/${id}`,
-      {
-        params: {
-          fields: "*,translations.*,images.*,images.directus_files_id.*"
-        }
-      }
-    );
-    console.log("response", response)
-    console.log("response.data.data", response.data.data)
-    if (!response.data.data) {
-      throw new Error("Product not found")
-    }
-
-    console.log("Product retrieved successfully, ID:", id)
-    return {
-      success: true,
-      data: response.data.data || [],
-      message: "Product retrieved successfully",
-    }
-  } catch (error) {
-    if (error.response?.status === 404) {
-      return {
-        success: false,
-        error: "Product not found",
-        status: 404,
-        context: "Get Product By ID",
-      }
-    }
-    return handleApiError(error, "Get Product By ID")
-  }
-}
 
 // Get top price products with enhanced filtering
 export const getProductTopPrice = async (limit = 10) => {
   try {
     const decoded = await decodedToken()
     let url
-
     const queryParams = new URLSearchParams()
     queryParams.append("filter[status_swap][_eq]", "available")
     queryParams.append("sort", "-price")
@@ -420,6 +380,46 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return d
 }
 
+
+// Get product by ID with enhanced validation
+export const getProductById = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Product ID is required")
+    }
+    // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
+    const response = await axios.get(
+      `${baseItemsURL}/Items/${id}`,
+      {
+        params: {
+          fields: "*,translations.*,images.*,images.directus_files_id.*"
+        }
+      }
+    );
+    console.log("response", response)
+    console.log("response.data.data", response.data.data)
+    if (!response.data.data) {
+      throw new Error("Product not found")
+    }
+
+    console.log("Product retrieved successfully, ID:", id)
+    return {
+      success: true,
+      data: response.data.data || [],
+      message: "Product retrieved successfully",
+    }
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return {
+        success: false,
+        error: "Product not found",
+        status: 404,
+        context: "Get Product By ID",
+      }
+    }
+    return handleApiError(error, "Get Product By ID")
+  }
+}
 // Get products by current user ID
 export const getProductByUserId = async () => {
   try {
@@ -439,7 +439,6 @@ export const getProductByUserId = async () => {
         }
       }
       )
-
         // /?filter[user_id][_eq]=?fields=*,translations.*,images.*`)
 
       console.log("User products retrieved successfully, count:", response.data.data?.length || 0)

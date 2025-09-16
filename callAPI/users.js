@@ -654,6 +654,45 @@ export const logout = async () => {
 
 
 
+// Update phone verification status
+export const updatePhoneVerification = async (userId, phoneNumber, isVerified = true) => {
+  try {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    const token = await getCookie();
+    if (!token) {
+      throw new Error("Authentication token not found");
+    }
+
+    const updateData = {
+      phone_number: phoneNumber,
+      verified: isVerified.toString()
+    };
+
+    const response = await axios.patch(
+      `${baseURL}/users/${userId}`,
+      updateData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("Phone verification status updated successfully");
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Phone verification status updated successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Update Phone Verification");
+  }
+};
+
 // Add customer message with validation
 export const addMessage = async (email, name, message, phone_number) => {
   try {

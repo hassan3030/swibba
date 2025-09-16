@@ -1,10 +1,40 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 const FlagIcon = ({ flag, countryCode, className = "" }) => {
   const [hasError, setHasError] = useState(false)
+  const [isEmojiSupported, setIsEmojiSupported] = useState(true)
 
-  // Fallback flag representations
+  // Check emoji support on mount
+  useEffect(() => {
+    // Test if emoji rendering works by checking if flag emoji renders properly
+    const testEmoji = () => {
+      try {
+        // Create a test element
+        const testDiv = document.createElement('div')
+        testDiv.style.position = 'absolute'
+        testDiv.style.left = '-9999px'
+        testDiv.style.fontSize = '16px'
+        testDiv.style.fontFamily = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+        testDiv.textContent = '🇪🇬'
+        document.body.appendChild(testDiv)
+        
+        // Check if the emoji rendered as a single character
+        const rect = testDiv.getBoundingClientRect()
+        const isEmoji = rect.width > 10 && rect.height > 10
+        
+        document.body.removeChild(testDiv)
+        setIsEmojiSupported(isEmoji)
+      } catch (error) {
+        console.warn('Emoji support test failed:', error)
+        setIsEmojiSupported(false)
+      }
+    }
+
+    testEmoji()
+  }, [])
+
+  // Fallback flag representations with country codes
   const fallbackFlags = {
     "EG": "🇪🇬",
     "US": "🇺🇸", 
@@ -18,8 +48,8 @@ const FlagIcon = ({ flag, countryCode, className = "" }) => {
     "AE": "🇦🇪"
   }
 
-  // If emoji fails, show a colored circle with country code
-  if (hasError) {
+  // If emoji is not supported or fails, show a colored circle with country code
+  if (hasError || !isEmojiSupported) {
     return (
       <div 
         className={`inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-blue-500 rounded-full ${className}`}
@@ -30,22 +60,22 @@ const FlagIcon = ({ flag, countryCode, className = "" }) => {
     )
   }
 
+  // Display emoji flag with proper styling
   return (
     <span 
-      className={`inline-block w-6 h-4 rounded-sm overflow-hidden ${className}`}
+      className={`emoji-flag inline-block ${className}`}
       style={{
-        fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Twemoji Mozilla", sans-serif',
-        fontSize: 'inherit',
+        fontSize: '1.2em',
+        lineHeight: '1',
         display: 'inline-block',
-        minWidth: '24px',
-        minHeight: '16px',
+        verticalAlign: 'middle',
         textAlign: 'center',
-        lineHeight: '16px',
-        background: 'linear-gradient(to bottom, #f0f0f0, #e0e0e0)',
-        border: '1px solid #ccc'
+        minWidth: '1.2em',
+        minHeight: '1.2em',
+        fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Android Emoji", sans-serif'
       }}
-      onError={() => setHasError(true)}
       title={`${countryCode} flag`}
+      onError={() => setHasError(true)}
     >
       {flag || fallbackFlags[countryCode] || "🏳️"}
     </span>

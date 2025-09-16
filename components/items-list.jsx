@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, Filter, X, Calendar, MapPin, DollarSign, Package, ShoppingBag, Navigation, ChevronDown } from "lucide-react"
 import { ItemCardProfile } from "./item-card-profile"
 import { ItemsListSkeleton } from "./items-list-skeleton"
-import { categoriesName, itemsStatus, itemsSwapStatus, countriesList } from "@/lib/data"
+import { categoriesName, itemsStatus, countriesList } from "@/lib/data"
 import { getProductsEnhanced } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
 
@@ -145,7 +145,6 @@ export function ItemsList({
       to: "",
     },
     status: "all", // item status
-    swapStatus: "all", // swap status
     priceRange: {
       min: "",
       max: "",
@@ -179,59 +178,65 @@ export function ItemsList({
         console.log('Category filter applied:', category)
       }
 
+      // Search filter - prioritize searchTerm over filters.name
       if (searchTerm) {
         apiFilters.search = searchTerm
-      }
-
-      // Advanced filters
-      if (filters.name) {
-        apiFilters.name = filters.name
+        console.log('Search filter applied:', searchTerm)
+      } else if (filters.name) {
+        apiFilters.search = filters.name
+        console.log('Name filter applied:', filters.name)
       }
 
       if (filters.categories.length > 0) {
         apiFilters.categories = filters.categories
+        console.log('Categories filter applied:', filters.categories)
       }
 
       if (filters.allowedCategories.length > 0) {
         apiFilters.allowed_categories = filters.allowedCategories
+        console.log('Allowed categories filter applied:', filters.allowedCategories)
       }
 
       if (filters.location.country && filters.location.country !== "all") {
         apiFilters.country = filters.location.country
+        console.log('Country filter applied:', filters.location.country)
       }
 
       if (filters.location.city) {
         apiFilters.city = filters.location.city
+        console.log('City filter applied:', filters.location.city)
       }
 
       if (filters.location.useCurrentLocation && filters.location.latitude && filters.location.longitude) {
         apiFilters.latitude = filters.location.latitude
         apiFilters.longitude = filters.location.longitude
         apiFilters.radius = filters.location.radius
+        console.log('Radius filter applied:', filters.location.radius)
       }
 
       if (filters.status !== "all") {
         apiFilters.status_item = filters.status
-      }
-
-      if (filters.swapStatus !== "all") {
-        apiFilters.status_swap = filters.swapStatus
+        console.log('Status filter applied:', filters.status)
       }
 
       if (filters.priceRange.min) {
         apiFilters.min_price = filters.priceRange.min
+        console.log('Min price filter applied:', filters.priceRange.min)
       }
 
       if (filters.priceRange.max) {
         apiFilters.max_price = filters.priceRange.max
+        console.log('Max price filter applied:', filters.priceRange.max)
       }
 
       if (filters.dateRange.from) {
         apiFilters.date_from = filters.dateRange.from
+        console.log('Date from filter applied:', filters.dateRange.from)
       }
 
       if (filters.dateRange.to) {
         apiFilters.date_to = filters.dateRange.to
+        console.log('Date to filter applied:', filters.dateRange.to)
       }
 
       const response = await getProductsEnhanced(apiFilters)
@@ -259,17 +264,119 @@ export function ItemsList({
     }
   }
 
-  // API-based filtering and pagination
+  // API-based filtering and pagination - only when no items are passed as props
   useEffect(() => {
-    fetchFilteredItems()
+    if (!items || items.length === 0) {
+      fetchFilteredItems()
+    } else {
+      // Use passed items directly and apply local filtering
+      let filteredItems = [...items]
+      
+      // Apply local search filter
+      if (searchTerm) {
+        filteredItems = filteredItems.filter(item => 
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      }
+      
+      // Apply local name filter
+      if (filters.name) {
+        filteredItems = filteredItems.filter(item => 
+          item.name?.toLowerCase().includes(filters.name.toLowerCase())
+        )
+      }
+      
+      // Apply local category filter
+      if (category !== "all") {
+        filteredItems = filteredItems.filter(item => item.category === category)
+      }
+      
+      // Apply local categories filter
+      if (filters.categories.length > 0) {
+        filteredItems = filteredItems.filter(item => 
+          filters.categories.includes(item.category)
+        )
+      }
+      
+      // Apply local status filter
+      if (filters.status !== "all") {
+        filteredItems = filteredItems.filter(item => item.status_item === filters.status)
+      }
+      
+      // Apply local price range filters
+      if (filters.priceRange.min) {
+        filteredItems = filteredItems.filter(item => 
+          parseFloat(item.price) >= parseFloat(filters.priceRange.min)
+        )
+      }
+      if (filters.priceRange.max) {
+        filteredItems = filteredItems.filter(item => 
+          parseFloat(item.price) <= parseFloat(filters.priceRange.max)
+        )
+      }
+      
+      // Apply local location filters
+      if (filters.location.country && filters.location.country !== "all") {
+        filteredItems = filteredItems.filter(item => 
+          item.country?.toLowerCase().includes(filters.location.country.toLowerCase())
+        )
+      }
+      if (filters.location.city) {
+        filteredItems = filteredItems.filter(item => 
+          item.city?.toLowerCase().includes(filters.location.city.toLowerCase())
+        )
+      }
+      
+      // Apply local allowed categories filter
+      if (filters.allowedCategories.length > 0) {
+        filteredItems = filteredItems.filter(item => {
+          if (!item.allowed_categories) return false
+          return filters.allowedCategories.some(cat => 
+            item.allowed_categories.includes(cat)
+          )
+        })
+      }
+      
+      // Apply local date range filters
+      if (filters.dateRange.from) {
+        const fromDate = new Date(filters.dateRange.from)
+        filteredItems = filteredItems.filter(item => {
+          const itemDate = new Date(item.date_created)
+          return itemDate >= fromDate
+        })
+      }
+      if (filters.dateRange.to) {
+        const toDate = new Date(filters.dateRange.to)
+        filteredItems = filteredItems.filter(item => {
+          const itemDate = new Date(item.date_created)
+          return itemDate <= toDate
+        })
+      }
+      
+      setDisplayedItems(filteredItems)
+      setTotalItems(filteredItems.length)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, searchTerm, filters, page])
+  }, [category, searchTerm, filters, page, items])
 
  
 
-  // Pagination logic - API handles pagination, so we use all displayedItems
+  // Pagination logic - handle both API and local pagination
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage))
-  const paginatedItems = Array.isArray(displayedItems) ? displayedItems : []
+  
+  // If items are passed as props, handle local pagination
+  const paginatedItems = (() => {
+    if (!items || items.length === 0) {
+      // API mode - use all displayedItems
+      return Array.isArray(displayedItems) ? displayedItems : []
+    } else {
+      // Local mode - apply pagination to displayedItems
+      const startIndex = (page - 1) * itemsPerPage
+      const endIndex = startIndex + itemsPerPage
+      return Array.isArray(displayedItems) ? displayedItems.slice(startIndex, endIndex) : []
+    }
+  })()
 
 
   // const totalPages = Math.max(1, Math.ceil(displayedItems.length / itemsPerPage))
@@ -277,20 +384,20 @@ export function ItemsList({
 
   const handleSearch = () => {
     setPage(1)
-    // API call is triggered by useEffect dependency
+    // Filtering is handled by useEffect dependency
   }
   
   const handleCategoryChange = (value) => {
     setCategory(value)
     setPage(1)
-    // API call is triggered by useEffect dependency
+    // Filtering is handled by useEffect dependency
   }
   
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return
     setPage(newPage)
     window.scrollTo({ top: 0, behavior: "smooth" })
-    // API call is triggered by useEffect dependency
+    // Pagination is handled by useEffect dependency
   }
 
   // Advanced filter handlers
@@ -369,7 +476,7 @@ export function ItemsList({
         to: "",
       },
       status: "all",
-      swapStatus: "all",
+    
       priceRange: {
         min: "",
         max: "",
@@ -408,7 +515,6 @@ export function ItemsList({
     if (filters.location.useCurrentLocation) count++
     if (filters.dateRange.from || filters.dateRange.to) count++
     if (filters.status !== "all") count++
-    if (filters.swapStatus !== "all") count++
     if (filters.priceRange.min || filters.priceRange.max) count++
     return count
   }
@@ -429,50 +535,55 @@ export function ItemsList({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="border pr-10 transition-all duration-300 focus:ring-2 hover:border-primary/90  focus:ring-primary/20 focus:border-primary/20"
+              className="border pr-10 transition-all duration-300 focus:ring-2 hover:border-primary/90  focus:ring-primary/20 focus:border-primary/20 min-w-52"
             />
           </motion.div>
           
-          {/* Advanced Filter Button */}
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilterSidebar(true)}
-              className="relative flex items-center gap-2 transition-all duration-300 hover:border-primary/50"
-            >
-              <Filter className="h-4 w-4" />
-              {/* {t("advancedFilters") || "Advanced Filters"} */}
-              {getActiveFiltersCount() > 0 && (
-                <motion.span
-                  className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                >
-                  {getActiveFiltersCount()}
-                </motion.span>
-              )}
-            </Button>
-          </motion.div>
-          {showCategoriesFilter && (
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-              <Select value={category} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-full sm:w-[180px] transition-all duration-300 focus:ring-2 focus:ring-primary/20">
-                  <SelectValue placeholder={t("showAllCategories") || "Show All Categories"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem key="all" value="all" className="capitalize">
-                    {t("allCategories") || "All Categories"}
-                  </SelectItem>
-                  {categoriesName.map((cat) => (
-                    <SelectItem key={cat} value={cat} className="capitalize">
-                      {t(cat) || cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </motion.div>
-          )}
+
+           <div className="flex flex-col gap-2 sm:flex-row w-full lg:w-1/2">
+           {/* Advanced Filter Button */}
+           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-1/2">
+             <Button
+               variant="outline"
+               onClick={() => setShowFilterSidebar(true)}
+               className="relative flex items-center gap-2 transition-all duration-300 hover:border-primary/50 w-full"
+             >
+               <Filter className="h-4 w-4" />
+               {/* {t("advancedFilters") || "Advanced Filters"} */}
+               {getActiveFiltersCount() > 0 && (
+                 <motion.span
+                   className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                   initial={{ scale: 0 }}
+                   animate={{ scale: 1 }}
+                   transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                 >
+                   {getActiveFiltersCount()}
+                 </motion.span>
+               )}
+             </Button>
+           </motion.div>
+           {showCategoriesFilter && (
+             <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="w-full sm:w-1/2">
+               <Select value={category} onValueChange={handleCategoryChange}>
+                 <SelectTrigger className="w-full transition-all duration-300 focus:ring-2 focus:ring-primary/20">
+                   <SelectValue placeholder={t("showAllCategories") || "Show All Categories"} />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem key="all" value="all" className="capitalize">
+                     {t("allCategories") || "All Categories"}
+                   </SelectItem>
+                   {categoriesName.map((cat) => (
+                     <SelectItem key={cat} value={cat} className="capitalize">
+                       {t(cat) || cat}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </motion.div>
+           )}
+
+           </div>
+
         </motion.div>
       )}
 
@@ -920,33 +1031,7 @@ export function ItemsList({
                   </Select>
                 </motion.div>
 
-                {/* Swap Status Filter */}
-                <motion.div 
-                  className="space-y-2"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.9 }}
-                >
-                  <label className="text-sm font-medium">
-                    {t("swapStatus") || "Availability Status"}
-                  </label>
-                  <Select 
-                    value={filters.swapStatus} 
-                    onValueChange={(value) => updateFilter("swapStatus", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("selectSwapStatus") || "Select Availability"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("allStatuses") || "All Statuses"}</SelectItem>
-                      {itemsSwapStatus.map((status) => (
-                        <SelectItem key={status} value={status} className="capitalize">
-                          {t(status) || status}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </motion.div>
+                
 
                 {/* Price Range Filter */}
                 <motion.div 

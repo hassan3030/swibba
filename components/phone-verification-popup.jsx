@@ -83,11 +83,6 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
     }
   }, [phoneNumber, selectedCountryCode])
 
-  // Generate random verification code (in real app, this would be sent via SMS)
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString()
-  }
-
   const sendVerificationCode = async () => {
     if (!phoneNumber) {
       toast({
@@ -109,22 +104,45 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
 
     setIsLoading(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      const code = generateVerificationCode()
-      const expiry = new Date().getTime() + (5 * 60 * 1000) // 5 minutes from now
+    try {
+      const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`
       
-      setSentCode(code)
+      const response = await fetch('/api/sms/send-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: fullPhoneNumber
+        })
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to send verification code')
+      }
+
+      // Set up the verification state
+      const expiry = new Date().getTime() + (result.data.expiresIn * 1000)
       setCodeExpiry(expiry)
-      setTimeRemaining(300) // 5 minutes in seconds
+      setTimeRemaining(result.data.expiresIn)
       setStep("verify")
-      setIsLoading(false)
       
       toast({
         title: t("codeSent") || "Code Sent",
-        description: `${t("verificationCodeSent") || "Verification code sent to"} ${selectedCountryCode}${phoneNumber}`,
+        description: `${t("verificationCodeSent") || "Verification code sent to"} ${fullPhoneNumber}`,
       })
-    }, 2000)
+    } catch (error) {
+      console.error('SMS send error:', error)
+      toast({
+        title: t("error") || "Error",
+        description: error.message || t("failedToSendCode") || "Failed to send verification code",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const verifyCode = async () => {
@@ -137,10 +155,10 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
       return
     }
 
-    if (verificationCode !== sentCode) {
+    if (verificationCode.length !== 6) {
       toast({
         title: t("error") || "Error",
-        description: t("invalidCode") || "Invalid verification code",
+        description: t("codeMustBe6Digits") || "Verification code must be 6 digits",
         variant: "destructive",
       })
       return
@@ -148,10 +166,29 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
 
     setIsVerifying(true)
     
-    // Simulate verification
-    setTimeout(() => {
+    try {
+      const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`
+      
+      const response = await fetch('/api/sms/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: fullPhoneNumber,
+          code: verificationCode
+        })
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to verify code')
+      }
+
+      // Verification successful
       setIsVerifying(false)
-      onVerified(`${selectedCountryCode}${phoneNumber}`)
+      onVerified(fullPhoneNumber)
       onOpenChange(false)
       
       toast({
@@ -163,7 +200,16 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
       setStep("phone")
       setVerificationCode("")
       setSentCode("")
-    }, 1500)
+    } catch (error) {
+      console.error('SMS verification error:', error)
+      toast({
+        title: t("error") || "Error",
+        description: error.message || t("verificationFailed") || "Verification failed",
+        variant: "destructive",
+      })
+    } finally {
+      setIsVerifying(false)
+    }
   }
 
   const resetForm = () => {
@@ -319,26 +365,6 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 )}
               </div>
 
-              {/* Verification Code Display */}
-              {sentCode && timeRemaining > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-4 bg-primary/10 border border-primary/20 rounded-lg"
-                >
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {t("yourVerificationCode") || "Your verification code is"}:
-                    </p>
-                    <div className="text-2xl font-mono font-bold text-primary tracking-widest">
-                      {sentCode}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t("enterCodeBelow") || "Enter this code in the field below"}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
 
               {/* Verification Code Input */}
               <div className="space-y-2">
@@ -384,7 +410,47 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
               {/* Resend Code */}
               <Button
                 variant="link"
-                onClick={sendVerificationCode}
+                onClick={async () => {
+                  setIsLoading(true)
+                  try {
+                    const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`
+                    
+                    const response = await fetch('/api/sms/resend-code', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        phoneNumber: fullPhoneNumber
+                      })
+                    })
+
+                    const result = await response.json()
+
+                    if (!result.success) {
+                      throw new Error(result.error || 'Failed to resend verification code')
+                    }
+
+                    // Update the verification state
+                    const expiry = new Date().getTime() + (result.data.expiresIn * 1000)
+                    setCodeExpiry(expiry)
+                    setTimeRemaining(result.data.expiresIn)
+                    
+                    toast({
+                      title: t("codeResent") || "Code Resent",
+                      description: t("verificationCodeResent") || "Verification code resent successfully",
+                    })
+                  } catch (error) {
+                    console.error('Resend SMS error:', error)
+                    toast({
+                      title: t("error") || "Error",
+                      description: error.message || t("failedToResendCode") || "Failed to resend verification code",
+                      variant: "destructive",
+                    })
+                  } finally {
+                    setIsLoading(false)
+                  }
+                }}
                 disabled={isLoading || (timeRemaining > 240)} // Disable resend for first 60 seconds
                 className="w-full text-sm"
               >

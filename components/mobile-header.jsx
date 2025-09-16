@@ -248,7 +248,7 @@ export function MobileHeader() {
                             {String(user?.first_name).charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        {user?.verified && (
+                        {user?.verified == "true" || user?.verified == true && (
                           <div className="absolute -top-1 -right-1">
                             <TooltipProvider>
                               <Tooltip>
@@ -301,49 +301,54 @@ export function MobileHeader() {
                   </div>
                 )}
 
-                {/* Menu Items */}
-                <div className="flex-1 p-4 space-y-2">
-                  {menuItems.map((item, index) => (
-                    <Link
-                      key={index}
-                      href={item.href}
-                      className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <item.icon className="h-5 w-5 text-primary" />
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  ))}
+                {/* Menu Items - Scrollable */}
+                <div className="flex-1 relative overflow-hidden">
+                  <div className="h-full overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
+                    {menuItems.map((item, index) => (
+                      <Link
+                        key={index}
+                        href={item.href}
+                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <item.icon className="h-5 w-5 text-primary" />
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    ))}
 
-                  {user && (
-                    <>
-                      <Link
-                        href="/payment"
-                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Wallet className="h-5 w-5 text-primary" />
-                        <span className="font-medium">{t("payment") || "Payment & Wallet"}</span>
-                      </Link>
-                      
-                      <Link
-                        href="/profile/settings"
-                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Settings className="h-5 w-5 text-primary" />
-                        <span className="font-medium">{t("settings") || "Settings"}</span>
-                      </Link>
-                      
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
-                      >
-                        <LogOut className="h-5 w-5 text-red-500" />
-                        <span className="font-medium text-red-500">{t("logout") || "Logout"}</span>
-                      </button>
-                    </>
-                  )}
+                    {user && (
+                      <>
+                        <Link
+                          href="/payment"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Wallet className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("payment") || "Payment & Wallet"}</span>
+                        </Link>
+                        
+                        <Link
+                          href="/profile/settings/editProfile"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Settings className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("settings") || "Settings"}</span>
+                        </Link>
+                        
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                        >
+                          <LogOut className="h-5 w-5 text-red-500" />
+                          <span className="font-medium text-red-500">{t("logout") || "Logout"}</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Bottom fade effect */}
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                 </div>
               </div>
             </motion.div>

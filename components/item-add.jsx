@@ -154,7 +154,8 @@ export function ItemAdd() {
       .min(20, t("Descriptiomustbeatleast20characters") || "Description must be at least 20 characters")
       .max(2000, t("Descriptionmustbelessthan2000characters") || "Description must be less than 2000 characters"),
     category: z.enum(categoriesName),
-    condition: z.string(),
+    condition: z.enum(itemsStatus),
+    status_item: z.enum(itemsStatus),
     // value_estimate: z.coerce.number().positive(t("Valuemustbegreaterthan0") || "Value must be greater than 0"),
     allowed_categories: z
       .array(z.enum(allowedCategories))
@@ -203,8 +204,8 @@ const getUser = async () => {
   }, [isRTL])
   const handleImageUpload = (e) => {
     // Require basic form fields before allowing image upload
-    const { name, description, category, condition, price, country, city, street, quantity } = form.getValues();
-    if (!name || !description || !category || !condition || !price || !country || !city || !street || !quantity) {
+    const { name, description, category, status_item, price, country, city, street, quantity } = form.getValues();
+    if (!name || !description || !category || !status_item || !price || !country || !city || !street || !quantity) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleasefillallitemdetailsbeforeuploadingimages") || "Please fill all item details before uploading images.",
@@ -264,11 +265,11 @@ const getUser = async () => {
   }
 
   const requestAiPriceEstimate = async () => {
-    const { name, description, category, condition, price } = form.getValues()
+    const { name, description, category, status_item, price } = form.getValues()
   
     try {
       // Check if all required fields are filled
-      if (!name || !description || !category || !condition || !price || 
+      if (!name || !description || !category || !status_item || !price || 
           !geo_location || Object.keys(geo_location).length === 0 || 
           !images || images.length === 0) {
         toast({
@@ -288,7 +289,7 @@ else{
         - Location: ${JSON.stringify(geo_location)}
         - Category: ${category}
         - Base Price Reference: ${price} EGP
-        - Condition: ${condition}
+        - Condition: ${status_item}
         
         Please examine the uploaded images carefully and provide:
         1. Visual condition assessment based on the images
@@ -382,8 +383,8 @@ else{
   const onSubmit = async (data, event) => {
     if (event) event.preventDefault();
 
-    const { name, description, category, condition, price, country, city, street, allowed_categories, quantity } = form.getValues();
-    if (!name || !description || !category || !condition || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0 || !quantity) {
+    const { name, description, category, status_item, price, country, city, street, allowed_categories, quantity } = form.getValues();
+    if (!name || !description || !category || !status_item || !price || !country || !city || !street || !allowed_categories || allowed_categories.length === 0 || !quantity) {
       toast({
         title: t("error") || "ERROR ",
         description: t("Pleasefillallitemdetails") || "Please fill all item details before submitting.",
@@ -539,7 +540,7 @@ else{
       setSelectedPosition(null)
       setAiResponse(null)
       setAiPriceEstimation(null)
-      setStep(1)
+      router.push("/profile/items")
     } catch (err) {
       console.error(err)
       toast({
@@ -558,9 +559,12 @@ else{
     form.watch("name")?.length >= 3 &&
     form.watch("description")?.length >= 20 &&
     !!form.watch("category") &&
-    !!form.watch("condition") &&
+    !!form.watch("status_item") &&
     !!form.watch("price") && 
     !!form.watch("quantity") &&
+    !!form.watch("country") &&
+    !!form.watch("city") &&
+    !!form.watch("street") &&
     Object.keys(geo_location).length > 0 
     
    
@@ -571,6 +575,9 @@ else{
     form.watch("allowed_categories")?.length > 0 &&
     form.watch("quantity") &&
     form.watch("quantity") > 0 &&
+    form.watch("country") &&
+    form.watch("city") &&
+    form.watch("street") &&
     images.length > 0;
 
   return (
@@ -770,7 +777,7 @@ else{
 
                     <FormField
                       control={form.control}
-                      name="condition"
+                      name="status_item"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">{t("Condition") || "Condition"}</FormLabel>
@@ -1084,6 +1091,7 @@ else{
                         </Button>
                         <Button
                           type="submit"
+                          onClick={() => handleSubmit()}
                           disabled={!isStep2Valid || isSubmitting}
                           className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
                         >

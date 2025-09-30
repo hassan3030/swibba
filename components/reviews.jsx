@@ -38,7 +38,7 @@ const starVariants = {
   },
   active: {
     scale: 1.2,
-    rotate: [0, -10, 10, 0],
+    rotate: -10,
     filter: "brightness(1.2)",
     transition: {
       type: "spring",
@@ -48,7 +48,7 @@ const starVariants = {
   },
   hover: {
     scale: 1.3,
-    rotate: [0, -5, 5, 0],
+    rotate: -5,
     filter: "brightness(1.3)",
     transition: {
       type: "spring",
@@ -108,7 +108,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
 
   const getMyDataUser = async()=>{ 
     try {
-      const userId = getCurrentUserId()
+      const userId = await getCurrentUserId()
       if (!userId) {
         console.error("No user ID available")
         return
@@ -141,8 +141,8 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
       }
       
       const rev = await getReviewConditins(id, offer_id)
-      if (rev && rev.data && typeof rev.data.can_review === 'boolean') {
-        setHasReviewed(!rev.data.can_review)
+      if (rev && rev.data && typeof rev.data.has_reviewed === 'boolean') {
+        setHasReviewed(rev.data.has_reviewed)
       } else {
         console.error("Review data not found or invalid structure:", rev)
         setHasReviewed(false)
@@ -227,7 +227,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <CardTitle className="flex items-center justify-center gap-2">
               <motion.div
-                animate={{ rotate: [0, -10, 10, 0] }}
+                animate={{ rotate: [0, -10] }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
               >
                 <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
@@ -270,7 +270,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
         </CardHeader>
 
         <AnimatePresence mode="wait">
-          {hasReviewed ? (
+          {!hasReviewed ? (
             <motion.div
               key="rating-form"
               initial={{ opacity: 0 }}

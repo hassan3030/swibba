@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/use-translations"
 
-import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified } from "lucide-react"
+import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, RefreshCw } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -69,20 +69,27 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [myUserId, setMyUserId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const { t } = useTranslations()
 
-  // Fetch my offers (sent and received) on mount
-  useEffect(() => {
-    const fetchOffers = async () => {
+  // Function to fetch offers data
+  const fetchOffers = async (isInitialLoad = false) => {
+    if (isInitialLoad) {
       setIsLoading(true)
-      const token = await getCookie()
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-      const { id } = await decodedToken(token)
-      setMyUserId(id)
+    } else {
+      setIsRefreshing(true)
+    }
+    
+    const token = await getCookie()
+    if (!token) {
+      setIsLoading(false)
+      setIsRefreshing(false)
+      return
+    }
+    const { id } = await decodedToken(token)
+    setMyUserId(id)
 
+    try {
       // Get offers where I am sender
       const sentOffers = await getOfferById(id)
       // Get offers where I am receiver
@@ -109,15 +116,35 @@ const Messages = () => {
         }),
       )
       setOffers(offersWithPartner)
+    } catch (error) {
+      console.error("Error fetching offers:", error)
+    } finally {
       setIsLoading(false)
+      setIsRefreshing(false)
     }
-    fetchOffers()
+  }
+
+  // Fetch my offers (sent and received) on mount
+  useEffect(() => {
+    fetchOffers(true)
   }, [])
 
-  // When an offer is selected, fetch partner and messages
+  // Auto-refresh every 2 seconds
   useEffect(() => {
-    const fetchPartnerAndMessages = async () => {
-      if (!selectedOffer || !myUserId) return
+    const interval = setInterval(() => {
+      if (!isLoading) {
+        fetchOffers(false)
+      }
+    }, 2000) // 2 seconds
+
+    return () => clearInterval(interval)
+  }, [isLoading])
+
+  // Function to fetch messages for selected offer
+  const fetchMessages = async () => {
+    if (!selectedOffer || !myUserId) return
+    
+    try {
       // Partner info is already attached to offer
       const partnerUser = await getUserById(selectedOffer.partner_id)
       setPartner(partnerUser.data)
@@ -125,9 +152,26 @@ const Messages = () => {
       // Fetch messages for this offer
       const msgs = await getMessage(selectedOffer.id)
       setMessages(msgs.data || [])
+    } catch (error) {
+      console.error("Error fetching messages:", error)
     }
-    fetchPartnerAndMessages()
+  }
+
+  // When an offer is selected, fetch partner and messages
+  useEffect(() => {
+    fetchMessages()
   }, [selectedOffer, myUserId])
+
+  // Auto-refresh messages every 2 seconds when conversation is selected
+  useEffect(() => {
+    if (!selectedOffer) return
+
+    const interval = setInterval(() => {
+      fetchMessages()
+    }, 2000) // 2 seconds
+
+    return () => clearInterval(interval)
+  }, [selectedOffer])
 
   // Filter offers by partner name
   const filteredOffers = offers.filter((offer) => offer.partner_name?.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -179,13 +223,26 @@ const Messages = () => {
         >
           <div className="p-4">
             <motion.div
-              className="flex items-center mb-4"
+              className="flex items-center justify-between mb-4"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <MessageCircle className="h-6 w-6 mr-3 text-primary" />
-              <h2 className="text-xl font-bold">{t("Messages") || "Messages"}</h2>
+              <div className="flex items-center">
+                <MessageCircle className="h-6 w-6 mr-3 text-primary" />
+                <h2 className="text-xl font-bold">{t("Messages") || "Messages"}</h2>
+              </div>
+              {isRefreshing && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="flex items-center text-sm text-muted-foreground"
+                >
+                  <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                  <span>Updating...</span>
+                </motion.div>
+              )}
             </motion.div>
 
             {/* Search */}
@@ -348,6 +405,19 @@ const Messages = () => {
 
               {/* Chat messages area with space for input */}
               <div className="flex flex-col h-[calc(100vh-270px)]">
+                {/* Refresh indicator for messages */}
+                {/* {isRefreshing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center justify-center py-2 text-xs text-muted-foreground bg-muted/30"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    <span>Updating messages...</span>
+                  </motion.div>
+                )} */}
+                
                 <ScrollArea className="flex-1 p-4 overflow-y-auto">
                   <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
                     <AnimatePresence>

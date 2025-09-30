@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 /* Leaflet CSS */
-@import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+/* @import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; */
+@import "~flag-icon-css/css/flag-icons.min.css";
+@import 'leaflet/dist/leaflet.css';
+
 
 /* Emoji and Flag Support */
 .emoji-flag {

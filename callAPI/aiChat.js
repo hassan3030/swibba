@@ -11,8 +11,15 @@ function isValidResponse(response) {
   // Check if response is "0" or contains only "0"
   if (response.text.trim() === "0") return false;
   
-  // Check if response contains meaningful content (at least 10 characters)
-  if (response.text.trim().length < 10) return false;
+  // Check if response contains meaningful content (at least 5 characters for JSON)
+  if (response.text.trim().length < 5) return false;
+  
+  // Check if response looks like JSON (starts with { or [)
+  const trimmedText = response.text.trim();
+  if (!trimmedText.startsWith('{') && !trimmedText.startsWith('[') && !trimmedText.includes('```')) {
+    console.warn('Response does not appear to be JSON format:', trimmedText.substring(0, 100));
+    return false;
+  }
   
   return true;
 }

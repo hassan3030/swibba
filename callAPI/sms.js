@@ -1,11 +1,34 @@
 import twilio from 'twilio'
 import { getCookie, decodedToken } from './utiles.js'
 
+// Validate required environment variables
+const validateTwilioConfig = () => {
+  const requiredVars = {
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+    TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER
+  }
+
+  const missingVars = Object.entries(requiredVars)
+    .filter(([key, value]) => !value || value === 'your_twilio_account_sid_here' || value === 'your_twilio_auth_token_here' || value === 'your_twilio_phone_number_here')
+    .map(([key]) => key)
+
+  if (missingVars.length > 0) {
+    throw new Error(`Missing or invalid Twilio configuration. Please set the following environment variables in your .env.local file: ${missingVars.join(', ')}. See SMS_SETUP_GUIDE.md for setup instructions.`)
+  }
+}
+
 // Initialize Twilio client
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-)
+let client = null
+try {
+  validateTwilioConfig()
+  client = twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  )
+} catch (error) {
+  console.error('Twilio configuration error:', error.message)
+}
 
 // Store verification codes temporarily (in production, use Redis or database)
 const verificationCodes = new Map()
@@ -18,6 +41,11 @@ const generateVerificationCode = () => {
 // Send SMS verification code
 export const sendVerificationSMS = async (phoneNumber, userId = null) => {
   try {
+    // Check if Twilio client is initialized
+    if (!client) {
+      throw new Error('SMS service is not configured. Please check your Twilio environment variables.')
+    }
+
     // Validate phone number format
     if (!phoneNumber || !phoneNumber.startsWith('+')) {
       throw new Error('Invalid phone number format. Must include country code.')

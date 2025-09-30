@@ -299,7 +299,7 @@ export default function ProfilePage() {
     <motion.div className="container py-10" variants={containerVariants} initial="hidden" animate="visible">
       {/* Go Back Link */}
       <motion.div className="inline mb-3" variants={itemVariants}>
-        <motion.div >
+        {/* <motion.div >
           <Button
             className="mb-2 shadow-lg hover:shadow-xl transition-all duration-300"
             variant="outline"
@@ -310,7 +310,7 @@ export default function ProfilePage() {
               <ArrowLeft className="mr-2 h-4 w-4" />
             </motion.div>
           </Button>
-        </motion.div>
+        </motion.div> */}
         <motion.h1
           className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
           initial={{ opacity: 0, x: -20 }}
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                           </p>
                         </TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
+                    </TooltipProvider> 
                   </motion.div>
                 </motion.div>
                 <div className="flex-1">

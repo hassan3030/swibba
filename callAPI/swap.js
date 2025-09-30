@@ -1090,6 +1090,11 @@ export const addReview = async (from_user_id, to_user_id, offer_id, rating, comm
       // Check if review already exists
       const existingResponse = await axios.get(
         `${baseItemsURL}/Reviews?filter[from_user_id][_eq]=${from_user_id}&filter[offer_id][_eq]=${offer_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        }
       )
 
       if (existingResponse.data.data.length > 0) {
@@ -1161,8 +1166,15 @@ export const getReviewConditins = async (from_user_id, offer_id) => {
       throw new Error("From user ID and offer ID are required")
     }
 
+    const auth = await validateAuth()
+
     const response = await axios.get(
       `${baseItemsURL}/Reviews?filter[from_user_id][_eq]=${from_user_id}&filter[offer_id][_eq]=${offer_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      }
     )
 
     const hasReviewed = response.data.data.length > 0
@@ -1170,7 +1182,7 @@ export const getReviewConditins = async (from_user_id, offer_id) => {
     return {
       success: true,
       data: {
-        can_review: hasReviewed,
+        can_review: !hasReviewed,
         has_reviewed: hasReviewed,
         existing_reviews: response.data.data || [],
       },

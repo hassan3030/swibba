@@ -114,7 +114,7 @@ export default function ManageItemsPage() {
       transition={{ duration: 0.5 }}
     >
       {/* Header */}
-      <motion.div
+      {/* <motion.div
         className="inline mb-3"
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -133,7 +133,7 @@ export default function ManageItemsPage() {
         >
           {t("manageItems") || "Manage Items"}
         </motion.h1>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div className="grid grid-cols-1 gap-8 mt-2" variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={cardVariants}>
@@ -150,7 +150,7 @@ export default function ManageItemsPage() {
                   <Button asChild>
                     <Link href="/profile/settings/editItem/new">
                       <Plus className="mr-2 h-4 w-4" />
-                      {t("addNewItem") || "Add New Item"}
+                      {t("addNewItem") || "Add Item"}
                     </Link>
                   </Button>
                 </motion.div>
@@ -198,7 +198,7 @@ export default function ManageItemsPage() {
                           <Button asChild className="mt-4">
                             <Link href="/profile/settings/editItem/new">
                               <Plus className="mr-2 h-4 w-4" />
-                              {t("addNewItem") || "Add New Item"}
+                              {t("addNewItem") || "Add Item"}
                             </Link>
                           </Button>
                         </motion.div>

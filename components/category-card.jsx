@@ -78,6 +78,7 @@ export function CategoryCard({ name, imageSrc }) {
             alt={name}
             fill
             className="object-cover transition-transform duration-300 rounded-full p-2"
+            priority
           />
           <div className="absolute inset-0 rounded-full ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300" />
         </motion.div>

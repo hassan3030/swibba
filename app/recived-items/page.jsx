@@ -507,7 +507,7 @@ const RecivedItems = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
                         >
-                          <div className="text-sm text-muted-foreground">
+                          {offer.status_offer!=='completed' && (<div className="text-sm text-muted-foreground">
                             {t("Myitems") || "My items"}:{" "}
                             {
                               itemsOffer.filter((u) => u.offered_by === offer.to_user_id && u.offer_id === offer.id)
@@ -518,7 +518,7 @@ const RecivedItems = () => {
                               itemsOffer.filter((u) => u.offered_by !== offer.to_user_id && u.offer_id === offer.id)
                                 .length
                             }
-                          </div>
+                          </div>)}
                           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {offer.date_created ? new Date(offer.date_created).toLocaleString() : ""}

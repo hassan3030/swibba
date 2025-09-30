@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { notFound, useRouter, useParams } from "next/navigation"
-import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus } from "lucide-react"
+import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus, BadgeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -359,25 +359,25 @@ export default function ProductPage() {
                     transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
                     className="absolute -top-1 -right-1"
                   >
-                    <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5 shadow-sm" />
+                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 shadow-sm" />
                   </motion.div>
-                ) : null}
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <BadgeX className="h-4 w-4 text-red-500 bg-background rounded-full p-0.5 shadow-sm" />
+                  </motion.div>
+                )}
               </motion.div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold text-sm sm:text-base truncate" title={name || "Unknown"}>
                     {name || "Unknown"}
                   </span>
-                  {user?.Verified === "true" || user?.Verified === true ? (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.7, type: "spring", stiffness: 400 }}
-                      className="flex-shrink-0"
-                    >
-                      <Verified className="h-3 w-3 sm:h-4 sm:w-4 text-[#49c5b6]" />
-                    </motion.div>
-                  ) : null}
+                
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-1">
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -413,7 +413,7 @@ export default function ProductPage() {
                 </motion.div>
               )}
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                <Link href={`/products`} className="block w-full">
+                <Link href={`/`} className="block w-full">
                   <Button variant="secondary" className="w-full text-sm sm:text-base">
                     {t("goBack")}
                   </Button>

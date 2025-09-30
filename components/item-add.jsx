@@ -101,7 +101,7 @@ export function ItemAdd() {
   const [aiResponse, setAiResponse] = useState(null)
   const [isAiProcessing, setIsAiProcessing] = useState(false)
   const [aiInput, setAiInput] = useState("")
-  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
+  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. For location translations, use the actual city and street names provided by the user, not generic terms like 'Current Location'. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
   const [aiReply, setAiReply] = useState(null)
   const [user, setUser] = useState()
 
@@ -282,11 +282,17 @@ const getUser = async () => {
         return
       }
 else{
+      // Get location context for AI
+      const locationContext = geo_location && geo_location.lat && geo_location.lng 
+        ? `Coordinates: ${geo_location.lat.toFixed(6)}, ${geo_location.lng.toFixed(6)} (${geo_location.name || 'User Location'})`
+        : 'Location: Not specified';
+      
       setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
         Item Details:
         - Name: ${name}
         - Description: ${description}
-        - Location: ${JSON.stringify(geo_location)}
+        - Location: ${locationContext}
+        - User Location Details: Country: ${form.getValues('country')}, City: ${form.getValues('city')}, Street: ${form.getValues('street')}
         - Category: ${category}
         - Base Price Reference: ${price} EGP
         - Condition: ${status_item}
@@ -296,6 +302,8 @@ else{
         2. Brand/model identification if visible
         3. Quality and wear analysis from the images
         4. Market value estimation considering visual condition
+        
+        For location translations, please provide proper location names based on the user's country, city, and street information provided above. Do not use generic terms like "Current Location".
         
         please return ONLY a JSON response in this format:
         {
@@ -436,11 +444,13 @@ else{
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const country = form.getValues('country') || 'Unknown Country';
+        const city = form.getValues('city') || 'Unknown City';
         const pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          name: "Current Location",
+          name: `${city}, ${country}`,
         }
         setCurrentPosition(pos)
         setSelectedPosition(pos)
@@ -500,27 +510,30 @@ else{
     try {
     getUser()
 
+      // Create translations with fallbacks
+      const translations = [
+        {
+          languages_code: "en-US",
+          name: aiResponse?.name_translations?.en || form.getValues('name'),
+          description: aiResponse?.description_translations?.en || form.getValues('description'),
+          city: aiResponse?.city_translations?.en || form.getValues('city'),
+          street: aiResponse?.street_translations?.en || form.getValues('street'),
+        },
+        {
+          languages_code: "ar-SA",
+          name: aiResponse?.name_translations?.ar || form.getValues('name'),
+          description: aiResponse?.description_translations?.ar || form.getValues('description'),
+          city: aiResponse?.city_translations?.ar || form.getValues('city'),
+          street: aiResponse?.street_translations?.ar || form.getValues('street'),
+        },
+      ];
+
       const payload = { 
         ...form.getValues(), 
         user_email: user.email,
         geo_location,
         value_estimate: aiPriceEstimation ,
-        translations: [
-          {
-            languages_code: "en-US",
-            name: aiResponse.name_translations.en,
-            description: aiResponse.description_translations.en,
-            city: aiResponse.city_translations.en,
-            street: aiResponse.street_translations.en,
-          },
-          {
-            languages_code: "ar-SA",
-            name: aiResponse.name_translations.ar,
-            description: aiResponse.description_translations.ar,
-            city: aiResponse.city_translations.ar,
-            street: aiResponse.street_translations.ar,
-          },
-        ],
+        translations,
       }
       console.log("Payload:", payload)
       console.log("geo_location:", geo_location)

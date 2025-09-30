@@ -36,7 +36,9 @@ import {
   Globe,
   Shield,
   Loader2,
-  Star
+  Star,
+  Verified,
+  BadgeX
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
@@ -114,6 +116,32 @@ const floatingVariants = {
     },
   },
 }
+
+const badgeVariants = {
+  hidden: { scale: 0 },
+  visible: {
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 500,
+      damping: 30,
+    },
+  },
+  hover: {
+    scale: 1.1,
+    rotate: [0, -5, 5, 0],
+    transition: { duration: 0.3 },
+  },
+  pulse: {
+    scale: [1, 1.05, 1],
+    transition: {
+      duration: 2,
+      repeat: Number.POSITIVE_INFINITY,
+      ease: "easeInOut",
+    },
+  },
+}
+
 
 export default function PaymentPage({ showHeader = true }) {
   const [user, setUser] = useState(null)
@@ -518,7 +546,7 @@ export default function PaymentPage({ showHeader = true }) {
               {t("payment") || "Payment & Wallet"}
             </motion.h1>
           </div>
-          
+
           {user && (
             <motion.div 
               className="flex items-center space-x-3"
@@ -527,16 +555,63 @@ export default function PaymentPage({ showHeader = true }) {
               transition={{ delay: 0.5 }}
             >
               <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              
                 <AvatarImage
                   src={user?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}` : "/placeholder.svg"}
                   alt={user?.first_name || t("account")}
                 />
+                
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {String(user?.first_name).charAt(0)}
                 </AvatarFallback>
+                {user?.Verified === "true" || user?.Verified === true ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 shadow-sm" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <BadgeX className="h-4 w-4 text-red-500 bg-background rounded-full p-0.5 shadow-sm" />
+                  </motion.div>
+                )}
               </Avatar>
+          
               <div className="hidden sm:block">
-                <p className="text-sm font-medium">{user?.first_name || t("account")}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{user?.first_name || t("account")}</p>
+                  {/* {user?.verified === 'true' || user?.verified === true ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 shadow-md" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("verifiedUser") || "Verified User"}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : null} */}
+                </div>
+                <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
+              </div>
+              
+              {/* Mobile version */}
+              <div className="block sm:hidden">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{user?.first_name || t("account")}</p>
+                  {user?.verified === 'true' || user?.verified === true ? (
+                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 shadow-md" />
+                  ) : null}
+                </div>
                 <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
               </div>
             </motion.div>

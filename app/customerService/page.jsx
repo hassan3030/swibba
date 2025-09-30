@@ -35,11 +35,6 @@ const CustomerServicePage = () => {
 
 export default CustomerServicePage
 
-
-
-
-
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -138,9 +133,10 @@ const CustomerService = () => {
         setPhoneNumber("")
         setMessage("")
         toast({
+        
           title: t("sendMessage") || "Your message sent!",
           description: t("messageDescription") || "Your message has been sent! We'll get back to you soon.",
-          variant: "primary",
+          variant: "default",
         })
       } catch (error) {
         toast({

@@ -7,10 +7,6 @@ export async function middleware(req) {
  
    const token = req.cookies.get('Token')?.value;
 
-  // Protect /cart
-  if (!token && req.nextUrl.pathname.startsWith('/cart')) {
-    return NextResponse.redirect(new URL('/auth/login', req.url));
-  }
 
   // Protect /chat
   if (!token && req.nextUrl.pathname.startsWith('/chat')) {
@@ -20,10 +16,7 @@ export async function middleware(req) {
   if (!token && req.nextUrl.pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }
-  // Protect /notifications
-  if (!token && req.nextUrl.pathname.startsWith('/notifications')) {
-    return NextResponse.redirect(new URL('/auth/login', req.url));
-  }
+ 
   // Protect /profile
   if (!token && req.nextUrl.pathname.startsWith('/profile')) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
@@ -46,17 +39,31 @@ export async function middleware(req) {
   
     return NextResponse.redirect(new URL('/', req.url));
   }
+
+   // Protect /send-items when already logged in
+
+ if (!token && req.nextUrl.pathname.startsWith('/send-items')) {
+  
+  return NextResponse.redirect(new URL('/auth/login', req.url));
+}
+
+ // Protect /recived-items when already logged in
+
+ if (!token && req.nextUrl.pathname.startsWith('/recived-items')) {
+  
+  return NextResponse.redirect(new URL('/auth/login', req.url));
+}
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-            '/cart/:path*',
              '/chat/:path*',
-             '/notifications/:path*',
              '/swap/:path*',
              '/wishList/:path*',
              '/profile/:path*',
              '/auth/:path*',
+             '/send-items/:path*',
+             '/recived-items/:path*',
             ],
 };

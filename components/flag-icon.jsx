@@ -60,25 +60,12 @@ const FlagIcon = ({ flag, countryCode, className = "" }) => {
     )
   }
 
-  // Display emoji flag with proper styling
+  // Display flag using CSS classes from flag-icon-css library
   return (
     <span 
-      className={`emoji-flag inline-block ${className}`}
-      style={{
-        fontSize: '1.2em',
-        lineHeight: '1',
-        display: 'inline-block',
-        verticalAlign: 'middle',
-        textAlign: 'center',
-        minWidth: '1.2em',
-        minHeight: '1.2em',
-        fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Android Emoji", sans-serif'
-      }}
+      className={`flag-icon flag-icon-${flag?.toLowerCase()} ${className}`}
       title={`${countryCode} flag`}
-      onError={() => setHasError(true)}
-    >
-      {flag || fallbackFlags[countryCode] || "🏳️"}
-    </span>
+    ></span>
   )
 }
 

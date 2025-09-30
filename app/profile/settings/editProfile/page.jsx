@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   ChevronLeft,
-  User,
+  User, 
   Globe,
   Shield,
   CirclePlus,
@@ -692,7 +692,7 @@ export default function ProfileSettingsPage() {
       </div>
 
       {/* Header Section */}
-      <motion.div className="inline mb-6 relative z-10" variants={headerVariants}>
+      {/* <motion.div className="inline mb-6 relative z-10" variants={headerVariants}>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
           <Button
             className="mb-2 shadow-lg hover:shadow-xl transition-all duration-300 bg-background/80 backdrop-blur-sm"
@@ -715,12 +715,21 @@ export default function ProfileSettingsPage() {
         >
           {t("accountSettings") || "Account Settings"}
         </motion.h1>
-      </motion.div>
+      </motion.div> */}
 
       <Tabs defaultValue="profile" className="w-full relative z-10">
+      
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Sidebar */}
           <motion.div className="md:col-span-1" variants={itemVariants}>
+          <motion.h1
+          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          {t("accountSettings") || "Account Settings"}
+        </motion.h1>
             <motion.div variants={cardVariants} whileHover="hover" className="sticky top-8">
               <TabsList className="flex h-auto w-full flex-col items-start justify-start bg-gradient-to-br from-card to-muted shadow-lg border-0 p-2 rounded-xl">
                 {[
@@ -920,7 +929,7 @@ export default function ProfileSettingsPage() {
                                   <Input
                                     id="city"
                                     name="city"
-                                    value={!isRTL ? originalTranslations[0]?.city: originalTranslations[1]?.city}
+                                    value={!isRTL ? originalTranslations[0]?.city: originalTranslations[1]?.city || city}
                                     onChange={(e) => setCity(e.target.value)}
                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
@@ -939,7 +948,7 @@ export default function ProfileSettingsPage() {
                                   <Input
                                     id="street"
                                     name="street"
-                                    value={!isRTL ? originalTranslations[0]?.street: originalTranslations[1]?.street}
+                                    value={!isRTL ? originalTranslations[0]?.street: originalTranslations[1]?.street || street}
                                     onChange={(e) => setStreet(e.target.value)}
                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
@@ -1207,7 +1216,7 @@ export default function ProfileSettingsPage() {
                                 <Textarea
                                   id="description"
                                   name="description"
-                                  value={!isRTL ? originalTranslations[0]?.description: originalTranslations[1]?.description}
+                                  value={!isRTL ? originalTranslations[0]?.description: originalTranslations[1]?.description || description}
                                   onChange={(e) => setDescription(e.target.value)}
                                   rows={4}
                                   className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none"

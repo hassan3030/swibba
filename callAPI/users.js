@@ -35,7 +35,7 @@ export const auth = async (email, password) => {
       throw new Error("Failed to store authentication token")
     }
 
-    console.log("Authentication successful for:", email)
+    // console.log("Authentication successful for:", email)
     return {
       success: true,
       data: authResponse.data.data,
@@ -67,7 +67,7 @@ export const login = async (email, password) => {
       },
     })
 
-    console.log("Login successful for user:", decoded.id)
+    // console.log("Login successful for user:", decoded.id)
     if (getTargetId) {
         window.location.reload()
              window.location.replace(`/swap/${getTargetId}`);
@@ -128,7 +128,7 @@ export const login = async (email, password) => {
 //           },
 //         },
 //       )
-//     console.log('i am in regisration existingUserCheck ',existingUserCheck )
+//     // console.log('i am in regisration existingUserCheck ',existingUserCheck )
 
      
 //       if (existingUserCheck.data?.data?.length > 0) {
@@ -153,7 +153,7 @@ export const login = async (email, password) => {
 //     //       Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
 //     //     },
 //     // });
-//     // console.log('i am in regisration getRes  ',getRes )
+    //     // console.log('i am in regisration getRes  ',getRes )
 //     // const user = getRes.data.data[0];
 //     // console.log('i am in regisration user ',user )
 //     // if (!user) {
@@ -251,17 +251,17 @@ export const register = async (email, password, first_name, additional_data = {}
         Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
       },
     });
-    console.log('i am in regisration getRes  ',getRes )
+    // console.log('i am in regisration getRes  ',getRes )
 
     const user = getRes.data.data[0];
     if (!user) {
-      console.log('User not found.');
+      // console.log('User not found.');
       return;
     }
-    console.log('i am in regisration user ',user )
+    // console.log('i am in regisration user ',user )
 
     const userId = user.id;
-    console.log('i am in regisration userId ',userId )
+    // console.log('i am in regisration userId ',userId )
 
     // Step 2: Update (PATCH) the user status to active
     const patchRes = await axios.patch(`${baseURL}/users/${userId}`,
@@ -275,15 +275,15 @@ export const register = async (email, password, first_name, additional_data = {}
       }
     );
 
-    console.log('User activated:', patchRes.data.data);
+    // console.log('User activated:', patchRes.data.data);
 
-console.log('User registered:', response.data.data);
+// console.log('User registered:', response.data.data);
 
 const logining  =  await login(email , password)
-    console.log('i am in regisration function2 ',logining )
+    // console.log('i am in regisration function2 ',logining )
 
   } catch (error) {
-    console.error('Registration error:', error.response?.data || error.message);
+    // console.error('Registration error:', error.response?.data || error.message);
   }
 }
 
@@ -301,7 +301,7 @@ export const getUserById = async (id) => {
     if (!token) {
       // Handle cases where the token is not available, if necessary
       // For example, you might want to allow certain public profiles to be viewed
-      console.warn("No authentication token found. Making an unauthenticated request.");
+      // console.warn("No authentication token found. Making an unauthenticated request.");
     }
 
     // Configure headers with the token if it exists
@@ -312,7 +312,7 @@ export const getUserById = async (id) => {
 
     const response = await axios.get(`${baseURL}/users/${id}?fields=*,translations.*`, { headers });
 
-    console.log("User data retrieved for ID:", id);
+    // console.log("User data retrieved for ID:", id);
 
     return {
       success: true,
@@ -339,7 +339,7 @@ export const getKYC = async (id) => {
    else {
     const {first_name, last_name, email , phone_number, avatar, country, city, street, post_code, geo_location} = user.data
     if(!first_name || !last_name || !email || !phone_number || !avatar || !country || !city || !street || !post_code || !geo_location) {
-      console.log("User data is required for KYC")
+      // console.log("User data is required for KYC")
       return {
         success: false,
         data: false,
@@ -348,8 +348,8 @@ export const getKYC = async (id) => {
       }
     }
     else {
-      console.log("User data for KYC:", user.data)
-      console.log(" data for KYC: stable for verification")
+      // console.log("User data for KYC:", user.data)
+      // console.log(" data for KYC: stable for verification")
       return {
         success: true,
         data: true,
@@ -391,7 +391,7 @@ export const getUserByProductId = async (productId) => {
 
     const productRes = await axios.get(`${baseItemsURL}/Items/${productId}?fields=*,translations.*,images.*`)
     const userId = productRes.data?.data?.user_id
-     console.log('userId' , userId)
+     // console.log('userId' , userId)
     if (!userId) {
       throw new Error("No user associated with this product");
     }
@@ -560,7 +560,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
 
           updateData.avatar = avatarResponse.data.data.id
         } catch (avatarError) {
-          console.warn("Avatar upload failed:", avatarError.message)
+          // console.warn("Avatar upload failed:", avatarError.message)
         }
       }
 
@@ -571,7 +571,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
         },
       })
 
-      console.log("Profile updated successfully")
+      // console.log("Profile updated successfully")
       return {
         success: true,
         data: response.data.data,
@@ -625,7 +625,7 @@ export const resetPassword = async (newPassword, email) => {
         },
       )
 
-      console.log("Password reset successful")
+      // console.log("Password reset successful")
       return {
         success: true,
         data: response.data.data,
@@ -641,7 +641,7 @@ export const resetPassword = async (newPassword, email) => {
 export const logout = async () => {
   try {
     const result = await removeCookie()
-    console.log("User logged out successfully")
+    // console.log("User logged out successfully")
     return {
       success: true,
       message: "Logged out successfully",
@@ -682,7 +682,7 @@ export const updatePhoneVerification = async (userId, phoneNumber, isVerified = 
       }
     );
 
-    console.log("Phone verification status updated successfully");
+    // console.log("Phone verification status updated successfully");
     return {
       success: true,
       data: response.data.data,
@@ -726,7 +726,7 @@ export const addMessage = async (email, name, message, phone_number) => {
       { headers }
     );
 
-    console.log("Message added successfully");
+    //  console.log("Message added successfully");
     return {
       success: true,
       data: response.data.data,

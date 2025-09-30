@@ -102,7 +102,7 @@ export function ItemCardProfile({
   //     setBigImage(image.data[0].directus_files_id)
   //     setIsLoading(false)
   //   } catch (error) {
-  //     console.error("Error loading image:", error)
+  //     // console.error("Error loading image:", error)
   //     setIsLoading(false)
   //   }
   // }
@@ -144,7 +144,7 @@ export function ItemCardProfile({
         setSwitchHeart(isItem)
       }
     } catch (error) {
-      console.error("Error getting wish item:", error)
+      // console.error("Error getting wish item:", error)
     }
   }
   const handleAddWishItem = async () => {
@@ -171,18 +171,18 @@ export function ItemCardProfile({
         }
       }
     } catch (error) {
-      console.error("Error updating wishlist:", error)
+      // console.error("Error updating wishlist:", error)
     }
   }
-
+   
   // useEffect(() => {
   //   getDataImage()
   // }, [])
 
   useEffect(() => {
     handleGetWishItem()
-    console.log("i am in the item card profile images", images)
-    console.log("i am in the item card profile images", images[0]?.directus_files_id)
+    // console.log("i am in the item card profile images", images)
+    // console.log("i am in the item card profile images", images[0]?.directus_files_id)
   }, [switchHeart])
 
   return (

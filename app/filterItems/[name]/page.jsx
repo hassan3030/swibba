@@ -39,7 +39,7 @@ const FilterItemsPage = ({ params }) => {
       // Get the search term from URL params
       const { name } = await params
       const searchTerm = decodeURIComponent(name || "").trim()
-      console.log("searchTerm", searchTerm)
+      // console.log("searchTerm", searchTerm)
       
       // If no search term, get all products
       if (!searchTerm) {
@@ -49,7 +49,7 @@ const FilterItemsPage = ({ params }) => {
         }
         const productsData = await getProducts({}, additionalParams)
         setProducts(productsData.data)
-        console.log("productsData (all)", productsData)
+        // console.log("productsData (all)", productsData)
       } else {
         // Filter by search term with partial text matching across multiple fields
         const filters = {
@@ -71,7 +71,7 @@ const FilterItemsPage = ({ params }) => {
         
         const productsData = await getProducts(filters, additionalParams)
         setProducts(productsData.data)
-        console.log("productsData (filtered)", productsData)
+        // console.log("productsData (filtered)", productsData)
       }
       
       setIsLoading(false)

@@ -173,7 +173,7 @@ export function SwibbaProductCard({
         setSwitchHeart(isItem)
       }
     } catch (error) {
-      console.error("Error getting wish item:", error)
+      // console.error("Error getting wish item:", error)
     }
   }
 
@@ -210,7 +210,7 @@ export function SwibbaProductCard({
         }
       }
     } catch (error) {
-      console.error("Error handling wish item:", error)
+      //  console.error("Error handling wish item:", error)
     }
   }
 

@@ -11,7 +11,7 @@ const FilterItemsCategoryPage = async ({params}) => {
 
     const showFilters = products.count > 0
     
-    console.log(`Category page: ${normalizedCat}, found ${products.count} items`)
+    // console.log(`Category page: ${normalizedCat}, found ${products.count} items`)
     
   return (
   <div className="my-3 mx-3">

@@ -177,24 +177,24 @@ export default function ProfilePage() {
     for (const value of reviews) {
       sum += value
     }
-    console.log("sum", sum)
+    // console.log("sum", sum)
     return Math.round((sum / reviews.length) * 10) / 10
   }
 
   const handleGetBreviousRating = async (id) => {
     const response = await getReview(id)
-    console.log("response", response.data)
+    // console.log("response", response.data)
 
     if (!response.data) {
       setRate(0)
     } else {
       const rates = response.data.map(({ rating }) => rating)
-      console.log("rates", rates)
+      // console.log("rates", rates)
       const calculateAverageRating = getCalculateAverageRating(rates)
-      console.log("calculateAverageRating", calculateAverageRating)
+      // console.log("calculateAverageRating", calculateAverageRating)
 
       setRate(calculateAverageRating)
-      console.log("rate", rate)
+      // console.log("rate", rate)
     }
   }
 
@@ -205,7 +205,7 @@ export default function ProfilePage() {
     
     // Check if the API call was successful and data exists
     if (!userPruducts || !userPruducts.success || !userPruducts.data) {
-      console.error("Failed to fetch user products:", userPruducts?.error || "Unknown error")
+      // console.error("Failed to fetch user products:", userPruducts?.error || "Unknown error")
       setmyUnavailableItems([])
       setmyAvailableItems([])
       return []
@@ -223,10 +223,10 @@ export default function ProfilePage() {
     try {
       const { userId } = await validateAuth()
       const notifications = await getOffersNotifications(userId)
-      console.log("notifications", notifications.count)
+      // console.log("notifications", notifications.count)
       setNotificationsLength(notifications.count)
     } catch (error) {
-      console.error("Error fetching notifications:", error)
+      //  console.error("Error fetching notifications:", error)
       setNotificationsLength(0)
     }
   }
@@ -266,10 +266,10 @@ export default function ProfilePage() {
       setUserSwaps(uniqueUsers)
       setSwapItems(items)
 
-      console.log("setNotifications", offers) // Check what is returned
-      console.log("offerItems", offerItems) // Check what is returned
-      console.log("items", items) // Check what is returned
-      console.log("usersSwaper", usersSwaper) // Check what is returned
+      // console.log("setNotifications", offers) // Check what is returned
+      // console.log("offerItems", offerItems) // Check what is returned
+      // console.log("items", items) // Check what is returned
+      // console.log("usersSwaper", usersSwaper) // Check what is returned
     }
   }
 
@@ -418,7 +418,7 @@ export default function ProfilePage() {
                       animate={{ x: [-2, 2, -2] }}
                       transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
                     >
-                      <ArrowLeftRight className="h-4 w-4 text-blue-500" />
+                      <ArrowLeftRight className="h-4 w-4 text-primary" />
                     </motion.div>
                     <span className="font-medium">
                       {!user?.completedSwaps || user?.completedSwaps === 0

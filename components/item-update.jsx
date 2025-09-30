@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin } from "lucide-react"
+import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { getImageProducts } from "@/callAPI/products"
@@ -24,6 +24,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { updateProduct } from "@/callAPI/products"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
+import LocationMap from "@/components/location-map"
 // import {  decodedToken } from "@/callAPI/utiles"
 // import { getUserById } from "@/callAPI/users"
 
@@ -117,12 +118,14 @@ export function ItemUpdate(props) {
     translations,
     quantity,
   } = props
-  console.log("itemData", images[0].directus_files_id)
-  console.log("translations", translations)
-  console.log("props", props)
+  // console.log("itemData", images[0].directus_files_id)
+  // console.log("translations", translations)
+  // console.log("props", props)
   const router = useRouter()
   const [imagesFile, setImagesFile] = useState([])
   const [imageUrls, setImageUrls] = useState([])
+  const [existingImages, setExistingImages] = useState([]) // {fileId, url}
+  const [retainedExistingFileIds, setRetainedExistingFileIds] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [aiPriceEstimation, setAiPriceEstimation] = useState(null)
   const [isEstimating, setIsEstimating] = useState(false)
@@ -139,6 +142,7 @@ export function ItemUpdate(props) {
       : null
   )
   const [currentPosition, setCurrentPosition] = useState(null) 
+  const [isMapRefreshing, setIsMapRefreshing] = useState(false)
 
 //AI chat
   const [aiResponse, setAiResponse] = useState(null)
@@ -183,11 +187,16 @@ export function ItemUpdate(props) {
         const fetchedImages = await getImageProducts(images)
         if (fetchedImages.datas && fetchedImages.data.length > 0) {
           setBigImage(fetchedImages.data[0].directus_files_id)
-          const urls = fetchedImages.data.map((img) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`)
-          setImageUrls(urls)
+          const list = fetchedImages.data.map((img) => ({
+            fileId: img.directus_files_id,
+            url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`,
+          }))
+          setExistingImages(list)
+          setImageUrls(list.map(x => x.url))
+          setRetainedExistingFileIds(list.map(x => x.fileId))
         }
       } catch (err) {
-        console.error("Failed to fetch images", err)
+        // console.error("Failed to fetch images", err)
       }
     }
     fetchImages()
@@ -335,9 +344,14 @@ export function ItemUpdate(props) {
     setImageUrls((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const removeExistingImageById = (fileId) => {
+    setRetainedExistingFileIds((prev) => prev.filter((id) => id !== fileId))
+    setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId))
+  }
+
   // const requestAiPriceEstimate = async () => {
   //   const { name, description, category, status_item } = form.getValues()
-  //   console.log("Requesting AI estimate for:", { name, description, category, status_item })
+  //   // console.log("Requesting AI estimate for:", { name, description, category, status_item })
 
   //   if (!name || !description || !category || !status_item) {
   //     toast({
@@ -356,7 +370,7 @@ export function ItemUpdate(props) {
   //     setAiPriceEstimation(mockEstimate)
   //     form.setValue("value_estimate", mockEstimate)
   //   } catch (error) {
-  //     console.error("Error getting AI price estimate:", error)
+  //     // console.error("Error getting AI price estimate:", error)
   //     toast({
   //       title: t("error") || "ERROR",
   //       description: "Failed to get AI price estimate. Please try again or enter your own estimate.",
@@ -430,10 +444,10 @@ else{
     jsonString = jsonString.trim()
     
     const jsonObject = JSON.parse(jsonString)
-    console.log("Parsed AI Response:", jsonObject)
-    console.log("Estimated Price:", jsonObject.estimated_price)
-    console.log("Name Translations:", jsonObject.name_translations)
-    console.log("Description Translations:", jsonObject.description_translations)
+    // console.log("Parsed AI Response:", jsonObject)
+    // console.log("Estimated Price:", jsonObject.estimated_price)
+    // console.log("Name Translations:", jsonObject.name_translations)
+    // console.log("Description Translations:", jsonObject.description_translations)
     
     // Validate the parsed response
     if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
@@ -442,6 +456,27 @@ else{
     
     setAiResponse(jsonObject)
     setAiPriceEstimation(jsonObject.estimated_price)
+    // Compare and optionally apply AI translations to form
+    const current = form.getValues()
+    const proposed = {
+      name: jsonObject?.name_translations?.[!isRTL ? 'en' : 'ar'] ?? current.name,
+      description: jsonObject?.description_translations?.[!isRTL ? 'en' : 'ar'] ?? current.description,
+      city: jsonObject?.city_translations?.[!isRTL ? 'en' : 'ar'] ?? current.city,
+      street: jsonObject?.street_translations?.[!isRTL ? 'en' : 'ar'] ?? current.street,
+    }
+    const changedFields = []
+    ;(['name','description','city','street']).forEach((key) => {
+      if (proposed[key] && proposed[key] !== current[key]) {
+        form.setValue(key, proposed[key])
+        changedFields.push(key)
+      }
+    })
+    form.setValue('value_estimate', jsonObject.estimated_price)
+    if (changedFields.length > 0) {
+      toast({ title: t("success") || "Success", description: `${t("UpdatedFields") || "Updated fields"}: ${changedFields.join(', ')}` })
+    } else {
+      toast({ title: t("Note") || "Note", description: t("NoFieldChangesFromAI") || "AI did not suggest changes to text fields." })
+    }
     
     // Show success message with attempt info
     if (aiResponse.attempt > 1) {
@@ -455,7 +490,7 @@ else{
     setIsEstimating(false)
     }
     } catch (error) {
-      console.error("Error getting AI price estimate:", error)
+      // console.error("Error getting AI price estimate:", error)
       
       let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
         "Failed to get AI price estimate. Please try again or enter your own estimate."
@@ -480,7 +515,8 @@ else{
 
 
   const onSubmit = async (data) => {
-    if (imagesFile.length === 0) {
+    const totalAfterUpdate = retainedExistingFileIds.length + imagesFile.length
+    if (totalAfterUpdate === 0) {
       toast({
         title: t("error") || "ERROR",
         description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
@@ -493,10 +529,10 @@ else{
 
     try {
       await handleSubmit()
-      console.log("Form data:", data)
-      console.log("Images:", imagesFile)
+      //  console.log("Form data:", data)
+      // console.log("Images:", imagesFile)
     } catch (error) {
-      console.error("Error creating item:", error)
+      // console.error("Error creating item:", error)
       toast({
         title: t("error") || "ERROR",
         description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
@@ -578,10 +614,11 @@ else{
       ...formValues, 
       geo_location: geoLocation, 
       value_estimate: aiPriceEstimation,
-      translations: translationsToSend.length > 0 ? translationsToSend : undefined
+      translations: translationsToSend.length > 0 ? translationsToSend : undefined,
+      retained_image_file_ids: retainedExistingFileIds
     }
 
-    if (files.length === 0) {
+    if ((retainedExistingFileIds.length + files.length) === 0) {
       toast({
         title: t("error") || "ERROR",
         description: t("Pleasefillallfieldsandselectatleastoneimage") || "Please fill all fields and select at least one image.",
@@ -948,6 +985,85 @@ else{
                       </Card>
                     </motion.div>
 
+                    {/* Interactive Map Section */}
+                    <motion.div variants={itemVariants}>
+                      <Card className="rounded-xl shadow-md bg-muted border-border">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-primary">
+                            <motion.div
+                              animate={{ rotate: [0, 360] }}
+                              transition={{ repeat: Number.POSITIVE_INFINITY, duration: 8, ease: "linear" }}
+                            >
+                              <Navigation className="h-5 w-5 text-primary" />
+                            </motion.div>
+                            {t("InteractiveMap") || "Interactive Map"}
+                            {isMapRefreshing && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex items-center text-sm text-muted-foreground ml-auto"
+                              >
+                                <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                                <span>Updating...</span>
+                              </motion.div>
+                            )}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <LocationMap
+                              latitude={selectedPosition?.lat || geoLocation?.lat || 30.0444}
+                              longitude={selectedPosition?.lng || geoLocation?.lng || 31.2357}
+                              onLocationSelect={(location) => {
+                                setGeoLocation({ lat: location.lat, lng: location.lng, accuracy: 0, name: location.name || "Selected Location" })
+                                setSelectedPosition(location)
+                              }}
+                              height="300px"
+                              className="shadow-lg"
+                            />
+                          </motion.div>
+                          <motion.div className="flex flex-wrap gap-4 justify-center" variants={itemVariants}>
+                            <motion.div whileHover="hover" whileTap="tap">
+                              <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="bg-primary hover:bg-primary/90 text-white shadow-lg">
+                                {isGettingLocation ? (
+                                  <>
+                                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}>
+                                      <Loader2 className="mr-2 h-4 w-4" />
+                                    </motion.div>
+                                    {t("GettingLocation") || "Getting Location..."}
+                                  </>
+                                ) : (
+                                  <>
+                                    <MapPin className="mr-2 h-4 w-4" />
+                                    {t("GetCurrentLocation") || "Get Current Location"}
+                                  </>
+                                )}
+                              </Button>
+                            </motion.div>
+                            <motion.div whileHover="hover" whileTap="tap">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setIsMapRefreshing(true)
+                                  setTimeout(() => setIsMapRefreshing(false), 1000)
+                                }}
+                                className="border-primary text-primary hover:bg-primary/90"
+                              >
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                {t("RefreshMap") || "Refresh Map"}
+                              </Button>
+                            </motion.div>
+                          </motion.div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+
 
                     <Button
                       type="button"
@@ -968,6 +1084,23 @@ else{
                         {t("images")}
                       </FormLabel>
                       <div className="mt-2 grid grid-cols-3 gap-4">
+                        {/* Existing images */}
+                        <AnimatePresence>
+                          {existingImages.map((img) => (
+                            <motion.div key={img.fileId} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
+                              <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                                <div className="aspect-square relative">
+                                  <Image src={img.url || "/placeholder.svg"} alt={`${t("images")} old`} fill className="object-cover" />
+                                </div>
+                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
+                                  <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeExistingImageById(img.fileId)}>
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </motion.div>
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
                         <AnimatePresence>
                           {imageUrls.map((url, index) => (
                             <motion.div

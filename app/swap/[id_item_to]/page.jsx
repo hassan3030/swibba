@@ -123,7 +123,7 @@ export default function SwapPage() {
       setUserData(user.data)
       setMyEmail(user.data?.email)
     } catch (error) {
-      console.error("Error getting user data:", error)
+      // console.error("Error getting user data:", error)
     }
   }
 
@@ -137,20 +137,20 @@ export default function SwapPage() {
       const { token, userId } = await validateAuth()
       if (token) {
         setCurrentUserId(userId)
-        console.log("Current user ID:", userId)
+        // console.log("Current user ID:", userId)
         const myProductsData = await getProductByUserId()
-        console.log("My products data:", myProductsData)
+        // console.log("My products data:", myProductsData)
         if (myProductsData.success && myProductsData.data) {
           setMyItems(myProductsData.data)
         } else {
-          console.error("Failed to fetch my items:", myProductsData.error)
+          // console.error("Failed to fetch my items:", myProductsData.error)
           setMyItems([])
         }
     } else {
       router.push(`/auth/login`)
       }
     } catch (error) {
-      console.error("Error fetching my items:", error)
+      // console.error("Error fetching my items:", error)
       setMyItems([])
     }
   }, [router])
@@ -159,30 +159,30 @@ export default function SwapPage() {
   const getOtherItems = useCallback(async () => {
     try {
     const otherUser = await getUserByProductId(id_item_to)
-    console.log("otherUser ", otherUser)
-    console.log("id_item_to ", id_item_to)
+    // console.log("otherUser ", otherUser)
+    // console.log("id_item_to ", id_item_to)
       
       if (otherUser.success && otherUser.data) {
         setOtherEmail(otherUser.data?.email)
         setOtherUserId(otherUser.data?.id)
         setOtherUserData(otherUser.data)
-        console.log("Other user ID:", otherUser.data?.id)
+        // console.log("Other user ID:", otherUser.data?.id)
         
     const otherProductsData = await getProductsOwnerById(id_item_to)
-    console.log("otherProductsData ", otherProductsData)
+    // console.log("otherProductsData ", otherProductsData)
         
         if (otherProductsData.success && otherProductsData.data) {
     setOtherItems(otherProductsData.data)
         } else {
-          console.error("Failed to fetch other user's items:", otherProductsData.error)
+          // console.error("Failed to fetch other user's items:", otherProductsData.error)
           setOtherItems([])
         }
       } else {
-        console.error("Failed to get other user info:", otherUser.error)
+        // console.error("Failed to get other user info:", otherUser.error)
         setOtherItems([])
       }
     } catch (error) {
-      console.error("Error fetching other user's items:", error)
+      // console.error("Error fetching other user's items:", error)
       setOtherItems([])
     }
   }, [id_item_to])
@@ -198,7 +198,7 @@ export default function SwapPage() {
         setSwapHistory(offers.data)
       }
     } catch (error) {
-      console.error("Error fetching swap history:", error)
+      // console.error("Error fetching swap history:", error)
     }
   }, [])
 
@@ -402,7 +402,7 @@ export default function SwapPage() {
         return `The price is equal`
       }
     } catch (error) {
-      console.error("Error in handlePriceDifference:", error)
+      //  console.error("Error in handlePriceDifference:", error)
       return "Error calculating price difference"
     }
   }
@@ -1070,7 +1070,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
       {(() => {
         // Check if images exist and have the expected structure
         if (!images || !Array.isArray(images) || images.length === 0 || !images[0]?.directus_files_id) {
-          console.log("No valid image data found:", { images, hasImages: !!images, isArray: Array.isArray(images), length: images?.length, firstImage: images?.[0] })
+          // console.log("No valid image data found:", { images, hasImages: !!images, isArray: Array.isArray(images), length: images?.length, firstImage: images?.[0] })
           return (
             <div className="w-24 h-24 bg-muted rounded-xl flex-shrink-0 shadow-md flex items-center justify-center">
               <span className="text-muted-foreground text-xs">No Image</span>
@@ -1088,15 +1088,15 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
         const mimeType = images[0].directus_files_id.type || images[0].directus_files_id.mime_type || 'image/jpeg'
         const mediaType = getMediaType(mimeType)
         
-        console.log("Image data:", { 
-          id: currentMedia.id, 
-          type: currentMedia.type, 
-          mimeType, 
-          mediaType, 
-          url: currentMedia.url,
-          fullImageData: images[0],
-          directusFilesId: images[0].directus_files_id
-        })
+        // console.log("Image data:", { 
+        //   id: currentMedia.id, 
+        //   type: currentMedia.type, 
+        //   mimeType, 
+        //   mediaType, 
+        //   url: currentMedia.url,
+        //   fullImageData: images[0],
+        //   directusFilesId: images[0].directus_files_id
+        // })
         
         if (mediaType === 'video') {
           return (
@@ -1127,13 +1127,13 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 width={96}
                 height={96}
                 onError={(e) => {
-                  console.error("Image failed to load:", currentMedia.url)
+                  // console.error("Image failed to load:", currentMedia.url)
                   // Show a placeholder instead of hiding the image
                   e.target.src = "/placeholder.svg"
                   e.target.alt = "Image not available"
                 }}
                 onLoad={() => {
-                  console.log("Image loaded successfully:", currentMedia.url)
+                  // console.log("Image loaded successfully:", currentMedia.url)
                 }}
               />
             </div>

@@ -33,7 +33,7 @@ export const getAvailableAndUnavailableProducts = async (user_id) => {
       { headers }
     );
 
-    console.log(`Retrieved unavailable products for user:`, user_id);
+    // console.log(`Retrieved unavailable products for user:`, user_id);
     return {
       success: true,
       data: response.data.data || [],
@@ -87,7 +87,7 @@ export const getProducts = async (filters = {} , additionalParams = {}) => {
       params: finalParams
     })
     
-    console.log("response", response)  
+    // console.log("response", response)  
     return {
       success: true,
       data: response.data.data || [],
@@ -124,7 +124,7 @@ export const getProductTopPrice = async (limit = 10) => {
       }
     const response = await axios.get(url)
 
-    console.log("Top price products retrieved successfully, count:", response.data.data?.length || 0)
+    // console.log("Top price products retrieved successfully, count:", response.data.data?.length || 0)
     return {
       success: true,
       data: response.data.data || [],
@@ -154,7 +154,7 @@ export const getProductSearchFilter = async (filter) => {
     const url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*,images.directus_files_id.*`
     const response = await axios.get(url)
 
-    console.log("Search completed, results:", response.data.data?.length || 0)
+    // console.log("Search completed, results:", response.data.data?.length || 0)
     return {
       success: true,
       data: response.data.data || [],
@@ -175,7 +175,7 @@ export const getProductByCategory = async (category) => {
     }
 
     const cleanCategory = category.trim().toLowerCase()
-    console.log('getProductByCategory: Searching for category:', cleanCategory)
+    // console.log('getProductByCategory: Searching for category:', cleanCategory)
     const response = await axios.get(`${baseItemsURL}/Items`,
       {
         params: {
@@ -187,7 +187,7 @@ export const getProductByCategory = async (category) => {
         }
       })
 
-    console.log("Products by category retrieved successfully, count:", response.data.data?.length || 0)
+    // console.log("Products by category retrieved successfully, count:", response.data.data?.length || 0)
     return {
       success: true,
       data: response.data.data || [],
@@ -236,7 +236,7 @@ export const getProductsEnhanced = async (filters = {}) => {
       // Normalize category to lowercase for consistent filtering
       const normalizedCategory = filters.category.toLowerCase()
       additionalFilters.push({ category: { _eq: normalizedCategory } })
-      console.log('Enhanced API: Category filter applied:', normalizedCategory)
+      // console.log('Enhanced API: Category filter applied:', normalizedCategory)
     }
 
     // Multiple categories filter
@@ -244,7 +244,7 @@ export const getProductsEnhanced = async (filters = {}) => {
       // Normalize all categories to lowercase for consistent filtering
       const normalizedCategories = filters.categories.map(cat => cat.toLowerCase())
       additionalFilters.push({ category: { _in: normalizedCategories } })
-      console.log('Enhanced API: Multiple categories filter applied:', normalizedCategories)
+      // console.log('Enhanced API: Multiple categories filter applied:', normalizedCategories)
     }
 
     // Search filter
@@ -330,7 +330,7 @@ export const getProductsEnhanced = async (filters = {}) => {
       params.sort = "-date_created" // Default to newest first
     }
 
-    console.log("Enhanced API Filter params:", JSON.stringify(params, null, 2))
+    // console.log("Enhanced API Filter params:", JSON.stringify(params, null, 2))
 
     const response = await axios.get(`${baseItemsURL}/Items`, { params })
     
@@ -349,7 +349,7 @@ export const getProductsEnhanced = async (filters = {}) => {
       })
     }
 
-    console.log("Enhanced API Response - Total items:", resultData.length)
+    // console.log("Enhanced API Response - Total items:", resultData.length)
     
     return {
       success: true,
@@ -396,13 +396,13 @@ export const getProductById = async (id) => {
         }
       }
     );
-    console.log("response", response)
-    console.log("response.data.data", response.data.data)
+    // console.log("response", response)
+    // console.log("response.data.data", response.data.data)
     if (!response.data.data) {
       throw new Error("Product not found")
     }
 
-    console.log("Product retrieved successfully, ID:", id)
+    // console.log("Product retrieved successfully, ID:", id)
     return {
       success: true,
       data: response.data.data || [],
@@ -468,7 +468,7 @@ else{
 }
       
 
-      console.log("User products retrieved successfully, count:", response.data.data?.length || 0)
+      // console.log("User products retrieved successfully, count:", response.data.data?.length || 0)
       return {
         success: true,
         data: response.data.data || [],
@@ -507,7 +507,7 @@ export const getProductsOwnerById = async (productId) => {
       }
     )
 
-    console.log("Owner products retrieved successfully, count:", response.data.data?.length || 0)
+    // console.log("Owner products retrieved successfully, count:", response.data.data?.length || 0)
     return {
       success: true,
       data: response.data.data || [],
@@ -545,7 +545,7 @@ export const deleteProduct = async (id) => {
 
       await axios.delete(`${baseItemsURL}/Items/${id}`)
 
-      console.log("Product deleted successfully, ID:", id)
+      // console.log("Product deleted successfully, ID:", id)
       return {
         success: true,
         data: { deleted_id: id },
@@ -611,7 +611,7 @@ export const addProduct = async (payload, files) => {
         throw new Error("Failed to create product")
       }
 
-      console.log("Product created successfully, ID:", itemId)
+      // console.log("Product created successfully, ID:", itemId)
 
       // Upload and link images with error handling
       const uploadResults = []
@@ -659,7 +659,7 @@ export const addProduct = async (payload, files) => {
         // If all uploads failed, throw error and do not allow product creation without images
         throw new Error("All image uploads failed. Product was not created with images. Please try again.")
       }
-      console.log(`Product added successfully with ${successfulUploads}/${files.length} images, ID:`, itemId)
+      //  console.log(`Product added successfully with ${successfulUploads}/${files.length} images, ID:`, itemId)
 
       return {
         success: true,
@@ -685,7 +685,9 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("Product data and ID are required")
       }
 
-      if (!files || !Array.isArray(files) || files.length === 0) {
+      // Allow zero new files if there are retained existing images
+      const retainedIds = Array.isArray(payload.retained_image_file_ids) ? payload.retained_image_file_ids : []
+      if ((!files || !Array.isArray(files) || files.length === 0) && retainedIds.length === 0) {
         throw new Error("At least one image is required")
       }
 
@@ -731,29 +733,34 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("Failed to update product")
       }
 
-      console.log("Product updated successfully with translations, ID:", itemId)
+      // console.log("Product updated successfully with translations, ID:", itemId)
 
-      // Delete existing images
+      // Delete existing images EXCEPT retained
       try {
         const existingImagesRes = await axios.get(`${baseItemsURL}/Items_files?filter[Items_id][_eq]=${itemId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        const deletePromises = (existingImagesRes.data?.data || []).map((img) =>
+        const toDelete = (existingImagesRes.data?.data || []).filter((img) => {
+          // keep if its directus_files_id is listed in retainedIds
+          return !retainedIds.includes(img.directus_files_id)
+        })
+
+        const deletePromises = toDelete.map((img) =>
           axios.delete(`${baseItemsURL}/Items_files/${img.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         )
 
         await Promise.allSettled(deletePromises)
-        console.log("Existing images cleaned up")
+        // console.log("Existing images cleaned up")
       } catch (deleteError) {
         console.warn("Failed to delete some existing images:", deleteError.message)
       }
 
       // Upload new images
       const uploadResults = []
-      for (let i = 0; i < files.length; i++) {
+      for (let i = 0; i < (files?.length || 0); i++) {
         try {
           const file = files[i]
           const formData = new FormData()
@@ -793,17 +800,18 @@ export const updateProduct = async (payload, files, itemId) => {
       }
 
       const successfulUploads = uploadResults.filter((r) => r.success).length
-      console.log(`Product updated successfully with ${successfulUploads}/${files.length} images, ID:`, itemId)
+      //  console.log(`Product updated successfully with ${successfulUploads}/${files?.length || 0} new images, retained: ${retainedIds.length}, ID:`, itemId)
 
       return {
         success: true,
         data: {
           ...itemRes.data.data,
           images_uploaded: successfulUploads,
-          total_images: files.length,
+          total_images: (files?.length || 0) + retainedIds.length,
           upload_results: uploadResults,
+          retained_image_file_ids: retainedIds,
         },
-        message: `Product updated successfully with ${successfulUploads} images`,
+        message: `Product updated successfully with ${successfulUploads} new images and ${retainedIds.length} retained images`,
       }
     })
   } catch (error) {

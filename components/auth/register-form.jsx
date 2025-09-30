@@ -145,7 +145,7 @@ export function RegisterForm() {
         }
       }
     } catch (error) {
-      console.error("Registration error:", error)
+      // console.error("Registration error:", error)
       toast({
         title: t("error") || "ERROR",
         description:

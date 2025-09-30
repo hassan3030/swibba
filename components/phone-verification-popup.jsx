@@ -134,7 +134,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
         description: `${t("verificationCodeSent") || "Verification code sent to"} ${fullPhoneNumber}`,
       })
     } catch (error) {
-      console.error('SMS send error:', error)
+      // console.error('SMS send error:', error)
       toast({
         title: t("error") || "Error",
         description: error.message || t("failedToSendCode") || "Failed to send verification code",
@@ -201,7 +201,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
       setVerificationCode("")
       setSentCode("")
     } catch (error) {
-      console.error('SMS verification error:', error)
+      // console.error('SMS verification error:', error)
       toast({
         title: t("error") || "Error",
         description: error.message || t("verificationFailed") || "Verification failed",
@@ -441,7 +441,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                       description: t("verificationCodeResent") || "Verification code resent successfully",
                     })
                   } catch (error) {
-                    console.error('Resend SMS error:', error)
+                    // console.error('Resend SMS error:', error)
                     toast({
                       title: t("error") || "Error",
                       description: error.message || t("failedToResendCode") || "Failed to resend verification code",

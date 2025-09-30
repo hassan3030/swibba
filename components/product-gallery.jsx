@@ -210,10 +210,10 @@ export function ProductGallery({ images, productName }) {
             type: images[currentImage]?.directus_files_id.type || '',
             url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
           }
-          console.log("currentMedia", currentMedia)
+          // console.log("currentMedia", currentMedia)
           // Determine media type based on URL
           const mediaType = getMediaType(currentMedia.type)
-          console.log("mediaType", mediaType)
+          // console.log("mediaType", mediaType)
           if (mediaType === 'video') {
             return (
               <motion.div 

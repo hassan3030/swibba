@@ -29,7 +29,7 @@ export const getAllOffers = async (filters = {}) => {
     const url = `${baseItemsURL}/Offers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
     const response = await axios.get(url)
 
-    console.log("Offers retrieved successfully, count:", response.data.data?.length || 0)
+     // console.log("Offers retrieved successfully, count:", response.data.data?.length || 0)
     return {
       success: true,
       data: response.data.data || [],
@@ -58,7 +58,7 @@ export const getOfferById = async (id) => {
         },
       })
 
-    console.log("Sent offers retrieved successfully for user:", id)
+    // console.log("Sent offers retrieved successfully for user:", id)
     return {
       success: true,
       data: response.data.data || [],
@@ -87,7 +87,7 @@ export const getOffersNotifications = async (id) => {
         },
       })
 
-    console.log("Received offers retrieved successfully for user:", id)
+    // console.log("Received offers retrieved successfully for user:", id)
     return {
       success: true,
       data: response.data.data || [],
@@ -222,7 +222,7 @@ export const deleteOfferById = async (id) => {
               },
             })
 
-      console.log("Offer rejected successfully, ID:", id)
+      // console.log("Offer rejected successfully, ID:", id)
       return {
         success: true,
         data: {
@@ -258,7 +258,7 @@ export const deleteFinallyOfferById = async (id) => {
                 Authorization: `Bearer ${auth.token}`,
               },
             })
-      console.log("Offer Deleted Finally successfully, ID:", id)
+      // console.log("Offer Deleted Finally successfully, ID:", id)
       return {
         success: true,
         data: {
@@ -293,7 +293,7 @@ export const acceptedOffer = async (id) => {
               },
             })
 
-      console.log("Offer accepted successfully, ID:", id)
+      // console.log("Offer accepted successfully, ID:", id)
       return {
         success: true,
         data: response.data.data,
@@ -328,7 +328,7 @@ export const updateOfferById = async (id, cash_adjustment) => {
               },
             })
 
-      console.log("Offer cash adjustment updated successfully, ID:", id)
+      // console.log("Offer cash adjustment updated successfully, ID:", id)
       return {
         success: true,
         data: response.data.data,
@@ -779,10 +779,10 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
                 Authorization: `Bearer ${auth.token}`,
               },
             })
-        console.log("Cash adjustment updated:", patchRes.data)
+        // console.log("Cash adjustment updated:", patchRes.data)
       }
 
-      console.log("Offer item deleted successfully, ID:", id)
+      // console.log("Offer item deleted successfully, ID:", id)
       return {
         success: true,
         data: {
@@ -821,7 +821,7 @@ export const updateOfferItemsById = async (id, updateData = {}) => {
               },
             })
 
-      console.log("Offer item updated successfully, ID:", id)
+      // console.log("Offer item updated successfully, ID:", id)
       return {
         success: true,
         data: response.data.data,
@@ -863,7 +863,7 @@ export const addMessage = async (message, to_user_id, offer_id) => {
               },
             })
 
-      console.log("Message added successfully to offer:", offer_id)
+      // console.log("Message added successfully to offer:", offer_id)
       return {
         success: true,
         data: response.data.data,
@@ -990,7 +990,7 @@ export const addWishList = async (item_id, user_id) => {
               },
             })
 
-    console.log("Item added to wishlist successfully, item ID:", item_id)
+    //  console.log("Item added to wishlist successfully, item ID:", item_id)
     return {
       success: true,
       data: response.data.data,
@@ -1061,7 +1061,7 @@ export const deleteWishList = async (id) => {
               },
             })
 
-    console.log("Item removed from wishlist successfully, ID:", id)
+    // console.log("Item removed from wishlist successfully, ID:", id)
     return {
       success: true,
       data: { deleted_id: id },
@@ -1120,7 +1120,7 @@ export const addReview = async (from_user_id, to_user_id, offer_id, rating, comm
               },
             })
 
-      console.log("Review added successfully for offer:", offer_id)
+      // console.log("Review added successfully for offer:", offer_id)
       return {
         success: true,
         data: response.data.data,
@@ -1189,7 +1189,7 @@ export const getReviewConditins = async (from_user_id, offer_id) => {
       message: hasReviewed ? "User has already reviewed this offer" : "User can review this offer",
     }
   } catch (error) {
-    console.error("Failed to check review conditions:", error)
+    // console.error("Failed to check review conditions:", error)
     return {
       success: false,
       error: "Failed to check review conditions",

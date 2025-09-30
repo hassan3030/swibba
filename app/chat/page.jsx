@@ -117,7 +117,7 @@ const Messages = () => {
       )
       setOffers(offersWithPartner)
     } catch (error) {
-      console.error("Error fetching offers:", error)
+      // console.error("Error fetching offers:", error)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
@@ -153,7 +153,7 @@ const Messages = () => {
       const msgs = await getMessage(selectedOffer.id)
       setMessages(msgs.data || [])
     } catch (error) {
-      console.error("Error fetching messages:", error)
+      // console.error("Error fetching messages:", error)
     }
   }
 

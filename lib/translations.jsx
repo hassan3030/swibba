@@ -1,5 +1,8 @@
 export const translations = {
   en  :{
+     PleasefillnamedesccatcondpricegeoimagesAI : "Please fill in the item name, description, category, condition, price, location and upload at least one image for AI price estimation.",
+     UpdatedFields: "Updated fields",
+     NoFieldChangesFromAI: "AI did not suggest changes to text fields.",
 recivedOffers: "Recived Offers",
 myRecivedOffers: "My Recived Offers",
 ///////////////////////
@@ -1056,6 +1059,10 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    PleasefillnamedesccatcondpricegeoimagesAI : "يرجى ملء اسم العنصر والوصف والفئة والحالة والسعر والموقع وتحميل صورة واحدة على الأقل لتقدير سعر الذكاء الاصطناعي.",
+    UpdatedFields: "تم تحديث الحقول",
+    NoFieldChangesFromAI: "لم يقدم الذكاء الاصطناعي تغييرات للحقول النصية.",
+
     notVerified: "غير موثق ",
     recivedOffers: "عروضي المستلمة",
 myRecivedOffers: "عروضي المستلمة",

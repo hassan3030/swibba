@@ -141,7 +141,7 @@ const LazyStatsSection = ({ t }) => {
           setHasLoaded(true)
           controls.start("visible")
         } catch (error) {
-          console.error("Error loading stats:", error)
+          // console.error("Error loading stats:", error)
         } finally {
           setIsLoading(false)
         }
@@ -535,7 +535,7 @@ const LazyAllProducts = ({ showSwitchHeart, t }) => {
           setItems(prods.data)
           setHasLoaded(true)
         } catch (error) {
-          console.error("Error loading products:", error)
+          // console.error("Error loading products:", error)
         } finally {
           setIsLoading(false)
         }
@@ -606,7 +606,7 @@ const LazyTopDeals = ({ showSwitchHeart, t }) => {
           setTopPrice(topPriceProds.data)
           setHasLoaded(true)
         } catch (error) {
-          console.error("Error loading top deals:", error)
+          // console.error("Error loading top deals:", error)
         } finally {
           setIsLoading(false)
         }
@@ -677,7 +677,7 @@ export default function Home() {
       try {
         await getWishList()
       } catch (error) {
-        console.error("Error initializing app:", error)
+        // console.error("Error initializing app:", error)
       } finally {
         setIsInitialLoading(false)
       }

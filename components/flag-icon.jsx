@@ -26,7 +26,7 @@ const FlagIcon = ({ flag, countryCode, className = "" }) => {
         document.body.removeChild(testDiv)
         setIsEmojiSupported(isEmoji)
       } catch (error) {
-        console.warn('Emoji support test failed:', error)
+        // console.warn('Emoji support test failed:', error)
         setIsEmojiSupported(false)
       }
     }

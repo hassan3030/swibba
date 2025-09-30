@@ -78,30 +78,30 @@ const LocationMap = ({
 
         // Check if the container already has a map
         if (mapRef.current._leaflet_id) {
-          console.warn('Map container already initialized, skipping...')
+          // console.warn('Map container already initialized, skipping...')
           return
         }
 
         // Ensure container has proper dimensions
         const container = mapRef.current
-        console.log('Map container dimensions:', {
-          width: container.offsetWidth,
-          height: container.offsetHeight,
-          clientWidth: container.clientWidth,
-          clientHeight: container.clientHeight,
-          scrollWidth: container.scrollWidth,
-          scrollHeight: container.scrollHeight
-        })
+        // console.log('Map container dimensions:', {
+        //   width: container.offsetWidth,
+        //   height: container.offsetHeight,
+        //   clientWidth: container.clientWidth,
+        //   clientHeight: container.clientHeight,
+        //   scrollWidth: container.scrollWidth,
+        //   scrollHeight: container.scrollHeight
+        // })
         
         if (container.offsetWidth === 0 || container.offsetHeight === 0) {
-          console.warn('Map container has zero dimensions, waiting for proper sizing...')
+          // console.warn('Map container has zero dimensions, waiting for proper sizing...')
           // Wait a bit and try again
           setTimeout(() => {
-            console.log('Retrying map initialization...')
+            // console.log('Retrying map initialization...')
             if (container.offsetWidth > 0 && container.offsetHeight > 0) {
               initMap()
             } else {
-              console.error('Map container still has zero dimensions after retry, forcing initialization...')
+              // console.error('Map container still has zero dimensions after retry, forcing initialization...')
               // Force initialization even with zero dimensions - Leaflet might handle it
               initMap()
             }
@@ -183,7 +183,7 @@ const LocationMap = ({
               // Map seems to be rendering, do one final invalidation
               invalidateMap()
             } else {
-              console.warn('Map container still has zero dimensions after initialization')
+              // console.warn('Map container still has zero dimensions after initialization')
               // Try to force a refresh
               setTimeout(() => {
                 invalidateMap()
@@ -193,7 +193,7 @@ const LocationMap = ({
         })
 
       } catch (error) {
-        console.error('Error loading map:', error)
+        // console.error('Error loading map:', error)
         setError('Failed to load map. Please check your internet connection.')
         setIsLoading(false)
       }
@@ -276,7 +276,7 @@ const LocationMap = ({
         try {
           map.remove()
         } catch (error) {
-          console.warn('Error removing map:', error)
+          // console.warn('Error removing map:', error)
         }
       }
     }

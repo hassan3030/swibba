@@ -39,7 +39,7 @@ export const addCashBalance = async (amount, description = "") => {
       { headers }
     )
 
-    console.log("Cash balance added successfully:", response.data)
+    // console.log("Cash balance added successfully:", response.data)
     
     // Check if user should be verified based on cash amount
     await checkAndUpdateUserVerification(userId, amount)
@@ -164,7 +164,7 @@ export const withdrawCash = async (amount, paymentMethodId, description = "") =>
       { headers }
     )
 
-    console.log("Cash withdrawal requested successfully:", response.data)
+    // console.log("Cash withdrawal requested successfully:", response.data)
 
     return {
       success: true,
@@ -210,14 +210,14 @@ export const checkAndUpdateUserVerification = async (userId, cashAmount) => {
     // Get top products to compare prices
     const topProductsResult = await getTopProductsByPrice(1)
     if (!topProductsResult.success || !topProductsResult.data.length) {
-      console.log("No products found for verification check")
+      // console.log("No products found for verification check")
       return { success: false, message: "No products found for verification" }
     }
 
     const topProduct = topProductsResult.data[0]
     const topProductPrice = parseFloat(topProduct.price) || 0
 
-    console.log(`Checking verification: Cash ${cashAmount}, Top product price: ${topProductPrice}`)
+    // console.log(`Checking verification: Cash ${cashAmount}, Top product price: ${topProductPrice}`)
 
     // Check if cash amount is at least 10% of top product price and max 10000
     const minRequiredAmount = Math.min(topProductPrice * 0.1, 10000)
@@ -242,7 +242,7 @@ export const checkAndUpdateUserVerification = async (userId, cashAmount) => {
         { headers }
       )
 
-      console.log("User verification updated successfully")
+      // console.log("User verification updated successfully")
 
       return {
         success: true,
@@ -255,7 +255,7 @@ export const checkAndUpdateUserVerification = async (userId, cashAmount) => {
         message: "User verified successfully"
       }
     } else {
-      console.log(`Cash amount ${cashAmount} is below required ${minRequiredAmount}`)
+      //  console.log(`Cash amount ${cashAmount} is below required ${minRequiredAmount}`)
       return {
         success: false,
         data: {

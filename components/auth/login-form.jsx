@@ -132,14 +132,14 @@ export function LoginForm() {
   }
 
   const onSubmit = async (data) => {
-    console.log("data on submit in login ", data)
+    // console.log("data on submit in login ", data)
 
     if (!validateForm(data)) return
     setIsLoading(true)
 
     try {
       const response = await login(data.email, data.password)
-      console.log('loginloginloginloginloginloginlogin',response)
+      // console.log('loginloginloginloginloginloginlogin',response)
       if (response.success) {
         toast({
           title: t("loginSuccessful") || "Login successful!",
@@ -160,7 +160,7 @@ export function LoginForm() {
         description: t("invalidCredentials") || "Invalid email or password. Please try again.",
         variant: "destructive",
       })
-      console.error("Login error:", error)
+      // console.error("Login error:", error)
     } finally {
       setIsLoading(false)
     }

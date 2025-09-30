@@ -112,7 +112,7 @@ export default  function  FloatingActionButton() {
                     className={`w-12 h-12 rounded-full ${item.color} hover:opacity-90 shadow-lg `}
                     onClick={() => {
 
-                      console.log(`${item.label} clicked`);
+                      // console.log(`${item.label} clicked`);
                       setIsOpen(false);
                       router.push(item.href)
                     }}

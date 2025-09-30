@@ -108,14 +108,14 @@ export function ItemCard({ item }) {
     e.stopPropagation()
     setIsSaved(!isSaved)
     // In a real app, you would save this to the user's favorites
-    console.log(`Item ${item.id} ${!isSaved ? "saved" : "unsaved"}`)
+    // console.log(`Item ${item.id} ${!isSaved ? "saved" : "unsaved"}`)
   }
 
   const handleMakeOffer = (e) => {
     e.preventDefault()
     e.stopPropagation()
     // In a real app, this would navigate to the offer creation page
-    console.log(`Make offer for item ${item.id}`)
+    // console.log(`Make offer for item ${item.id}`)
     router.push(`/offers/create?itemId=${item.id}`)
   }
 

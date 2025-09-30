@@ -65,7 +65,7 @@ api.interceptors.response.use(
       console.error("Network error - no response received")
     } else {
       // Something happened in setting up the request
-      console.error("Error", error.message)
+      // console.error("Error", error.message)
     }
 
     return Promise.reject(error)

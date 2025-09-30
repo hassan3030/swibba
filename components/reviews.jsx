@@ -110,7 +110,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
     try {
       const userId = await getCurrentUserId()
       if (!userId) {
-        console.error("No user ID available")
+        // console.error("No user ID available")
         return
       }
       
@@ -118,11 +118,11 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
       if (myUser && myUser.data && myUser.data.email) {
         setMyEmail(myUser.data.email)
       } else {
-        console.error("User data not found or invalid structure:", myUser)
+        // console.error("User data not found or invalid structure:", myUser)
         setMyEmail("")
       }
     } catch (error) {
-      console.error("Error fetching user data:", error)
+      // console.error("Error fetching user data:", error)
       setMyEmail("")
     }
   }
@@ -135,7 +135,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
     try {
       const {id} = await decodedToken()
       if (!id) {
-        console.error("No user ID available for review check")
+        // console.error("No user ID available for review check")
         setHasReviewed(false)
         return
       }
@@ -144,11 +144,11 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
       if (rev && rev.data && typeof rev.data.has_reviewed === 'boolean') {
         setHasReviewed(rev.data.has_reviewed)
       } else {
-        console.error("Review data not found or invalid structure:", rev)
+        // console.error("Review data not found or invalid structure:", rev)
         setHasReviewed(false)
       }
     } catch (error) {
-      console.error("Error checking review conditions:", error)
+      //  console.error("Error checking review conditions:", error)
       setHasReviewed(false)
     }
   }

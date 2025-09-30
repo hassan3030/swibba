@@ -175,88 +175,88 @@ export function ItemsList({
       // Basic filters
       if (category !== "all") {
         apiFilters.category = category
-        console.log('Category filter applied:', category)
+        // console.log('Category filter applied:', category)
       }
 
       // Search filter - prioritize searchTerm over filters.name
       if (searchTerm) {
         apiFilters.search = searchTerm
-        console.log('Search filter applied:', searchTerm)
+        // console.log('Search filter applied:', searchTerm)
       } else if (filters.name) {
         apiFilters.search = filters.name
-        console.log('Name filter applied:', filters.name)
+        // console.log('Name filter applied:', filters.name)
       }
 
       if (filters.categories.length > 0) {
         apiFilters.categories = filters.categories
-        console.log('Categories filter applied:', filters.categories)
+        // console.log('Categories filter applied:', filters.categories)
       }
 
       if (filters.allowedCategories.length > 0) {
         apiFilters.allowed_categories = filters.allowedCategories
-        console.log('Allowed categories filter applied:', filters.allowedCategories)
+        // console.log('Allowed categories filter applied:', filters.allowedCategories)
       }
 
       if (filters.location.country && filters.location.country !== "all") {
         apiFilters.country = filters.location.country
-        console.log('Country filter applied:', filters.location.country)
+        // console.log('Country filter applied:', filters.location.country)
       }
 
       if (filters.location.city) {
         apiFilters.city = filters.location.city
-        console.log('City filter applied:', filters.location.city)
+        // console.log('City filter applied:', filters.location.city)
       }
 
       if (filters.location.useCurrentLocation && filters.location.latitude && filters.location.longitude) {
         apiFilters.latitude = filters.location.latitude
         apiFilters.longitude = filters.location.longitude
         apiFilters.radius = filters.location.radius
-        console.log('Radius filter applied:', filters.location.radius)
+        // console.log('Radius filter applied:', filters.location.radius)
       }
 
       if (filters.status !== "all") {
         apiFilters.status_item = filters.status
-        console.log('Status filter applied:', filters.status)
+        // console.log('Status filter applied:', filters.status)
       }
 
       if (filters.priceRange.min) {
         apiFilters.min_price = filters.priceRange.min
-        console.log('Min price filter applied:', filters.priceRange.min)
+        // console.log('Min price filter applied:', filters.priceRange.min)
       }
 
       if (filters.priceRange.max) {
         apiFilters.max_price = filters.priceRange.max
-        console.log('Max price filter applied:', filters.priceRange.max)
+        // console.log('Max price filter applied:', filters.priceRange.max)
       }
 
       if (filters.dateRange.from) {
         apiFilters.date_from = filters.dateRange.from
-        console.log('Date from filter applied:', filters.dateRange.from)
+        // console.log('Date from filter applied:', filters.dateRange.from)
       }
 
       if (filters.dateRange.to) {
         apiFilters.date_to = filters.dateRange.to
-        console.log('Date to filter applied:', filters.dateRange.to)
+        //    console.log('Date to filter applied:', filters.dateRange.to)
       }
 
       const response = await getProductsEnhanced(apiFilters)
-      console.log('Filter response:', { 
-        success: response.success, 
-        dataLength: response.data?.length, 
-        total: response.total || response.count,
-        appliedFilters: apiFilters 
-      })
+      // console.log('Filter response:', { 
+      //   success: response.success, 
+      //   dataLength: response.data?.length, 
+      //   total: response.total || response.count,
+      //   appliedFilters: apiFilters 
+      // })
       
       if (response.success) {
         setDisplayedItems(response.data || [])
         setTotalItems(response.total || response.count || 0)
       } else {
-        console.error('Failed to fetch items:', response.error)
+        // console.error('Failed to fetch items:', response.error)
         setDisplayedItems([])
         setTotalItems(0)
       }
     } catch (error) {
-      console.error('Error fetching filtered items:', error)
+      // console.error('Error fetching filtered items:', error)
       setDisplayedItems([])
       setTotalItems(0)
     } finally {
@@ -496,7 +496,7 @@ export function ItemsList({
           updateFilter("location.useCurrentLocation", true)
         },
         (error) => {
-          console.error("Error getting location:", error)
+          //  console.error("Error getting location:", error)
           alert(t("locationError") || "Could not get your location. Please check your browser settings.")
         }
       )

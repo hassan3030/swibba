@@ -8,7 +8,7 @@ export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard
 // Enhanced error handling utility
 const handleApiError = (error, context) => {
   const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred"
-  console.error(`${context} Error:`, errorMessage)
+  // console.error(`${context} Error:`, errorMessage)
 
   // Return structured error for consistency
   return {
@@ -36,27 +36,27 @@ export const getCookie = async () => {
     const tokenValue = Cookies.get("Token")
 
     if (!tokenValue) {
-      console.warn("Token not found in cookies")
+      // console.warn("Token not found in cookies")
       return null
     }
 
     if (typeof tokenValue !== "string") {
-      console.error("Token is not a string:", typeof tokenValue)
+      // console.error("Token is not a string:", typeof tokenValue)
       await removeCookie() // Clean up invalid token
       return null
     }
 
     // Check if token is expired
     if (isTokenExpired(tokenValue)) {
-      console.warn("Token has expired, removing from cookies")
+      // console.warn("Token has expired, removing from cookies")
       await removeCookie()
       return null
     }
 
-    console.log("Token retrieved successfully")
+    // console.log("Token retrieved successfully")
     return tokenValue
   } catch (error) {
-    console.error("Get Cookie Error:", error.message)
+    // console.error("Get Cookie Error:", error.message)
     await removeCookie() // Clean up on error
     return null
   }
@@ -67,10 +67,10 @@ export const removeCookie = async () => {
   try {
     Cookies.remove("Token", { path: "/" })
     Cookies.remove("Token", { path: "/", domain: window.location.hostname })
-    console.log("Token removed successfully")
+    // console.log("Token removed successfully")
     return { success: true, message: "Token removed" }
   } catch (error) {
-    console.error("Remove Cookie Error:", error.message)
+    // console.error("Remove Cookie Error:", error.message)
     return { success: false, message: "Failed to remove token" }
   }
 }
@@ -81,12 +81,12 @@ export const decodedToken = async () => {
     const token = await getCookie()
 
     if (!token) {
-      console.warn("No token available for decoding")
+      // console.warn("No token available for decoding")
       return null
     }
 
     if (typeof token !== "string") {
-      console.error("Token is not a string")
+      // console.error("Token is not a string")
       await removeCookie()
       return null
     }
@@ -94,7 +94,7 @@ export const decodedToken = async () => {
     // Validate JWT structure
     const tokenParts = token.split(".")
     if (tokenParts.length !== 3) {
-      console.error("Invalid JWT token structure")
+      // console.error("Invalid JWT token structure")
       await removeCookie()
       return null
     }
@@ -104,20 +104,20 @@ export const decodedToken = async () => {
     // Check if token is expired
     const currentTime = Date.now() / 1000
     if (decoded.exp && decoded.exp < currentTime) {
-      console.warn("Token has expired during decode")
+      // console.warn("Token has expired during decode")
       await removeCookie()
       return null
     }
 
     // Check if token expires soon (within 5 minutes)
     if (decoded.exp && decoded.exp - currentTime < 300) {
-      console.warn("Token expires soon, consider refreshing")
+      //    console.warn("Token expires soon, consider refreshing")
     }
 
-    console.log("Token decoded successfully, user ID:", decoded.id)
+    // console.log("Token decoded successfully, user ID:", decoded.id)
     return decoded
   } catch (error) {
-    console.error("Failed to decode token:", error.message)
+    // console.error("Failed to decode token:", error.message)
     await removeCookie() // Remove invalid token
     return null
   }
@@ -149,10 +149,10 @@ export const setCookie = async (jwtToken, options = {}) => {
     }
 
     Cookies.set("Token", jwtToken, defaultOptions)
-    console.log("Token set successfully")
+    // console.log("Token set successfully")
     return { success: true, message: "Token set successfully" }
   } catch (error) {
-    console.error("Set Cookie Error:", error.message)
+    // console.error("Set Cookie Error:", error.message)
     return { success: false, message: `Failed to set token: ${error.message}` }
   }
 }
@@ -163,7 +163,7 @@ export const isAuthenticated = async () => {
     const token = await decodedToken()
     return !!token && !!token.id
   } catch (error) {
-    console.error("Authentication check failed:", error.message)
+    // console.error("Authentication check failed:", error.message)
     return false
   }
 }
@@ -174,7 +174,7 @@ export const getCurrentUserId = async () => {
     const decoded = await decodedToken()
     return decoded?.id || null
   } catch (error) {
-    console.error("Get current user ID failed:", error.message)
+    // console.error("Get current user ID failed:", error.message)
     return null
   }
 }
@@ -190,14 +190,14 @@ export const refreshTokenIfNeeded = async () => {
 
     // If token expires in less than 1 hour, consider refreshing
     if (decoded.exp && decoded.exp - currentTime < 3600) {
-      console.log("Token refresh recommended")
+      // console.log("Token refresh recommended")
       // TODO: Implement token refresh logic with your backend
       return false
     }
 
     return true
   } catch (error) {
-    console.error("Token refresh check failed:", error.message)
+    // console.error("Token refresh check failed:", error.message)
     return false
   }
 }
@@ -213,7 +213,7 @@ export const makeAuthenticatedRequest = async (requestFn) => {
     return await requestFn()
   } catch (error) {
     if (error.response?.status === 401) {
-      console.warn("Authentication failed, removing token")
+      // console.warn("Authentication failed, removing token")
       await removeCookie()
     }
     throw error
@@ -253,10 +253,10 @@ export const setTarget = async (targetValue) => {
     }
   
     Cookies.set("Target", targetValue)
-    console.log("Target set successfully")
+    // console.log("Target set successfully")
     return { success: true, message: "Target set successfully" }
   } catch (error) {
-    console.error("Set Target Error:", error.message)
+    // console.error("Set Target Error:", error.message)
     return { success: false, message: `Failed to set Target: ${error.message}` }
   }
 }
@@ -266,12 +266,12 @@ export const getTarget = async () => {
   try {
     const targetValue = Cookies.get("Target")
     if (!targetValue) {
-      console.warn("Target not found in cookies")
+      //  console.warn("Target not found in cookies")
       return null
     }
     return targetValue
   } catch (error) {
-    console.error("Get Target Error:", error.message)
+    // console.error("Get Target Error:", error.message)
     await removeTarget() // Clean up on error
     return null
   }
@@ -282,10 +282,10 @@ export const removeTarget = async () => {
   try {
     Cookies.remove("Target", { path: "/" })
     Cookies.remove("Target", { path: "/", domain: window.location.hostname })
-    console.log("Target removed successfully")
+    // console.log("Target removed successfully")
     return { success: true, message: "Target removed" }
   } catch (error) {
-    console.error("Remove Target Error:", error.message)
+    //  console.error("Remove Target Error:", error.message)
     return { success: false, message: "Failed to remove Target" }
   }
 }

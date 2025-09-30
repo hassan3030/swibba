@@ -63,7 +63,7 @@ for (const category in categories) {
 
 // Write the markdown file
 fs.writeFileSync(path.join(__dirname, "../docs/environment-variables.md"), markdown)
-console.log("✅ Environment variable documentation generated successfully.")
+// console.log("✅ Environment variable documentation generated successfully.")
 
 // Helper functions
 function getVariableDescription(variable) {

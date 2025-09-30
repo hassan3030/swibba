@@ -229,7 +229,7 @@ export default function PaymentPage({ showHeader = true }) {
         })
       }
     } catch (error) {
-      console.error("Error loading payment data:", error)
+      // console.error("Error loading payment data:", error)
       toast({
         title: t("error") || "Error",
         description: t("failedToLoadPaymentData") || "Failed to load payment data",
@@ -252,7 +252,7 @@ export default function PaymentPage({ showHeader = true }) {
           }
         }
       } catch (error) {
-        console.error("Error fetching user data:", error)
+        // console.error("Error fetching user data:", error)
       }
     }
     

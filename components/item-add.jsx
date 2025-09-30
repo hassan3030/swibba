@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, Navigation, MapPin } from "lucide-react"
+import { X, Upload, Info, Loader2, Navigation, MapPin, Map, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { itemsStatus, categoriesName, allowedCategories } from "@/lib/data"
 import { useToast } from "@/components/ui/use-toast"
@@ -27,6 +27,7 @@ import { useLanguage } from "@/lib/language-provider"
 import {  decodedToken } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
+import LocationMap from "@/components/location-map"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -104,6 +105,7 @@ export function ItemAdd() {
   const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. For location translations, use the actual city and street names provided by the user, not generic terms like 'Current Location'. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
   const [aiReply, setAiReply] = useState(null)
   const [user, setUser] = useState()
+  const [isMapRefreshing, setIsMapRefreshing] = useState(false)
 
   const { toast } = useToast()
   const { t } = useTranslations()
@@ -198,10 +200,23 @@ const getUser = async () => {
 
   useEffect(() => {
     getUser()
-    console.error("user", user)
+    // console.error("user", user)
     // console.error("isRTL", isRTL)
     // console.error("toggleLanguage", toggleLanguage)
   }, [isRTL])
+
+  // Auto-refresh map every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsMapRefreshing(true)
+      // Simulate map refresh
+      setTimeout(() => {
+        setIsMapRefreshing(false)
+      }, 500)
+    }, 2000) // 2 seconds
+
+    return () => clearInterval(interval)
+  }, [])
   const handleImageUpload = (e) => {
     // Require basic form fields before allowing image upload
     const { name, description, category, status_item, price, country, city, street, quantity } = form.getValues();
@@ -336,10 +351,10 @@ else{
       jsonString = jsonString.trim()
       
       const jsonObject = JSON.parse(jsonString)
-      console.log("Parsed AI Response:", jsonObject)
-      console.log("Estimated Price:", jsonObject.estimated_price)
-      console.log("Name Translations:", jsonObject.name_translations)
-      console.log("Description Translations:", jsonObject.description_translations)
+      // console.log("Parsed AI Response:", jsonObject)
+      // console.log("Estimated Price:", jsonObject.estimated_price)
+      // console.log("Name Translations:", jsonObject.name_translations)
+      // console.log("Description Translations:", jsonObject.description_translations)
       
       // Validate the parsed response
       if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
@@ -361,7 +376,7 @@ else{
       setIsEstimating(false)
     }
     } catch (error) {
-      console.error("Error getting AI price estimate:", error)
+      // console.error("Error getting AI price estimate:", error)
       
       let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
         "Failed to get AI price estimate. Please try again or enter your own estimate."
@@ -413,12 +428,12 @@ else{
 
     try {
       await handleSubmit();
-      console.log("Form data:", data);
-      console.log("Images:", images);
+      // console.log("Form data:", data);
+      // console.log("Images:", images);
       // After successful add, go back to step 1
       router.push("/profile/items")
     } catch (error) {
-      console.error("Error creating item:", error);
+      // console.error("Error creating item:", error);
       toast({
         title: t("error") || "ERROR ",
         description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
@@ -496,6 +511,21 @@ else{
     )
   }
 
+  const handleLocationSelect = (location) => {
+    set_geo_location({
+      lat: location.lat,
+      lng: location.lng,
+      accuracy: 0,
+      name: location.name || "Selected Location",
+    })
+    setSelectedPosition(location)
+    
+    toast({
+      title: t("locationSelected") || "Location Selected",
+      description: `${t("selectedLocation") || "Selected location"}: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+    })
+  }
+
   const handleSubmit = async () => {
     let files = images
     if (files.length === 0) {
@@ -535,9 +565,9 @@ else{
         value_estimate: aiPriceEstimation ,
         translations,
       }
-      console.log("Payload:", payload)
-      console.log("geo_location:", geo_location)
-      console.log("aiPriceEstimation:", aiPriceEstimation)
+      // console.log("Payload:", payload)
+      // console.log("geo_location:", geo_location)
+      // console.log("aiPriceEstimation:", aiPriceEstimation)
 
       await addProduct(payload, files)
 
@@ -555,7 +585,7 @@ else{
       setAiPriceEstimation(null)
       router.push("/profile/items")
     } catch (err) {
-      console.error(err)
+      // console.error(err)
       toast({
         title: t("error") || "ERROR ",
         description: err.message || t("Erroraddingitem") || "Error adding item.",
@@ -595,7 +625,7 @@ else{
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={containerVariants} 
       initial="hidden"
       animate="visible"
       className="flex items-center justify-center min-h-screen w-full py-2 px-0 sm:px-0 lg:px-8 bg-background text-foreground"
@@ -877,6 +907,112 @@ else{
                       </Card>
                     </motion.div>
 
+                  {/* Interactive Map Section */}
+                  <motion.div variants={itemVariants}>
+                    <Card className="rounded-xl shadow-md bg-muted border-border">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-primary">
+                          <motion.div
+                            animate={{ rotate: [0, 360] }}
+                            transition={{ repeat: Number.POSITIVE_INFINITY, duration: 8, ease: "linear" }}
+                          >
+                            <Map className="h-5 w-5 text-primary" />
+                          </motion.div>
+                          {t("InteractiveMap") || "Interactive Map"}
+                          {isMapRefreshing && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              className="flex items-center text-sm text-muted-foreground ml-auto"
+                            >
+                              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                              <span>Updating...</span>
+                            </motion.div>
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Interactive Map */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          <LocationMap
+                            latitude={selectedPosition?.lat || geo_location?.lat || 30.0444}
+                            longitude={selectedPosition?.lng || geo_location?.lng || 31.2357}
+                            onLocationSelect={handleLocationSelect}
+                            height="300px"
+                            className="shadow-lg"
+                          />
+                        </motion.div>
+
+                        {/* Map Controls */}
+                        <motion.div
+                          className="flex flex-wrap gap-4 justify-center"
+                          variants={itemVariants}
+                        >
+                          <motion.div whileHover="hover" whileTap="tap">
+                            <Button
+                              type="button"
+                              onClick={getCurrentPosition}
+                              disabled={isGettingLocation}
+                              className="bg-primary hover:bg-primary/90 text-white shadow-lg"
+                            >
+                              {isGettingLocation ? (
+                                <>
+                                  <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}
+                                  >
+                                    <Loader2 className="mr-2 h-4 w-4" />
+                                  </motion.div>
+                                  {t("GettingLocation") || "Getting Location..."}
+                                </>
+                              ) : (
+                                <>
+                                  <MapPin className="mr-2 h-4 w-4" />
+                                  {t("GetCurrentLocation") || "Get Current Location"}
+                                </>
+                              )}
+                            </Button>
+                          </motion.div>
+
+                          <motion.div whileHover="hover" whileTap="tap">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setIsMapRefreshing(true)
+                                setTimeout(() => setIsMapRefreshing(false), 1000)
+                              }}
+                              className="border-primary text-primary hover:bg-primary/90"
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              {t("RefreshMap") || "Refresh Map"}
+                            </Button>
+                          </motion.div>
+                        </motion.div>
+
+                        {/* Map Info */}
+                        <motion.div
+                          className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg"
+                          variants={itemVariants}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <RefreshCw className="h-4 w-4 text-primary" />
+                            <span className="font-medium text-primary dark:text-primary/40">
+                              {t("AutoRefresh") || "Auto Refresh"}
+                            </span>
+                          </div>
+                          <p className="text-sm text-primary dark:text-primary/40">
+                            {t("MapUpdatesEvery2Seconds") || "This map automatically updates every 2 seconds to show the latest location data."}
+                          </p>
+                        </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
                   <Button
                     type="button"

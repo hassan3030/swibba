@@ -742,15 +742,22 @@ export default function SwapPage() {
                     </motion.div>
 
 
-  {/* Swap Summary */}
-  <AnimatePresence>
+ 
+ 
+
+
+                  </motion.div>
+                  
+                </motion.div>
+                 {/* Swap Summary */}
+                <AnimatePresence >
                     {canCreateSwap && (
                       <motion.div
                         variants={swapSummaryVariants}
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="mb-8"
+                        className="mb-4 mt-6"
                       >
                         <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 hover:shadow-xl transition-all duration-300">
                           <CardContent className="p-8">
@@ -903,10 +910,6 @@ export default function SwapPage() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-
-
-                  </motion.div>
-                </motion.div>
               </TabsContent>
 
               <TabsContent value="history">

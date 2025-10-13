@@ -4,8 +4,6 @@ import { jwtDecode } from "jwt-decode"
 export const STATIC_ADMIN_TOKEN = process.env.STATIC_ADMIN_TOKEN || 'Q25pLQ8ZQqLbf3pbnUDs2Al4NDRad6-u'
 export const baseURL = process.env.BASE_URL || "https://dev-dashboard.swibba.com/"
 export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items"
-export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
-
 
 // Enhanced error handling utility
 const handleApiError = (error, context) => {

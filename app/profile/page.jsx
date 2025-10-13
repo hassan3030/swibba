@@ -182,18 +182,18 @@ export default function ProfilePage() {
   }
 
   const handleGetBreviousRating = async (id) => {
-    const response = await getReview(id)
+    const response = await getReview(id) 
     // console.log("response", response.data)
 
     if (!response.data) {
       setRate(0)
     } else {
-      const rates = response.data.map(({ rating }) => rating)
+      const rates = response.data.average_rating
       // console.log("rates", rates)
-      const calculateAverageRating = getCalculateAverageRating(rates)
+      // const calculateAverageRating = getCalculateAverageRating(rates)
       // console.log("calculateAverageRating", calculateAverageRating)
 
-      setRate(calculateAverageRating)
+      setRate(rates)
       // console.log("rate", rate)
     }
   }
@@ -201,8 +201,9 @@ export default function ProfilePage() {
   const getUserProducts = async () => {
     const userPruducts = await getProductByUserId("all")
     const userPruductsAvailable = await getProductByUserId("available")
+    console.log("userPruductsAvailable", userPruductsAvailable)
     const userPruductsUnavailable = await getProductByUserId("unavailable")
-    
+    console.log("userPruductsUnavailable", userPruductsUnavailable)
     // Check if the API call was successful and data exists
     if (!userPruducts || !userPruducts.success || !userPruducts.data) {
       // console.error("Failed to fetch user products:", userPruducts?.error || "Unknown error")
@@ -539,12 +540,38 @@ export default function ProfilePage() {
                   </div>
 
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                    <ItemsList
-                      items={myAvailableItems}
-                      showFilters={false}
-                      showbtn={false}
-                      showSwitchHeart={showSwitchHeart}
-                    />
+                   {
+                    myAvailableItems.data ? (
+                      <ItemsList
+                        items={myAvailableItems}
+                        showFilters={false}
+                        showbtn={false}
+                        showSwitchHeart={showSwitchHeart}
+                      />
+                    ) : (
+                      (
+                        <motion.div
+                          className="mt-6"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          <div className="rounded-lg border-2 border-dashed border-border p-8 text-center bg-muted/50">
+                            <motion.p
+                              className="text-center text-sm text-muted-foreground"
+                              animate={{ opacity: [0.5, 1, 0.5] }}
+                              transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
+                            >
+                              {t("noItemsFound") || "Your have not items you can add new item."}
+                            </motion.p>
+                            <Button asChild className="mt-4">
+                              <Link href="/profile/settings/editItem/new">{t("addNewItem") || "Add Item"}</Link>
+                            </Button>
+                          </div>
+                        </motion.div>
+                      )
+                    )
+                   }
                   </motion.div>
                 </motion.div>
               </TabsContent>

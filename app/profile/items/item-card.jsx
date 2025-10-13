@@ -85,7 +85,7 @@ const ItemCard = ({ item }) => {
       toast({
         title: t("itemDeleted") || "Item Deleted",
         description: t("itemDeletedDesc") || "The item has been successfully deleted.",
-        variant: "success",
+        variant: "default",
       })
       router.refresh()
     } catch (error) {

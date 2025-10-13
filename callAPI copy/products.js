@@ -421,7 +421,7 @@ export const getProductById = async (id) => {
   }
 }
 // Get products by current user ID
-export const getProductByUserId = async (availablity) => {
+export const getProductByUserId = async (availablity = "available") => {
   try {
     return await makeAuthenticatedRequest(async () => {
       const { userId } = await validateAuth()
@@ -429,27 +429,26 @@ export const getProductByUserId = async (availablity) => {
         throw new Error("Authentication required")
       }
       let response;
-if(availablity=="available" ){
+if(availablity=="available" || availablity=="unavailable"){
   response = await axios.get(` ${baseItemsURL}/Items` ,
     {
       params: {
         fields: "*,images.*,translations.*,images.directus_files_id.*",
         filter: {
           user_id: { _eq:`${userId}` },
-          status_swap: { _eq: "available"  },
+          status_swap: { _eq: availablity=="available" ? "available" : "unavailable" },
         }
       }
     }
     )
 }
-else if( availablity=="unavailable"){
+else if(availablity=="all"){
   response = await axios.get(` ${baseItemsURL}/Items` ,
     {
       params: {
         fields: "*,images.*,translations.*,images.directus_files_id.*",
         filter: {
           user_id: { _eq:`${userId}` },
-          status_swap: { _eq: "unavailable" },
         }
       }
     }
@@ -467,18 +466,6 @@ else{
     }
     )
 }
-// else{ 
-//   response = await axios.get(` ${baseItemsURL}/Items` ,
-//     {
-//       params: {
-//         fields: "*,images.*,translations.*,images.directus_files_id.*",
-//         filter: {
-//           user_id: { _eq:`${userId}` },
-//         }
-//       }
-//     }
-//     )
-// }
       
 
       // console.log("User products retrieved successfully, count:", response.data.data?.length || 0)
@@ -542,7 +529,7 @@ export const deleteProduct = async (id) => {
       }
 
       // Verify ownership before deletion
-      const {token , userId   } = await validateAuth()
+      const { userId } = await validateAuth()
       const productResult = await getProductById(id)
 
       if (!productResult.success) {
@@ -555,53 +542,8 @@ export const deleteProduct = async (id) => {
 
       // Add delay for better UX
       await new Promise((resolve) => setTimeout(resolve, 500))
- // -------------------------------------------------
- let productImages = await axios.get(`${baseItemsURL}/Items/${id}`, {
-  params: {
-    fields: "*,images.*,images.directus_files_id.*",
-  },
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-})
-console.log("productImages", productImages)
-// delete the product
-      await axios.delete(`${baseItemsURL}/Items/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
 
-      // console.log("productImages", productImages)
-      productImages.data.data.images.forEach(async (image) => {
-       await axios.delete(`${baseURL}/Files/${image.directus_files_id.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      console.log("productImages")
-      })
-      // -------------------------------------------------
-// // delete the product images
-// let productImages = await axios.get(`${baseItemsURL}/Items_files?filter[Items_id][_eq]=${id}`, {
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//   },
-// })
-
-// productImages.data.data.forEach(async (image) => {
-//  await axios.delete(`${baseURL}/Files/${image.directus_files_id}`, {
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//   },
-// })
-// })
-
-// await axios.delete(`${baseItemsURL}/Items_files?filter[Items_id][_eq]=${id}`, {
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//   },
-// })
+      await axios.delete(`${baseItemsURL}/Items/${id}`)
 
       // console.log("Product deleted successfully, ID:", id)
       return {
@@ -615,7 +557,6 @@ console.log("productImages", productImages)
   }
 }
 
-
 // Add product with images and comprehensive validation
 export const addProduct = async (payload, files) => {
   try {
@@ -623,8 +564,6 @@ export const addProduct = async (payload, files) => {
       if (!payload || typeof payload !== "object") {
         throw new Error("Product data is required")
       }
-
-
 
       if (!files || !Array.isArray(files) || files.length === 0) {
         throw new Error("At least one image is required")
@@ -657,7 +596,7 @@ export const addProduct = async (payload, files) => {
           ...payload,
           user_id: userId,
           status_swap: "available",
-          // date_created: new Date().toISOString(),
+          date_created: new Date().toISOString(),
         },
         {
           headers: {
@@ -688,15 +627,12 @@ export const addProduct = async (payload, files) => {
               "Content-Type": "multipart/form-data",
             },
           })
-          console.log("fileRes", fileRes)
+
           const fileId = fileRes.data?.data?.id
           if (!fileId) {
             throw new Error(`Failed to upload image ${i + 1}`)
           }
-          
-          if (!token) {
-            throw new Error("Authentication required")
-          }
+
           await axios.post(
             `${baseItemsURL}/Items_files`,
             {
@@ -706,8 +642,7 @@ export const addProduct = async (payload, files) => {
             {
               headers: {
                 "Content-Type": "application/json",
-                // Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
               },
             },
           )

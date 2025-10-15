@@ -8,7 +8,6 @@ import {
   removeCookie,
   handleApiError,
   makeAuthenticatedRequest,
-  STATIC_ADMIN_TOKEN,
   getTarget,
   STANDARD_ROLE_ID
 } from "./utiles.js"
@@ -133,9 +132,6 @@ export const register = async (email, password, first_name, additional_data = {}
       params: {
         filter: { email: { _eq: cleanEmail } },
       },
-      // headers: {
-      //   Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-      // },
     });
     // console.log('i am in regisration getRes  ',getRes )
 
@@ -154,11 +150,6 @@ export const register = async (email, password, first_name, additional_data = {}
       { status: 'active' ,
         role:STANDARD_ROLE_ID
       },
-      // {
-      //   headers: {
-      //     Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-      //   },
-      // }
     );
 
     // console.log('User activated:', patchRes.data.data);
@@ -252,10 +243,6 @@ export const getKYC = async (id) => {
 // Get all user 
 export const getAllUsers = async () => {
   try {
-    // const token = await getCookie();
-    // const headers = {
-    //   Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
-    // };
     const response = await axios.get(`${baseURL}/users`);
     return {
       success: true,
@@ -405,7 +392,8 @@ export const getUserByProductId = async (productId) => {
 // }
 // // ----------------------------------
 // Edit profile with enhanced validation and authentication
-export const editeProfile = async (userData, authId, avatar = null , translations = []) => {
+export const editeProfile = async (userData, authId, avatar = null , translations) => {
+  console.log("translations call api :  " , translations)
   try {
     return await makeAuthenticatedRequest(async () => {
       const decoded = await decodedToken()
@@ -606,7 +594,6 @@ export const addMessage = async (email, name, message, phone_number) => {
         messageData.user_id = decoded.id;
       }
     } else {
-      // headers.Authorization = `Bearer ${STATIC_ADMIN_TOKEN}`;
       headers.Authorization = `Bearer ${token}`;
     }
 

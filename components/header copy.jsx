@@ -227,11 +227,7 @@ export function Header() {
     const token = await getCookie()
     if (token) {
       const decoded = await decodedToken(token)
-      if (!decoded) {
-        setCartLength(0)
-        setNotificationsLength(0)
-        return
-      }
+      if (!decoded) return
       const { id } = decoded
       const offers = await getOfferById(id)
 
@@ -249,9 +245,6 @@ export function Header() {
 
       setCartLength(filteredOffers.length)
       setNotificationsLength(filteredNotifications.length)
-    } else {
-      setCartLength(0)
-      setNotificationsLength(0)
     }
   }
 
@@ -264,20 +257,9 @@ export function Header() {
 
   useEffect(() => {
     getUser()
-
-    const dataFetch = () => {
-      getOffers()
-      getWishlist()
-      getChat()
-    }
-
-    dataFetch()
-
-    const interval = setInterval(dataFetch, 5000) // Poll every 5 seconds
-
-    return () => {
-      clearInterval(interval)
-    }
+    getOffers()
+    getWishlist()
+    getChat()
   }, [])
 
   useEffect(() => {

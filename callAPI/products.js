@@ -1,5 +1,5 @@
 import axios from "axios"
-import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth , getOptionalAuth , STATIC_ADMIN_TOKEN} from "./utiles.js"
+import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth , getOptionalAuth } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 
 
@@ -533,6 +533,89 @@ export const getProductsOwnerById = async (productId) => {
   }
 }
 
+// Get image products by their IDs
+export const getImageProducts = async (images) => {
+  try {
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return { success: true, data: [], message: "No images to fetch." };
+    }
+
+    const fileIds = images.map(img => img.directus_files_id).filter(id => id);
+    if (fileIds.length === 0) {
+      return { success: true, data: [], message: "No valid file IDs provided." };
+    }
+
+    const response = await axios.get(`${baseURL}/files`, {
+      params: {
+        filter: {
+          id: { _in: fileIds },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      datas: true, // Maintaining compatibility with original structure
+      data: response.data.data || [],
+      message: "Image data retrieved successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Get Image Products");
+  }
+};
+
+// Remove a single product image relationship
+export const removeProductImage = async (itemId, fileId) => {
+  try {
+    return await makeAuthenticatedRequest(async () => {
+      if (!itemId || !fileId) {
+        throw new Error("Item ID and File ID are required for deletion.");
+      }
+
+      const { token } = await validateAuth();
+
+      // Find the specific Items_files entry to delete
+      const relationRes = await axios.get(`${baseItemsURL}/Items_files`, {
+        params: {
+          filter: {
+            Items_id: { _eq: itemId },
+            directus_files_id: { _eq: fileId },
+          },
+          limit: 1,
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const relation = relationRes.data?.data?.[0];
+      if (!relation) {
+        // If relation doesn't exist, it might have been already deleted.
+        // We can consider this a success to avoid unnecessary errors on the frontend.
+        console.warn(`Image relation for item ${itemId} and file ${fileId} not found. It might be already deleted.`);
+        return {
+          success: true,
+          message: "Image relation not found, assumed already deleted.",
+        };
+      }
+
+      // Delete the Items_files entry
+      await axios.delete(`${baseItemsURL}/Items_files/${relation.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Optional: Delete the actual file from /files if it's no longer used anywhere else.
+      // This is more complex and requires checking for other relationships.
+      // For now, we only delete the relation as requested by the initial logic.
+
+      return {
+        success: true,
+        message: `Image with file ID: ${fileId} was successfully unlinked from item ID: ${itemId}.`,
+      };
+    });
+  } catch (error) {
+    return handleApiError(error, "Remove Product Image");
+  }
+};
+
 // Delete product with authentication
 export const deleteProduct = async (id) => {
   try {
@@ -706,7 +789,6 @@ export const addProduct = async (payload, files) => {
             {
               headers: {
                 "Content-Type": "application/json",
-                // Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`,
                 Authorization: `Bearer ${token}`,
               },
             },
@@ -799,29 +881,6 @@ export const updateProduct = async (payload, files, itemId) => {
       }
 
       // console.log("Product updated successfully with translations, ID:", itemId)
-
-      // Delete existing images EXCEPT retained
-      try {
-        const existingImagesRes = await axios.get(`${baseItemsURL}/Items_files?filter[Items_id][_eq]=${itemId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        const toDelete = (existingImagesRes.data?.data || []).filter((img) => {
-          // keep if its directus_files_id is listed in retainedIds
-          return !retainedIds.includes(img.directus_files_id)
-        })
-
-        const deletePromises = toDelete.map((img) =>
-          axios.delete(`${baseItemsURL}/Items_files/${img.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        )
-
-        await Promise.allSettled(deletePromises)
-        // console.log("Existing images cleaned up")
-      } catch (deleteError) {
-        console.warn("Failed to delete some existing images:", deleteError.message)
-      }
 
       // Upload new images
       const uploadResults = []

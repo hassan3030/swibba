@@ -16,7 +16,9 @@ import {
   Verified,
   Wallet,
   Plus,
-  MessageCircle
+  MessageCircle,
+  Moon,
+  Sun,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,9 +32,13 @@ import { getOffersNotifications, getMessagesByUserId } from "@/callAPI/swap"
 import Image from "next/image"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
+import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
+import { useTheme } from "@/lib/theme-provider"
+import { useLanguage } from "@/lib/language-provider"
 const slideVariants = {
   closed: {
-    x: "-100%",
+    // x: "-100%",
     transition: {
       type: "spring",
       stiffness: 400,
@@ -40,7 +46,7 @@ const slideVariants = {
     }
   },
   open: {
-    x: 0,
+    // x: 0,
     transition: {
       type: "spring",
       stiffness: 400,
@@ -71,6 +77,10 @@ export function MobileHeader() {
   const [notificationCount, setNotificationCount] = useState(0)
   const [messageCount, setMessageCount] = useState(0)
   const { t } = useTranslations()
+  const { isRTL, toggleLanguage } = useLanguage()
+  const { theme, toggleTheme } = useTheme()
+
+
   const router = useRouter()
 
   useEffect(() => {
@@ -210,16 +220,18 @@ export function MobileHeader() {
               animate="open"
               exit="closed"
               variants={slideVariants}
-              className="fixed left-0 top-0 z-50 h-full w-80 bg-background border-r shadow-lg"
+              className={`fixed  top-0 z-[10000000] h-full w-80 bg-background ${isRTL?'border-l right-0':'border-r left-0'}  shadow-lg`}
+
+              // className="fixed left-0 top-0 z-50 h-full w-80 bg-background border-r shadow-lg"
             >
               <div className="flex flex-col h-full">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
                   <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">S</span>
-                    </div>
-                    <span className="font-bold text-lg text-primary">Swibba</span>
+                   
+                      
+                    <p className="font-bold text-lg text-primary first-letter:inline-block  first-letter:rounded-lg first-letter:bg-primary  first-letter:text-white first-letter:font-bold first-letter:text-lg first-letter:text-center first-letter:mx-1 first-letter:px-2"> 
+                       SSwibba </p>
                   </div>
                   <Button
                     variant="ghost"
@@ -336,13 +348,25 @@ export function MobileHeader() {
                           <span className="font-medium">{t("settings") || "Settings"}</span>
                         </Link>
                         
-                        <button
+                        <button 
                           onClick={handleLogout}
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
                         >
                           <LogOut className="h-5 w-5 text-red-500" />
                           <span className="font-medium text-red-500">{t("logout") || "Logout"}</span>
                         </button>
+
+
+                        <button  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                        >
+                        <LanguageToggle />
+                        </button>
+
+                        <button   className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                       >
+                        <ThemeToggle />
+                       </button>
+
                       </>
                     )}
                   </div>

@@ -159,15 +159,31 @@ const RecivedItems = () => {
   }
 
   const handlePriceDifference = (userId, cash) => {
+    let text = ""
+    let colorClass = "text-gray-500"
+
     if (userId === myUserId) {
-      if (cash > 0) return `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      if (cash < 0) return `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      return `${t("Thepriceisequal") || "The price is equal"}`
+      if (cash < 0) {
+        text = `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+        colorClass = "text-destructive"
+      } else if (cash > 0) {
+        text = `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+        colorClass = "text-green-500"
+      } else {
+        text = `${t("Thepriceisequal") || "The price is equal"}`
+      }
     } else {
-      if (cash < 0) return `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      if (cash > 0) return `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-      return `${t("Thepriceisequal") || "The price is equal"}`
+      if (cash > 0) {
+        text = `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+        colorClass = "text-destructive"
+      } else if (cash < 0) {
+        text = `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
+        colorClass = "text-green-500"
+      } else {
+        text = `${t("Thepriceisequal") || "The price is equal"}`
+      }
     }
+    return { text, colorClass }
   }
 
   const fetchUserId = async () => {
@@ -253,7 +269,7 @@ const RecivedItems = () => {
       const theirTotal = theirItemsAfterDelete.reduce((sum, itm) => sum + (Number.parseFloat(itm.price) || 0), 0)
       newCashAdjustment = myTotal - theirTotal
     }
-
+ 
     if (theirItems.length > 1) {
       try {
         await deleteOfferItemsById(offerItemId, itemId, newCashAdjustment, item.offer_id)
@@ -300,28 +316,7 @@ const RecivedItems = () => {
     }
   }
 
-  const handleDeleteLastItem = async () => {
-    try {
-      await deleteOfferItemsById(
-        pendingDelete.idItem, 
-        pendingDelete.itemIdItslfe, 
-        pendingDelete.cashAdjustment, 
-        pendingDelete.idOffer
-      )
-      toast({
-        title: t("successfully") || "Successfully",
-        description: t("Itemdeletedfromswapsuccessfully") || "Item deleted from swap successfully",
-      })
-      setShowDeleteDialog(false)
-      getNotifications()
-    } catch (err) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtodeleteitem") || "Failed to delete item",
-        variant: "destructive",
-      })
-    }
-  }
+
 
   // accepted swap
   const getAcceptSwap = async (offerId) => {
@@ -386,23 +381,12 @@ const RecivedItems = () => {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 <DialogHeader>
-                  <DialogTitle>{t("DeleteLastItem") || "Delete Last Item"}</DialogTitle>
+                  <DialogTitle>{t("DeleteEntireSwapConfirmation") || "Delete Entire Swap?"}</DialogTitle>
                   <DialogDescription>
-                    {t("Thisisthelastiteminthisoffer") || "This is the last item in this offer. What would you like to do?"}
+                    {t("Thisisthelastiteminyouroffer_deletingitwilldeletetheentireswap") || "This is the last item in your offer. Deleting it will delete the entire swap. Are you sure?"}
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex flex-col gap-2 sm:flex-row">
-                  <DialogClose asChild>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                      <Button
-                        variant="outline"
-                        className="mx-2"
-                        onClick={handleDeleteLastItem}
-                      >
-                        {t("DeleteItemOnly") || "Delete Item Only"}
-                      </Button>
-                    </motion.div>
-                  </DialogClose>
                   <DialogClose asChild>
                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                       <Button
@@ -495,7 +479,7 @@ const RecivedItems = () => {
                   layout
                   layoutId={`notification-${offer.id}`}
                   className="my-2"
-                >
+                > 
                   <Card
                     id={offer.id}
                     className="overflow-hidden border-primary/50 bg-primary/5 hover:shadow-lg transition-shadow"
@@ -524,23 +508,21 @@ const RecivedItems = () => {
                             {offer.date_created ? new Date(offer.date_created).toLocaleString() : ""}
                           </div>
 
-                          <div
-                            className={`text-xs mt-1 flex items-center gap-1 ${
-                              offer.cash_adjustment > 0
-                                ? "text-green-500"
-                                : offer.cash_adjustment < 0
-                                  ? "text-destructive"
-                                  : "text-gray-500"
-                            }`}
-                          >
-                            <Scale className="w-3 h-3" />
-                            {offer.cash_adjustment
-                              ? `${t("CashAdjustment") || "Cash Adjustment"}: ${handlePriceDifference(
-                                  offer.from_user_id,
-                                  offer.cash_adjustment,
-                                )}`
-                              : ""}
-                          </div>
+                                                    <div
+
+                                                      className={`text-xs mt-1 flex items-center gap-1 ${offer.cash_adjustment ? handlePriceDifference(offer.from_user_id, offer.cash_adjustment).colorClass : ""}`}
+
+                                                    >
+
+                                                      <Scale className="w-3 h-3" />
+
+                                                      {offer.cash_adjustment
+
+                                                        ? `${t("CashAdjustment") || "Cash Adjustment"}: ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}`
+
+                                                        : ""}
+
+                                                    </div>
 
                           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 capitalize">
                             <CircleDot className="w-3 h-3" />

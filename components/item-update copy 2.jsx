@@ -126,7 +126,6 @@ export function ItemUpdate(props) {
   const [imageUrls, setImageUrls] = useState([])
   const [existingImages, setExistingImages] = useState([]) // {fileId, url}
   const [retainedExistingFileIds, setRetainedExistingFileIds] = useState([])
-  const [deletedImageIds, setDeletedImageIds] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMediaDirty, setIsMediaDirty] = useState(false)
   const [aiPriceEstimation, setAiPriceEstimation] = useState(value_estimate || null)
@@ -390,126 +389,43 @@ export function ItemUpdate(props) {
     setIsMediaDirty(true)
   }
 
-  const removeExistingImageById = async (fileId) => {
-    try {
-      const result = await removeProductImage(id, fileId);
-      if (result.success) {
-        setDeletedImageIds((prev) => [...prev, fileId]);
-        setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
-        setIsMediaDirty(true);
-        toast({ title: "Success", description: "Image removed." });
-      } else {
-        throw new Error(result.error || "Failed to remove image.");
-      }
-    } catch (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    }
+  const removeExistingImageById = (fileId) => {
+    setRetainedExistingFileIds((prev) => prev.filter((id) => id !== fileId))
+    setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId))
+    setIsMediaDirty(true)
   }
 
-  const handleSubmit = async (formValues) => {
-    const files = imagesFile
-    
-    // Prepare translations in Directus format
-    let translationsToSend = []
-    
-    if (aiResponse && aiResponse.name_translations) {
-      // AI provided new translations - send all
-      translationsToSend = [
-        {
-          languages_code: "en-US",
-          name: aiResponse.name_translations.en,
-          description: aiResponse.description_translations.en,
-          city: aiResponse.city_translations.en,
-          street: aiResponse.street_translations.en,
-        },
-        {
-          languages_code: "ar-SA",
-          name: aiResponse.name_translations.ar,
-          description: aiResponse.description_translations.ar,
-          city: aiResponse.city_translations.ar,
-          street: aiResponse.street_translations.ar,
-        },
-      ]
-    } else if (originalTranslations && originalTranslations.length > 0) {
-      // Update translations based on current form values
-      const currentName = formValues.name
-      const currentDescription = formValues.description
-      const currentCity = formValues.city
-      const currentStreet = formValues.street
-      
-      // Create updated translations array - send all translations with current language updated
-      translationsToSend = originalTranslations.map(translation => {
-        if ((!isRTL && translation.languages_code === "en-US") || 
-            (isRTL && translation.languages_code === "ar-SA")) {
-          // This is the current language - use form values
-          return {
-            ...translation,
-            name: currentName,
-            description: currentDescription,
-            city: currentCity,
-            street: currentStreet,
-          }
-        } else {
-          // Keep original translation for the other language
-          return translation
-        }
-      })
-    } else {
-      // No existing translations - create new ones for current language only
-      const currentName = formValues.name
-      const currentDescription = formValues.description
-      const currentCity = formValues.city
-      const currentStreet = formValues.street
-      
-      translationsToSend = [
-        {
-          languages_code: isRTL ? "ar-SA" : "en-US",
-          name: currentName,
-          description: currentDescription,
-          city: currentCity,
-          street: currentStreet,
-        }
-      ]
-    }
-    
-    const payload = {  
-      ...formValues, 
-      geo_location: geoLocation, 
-      value_estimate: aiPriceEstimation,
-      translations: translationsToSend.length > 0 ? translationsToSend : undefined,
-      deleted_image_file_ids: deletedImageIds
-    }
+  // const requestAiPriceEstimate = async () => {
+  //   const { name, description, category, status_item } = form.getValues()
+  //   // console.log("Requesting AI estimate for:", { name, description, category, status_item })
 
-    if ((existingImages.length + files.length) === 0) {
-      toast({
-        title: t("error") || "ERROR",
-        description: t("Pleasefillallfieldsandselectatleastoneimage") || "Please fill all fields and select at least one image.",
-        variant: "destructive",
-      })
-      return
-    }
+  //   if (!name || !description || !category || !status_item) {
+  //     toast({
+  //       title: t("error") || "ERROR",
+  //       description: "Please fill in the item name, description, category, and condition for an AI price estimate.",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
 
-    try {
-      console.log("Payload being sent:", payload)
-      console.log("Translations being sent:", translationsToSend)
-      
-      const updateItem = await updateProduct(payload, files, id)
-      if (updateItem.success) {
-        const hasTranslations = translationsToSend.length > 0
-        toast({
-          title: t("successfully") || "Successfully",
-          description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`, 
-        })
-      }
-    } catch (err) {
-      console.error(err)
-      toast({
-        title: t("error") || "ERROR",
-        description: `${err.message}` || t("Errorupdatingitem") || "Error updating item.",
-      })
-    }
-  }
+  //   setIsEstimating(true)
 
+  //   try {
+  //     await new Promise((resolve) => setTimeout(resolve, 1500))
+  //     const mockEstimate = Math.floor(Math.random() * 1000) + 100
+  //     setAiPriceEstimation(mockEstimate)
+  //     form.setValue("value_estimate", mockEstimate)
+  //   } catch (error) {
+  //     // console.error("Error getting AI price estimate:", error)
+  //     toast({
+  //       title: t("error") || "ERROR",
+  //       description: "Failed to get AI price estimate. Please try again or enter your own estimate.",
+  //       variant: "destructive",
+  //     })
+  //   } finally {
+  //     setIsEstimating(false)
+  //   }
+  // }
   const requestAiPriceEstimate = async () => {
     const { name, description, category, status_item, price } = form.getValues()
   
@@ -642,6 +558,7 @@ else{
     }
   }
 
+
   const onSubmit = async (data) => {
     const totalAfterUpdate = retainedExistingFileIds.length + imagesFile.length
     if (totalAfterUpdate === 0) {
@@ -666,6 +583,110 @@ else{
       })
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleSubmit = async (formValues) => {
+    const files = imagesFile
+    
+    // Prepare translations in Directus format
+    let translationsToSend = []
+    
+    if (aiResponse && aiResponse.name_translations) {
+      // AI provided new translations - send all
+      translationsToSend = [
+        {
+          languages_code: "en-US",
+          name: aiResponse.name_translations.en,
+          description: aiResponse.description_translations.en,
+          city: aiResponse.city_translations.en,
+          street: aiResponse.street_translations.en,
+        },
+        {
+          languages_code: "ar-SA",
+          name: aiResponse.name_translations.ar,
+          description: aiResponse.description_translations.ar,
+          city: aiResponse.city_translations.ar,
+          street: aiResponse.street_translations.ar,
+        },
+      ]
+    } else if (originalTranslations && originalTranslations.length > 0) {
+      // Update translations based on current form values
+      const currentName = formValues.name
+      const currentDescription = formValues.description
+      const currentCity = formValues.city
+      const currentStreet = formValues.street
+      
+      // Create updated translations array - send all translations with current language updated
+      translationsToSend = originalTranslations.map(translation => {
+        if ((!isRTL && translation.languages_code === "en-US") || 
+            (isRTL && translation.languages_code === "ar-SA")) {
+          // This is the current language - use form values
+          return {
+            ...translation,
+            name: currentName,
+            description: currentDescription,
+            city: currentCity,
+            street: currentStreet,
+          }
+        } else {
+          // Keep original translation for the other language
+          return translation
+        }
+      })
+    } else {
+      // No existing translations - create new ones for current language only
+      const currentName = formValues.name
+      const currentDescription = formValues.description
+      const currentCity = formValues.city
+      const currentStreet = formValues.street
+      
+      translationsToSend = [
+        {
+          languages_code: isRTL ? "ar-SA" : "en-US",
+          name: currentName,
+          description: currentDescription,
+          city: currentCity,
+          street: currentStreet,
+        }
+      ]
+    }
+    
+    const payload = {  
+      ...formValues, 
+      geo_location: geoLocation, 
+      value_estimate: aiPriceEstimation,
+      translations: translationsToSend.length > 0 ? translationsToSend : undefined,
+      retained_image_file_ids: retainedExistingFileIds
+    }
+
+    if ((retainedExistingFileIds.length + files.length) === 0) {
+      toast({
+        title: t("error") || "ERROR",
+        description: t("Pleasefillallfieldsandselectatleastoneimage") || "Please fill all fields and select at least one image.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      console.log("Payload being sent:", payload)
+      console.log("Translations being sent:", translationsToSend)
+      
+      const updateItem = await updateProduct(payload, files, id)
+      if (updateItem.success) {
+        const hasTranslations = translationsToSend.length > 0
+        toast({
+          title: t("successfully") || "Successfully",
+          description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`,
+        })
+      }
+    } catch (err) {
+      console.error(err)
+      toast({
+        title: t("error") || "ERROR",
+        description: `${err.message}` || t("Errorupdatingitem") || "Error updating item.",
+      })
     }
   }
 
@@ -1100,13 +1121,14 @@ else{
                 )}
                 {step === 2 && (
                   <motion.div className="space-y-6" variants={sectionVariants}>
-                    {/* Current Images Section */}
-                    <div className="space-y-2">
+                    {/* Images & Value */}
+                    <div>
                       <FormLabel className="flex items-center gap-2">
                         <ImageIcon className="h-4 w-4 text-primary" />
-                        {t("currentImages") || "Current Images"}
+                        {t("images")}
                       </FormLabel>
-                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {/* Existing images */}
                         <AnimatePresence>
                           {existingImages.map((img) => (
                             <motion.div key={img.fileId} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
@@ -1123,28 +1145,37 @@ else{
                             </motion.div>
                           ))}
                         </AnimatePresence>
-                      </div>
-                      {existingImages.length === 0 && (
-                        <p className="text-xs text-muted-foreground">{t("noCurrentImages") || "No current images."}</p>
-                      )}
-                    </div>
-
-                    {/* New Images Section */}
-                    <div className="space-y-2">
-                      <FormLabel className="flex items-center gap-2">
-                        <Upload className="h-4 w-4 text-primary" />
-                        {t("newImages") || "New Images"}
-                      </FormLabel>
-                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <AnimatePresence>
                           {imageUrls.map((url, index) => (
-                            <motion.div key={index} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
+                            <motion.div
+                              key={index}
+                              variants={imageVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              layout
+                            >
                               <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                                 <div className="aspect-square relative">
-                                  <Image src={url || "/placeholder.svg"} alt={`${t("images")} ${index + 1}`} fill className="object-cover" />
+                                  <Image
+                                    src={url || "/placeholder.svg"}
+                                    alt={`${t("images")} ${index + 1}`}
+                                    fill
+                                    className="object-cover"
+                                  />
                                 </div>
-                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
-                                  <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeImage(index)}>
+                                <motion.div
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="absolute right-1 top-1"
+                                >
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="h-6 w-6 rounded-full"
+                                    onClick={() => removeImage(index)}
+                                  >
                                     <X className="h-3 w-3" />
                                   </Button>
                                 </motion.div>
@@ -1153,16 +1184,32 @@ else{
                           ))}
                         </AnimatePresence>
 
-                        {(existingImages.length + imagesFile.length) < MAX_IMAGES && (
-                          <motion.div variants={imageVariants} initial="hidden" animate="visible" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        {imagesFile.length < MAX_IMAGES && (
+                          <motion.div
+                            variants={imageVariants}
+                            initial="hidden"
+                            animate="visible"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
                             <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/50 hover:border-primary hover:bg-muted transition-all shadow-sm">
                               <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
                                 <label htmlFor="image-upload" className="cursor-pointer text-center">
-                                  <motion.div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10" whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}>
+                                  <motion.div
+                                    className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"
+                                    whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}
+                                  >
                                     <Upload className="h-5 w-5 text-primary" />
                                   </motion.div>
                                   <p className="text-xs text-muted-foreground">{t("Clicktoupload")}</p>
-                                  <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/mov,video/avi,video/mkv,video/webm,video/flv,video/wmv,video/mpeg,video/mpg,video/m4v,video/m4a,video/m4b,video/m4p,audio/mp3,audio/wav,audio/ogg,audio/m4a,audio/m4b,audio/m4p" multiple className="hidden bg-background border-input" onChange={handleImageUpload} />
+                                  <input
+                                    id="image-upload"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,video/mp4,video/mov,video/avi,video/mkv,video/webm,video/flv,video/wmv,video/mpeg,video/mpg,video/m4v,video/m4a,video/m4b,video/m4p,audio/mp3,audio/wav,audio/ogg,audio/m4a,audio/m4b,audio/m4p"
+                                    multiple
+                                    className="hidden bg-background border-input"
+                                    onChange={handleImageUpload}
+                                  />
                                 </label>
                               </CardContent>
                             </Card>
@@ -1170,7 +1217,7 @@ else{
                         )}
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        {t("UploadUpTo")} {MAX_IMAGES - existingImages.length} {t("new images")}. {t("TotalImages")} {existingImages.length + imagesFile.length}/{MAX_IMAGES}.
+                        {t("UploadUpTo")} {MAX_IMAGES} {t("images")} (JPEG, PNG, WebP, {t("max80MBEach")})
                       </p>
                     </div>
 

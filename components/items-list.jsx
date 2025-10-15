@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Filter, X, Calendar, MapPin, DollarSign, Package, ShoppingBag, Navigation, ChevronDown } from "lucide-react"
+import { Loader2, Filter, X, Calendar, MapPin, Banknote , Package, ShoppingBag, Navigation, ChevronDown } from "lucide-react"
 import { ItemCardProfile } from "./item-card-profile"
 import { ItemsListSkeleton } from "./items-list-skeleton"
 import { categoriesName, itemsStatus, countriesList } from "@/lib/data"
 import { getProductsEnhanced } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
+import { useLanguage } from "@/lib/language-provider"
+import { useToast } from "@/hooks/use-toast"
 
 // Animation variants
 const containerVariants = {
@@ -126,7 +128,9 @@ export function ItemsList({
   const [page, setPage] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [showFilterSidebar, setShowFilterSidebar] = useState(false)
-  
+  const { isRTL, toggleLanguage } = useLanguage()
+  const { toast } = useToast()
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
   // Advanced filter states
   const [filters, setFilters] = useState({
     name: "",
@@ -447,7 +451,7 @@ export function ItemsList({
       
       // If "all" is already selected, deselect it (clear array)
       if (currentArray.includes("all")) {
-        newFilters[filterPath] = []
+        newFilters[filterPath] = [] 
       } else {
         // Otherwise, select "all" (clear individual selections and add "all")
         newFilters[filterPath] = ["all"]
@@ -488,20 +492,64 @@ export function ItemsList({
 
   // Geolocation functionality
   const getCurrentLocation = () => {
+    setIsGettingLocation(true)
+
+    if (!window.isSecureContext) {
+      toast({
+        title: t("geolocationErrorTitle") || "Geolocation Error",
+        description: t("geolocationInsecure") || "Geolocation is only available on secure (HTTPS) connections.",
+        variant: "destructive",
+      })
+      updateFilter("location.useCurrentLocation", false)
+      setIsGettingLocation(false)
+      return
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           updateFilter("location.latitude", position.coords.latitude)
           updateFilter("location.longitude", position.coords.longitude)
           updateFilter("location.useCurrentLocation", true)
+          toast({
+            title: t("locationSuccessTitle") || "Location Found",
+            description: t("locationSuccessDesc") || "Your current location has been applied to the filters.",
+            variant: "success",
+          })
+          setIsGettingLocation(false)
         },
         (error) => {
-          //  console.error("Error getting location:", error)
-          alert(t("locationError") || "Could not get your location. Please check your browser settings.")
+          let title = t("locationError") || "Could not get your location."
+          let description = ""
+
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              description = t("locationPermissionDenied") || "You have denied permission to access your location. Please enable it in your browser settings."
+              break
+            case error.POSITION_UNAVAILABLE:
+              description = t("locationPositionUnavailable") || "Your location information is currently unavailable."
+              break
+            case error.TIMEOUT:
+              description = t("locationTimeout") || "The request to get your location timed out."
+              break
+            default:
+              description = t("locationUnknownError") || "An unknown error occurred while trying to get your location."
+              break
+          }
+          
+          toast({ title, description, variant: "destructive" })
+          updateFilter("location.useCurrentLocation", false)
+          setIsGettingLocation(false)
         }
       )
     } else {
-      alert(t("geolocationNotSupported") || "Geolocation is not supported by this browser.")
+      toast({
+        title: t("geolocationErrorTitle") || "Geolocation Error",
+        description: t("geolocationNotSupported") || "Geolocation is not supported by this browser.",
+        variant: "destructive",
+      })
+      updateFilter("location.useCurrentLocation", false)
+      setIsGettingLocation(false)
     }
   }
 
@@ -548,7 +596,7 @@ export function ItemsList({
                onClick={() => setShowFilterSidebar(true)}
                className="relative flex items-center gap-2 transition-all duration-300 hover:border-primary/50 w-full"
              >
-               <Filter className="h-4 w-4" />
+               <Filter className="h-4 w-4 text-primary" />
                {/* {t("advancedFilters") || "Advanced Filters"} */}
                {getActiveFiltersCount() > 0 && (
                  <motion.span
@@ -671,7 +719,8 @@ export function ItemsList({
             
             {/* Sidebar */}
             <motion.div
-              className="fixed left-0 -top-6 h-screen w-80 bg-background border-r border-border shadow-lg z-50 overflow-y-auto"
+              className={`fixed  -top-6 h-screen w-80 bg-background  border-border shadow-lg z-50 overflow-y-auto ${isRTL?'border-l right-0':'border-r left-0'} `}
+              // className="fixed left-0 -top-6 h-screen w-80 bg-background border-r border-border shadow-lg z-50 overflow-y-auto"
               variants={sidebarVariants}
               initial="hidden"
               animate="visible"
@@ -685,7 +734,7 @@ export function ItemsList({
                 transition={{ delay: 0.1 }}
               >
                 <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
+                  <Filter className="h-5 w-5 text-primary" />
                   {t("advancedFilters") || "Advanced Filters"}
                 </h3>
                 <motion.button
@@ -713,7 +762,7 @@ export function ItemsList({
                   transition={{ delay: 0.3 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
-                    <ShoppingBag className="h-4 w-4" />
+                    <ShoppingBag className="h-4 w-4 text-primary" />
                     {t("itemName") || "Item Name"}
                   </label>
                   <Input
@@ -732,7 +781,7 @@ export function ItemsList({
                   transition={{ delay: 0.4 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
-                    <Package className="h-4 w-4" />
+                    <Package className="h-4 w-4 text-primary" />
                     {t("categories") || "Categories"}
                   </label>
                   <Popover open={categoriesOpen} onOpenChange={setCategoriesOpen}>
@@ -901,16 +950,17 @@ export function ItemsList({
                   transition={{ delay: 0.6 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+                    <MapPin className="h-4 w-4 text-primary" />
                     {t("location") || "Location"}
                   </label>
                   
                   {/* Geolocation Toggle */}
-                  <div className="flex items-center space-x-2">
+                  {/* <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
                       id="useCurrentLocation"
                       checked={filters.location.useCurrentLocation}
+                      disabled={isGettingLocation}
                       onChange={(e) => {
                         if (e.target.checked) {
                           getCurrentLocation()
@@ -923,10 +973,14 @@ export function ItemsList({
                       className="rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     <label htmlFor="useCurrentLocation" className="text-sm flex items-center gap-1 cursor-pointer">
-                      <Navigation className="h-4 w-4" />
+                      {isGettingLocation ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Navigation className="h-4 w-4" />
+                      )}
                       {t("useCurrentLocation") || "Use my current location"}
                     </label>
-                  </div>
+                  </div> */}
 
                   {filters.location.useCurrentLocation && (
                     <div className="space-y-2">
@@ -984,7 +1038,7 @@ export function ItemsList({
                   transition={{ delay: 0.7 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="h-4 w-4 text-primary" />
                     {t("dateRange") || "Date Range"}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1041,7 +1095,7 @@ export function ItemsList({
                   transition={{ delay: 1.0 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+                    <Banknote  className="h-4 w-4 text-primary" />
                     {t("priceRange") || "Price Range"}
                   </label>
                   <div className="grid grid-cols-2 gap-2">

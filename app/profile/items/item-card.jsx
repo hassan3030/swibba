@@ -71,12 +71,7 @@ const ItemCard = ({ item }) => {
   const { t } = useTranslations()
   const router = useRouter()
 
-  // const getDataImage = async () => {
-  //   if (item.images) {
-  //     const images2 = await getImageProducts(item.images)
-  //     setBigImage(images2.data[0]?.directus_files_id || "")
-  //   }
-  // }
+
 
   const handleDelete = async () => {
     setIsDeleting(true)

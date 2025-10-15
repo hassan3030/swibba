@@ -12,7 +12,7 @@ import { ProductGallery } from "@/components/product-gallery"
 import { useTranslations } from "@/lib/use-translations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getProductById } from "@/callAPI/products"
-import { validateAuth } from "@/callAPI/utiles"
+import { decodedToken, getCookie, validateAuth ,setTarget } from "@/callAPI/utiles"
 import { getKYC, getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
@@ -66,51 +66,50 @@ export default function ProductPage() {
   const id = params.id
   const { isRTL, toggleLanguage } = useLanguage()
   const getToken = async () => {
-    const { userId } = await validateAuth()
-    setTokenId(userId)
+    try {
+      const { userId } = await validateAuth()
+      setTokenId(userId)
+    } catch (error) {
+      // User is not authenticated, tokenId will remain undefined
+      // This is expected for public visitors, so we can ignore the error.
+    }
   }
 
-  // Calculate total price whenever price or quantity changes
+  // Set original quantity from product and initialize selected quantity
+  useEffect(() => {
+    if (product) {
+      const stock = product.quantity || 0;
+      setOriginalquantity(stock);
+      setQuantity(stock > 0 ? 1 : 0);
+    }
+  }, [product]);
+
+  // Calculate total price whenever quantity or product price changes
   useEffect(() => {
     if (product?.price) {
-      const price = parseFloat(product.price) || 0
-      setQuantity(product.quantity)
-      setOriginalquantity(product.quantity)
-      const total = price * quantity
-      setTotalPrice(total)
+      const price = parseFloat(product.price) || 0;
+      setTotalPrice(price * quantity);
     }
-  }, [product?.price, originalquantity])
+  }, [quantity, product?.price]);
 
   // Quantity handlers
   const increaseQuantity = () => {
-    if (quantity >= originalquantity) {
+    if (quantity < originalquantity) {
+      setQuantity(q => q + 1);
+    } else {
       toast({
-        title: t("quantityExceeded") || "Quantity exceeded",
-        description: t("quantityExceededDescription") || "Quantity exceeded. Please contact the seller.",
+        title: t("quantityExceeded") || "Maximum quantity reached",
+        description: t("quantityExceededDescription") || `You cannot add more than the available stock of ${originalquantity}.`,
         variant: "destructive",
-      })
+      });
     }
-    else {
-      setQuantity(prev => prev + 1)
-      const total = product.price * quantity
-      setTotalPrice(total)
-    }
-  }
+  };
 
   const decreaseQuantity = () => {
-    if (quantity <= 1) {
-      toast({
-        title: t("quantityLessThanOne") || "Quantity less than one",
-        description: t("quantityLessThanOneDescription") || "Quantity less than one. Please contact the seller.",
-        variant: "destructive",
-      })
+    if (quantity > 1) {
+      setQuantity(q => q - 1);
     }
-    else {
-      setQuantity(prev => prev > 1 ? prev - 1 : 1)
-      const total = product.price * quantity
-      setTotalPrice(total)
-    }
-  }
+  };
 
   // Fetch product and related data
   useEffect(() => {
@@ -154,29 +153,62 @@ export default function ProductPage() {
     fetchData()
   }, [id])
 
-  const makeSwap = async () => {
-    const { token, userId } = await validateAuth()
+  // const makeSwap = async (e) => {
+  //   e.preventDefault()
+  //   e.stopPropagation()
+  //   const token = await getCookie()
+  //   const decoded = await decodedToken(token)
+
+  //   if (token) {
+  //     const kyc = await getKYC(decoded.id) /// ------------- take id user
+  //     if (kyc.data === false || kyc.data == "false") {
+  //       toast({
+  //         title: t("faildSwap") || "Failed Swap",
+  //         description: t("DescFaildSwapKYC") || "KYC is required for swap. Please complete your KYC.",
+  //         variant: "destructive",
+  //       })
+  //     }
+  //     else {
+  //       router.push(`/swap/${id}`)
+  //     }
+  //   } else {
+  //     toast({
+  //       title: t("faildSwap") || "Failed Swap",
+  //       description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
+  //       variant: "destructive",
+  //     })
+  //     router.push(`/auth/login`)
+  //   }
+  // }
+
+  const makeSwap = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const token = await getCookie()
+    const decoded = await decodedToken(token)
     if (token) {
-      const kyc = await getKYC(userId) /// ------------- take id user
+      const kyc = await getKYC(decoded.id) /// ------------- take id user
       if (kyc.data === false) {
         toast({
           title: t("faildSwap") || "Failed Swap",
-          description: t("DescFaildSwapKYC") || "KYC is required for swap. Please complete your KYC.",
-          variant: "destructive",
+          description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+          variant: "default",
         })
       }
       else {
         router.push(`/swap/${id}`)
       }
     } else {
+    await setTarget(id)
       toast({
         title: t("faildSwap") || "Failed Swap",
-        description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
-        variant: "destructive",
+        description: t("DescFaildSwapLogin") ||   "Invalid swap without login. Please try to login.",
+        variant: "default",
       })
       router.push(`/auth/login`)
     }
   }
+
 
   if (!product) {
     return null
@@ -269,7 +301,7 @@ export default function ProductPage() {
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 rounded-full"
-                    onClick={decreaseQuantity}
+                    onClick={()=>{decreaseQuantity()}}
                     disabled={quantity <= 1}
                   >
                     <Minus className="h-4 w-4" />
@@ -289,7 +321,7 @@ export default function ProductPage() {
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 rounded-full"
-                    onClick={increaseQuantity}
+                    onClick={()=>{increaseQuantity()}}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -406,7 +438,7 @@ export default function ProductPage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               {product.status_swap === "available" && product.user_id !== tokenId && (
                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                  <Button className="w-full text-sm sm:text-base" onClick={makeSwap}>
+                  <Button className="w-full text-sm sm:text-base" onClick={(e)=>{makeSwap(e)}}>
                     <Repeat className="h-4 w-4 mr-2" />
                     {t("swap")}
                   </Button>

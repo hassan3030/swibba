@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ChevronLeft,
   User, 
-  Globe,
+  Globe, 
   Shield,
   CirclePlus,
   Navigation,
@@ -171,12 +171,12 @@ export default function ProfileSettingsPage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false);
-  //AI chat
-  const [aiResponse, setAiResponse] = useState([])
-  const [isAiProcessing, setIsAiProcessing] = useState(false)
-  const [aiInput, setAiInput] = useState("")
-  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
   const { isRTL, toggleLanguage } = useLanguage()
+  const [editedTranslations, setEditedTranslations] = useState({
+    "en-US": { description: "", city: "", street: "" },
+    "ar-SA": { description: "", city: "", street: "" }
+    });
 
 
   const updatePassword = async () => {
@@ -232,10 +232,7 @@ export default function ProfileSettingsPage() {
   const [last_name, setLasttName] = useState("")
   const [gender, setGender] = useState("")
   const [phone_number, setPhone] = useState("")
-  const [description, setDescription] = useState("")
   const [country, setCountry] = useState("")
-  const [city, setCity] = useState("")
-  const [street, setStreet] = useState("")
   const [post_code, setPostCode] = useState("")
   const [geo_location, set_geo_location] = useState({})
   const [isGettingLocation, setIsGettingLocation] = useState(false)
@@ -246,8 +243,6 @@ export default function ProfileSettingsPage() {
   const [verified,setVerified] = useState('false')
   const [showPhoneVerification, setShowPhoneVerification] = useState(false)
   const [phoneValidationError, setPhoneValidationError] = useState("")
-
-  const [originalTranslations, setOriginalTranslations] = useState([])
 
   const getUser = async () => {
     const token = await getCookie()
@@ -277,9 +272,6 @@ export default function ProfileSettingsPage() {
 
   const result = profileSchema.safeParse({ phone_number ,first_name,last_name})
 
-  
-  
-
   useEffect(() => {
     getUser()
   }, [])
@@ -295,83 +287,47 @@ export default function ProfileSettingsPage() {
     setPostCode(user?.post_code || "")
     set_geo_location(user?.geo_location || {})
     setEmail(user?.email || "")
-    setCity(user?.city || "")
-    setStreet(user?.street || "")
-    setDescription(user?.description || "")
-    setOriginalTranslations(user?.translations || [])
     set_completed_data(user?.completed_data || 'false')
     setVerified(user?.verified || 'false')
- //AI translate
- setAiInput(`Please translate the following text:
-  - Description: ${description}
-  - Street: ${street}
-  - City: ${city}
-  please return ONLY a JSON response in this format:
-  {
-  "description_translations": { "en": "...", "ar": "..." },
-  "city_translations": { "en": "...", "ar": "..." },
-  "street_translations": { "en": "...", "ar": "..." }
-  }`)
-  console.log("originalTranslations:", originalTranslations)
-  console.log("city:", city)
-  console.log("isRTL:", isRTL)
-  console.log("city:", city)
-  console.log("street:", street)
-  console.log("description:", description)
-  console.log("first_name:", first_name)
 
+    const en = user.translations?.find(t => t.languages_code === 'en-US') || {};
+    const ar = user.translations?.find(t => t.languages_code === 'ar-SA') || {};
 
-    // Set description, city, and street based on translations and RTL
-    // if (user?.translations && user.translations.length > 0) {
-    //   const currentTranslation = user.translations.find(t => 
-    //     (!isRTL && t.languages_code === "en-US") || 
-    //     (isRTL && t.languages_code === "ar-SA")
-    //   )
-      
-    //   if (currentTranslation) {
-    //     setDescription(currentTranslation.description || user?.description || "")
-    //     setCity(currentTranslation.city || user?.city || "")
-    //     setStreet(currentTranslation.street || user?.street || "")
-    //   } else {
-    //     // Fallback to main user data if no translation for current language
-    //     setDescription(user?.description || "")
-    //     setCity(user?.city || "")
-    //     setStreet(user?.street || "")
-    //   }
-    // } else {
-    //   // No translations available, use main user data
-    //   setDescription(user?.description || "")
-    //   setCity(user?.city || "")
-    //   setStreet(user?.street || "")
-    // }
-  }, [user, isRTL])
+    setEditedTranslations({
+        "en-US": {
+            description: en.description || user.description || "",
+            city: en.city || user.city || "",
+            street: en.street || user.street || ""
+        },
+        "ar-SA": {
+            description: ar.description || user.description || "",
+            city: ar.city || user.city || "",
+            street: ar.street || user.street || ""
+        }
+    });
+  }, [user])
 
 
 
   const userCollectionData = {}
   if (first_name) userCollectionData.first_name = first_name
   if (last_name) userCollectionData.last_name = last_name
-  if (description) userCollectionData.description = description
+  if (editedTranslations["en-US"].description) userCollectionData.description = editedTranslations["en-US"].description
   if (avatar) userCollectionData.avatar = avatar
-  if (city) userCollectionData.city = city
+  if (editedTranslations["en-US"].city) userCollectionData.city = editedTranslations["en-US"].city
   if (country) userCollectionData.country = country
-  if (street) userCollectionData.street = street
+  if (editedTranslations["en-US"].street) userCollectionData.street = editedTranslations["en-US"].street
   if (post_code) userCollectionData.post_code = post_code
   if (gender) userCollectionData.gender = gender
   if (phone_number) userCollectionData.phone_number = phone_number
   if (geo_location) userCollectionData.geo_location = geo_location
   if (completed_data) userCollectionData.completed_data = completed_data
   
-  // if (translations) userCollectionData.translations = translations
-
   const [formData, setFormData] = useState({
     first_name,
     last_name,
     phone_number,
-    description,
-    city,
     country,
-    street,
     post_code,
     gender,
     geo_location,
@@ -393,90 +349,82 @@ export default function ProfileSettingsPage() {
     key => userCollectionData[key] !== user[key]
   );
 
- 
-  const requestAiTranslate = async () => {
+  const currentLangCode = isRTL ? 'ar-SA' : 'en-US';
+
+  const handleAiTranslateToArabic = async () => {
+    setIsAiProcessing(true);
     try {
-       //AI translate
-   setAiInput(`Please translate the following text:
-    - Description: ${description}
-    - Street: ${street}
-    - City: ${city}
-    please return ONLY a JSON response in this format:
-    {
-    "description_translations": { "en": "...", "ar": "..." },
-    "city_translations": { "en": "...", "ar": "..." },
-    "street_translations": { "en": "...", "ar": "..." }
-    }`)
+      const { description, city, street } = editedTranslations["en-US"];
 
-      // Check if all required fields are filled
-      if (!description || !street || !city) {
+      if (!description && !city && !street) {
         toast({
-          title: t("error") || "ERROR ",
-          description:
-            t("Pleasetranslatethedescriptionstreetcity") || "Please translate the description, street, and city.",
+          title: t("nothingToTranslate") || "Nothing to translate",
+          description: t("enterTextInEnglishFields") || "Please enter some text in the English fields first.",
           variant: "destructive",
-        })
-        return null
+        });
+        return;
       }
-      setIsAiProcessing(true)
-      const aiResponse = await sendMessage(aiInput, aiSystemPrompt)
-      let jsonString = aiResponse.text
-      
-      // Extract JSON from markdown code blocks if present
-      const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-      if (jsonMatch) {
-        jsonString = jsonMatch[1]
-      }
-      
-      // Clean up any remaining markdown or extra characters
-      jsonString = jsonString.trim()
-      const jsonObject = JSON.parse(jsonString)
-      console.log("Parsed AI Translate:", jsonObject)
 
-      // Create translations in Directus format
-      let newTranslations = [
-        {
-          languages_code: "en-US",
-          description: jsonObject.description_translations.en,
-          city: jsonObject.city_translations.en,
-          street: jsonObject.street_translations.en,
-        },
-        {
-          languages_code: "ar-SA",
-          description: jsonObject.description_translations.ar,
-          city: jsonObject.city_translations.ar,
-          street: jsonObject.street_translations.ar,
-        },
-      ]
-      setAiResponse(newTranslations)
-      setIsAiProcessing(false)
-    } catch (error) {
-      console.error("Error getting AI translate:", error)
-      console.error("AI Response text:", aiResponse?.text)
+      const aiInput = `Please translate the following English text to Arabic:
+- Description: ${description}
+- Street: ${street}
+- City: ${city}
+please return ONLY a JSON response in this format:
+{
+"description_arabic": "...",
+"city_arabic": "...",
+"street_arabic": "..."
+}`;
+
+      const aiSystemPrompt = "You are an expert translator. Respond ONLY with valid JSON.";
+
+      const aiResponse = await sendMessage(aiInput, aiSystemPrompt);
+      let jsonString = aiResponse.text;
       
-      let errorMessage = t("FailedtogetAITranslatePleasetryagainorenteryourowntranslate") ||
-        "Failed to get AI translate. Please try again or enter your own translate."
-      
-      if (error instanceof SyntaxError && error.message.includes("JSON")) {
-        errorMessage = "AI response format error. Please try again."
+      const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        jsonString = jsonMatch[1];
       }
       
+      jsonString = jsonString.trim();
+      const jsonObject = JSON.parse(jsonString);
+
+      setEditedTranslations(prev => ({
+        ...prev,
+        "ar-SA": {
+          description: jsonObject.description_arabic || prev["ar-SA"].description,
+          city: jsonObject.city_arabic || prev["ar-SA"].city,
+          street: jsonObject.street_arabic || prev["ar-SA"].street,
+        }
+      }));
+
       toast({
-        title: t("error") || "ERROR ",
-        description: errorMessage,
+        title: t("translationComplete") || "Translation complete",
+        description: t("arabicFieldsUpdated") || "The Arabic fields have been updated with the AI translation.",
+      });
+
+    } catch (error) {
+      console.error("Error getting AI translation:", error);
+      toast({
+        title: t("error") || "Error",
+        description: t("failedToGetAiTranslation") || "Failed to get AI translation. Please try again.",
         variant: "destructive",
-      })
-      return null
+      });
     } finally {
-      setIsAiProcessing(false)
+      setIsAiProcessing(false);
     }
-  }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    await requestAiTranslate()
-    const { first_name, last_name, phone_number, description, city, country, street, post_code, gender, geo_location } = formData
+    await handleAiTranslateToArabic()
+    const { first_name, last_name, phone_number, country, post_code, gender, geo_location } = formData;
+    const description = editedTranslations['en-US'].description;
+    const city = editedTranslations['en-US'].city;
+    const street = editedTranslations['en-US'].street;
+
     if(first_name || last_name || phone_number || description || city || country || street || post_code || gender || geo_location) {
       set_completed_data('true')
     }
@@ -515,9 +463,22 @@ export default function ProfileSettingsPage() {
         return;
       }
 
+      const finalTranslations = [
+        {
+            languages_code: "en-US",
+            description: editedTranslations["en-US"].description,
+            city: editedTranslations["en-US"].city,
+            street: editedTranslations["en-US"].street,
+        },
+        {
+            languages_code: "ar-SA",
+            description: editedTranslations["ar-SA"].description,
+            city: editedTranslations["ar-SA"].city,
+            street: editedTranslations["ar-SA"].street,
+        }
+      ];
      
-      // Get AI translations if we have translated fields
-      await editeProfile(userCollectionData, user.id, avatar, aiResponse);
+      await editeProfile(userCollectionData, user.id, avatar, finalTranslations);
       router.refresh();
       toast({
         title: t("successfully") || "Success",
@@ -617,13 +578,22 @@ export default function ProfileSettingsPage() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          name: "Current Location",
         }
+
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`)
+          const data = await response.json()
+          pos.name = data.display_name || "Current Location"
+        } catch (error) {
+          console.error("Reverse geocoding failed", error)
+          pos.name = "Current Location"
+        }
+
         setCurrentPosition(pos)
         setSelectedPosition(pos)
 
@@ -929,8 +899,14 @@ export default function ProfileSettingsPage() {
                                   <Input
                                     id="city"
                                     name="city"
-                                    value={!isRTL ? originalTranslations[0]?.city: originalTranslations[1]?.city || city}
-                                    onChange={(e) => setCity(e.target.value)}
+                                    value={editedTranslations[currentLangCode].city}
+                                    onChange={(e) => {
+                                        const { value } = e.target;
+                                        setEditedTranslations(prev => ({
+                                            ...prev,
+                                            [currentLangCode]: { ...prev[currentLangCode], city: value }
+                                        }));
+                                    }}
                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
@@ -948,8 +924,14 @@ export default function ProfileSettingsPage() {
                                   <Input
                                     id="street"
                                     name="street"
-                                    value={!isRTL ? originalTranslations[0]?.street: originalTranslations[1]?.street || street}
-                                    onChange={(e) => setStreet(e.target.value)}
+                                    value={editedTranslations[currentLangCode].street}
+                                    onChange={(e) => {
+                                        const { value } = e.target;
+                                        setEditedTranslations(prev => ({
+                                            ...prev,
+                                            [currentLangCode]: { ...prev[currentLangCode], street: value }
+                                        }));
+                                    }}
                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
                                   />
                                 </motion.div>
@@ -961,7 +943,7 @@ export default function ProfileSettingsPage() {
                                   htmlFor="post_code"
                                   className="text-sm font-medium text-foreground"
                                 >
-                                  {t("PstalCode") || "Postal Code"}
+                                  {t("Postalcode") || "Postal Code"}
                                 </Label>
                                 <motion.div whileFocus="focus">
                                   <Input
@@ -1216,14 +1198,42 @@ export default function ProfileSettingsPage() {
                                 <Textarea
                                   id="description"
                                   name="description"
-                                  value={!isRTL ? originalTranslations[0]?.description: originalTranslations[1]?.description || description}
-                                  onChange={(e) => setDescription(e.target.value)}
+                                  value={editedTranslations[currentLangCode].description}
+                                  onChange={(e) => {
+                                      const { value } = e.target;
+                                      setEditedTranslations(prev => ({
+                                          ...prev,
+                                          [currentLangCode]: { ...prev[currentLangCode], description: value }
+                                      }));
+                                  }}
                                   rows={4}
                                   className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
                                   placeholder="Tell others about yourself..."
                                 />
                               </motion.div>
                             </motion.div>
+
+                            {/* AI Translate Button */}
+                            {/* <motion.div className="flex justify-start" variants={inputVariants}>
+                              <Button
+                                type="button"
+                                onClick={handleAiTranslateToArabic}
+                                disabled={isAiProcessing}
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-background shadow-lg hover:shadow-xl transition-all duration-300"
+                              >
+                                {isAiProcessing ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    {t("translating") || "Translating..."}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    {t("translateToArabicAi") || "Translate to Arabic with AI"}
+                                  </>
+                                )}
+                              </Button>
+                            </motion.div> */}
                           </motion.div>
                         </form>
                       </CardContent>

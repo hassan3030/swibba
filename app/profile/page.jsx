@@ -148,6 +148,7 @@ export default function ProfilePage() {
   const [avatarPath, setAvatarPath] = useState("")
   const [full_name, setFullName] = useState("")
   const [userOffers, setUserOffers] = useState([])
+  const [sentOffersCount, setSentOffersCount] = useState(0)
   const [notificationsLength, setNotificationsLength] = useState(0)
   const [myAvailableItems, setmyAvailableItems] = useState([])
   const [myUnavailableItems, setmyUnavailableItems] = useState([])
@@ -224,8 +225,14 @@ export default function ProfilePage() {
     try {
       const { userId } = await validateAuth()
       const notifications = await getOffersNotifications(userId)
-      // console.log("notifications", notifications.count)
-      setNotificationsLength(notifications.count)
+      if (notifications.success && Array.isArray(notifications.data)) {
+        const filteredOffers = notifications.data.filter(
+          (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
+        );
+        setNotificationsLength(filteredOffers.length);
+      } else {
+        setNotificationsLength(0);
+      }
     } catch (error) {
       //  console.error("Error fetching notifications:", error)
       setNotificationsLength(0)
@@ -243,6 +250,17 @@ export default function ProfilePage() {
       const { id } = await decodedToken(token)
       // get offers
       const offers = await getOfferById(id)
+
+      if (offers.success && Array.isArray(offers.data)) {
+        const filteredOffers = offers.data.filter(
+          (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
+        );
+        setSentOffersCount(filteredOffers.length);
+        setUserOffers(offers.data)
+      } else {
+        setSentOffersCount(0);
+        setUserOffers([]);
+      }
 
       // get offers items based offors id
       for (const offer of offers.data) {
@@ -464,7 +482,7 @@ export default function ProfilePage() {
                       label: t("itemsInOffers") || "Items In Offers",
                       count: myUnavailableItems.length,
                     }, 
-                    { value: "offers", icon: TbShoppingCartUp, label: t("sendoffers") || "Send Offers", count: userOffers.length },
+                    { value: "offers", icon: TbShoppingCartUp, label: t("sendoffers") || "Send Offers", count: sentOffersCount },
                     {
                       value: "recivedOffers",
                       icon: BiCartDownload,
@@ -541,7 +559,7 @@ export default function ProfilePage() {
 
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                    {
-                    myAvailableItems.data ? (
+                    myAvailableItems.length > 0 ? (
                       <ItemsList
                         items={myAvailableItems}
                         showFilters={false}

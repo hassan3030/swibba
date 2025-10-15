@@ -126,10 +126,8 @@ export function ItemUpdate(props) {
   const [imageUrls, setImageUrls] = useState([])
   const [existingImages, setExistingImages] = useState([]) // {fileId, url}
   const [retainedExistingFileIds, setRetainedExistingFileIds] = useState([])
-  const [deletedImageIds, setDeletedImageIds] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isMediaDirty, setIsMediaDirty] = useState(false)
-  const [aiPriceEstimation, setAiPriceEstimation] = useState(value_estimate || null)
+  const [aiPriceEstimation, setAiPriceEstimation] = useState(null)
   const [isEstimating, setIsEstimating] = useState(false)
   const [product, setProduct] = useState(name)
   const [bigImage, setBigImage] = useState("")
@@ -157,41 +155,9 @@ export function ItemUpdate(props) {
   const { isRTL, toggleLanguage } = useLanguage()
 
 
-  const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
-  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", 
-                                "image/jpg",
-                                "image/png", 
-                                "image/webp" , 
-                                "image/*",
-                                "video/mp4" , 
-                                "video/mov" , 
-                                "video/avi" , 
-                                "video/mkv" , 
-                                "video/webm" , 
-                                "video/flv" , 
-                                "video/wmv" , 
-                                "video/mpeg" , 
-                                "video/mpg" , 
-                                "video/m4v" ,
-                                "video/m4a" ,
-                                "video/m4b" , 
-                                "video/m4p" , 
-                                "video/m4v" , 
-                                "video/m4a" , 
-                                "video/m4b" , 
-                                "video/m4p",
-                                "video/*", 
-                                "audio/mp3", 
-                                "audio/wav", 
-                                "audio/ogg", 
-                                "audio/m4a", 
-                                "audio/m4b", 
-                                "audio/m4p",
-                                "audio/*",
-
-      ]
-  const MAX_IMAGES = 6
-
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+  const MAX_IMAGES = 3
   const categories = categoriesName
   const conditions = itemsStatus
   const allowedCat = allowedCategories
@@ -203,7 +169,7 @@ export function ItemUpdate(props) {
       .min(20, "Description must be at least 20 characters")
       .max(2000, "Description must be less than 2000 characters"),
     category: z.enum(categories),
-    status_item: z.string(),
+    condition: z.string(),
     // value_estimate: z.coerce.number().positive("Value must be greater than 0"),
     allowedCategories: z.array(z.enum(allowedCat)).min(1, "Select at least one category"),
     price: z.coerce.number().positive(t("Pricecannotbenegative") || "Price cannot be negative"),
@@ -236,7 +202,7 @@ export function ItemUpdate(props) {
     fetchImages()
   }, [images])
 
-  const getCurrentPosition = async () => {
+  const getCurrentPosition = () => {
     setIsGettingLocation(true)
 
     if (!navigator.geolocation) {
@@ -250,22 +216,13 @@ export function ItemUpdate(props) {
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
+          name: "Current Location",
         }
-
-        try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`)
-          const data = await response.json()
-          pos.name = data.display_name || "Current Location"
-        } catch (error) {
-          console.error("Reverse geocoding failed", error)
-          pos.name = "Current Location"
-        }
-
         setCurrentPosition(pos)
         setSelectedPosition(pos)
 
@@ -329,7 +286,6 @@ export function ItemUpdate(props) {
       },
   })
 
-  const { formState: { isDirty } } = form
  
   // Store original translations for comparison
   useEffect(() => {
@@ -380,34 +336,216 @@ export function ItemUpdate(props) {
     const newImageUrls = validFiles.map((file) => URL.createObjectURL(file))
     setImagesFile((prev) => [...prev, ...validFiles])
     setImageUrls((prev) => [...prev, ...newImageUrls])
-    setIsMediaDirty(true)
   }
 
   const removeImage = (index) => {
     URL.revokeObjectURL(imageUrls[index])
     setImagesFile((prev) => prev.filter((_, i) => i !== index))
     setImageUrls((prev) => prev.filter((_, i) => i !== index))
-    setIsMediaDirty(true)
   }
 
-  const removeExistingImageById = async (fileId) => {
+  const removeExistingImageById = (fileId) => {
+    setRetainedExistingFileIds((prev) => prev.filter((id) => id !== fileId))
+    setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId))
+  }
+
+  // const requestAiPriceEstimate = async () => {
+  //   const { name, description, category, status_item } = form.getValues()
+  //   // console.log("Requesting AI estimate for:", { name, description, category, status_item })
+
+  //   if (!name || !description || !category || !status_item) {
+  //     toast({
+  //       title: t("error") || "ERROR",
+  //       description: "Please fill in the item name, description, category, and condition for an AI price estimate.",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
+
+  //   setIsEstimating(true)
+
+  //   try {
+  //     await new Promise((resolve) => setTimeout(resolve, 1500))
+  //     const mockEstimate = Math.floor(Math.random() * 1000) + 100
+  //     setAiPriceEstimation(mockEstimate)
+  //     form.setValue("value_estimate", mockEstimate)
+  //   } catch (error) {
+  //     // console.error("Error getting AI price estimate:", error)
+  //     toast({
+  //       title: t("error") || "ERROR",
+  //       description: "Failed to get AI price estimate. Please try again or enter your own estimate.",
+  //       variant: "destructive",
+  //     })
+  //   } finally {
+  //     setIsEstimating(false)
+  //   }
+  // }
+  const requestAiPriceEstimate = async () => {
+    const { name, description, category, condition, price } = form.getValues()
+  
     try {
-      const result = await removeProductImage(id, fileId);
-      if (result.success) {
-        setDeletedImageIds((prev) => [...prev, fileId]);
-        setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
-        setIsMediaDirty(true);
-        toast({ title: "Success", description: "Image removed." });
-      } else {
-        throw new Error(result.error || "Failed to remove image.");
+      // Check if all required fields are filled
+      if (!name || !description || !category || !condition || !price || 
+          !geoLocation || Object.keys(geoLocation).length === 0 
+          // || !images || images.length === 0
+        ) {
+        toast({
+          title: t("error") || "ERROR ",
+          description:
+            t("PleasefillnamedesccatcondpricegeoimagesAI") ||
+            "Please fill in the item name, description, category, condition, price, location and upload at least one image for AI price estimation.",
+          variant: "destructive",
+        })
+        return
       }
+else{
+      setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
+        Item Details:
+        - Name: ${name}
+        - Description: ${description}
+        - Location: ${JSON.stringify(geoLocation)}
+        - Category: ${category}
+        - Base Price Reference: ${price} EGP
+        - Condition: ${condition}
+        
+        Please examine the uploaded images carefully and provide:
+        1. Visual condition assessment based on the images
+        2. Brand/model identification if visible
+        3. Quality and wear analysis from the images
+        4. Market value estimation considering visual condition
+        
+        please return ONLY a JSON response in this format:
+        {
+        "estimated_price": [number in EGP],
+        "name_translations": { "en": "...", "ar": "..." },
+        "description_translations": { "en": "...", "ar": "..." },
+        "city_translations": { "en": "...", "ar": "..." },
+        "street_translations": { "en": "...", "ar": "..." }
+        }`)
+          
+      setIsEstimating(true)
+    // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
+    const aiResponse = await sendMessage(aiInput, aiSystemPrompt, 3, 1000)
+    
+    // Check if AI request was successful
+    if (!aiResponse.success) {
+      throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts")
+    }
+    
+    let jsonString = aiResponse.text
+    
+    // Extract JSON from markdown code blocks if present
+    const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      jsonString = jsonMatch[1]
+    }
+    
+    // Clean up any remaining markdown or extra characters
+    jsonString = jsonString.trim()
+    
+    const jsonObject = JSON.parse(jsonString)
+    // console.log("Parsed AI Response:", jsonObject)
+    // console.log("Estimated Price:", jsonObject.estimated_price)
+    // console.log("Name Translations:", jsonObject.name_translations)
+    // console.log("Description Translations:", jsonObject.description_translations)
+    
+    // Validate the parsed response
+    if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
+      throw new Error("AI returned invalid price estimation")
+    }
+    
+    setAiResponse(jsonObject)
+    setAiPriceEstimation(jsonObject.estimated_price)
+    // Compare and optionally apply AI translations to form
+    const current = form.getValues()
+    const proposed = {
+      name: jsonObject?.name_translations?.[!isRTL ? 'en' : 'ar'] ?? current.name,
+      description: jsonObject?.description_translations?.[!isRTL ? 'en' : 'ar'] ?? current.description,
+      city: jsonObject?.city_translations?.[!isRTL ? 'en' : 'ar'] ?? current.city,
+      street: jsonObject?.street_translations?.[!isRTL ? 'en' : 'ar'] ?? current.street,
+    }
+    const changedFields = []
+    ;(['name','description','city','street']).forEach((key) => {
+      if (proposed[key] && proposed[key] !== current[key]) {
+        form.setValue(key, proposed[key])
+        changedFields.push(key)
+      }
+    })
+    form.setValue('value_estimate', jsonObject.estimated_price)
+    if (changedFields.length > 0) {
+      toast({ title: t("success") || "Success", description: `${t("UpdatedFields") || "Updated fields"}: ${changedFields.join(', ')}` })
+    } else {
+      toast({ title: t("Note") || "Note", description: t("NoFieldChangesFromAI") || "AI did not suggest changes to text fields." })
+    }
+    
+    // Show success message with attempt info
+    if (aiResponse.attempt > 1) {
+      toast({
+        title: t("success") || "Success",
+        description: `AI price estimation successful after ${aiResponse.attempt} attempts!`,
+        variant: "default",
+      })
+    }
+    
+    setIsEstimating(false)
+    }
     } catch (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      // console.error("Error getting AI price estimate:", error)
+      
+      let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
+        "Failed to get AI price estimate. Please try again or enter your own estimate."
+      
+      if (error instanceof SyntaxError && error.message.includes("JSON")) {
+        errorMessage = "AI response format error. The AI returned invalid JSON format."
+      } else if (error.message.includes("retry attempts")) {
+        errorMessage = "AI service is currently unavailable. All retry attempts failed. Please try again later."
+      } else if (error.message.includes("invalid price")) {
+        errorMessage = "AI returned invalid price estimation. Please enter your own estimate."
+      }
+      
+      toast({
+        title: t("error") || "ERROR ",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
+      setIsEstimating(false)
     }
   }
 
-  const handleSubmit = async (formValues) => {
+
+  const onSubmit = async (data) => {
+    const totalAfterUpdate = retainedExistingFileIds.length + imagesFile.length
+    if (totalAfterUpdate === 0) {
+      toast({
+        title: t("error") || "ERROR",
+        description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await handleSubmit()
+      //  console.log("Form data:", data)
+      // console.log("Images:", imagesFile)
+    } catch (error) {
+      // console.error("Error creating item:", error)
+      toast({
+        title: t("error") || "ERROR",
+        description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleSubmit = async () => {
     const files = imagesFile
+    const formValues = form.getValues()
     
     // Prepare translations in Directus format
     let translationsToSend = []
@@ -477,10 +615,10 @@ export function ItemUpdate(props) {
       geo_location: geoLocation, 
       value_estimate: aiPriceEstimation,
       translations: translationsToSend.length > 0 ? translationsToSend : undefined,
-      deleted_image_file_ids: deletedImageIds
+      retained_image_file_ids: retainedExistingFileIds
     }
 
-    if ((existingImages.length + files.length) === 0) {
+    if ((retainedExistingFileIds.length + files.length) === 0) {
       toast({
         title: t("error") || "ERROR",
         description: t("Pleasefillallfieldsandselectatleastoneimage") || "Please fill all fields and select at least one image.",
@@ -498,7 +636,7 @@ export function ItemUpdate(props) {
         const hasTranslations = translationsToSend.length > 0
         toast({
           title: t("successfully") || "Successfully",
-          description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`, 
+          description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`,
         })
       }
     } catch (err) {
@@ -507,165 +645,6 @@ export function ItemUpdate(props) {
         title: t("error") || "ERROR",
         description: `${err.message}` || t("Errorupdatingitem") || "Error updating item.",
       })
-    }
-  }
-
-  const requestAiPriceEstimate = async () => {
-    const { name, description, category, status_item, price } = form.getValues()
-  
-    try {
-      // Check if all required fields are filled
-      if (!name || !description || !category || !status_item || !price || 
-          !geoLocation || Object.keys(geoLocation).length === 0 
-          // || !images || images.length === 0
-        ) {
-        toast({
-          title: t("error") || "ERROR ",
-          description:
-            t("PleasefillnamedesccatcondpricegeoimagesAI") ||
-            "Please fill in the item name, description, category, condition, price, location and upload at least one image for AI price estimation.",
-          variant: "destructive",
-        })
-        return
-      }
-else{
-      setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
-        Item Details:
-        - Name: ${name}
-        - Description: ${description}
-        - Location: ${JSON.stringify(geoLocation)}
-        - Category: ${category}
-        - Base Price Reference: ${price} EGP
-        - Condition: ${status_item}
-        
-        Please examine the uploaded images carefully and provide:
-        1. Visual condition assessment based on the images
-        2. Brand/model identification if visible
-        3. Quality and wear analysis from the images
-        4. Market value estimation considering visual condition
-        
-        please return ONLY a JSON response in this format:
-        {
-        "estimated_price": [number in EGP],
-        "name_translations": { "en": "...", "ar": "..." },
-        "description_translations": { "en": "...", "ar": "..." },
-        "city_translations": { "en": "...", "ar": "..." },
-        "street_translations": { "en": "...", "ar": "..." }
-        }`)
-          
-      setIsEstimating(true)
-    // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
-    const aiResponse = await sendMessage(aiInput, aiSystemPrompt, 3, 1000)
-    
-    // Check if AI request was successful
-    if (!aiResponse.success) {
-      throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts")
-    }
-    
-    let jsonString = aiResponse.text
-    
-    // Extract JSON from markdown code blocks if present
-    const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonString = jsonMatch[1]
-    }
-    
-    // Clean up any remaining markdown or extra characters
-    jsonString = jsonString.trim()
-    
-    const jsonObject = JSON.parse(jsonString)
-    // console.log("Parsed AI Response:", jsonObject)
-    // console.log("Estimated Price:", jsonObject.estimated_price)
-    // console.log("Name Translations:", jsonObject.name_translations)
-    // console.log("Description Translations:", jsonObject.description_translations)
-    
-    // Validate the parsed response
-    if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
-      throw new Error("AI returned invalid price estimation")
-    }
-    
-    setAiResponse(jsonObject)
-    setAiPriceEstimation(jsonObject.estimated_price)
-    // Compare and optionally apply AI translations to form
-    const current = form.getValues()
-    const proposed = {
-      name: jsonObject?.name_translations?.[!isRTL ? 'en' : 'ar'] ?? current.name,
-      description: jsonObject?.description_translations?.[!isRTL ? 'en' : 'ar'] ?? current.description,
-      city: jsonObject?.city_translations?.[!isRTL ? 'en' : 'ar'] ?? current.city,
-      street: jsonObject?.street_translations?.[!isRTL ? 'en' : 'ar'] ?? current.street,
-    }
-    const changedFields = []
-    ;(['name','description','city','street']).forEach((key) => {
-      if (proposed[key] && proposed[key] !== current[key]) {
-        form.setValue(key, proposed[key])
-        changedFields.push(key)
-      }
-    })
-    if (changedFields.length > 0) {
-      toast({ title: t("success") || "Success", description: `${t("UpdatedFields") || "Updated fields"}: ${changedFields.join(', ')}` })
-    } else {
-      toast({ title: t("Note") || "Note", description: t("NoFieldChangesFromAI") || "AI did not suggest changes to text fields." })
-    }
-    
-    // Show success message with attempt info
-    if (aiResponse.attempt > 1) {
-      toast({
-        title: t("success") || "Success",
-        description: `AI price estimation successful after ${aiResponse.attempt} attempts!`,
-        variant: "default",
-      })
-    }
-    
-    setIsEstimating(false)
-    }
-    } catch (error) {
-      // console.error("Error getting AI price estimate:", error)
-      
-      let errorMessage = t("FailedtogetAIpriceestimatePleasetryagainorenteryourownestimate") ||
-        "Failed to get AI price estimate. Please try again or enter your own estimate."
-      
-      if (error instanceof SyntaxError && error.message.includes("JSON")) {
-        errorMessage = `AI response format error: ${error.message}. Raw response: ${aiResponse?.text}`
-      } else if (error.message.includes("retry attempts")) {
-        errorMessage = "AI service is currently unavailable. All retry attempts failed. Please try again later."
-      } else if (error.message.includes("invalid price")) {
-        errorMessage = "AI returned invalid price estimation. Please enter your own estimate."
-      }
-      
-      toast({
-        title: t("error") || "ERROR ",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsEstimating(false)
-    }
-  }
-
-  const onSubmit = async (data) => {
-    const totalAfterUpdate = retainedExistingFileIds.length + imagesFile.length
-    if (totalAfterUpdate === 0) {
-      toast({
-        title: t("error") || "ERROR",
-        description: t("Pleaseuploaleastimageyouritem") || "Please upload at least one image of your item.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      await handleSubmit(data)
-    } catch (error) {
-      // console.error("Error creating item:", error)
-      toast({
-        title: t("error") || "ERROR",
-        description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -681,12 +660,10 @@ else{
       !!form.watch("street") &&
     !!form.watch("quantity")
 
-  const isStep2Valid = 
-    (retainedExistingFileIds.length + imagesFile.length) > 0 &&
-    aiPriceEstimation !== null &&
+  const isStep2Valid =
+    imagesFile.length > 0 &&
+    !!form.watch("value_estimate") &&
     form.watch("allowed_categories")?.length > 0
-
-
 
 
 
@@ -1100,13 +1077,14 @@ else{
                 )}
                 {step === 2 && (
                   <motion.div className="space-y-6" variants={sectionVariants}>
-                    {/* Current Images Section */}
-                    <div className="space-y-2">
+                    {/* Images & Value */}
+                    <div>
                       <FormLabel className="flex items-center gap-2">
                         <ImageIcon className="h-4 w-4 text-primary" />
-                        {t("currentImages") || "Current Images"}
+                        {t("images")}
                       </FormLabel>
-                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      <div className="mt-2 grid grid-cols-3 gap-4">
+                        {/* Existing images */}
                         <AnimatePresence>
                           {existingImages.map((img) => (
                             <motion.div key={img.fileId} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
@@ -1123,28 +1101,37 @@ else{
                             </motion.div>
                           ))}
                         </AnimatePresence>
-                      </div>
-                      {existingImages.length === 0 && (
-                        <p className="text-xs text-muted-foreground">{t("noCurrentImages") || "No current images."}</p>
-                      )}
-                    </div>
-
-                    {/* New Images Section */}
-                    <div className="space-y-2">
-                      <FormLabel className="flex items-center gap-2">
-                        <Upload className="h-4 w-4 text-primary" />
-                        {t("newImages") || "New Images"}
-                      </FormLabel>
-                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <AnimatePresence>
                           {imageUrls.map((url, index) => (
-                            <motion.div key={index} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
+                            <motion.div
+                              key={index}
+                              variants={imageVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              layout
+                            >
                               <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                                 <div className="aspect-square relative">
-                                  <Image src={url || "/placeholder.svg"} alt={`${t("images")} ${index + 1}`} fill className="object-cover" />
+                                  <Image
+                                    src={url || "/placeholder.svg"}
+                                    alt={`${t("images")} ${index + 1}`}
+                                    fill
+                                    className="object-cover"
+                                  />
                                 </div>
-                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
-                                  <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeImage(index)}>
+                                <motion.div
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="absolute right-1 top-1"
+                                >
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="h-6 w-6 rounded-full"
+                                    onClick={() => removeImage(index)}
+                                  >
                                     <X className="h-3 w-3" />
                                   </Button>
                                 </motion.div>
@@ -1153,16 +1140,32 @@ else{
                           ))}
                         </AnimatePresence>
 
-                        {(existingImages.length + imagesFile.length) < MAX_IMAGES && (
-                          <motion.div variants={imageVariants} initial="hidden" animate="visible" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        {imagesFile.length < MAX_IMAGES && (
+                          <motion.div
+                            variants={imageVariants}
+                            initial="hidden"
+                            animate="visible"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
                             <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/50 hover:border-primary hover:bg-muted transition-all shadow-sm">
                               <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
                                 <label htmlFor="image-upload" className="cursor-pointer text-center">
-                                  <motion.div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10" whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}>
+                                  <motion.div
+                                    className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"
+                                    whileHover={{ scale: 1.1, backgroundColor: "rgba(73, 197, 182, 0.2)" }}
+                                  >
                                     <Upload className="h-5 w-5 text-primary" />
                                   </motion.div>
                                   <p className="text-xs text-muted-foreground">{t("Clicktoupload")}</p>
-                                  <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/mov,video/avi,video/mkv,video/webm,video/flv,video/wmv,video/mpeg,video/mpg,video/m4v,video/m4a,video/m4b,video/m4p,audio/mp3,audio/wav,audio/ogg,audio/m4a,audio/m4b,audio/m4p" multiple className="hidden bg-background border-input" onChange={handleImageUpload} />
+                                  <input
+                                    id="image-upload"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    multiple
+                                    className="hidden bg-background border-input"
+                                    onChange={handleImageUpload}
+                                  />
                                 </label>
                               </CardContent>
                             </Card>
@@ -1170,7 +1173,7 @@ else{
                         )}
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        {t("UploadUpTo")} {MAX_IMAGES - existingImages.length} {t("new images")}. {t("TotalImages")} {existingImages.length + imagesFile.length}/{MAX_IMAGES}.
+                        {t("UploadUpTo")} {MAX_IMAGES} {t("images")} (JPEG, PNG, WebP, {t("max5MBEach")})
                       </p>
                     </div>
 
@@ -1246,73 +1249,92 @@ else{
 
                       {/* Value Estimation */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <FormLabel>{t("aIExpectedPrice")} ( {t("LE")} )</FormLabel>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={requestAiPriceEstimate}
-                                  disabled={isEstimating}
-                                  className="h-8 gap-1"
-                                >
-                                  <AnimatePresence mode="wait">
-                                    {isEstimating ? (
-                                      <motion.div
-                                        key="estimating"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1"
+                      <FormField
+                        control={form.control}
+                        name="value_estimate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel>{t("aIExpectedPrice")} ( {t("LE")} )</FormLabel>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={()=>{requestAiPriceEstimate()}}
+                                        disabled={isEstimating}
+                                        className="h-8 gap-1"
                                       >
-                                        <motion.div
-                                          animate={{ rotate: 360 }}
-                                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                        >
-                                          <Loader2 className="h-3 w-3" />
-                                        </motion.div>
-                                        {t("Estimating")}
-                                      </motion.div>
-                                    ) : (
-                                      <motion.div
-                                        key="estimate"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <Info className="h-3 w-3" />
-                                        {t("GetAIEstimate")}
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </Button>
+                                        <AnimatePresence mode="wait">
+                                          {isEstimating ? (
+                                            <motion.div
+                                              key="estimating"
+                                              initial={{ opacity: 0 }}
+                                              animate={{ opacity: 1 }}
+                                              exit={{ opacity: 0 }}
+                                              className="flex items-center gap-1"
+                                            >
+                                              <motion.div
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                                              >
+                                                <Loader2 className="h-3 w-3" />
+                                              </motion.div>
+                                              {t("Estimating")}
+                                            </motion.div>
+                                          ) : (
+                                            <motion.div
+                                              key="estimate"
+                                              initial={{ opacity: 0 }}
+                                              animate={{ opacity: 1 }}
+                                              exit={{ opacity: 0 }}
+                                              className="flex items-center gap-1"
+                                            >
+                                              <Info className="h-3 w-3" />
+                                              {t("GetAIEstimate")}
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{t("GetAIEstimateTooltip")}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <FormControl>
+                              <motion.div variants={inputVariants} whileFocus="focus">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  {...field}
+                                  className="transition-all bg-background border-input duration-200 focus:ring-2 focus:ring-ring/20 focus:border-ring"
+                                />
                               </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t("GetAIEstimateTooltip")}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <AnimatePresence>
-                        {aiPriceEstimation !== null && (
-                          <motion.div
-                            className="text-lg text-primary font-bold p-4 bg-primary/10 rounded-lg text-center"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            {t("aIExpectedPrice")} {t("LE")} {aiPriceEstimation}
-                          </motion.div>
+                            </FormControl>
+                            <AnimatePresence>
+                              {aiPriceEstimation !== null && (
+                                <motion.p
+                                  className="text-xs text-primary font-medium"
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                >
+                                  {t("aIExpectedPrice")} {t("LE")}{aiPriceEstimation}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
+                            <FormDescription className="text-muted-foreground">{t("SetAFairMarketValue")}</FormDescription>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </AnimatePresence>
-                      <FormDescription className="text-muted-foreground">{t("SetAFairMarketValue")}</FormDescription>
-                      <FormMessage />
+                      />
                     </div>
                     <div className="flex flex-col-2 gap-2">
                       <Button
@@ -1323,18 +1345,12 @@ else{
                         {t("goBack")}
                       </Button>
                       <Button
+                        onClick={() => onSubmit()}
                         type="submit"
-                        disabled={!isStep2Valid || (!isDirty && !isMediaDirty && aiPriceEstimation === value_estimate) || isSubmitting}
+                        disabled={!isStep2Valid}
                         className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
                       >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {t("Saving") || "Saving..."}
-                          </>
-                        ) : (
-                          t("save")
-                        )}
+                        {t("save")}
                       </Button>
                     </div>
                   </motion.div>

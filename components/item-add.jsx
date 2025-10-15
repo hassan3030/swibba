@@ -28,6 +28,7 @@ import {  decodedToken } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
 import LocationMap from "@/components/location-map"
+import { set } from "date-fns"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -332,7 +333,7 @@ else{
       setIsEstimating(true)
       
       // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
-      const aiResponse = await sendMessage(aiInput, aiSystemPrompt, 3, 1000)
+      const aiResponse = await sendMessage(aiInput, aiSystemPrompt,3, 1000)
       
       // Check if AI request was successful
       if (!aiResponse.success) {
@@ -527,6 +528,7 @@ else{
   }
 
   const handleSubmit = async () => {
+    setIsSubmitting(true)
     let files = images
     if (files.length === 0) {
       toast({
@@ -569,8 +571,8 @@ else{
       // console.log("geo_location:", geo_location)
       // console.log("aiPriceEstimation:", aiPriceEstimation)
 
-      await addProduct(payload, files)
-
+      const addNewProduct = await addProduct(payload, files)
+     if(addNewProduct.success){
       toast({
         title: t("successfully"),
         description: t("Itemaddedsuccessfullywithimage") || "Item added successfully with images!",
@@ -584,8 +586,11 @@ else{
       setAiResponse(null)
       setAiPriceEstimation(null)
       router.push("/profile/items")
+     }
+     
     } catch (err) {
       // console.error(err)
+      setIsSubmitting(false)
       toast({
         title: t("error") || "ERROR ",
         description: err.message || t("Erroraddingitem") || "Error adding item.",
@@ -1160,7 +1165,7 @@ else{
                       )}
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      {t("Uploadupto") || "Upload up to"} <span className="font-bold text-primary">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, max 5MB each)
+                      {t("Uploadupto") || "Upload up to"} <span className="font-bold text-primary">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, {t("max80MBEach")})
                     </p>
                   </div>
                   

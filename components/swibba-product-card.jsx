@@ -214,22 +214,7 @@ export function SwibbaProductCard({
     }
   }
 
-  const handleAddToCart = async (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setIsAddingToCart(true)
 
-    // Simulate API call for swap request
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    setIsAddingToCart(false)
-    setIsAddedToCart(true)
-
-    // Reset added state after 2 seconds
-    setTimeout(() => {
-      setIsAddedToCart(false)
-    }, 2000)
-  }
 
 
       useEffect(() => {
@@ -410,7 +395,7 @@ export function SwibbaProductCard({
                 <Button
                   className="w-full bg-primary-yellow text-gray-800 hover:bg-primary-orange hover:text-white transition-colors"
                   size="sm"
-                  onClick={()=>{handleAddToCart()}}
+                  onClick={(e) => makeSwap(e)}
                   disabled={isAddingToCart || isAddedToCart}
                 >
                   <AnimatePresence mode="wait">
@@ -443,9 +428,6 @@ export function SwibbaProductCard({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="flex items-center gap-1"
-                        onClick={(e) => {
-                          makeSwap(e)
-                        }}
                       >
                         <Repeat className="h-4 w-4" />
                         {t("swap")}

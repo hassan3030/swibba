@@ -7,7 +7,6 @@ import {
   handleApiError,
   makeAuthenticatedRequest,
   validateAuth,
-  STATIC_ADMIN_TOKEN
 } from "./utiles.js"
 
 // Add cash balance to user account
@@ -184,7 +183,7 @@ export const getTopProductsByPrice = async (limit = 10) => {
     const headers = token ? {
       Authorization: `Bearer ${token}`
     } : {
-      Authorization: `Bearer ${STATIC_ADMIN_TOKEN}`
+      
     }
 
     const response = await axios.get(

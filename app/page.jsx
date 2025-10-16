@@ -6,6 +6,7 @@ import { useInView } from "react-intersection-observer"
 import { Users, ShieldCheck, Package, Sparkles, TrendingUp } from "lucide-react"
 import  FloatingActionButton  from "@/components/floating-action-button"
 import { categories } from "@/lib/data"
+
 import { ProductCarousel } from "@/components/product-carousel"
 import { SwibbaProductCardSkeleton } from "@/components/swibba-product-card-skeleton"
 import { SwibbaProductCard } from "@/components/swibba-product-card"
@@ -141,7 +142,6 @@ const LazyStatsSection = ({ t }) => {
           setHasLoaded(true)
           controls.start("visible")
         } catch (error) {
-          // console.error("Error loading stats:", error)
         } finally {
           setIsLoading(false)
         }

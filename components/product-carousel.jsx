@@ -114,7 +114,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
         {viewAllHref && (
           <motion.a
             href={viewAllHref}
-            className="text-sm font-medium text-primary hover:underline transition-all duration-200"
+            className="text-sm font-medium text-primary hover:scale-105 transition-all duration-200"
             whileHover={{ scale: 1.05, x: 5 }}
             whileTap={{ scale: 0.95 }}
           >

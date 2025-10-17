@@ -1,5 +1,11 @@
 export const translations = {
   en  :{
+    // ----------------------------- 
+    recentProducts:"Recent Products",
+    itemMedia:"Item Media",
+    newMedia: "New Media",
+    totalMedia:"Total Media",
+    //-------------------------------
    Itemdeletedfromswapsuccessfully : "Item deleted from swap successfully",
  Failedtodeleteitem :  "Failed to delete item",
 Swapdeletedsuccessfully :  "Swap deleted successfully",
@@ -1098,6 +1104,11 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    itemMedia:"وسائط العنصر",
+    recentProducts:"المنتجات الحديثة",
+    newMedia: "وسائط جديده",
+    totalMedia:"كل الوسائط",
+    //----------------------------------------------------------------------
     Itemdeletedfromswapsuccessfully :"تم حذف العنصر من عملية المبادلة بنجاح",
     Failedtodeleteitem :  "فشل حذف العنصر",
    Swapdeletedsuccessfully :  "تم حذف المبادلة بنجاح",

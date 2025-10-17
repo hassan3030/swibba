@@ -1099,7 +1099,7 @@ else{
 
                   
                   <div className="space-y-2">
-                    <FormLabel className="font-semibold text-foreground">{t("ItemImages") || "Item Images"}</FormLabel>
+                    <FormLabel className="font-semibold text-foreground">{t("itemMedia") || "Item Media"}</FormLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       <AnimatePresence>
                         {imageUrls.map((url, index) => (
@@ -1115,7 +1115,7 @@ else{
                               <div className="aspect-square relative">
                                 <Image
                                   src={url || "/placeholder.svg"}
-                                  alt={`Item image ${index + 1}`}
+                                  alt={`Item Media ${index + 1}`}
                                   fill
                                   className="object-cover rounded-xl"
                                 />

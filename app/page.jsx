@@ -519,8 +519,8 @@ const LazyCategoriesSection = ({ t }) => {
   )
 }
 
-// Lazy-loaded All Products Component
-const LazyAllProducts = ({ showSwitchHeart, t }) => {
+// Lazy-loaded Recent Products Component
+const LazyRecentProducts = ({ showSwitchHeart, t }) => {
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -531,7 +531,7 @@ const LazyAllProducts = ({ showSwitchHeart, t }) => {
       setIsLoading(true)
       const loadProducts = async () => {
         try {
-          const prods = await getProducts({}, {"limit": 15})
+          const prods = await getProducts({}, {"sort": "-date_created" , "limit": 15})
           setItems(prods.data)
           setHasLoaded(true)
         } catch (error) {
@@ -555,7 +555,7 @@ const LazyAllProducts = ({ showSwitchHeart, t }) => {
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
       <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-        <ProductCarousel title={t("allProducts")} viewAllHref="/products" viewAllLabel={t("viewAll")}> 
+        <ProductCarousel title={t("recentProducts")} viewAllHref="/products" viewAllLabel={t("viewAll")}> 
           {isLoading || !hasLoaded
             ? Array.from({ length: 6 }).map((_, i) => (
                 <motion.div
@@ -660,6 +660,149 @@ const LazyTopDeals = ({ showSwitchHeart, t }) => {
   )
 }
 
+// Lazy-loaded Automative Products Component
+const LazyAutomativeProducts = ({ showSwitchHeart, t }) => {
+  const [items, setItems] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 })
+
+  useEffect(() => {
+    if (inView && !hasLoaded) {
+      setIsLoading(true)
+      const loadProducts = async () => {
+        try {
+          const prods = await getProducts({"category":"automotive"}, {"sort": "-date_created" , "limit": 15})
+          setItems(prods.data)
+          setHasLoaded(true)
+        } catch (error) {
+          // console.error("Error loading products:", error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+      loadProducts()
+    }
+  }, [inView, hasLoaded])
+
+  return (
+    <motion.section
+      ref={ref}
+      className="container relative z-10 mt-6"
+      id="items"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
+      <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+        <ProductCarousel title={t("automotive")} viewAllHref="/products" viewAllLabel={t("viewAll")}> 
+          {isLoading || !hasLoaded
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                >
+                  <SwibbaProductCardSkeleton />
+                </motion.div>
+              ))
+            : Array.isArray(items) && items.length > 0
+              ? items.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    whileHover={{ y: -10 }}
+                  >
+                    <SwibbaProductCard {...product} showSwitchHeart={showSwitchHeart} />
+                  </motion.div>
+                ))
+              : Array.from({ length: 6 }).map((_, i) => (
+                  <motion.div key={i}>
+                    <SwibbaProductCardSkeleton />
+                  </motion.div>
+                ))}
+        </ProductCarousel>
+      </motion.div>
+    </motion.section>
+  )
+}
+
+// Lazy-loaded Electronics Products Component
+const LazyElectronicsProducts = ({ showSwitchHeart, t }) => {
+  const [items, setItems] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 })
+
+  useEffect(() => {
+    if (inView && !hasLoaded) {
+      setIsLoading(true)
+      const loadProducts = async () => {
+        try {
+          const prods = await getProducts({"category":"electronics"} , {"sort": "-date_created" , "limit": 15})
+          setItems(prods.data)
+          setHasLoaded(true)
+        } catch (error) {
+          // console.error("Error loading products:", error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+      loadProducts()
+    }
+  }, [inView, hasLoaded])
+
+  return (
+    <motion.section
+      ref={ref}
+      className="container relative z-10 mt-6"
+      id="items"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
+      <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+        <ProductCarousel title={t("electronics")} viewAllHref="/products" viewAllLabel={t("viewAll")}> 
+          {isLoading || !hasLoaded
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                >
+                  <SwibbaProductCardSkeleton />
+                </motion.div>
+              ))
+            : Array.isArray(items) && items.length > 0
+              ? items.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    whileHover={{ y: -10 }}
+                  >
+                    <SwibbaProductCard {...product} showSwitchHeart={showSwitchHeart} />
+                  </motion.div>
+                ))
+              : Array.from({ length: 6 }).map((_, i) => (
+                  <motion.div key={i}>
+                    <SwibbaProductCardSkeleton />
+                  </motion.div>
+                ))}
+        </ProductCarousel>
+      </motion.div>
+    </motion.section>
+  )
+}
+
+
 export default function Home() {
   const { t } = useTranslations()
   const [showSwitchHeart, setShowSwitchHeart] = useState(false)
@@ -702,10 +845,17 @@ export default function Home() {
         <LazyCategoriesSection t={t} />
 
         {/* Lazy-loaded Products Section */}
-        <LazyAllProducts showSwitchHeart={showSwitchHeart} t={t} />
+        <LazyRecentProducts showSwitchHeart={showSwitchHeart} t={t} />
 
         {/* Lazy-loaded Top Deals Section */}
         <LazyTopDeals showSwitchHeart={showSwitchHeart} t={t} />
+
+        {/* Lazy-loaded Lazy Automative Products Section */}
+        <LazyAutomativeProducts showSwitchHeart={showSwitchHeart} t={t} />
+
+        {/* Lazy-loaded Lazy Electronics Products Section */}
+        <LazyElectronicsProducts showSwitchHeart={showSwitchHeart} t={t} />
+
       </main>
     </>
   )

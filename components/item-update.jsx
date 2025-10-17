@@ -1133,7 +1133,7 @@ else{
                     <div className="space-y-2">
                       <FormLabel className="flex items-center gap-2">
                         <Upload className="h-4 w-4 text-primary" />
-                        {t("newImages") || "New Images"}
+                        {t("newMedia")}. {t("totalMedia")}
                       </FormLabel>
                       <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <AnimatePresence>
@@ -1170,7 +1170,7 @@ else{
                         )}
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        {t("UploadUpTo")} {MAX_IMAGES - existingImages.length} {t("new images")}. {t("TotalImages")} {existingImages.length + imagesFile.length}/{MAX_IMAGES}.
+                        {t("UploadUpTo")} {MAX_IMAGES - existingImages.length} {t("newMedia")}. {t("totalMedia")} {existingImages.length + imagesFile.length}/{MAX_IMAGES}.
                       </p>
                     </div>
 

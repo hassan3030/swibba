@@ -834,6 +834,8 @@ export const updateProduct = async (payload, files, itemId) => {
 
       // Allow zero new files if there are retained existing images
       const retainedIds = Array.isArray(payload.retained_image_file_ids) ? payload.retained_image_file_ids : []
+      const deletedIds = Array.isArray(payload.deleted_image_file_ids) ? payload.deleted_image_file_ids : []
+      
       if ((!files || !Array.isArray(files) || files.length === 0) && retainedIds.length === 0) {
         throw new Error("At least one image is required")
       }
@@ -878,6 +880,35 @@ export const updateProduct = async (payload, files, itemId) => {
 
       if (!itemRes.data?.data?.id) {
         throw new Error("Failed to update product")
+      }
+
+      // Handle deleted images
+      if (deletedIds.length > 0) {
+        for (const fileId of deletedIds) {
+          try {
+            // Find and delete the Items_files relation
+            const relationRes = await axios.get(`${baseItemsURL}/Items_files`, {
+              params: {
+                filter: {
+                  Items_id: { _eq: itemId },
+                  directus_files_id: { _eq: fileId },
+                },
+                limit: 1,
+              },
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const relation = relationRes.data?.data?.[0];
+            if (relation) {
+              await axios.delete(`${baseItemsURL}/Items_files/${relation.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            }
+          } catch (deleteError) {
+            console.warn(`Failed to delete image relation for file ${fileId}:`, deleteError.message);
+            // Continue with other deletions even if one fails
+          }
+        }
       }
 
       // console.log("Product updated successfully with translations, ID:", itemId)
@@ -931,11 +962,13 @@ export const updateProduct = async (payload, files, itemId) => {
         data: {
           ...itemRes.data.data,
           images_uploaded: successfulUploads,
+          images_deleted: deletedIds.length,
           total_images: (files?.length || 0) + retainedIds.length,
           upload_results: uploadResults,
           retained_image_file_ids: retainedIds,
+          deleted_image_file_ids: deletedIds,
         },
-        message: `Product updated successfully with ${successfulUploads} new images and ${retainedIds.length} retained images`,
+        message: `Product updated successfully with ${successfulUploads} new images, ${deletedIds.length} deleted images, and ${retainedIds.length} retained images`,
       }
     })
   } catch (error) {

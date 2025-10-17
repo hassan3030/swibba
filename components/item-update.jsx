@@ -129,7 +129,7 @@ export function ItemUpdate(props) {
   const [deletedImageIds, setDeletedImageIds] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMediaDirty, setIsMediaDirty] = useState(false)
-  const [aiPriceEstimation, setAiPriceEstimation] = useState(value_estimate || null)
+  const [aiPriceEstimation, setAiPriceEstimation] = useState(value_estimate || 0)
   const [isEstimating, setIsEstimating] = useState(false)
   const [product, setProduct] = useState(name)
   const [bigImage, setBigImage] = useState("")
@@ -216,21 +216,49 @@ export function ItemUpdate(props) {
   // Get images
   useEffect(() => {
     const fetchImages = async () => {
-      if (!images || images.length === 0) return
+      if (!images || images.length === 0) {
+        console.log("No images prop provided")
+        return
+      }
+      
+      console.log("Images prop:", images)
+      
+      // Check if images already have directus_files_id (direct structure)
+      if (images[0] && images[0].directus_files_id) {
+        console.log("Images have direct structure, processing directly")
+        const list = images.map((img) => ({
+          fileId: img.directus_files_id,
+          url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`,
+        }))
+        console.log("Processed image list (direct):", list)
+        setExistingImages(list)
+        setImageUrls(list.map(x => x.url))
+        setRetainedExistingFileIds(list.map(x => x.fileId))
+        if (list.length > 0) {
+          setBigImage(list[0].fileId)
+        }
+        return
+      }
+      
       try {
         const fetchedImages = await getImageProducts(images)
-        if (fetchedImages.datas && fetchedImages.data.length > 0) {
+        console.log("Fetched images response:", fetchedImages)
+        
+        if (fetchedImages.success && fetchedImages.data && fetchedImages.data.length > 0) {
           setBigImage(fetchedImages.data[0].directus_files_id)
           const list = fetchedImages.data.map((img) => ({
             fileId: img.directus_files_id,
             url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`,
           }))
+          console.log("Processed image list:", list)
           setExistingImages(list)
           setImageUrls(list.map(x => x.url))
           setRetainedExistingFileIds(list.map(x => x.fileId))
+        } else {
+          console.log("No images found in response or fetch failed")
         }
       } catch (err) {
-        // console.error("Failed to fetch images", err)
+        console.error("Failed to fetch images", err)
       }
     }
     fetchImages()
@@ -392,17 +420,24 @@ export function ItemUpdate(props) {
 
   const removeExistingImageById = async (fileId) => {
     try {
+      // Add to deleted images array immediately for UI feedback
+      setDeletedImageIds((prev) => [...prev, fileId]);
+      setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
+      setRetainedExistingFileIds((prev) => prev.filter((id) => id !== fileId));
+      setIsMediaDirty(true);
+      
+      // Try to remove from server (but don't fail the UI if it fails)
       const result = await removeProductImage(id, fileId);
       if (result.success) {
-        setDeletedImageIds((prev) => [...prev, fileId]);
-        setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
-        setIsMediaDirty(true);
         toast({ title: "Success", description: "Image removed." });
       } else {
-        throw new Error(result.error || "Failed to remove image.");
+        console.warn("Failed to remove image from server:", result.error);
+        // Keep the UI change even if server removal fails
       }
     } catch (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.warn("Error removing image:", error.message);
+      // Keep the UI change even if server removal fails
+      toast({ title: "Image removed from preview", description: "Will be removed on save." });
     }
   }
 
@@ -477,6 +512,7 @@ export function ItemUpdate(props) {
       geo_location: geoLocation, 
       value_estimate: aiPriceEstimation,
       translations: translationsToSend.length > 0 ? translationsToSend : undefined,
+      retained_image_file_ids: retainedExistingFileIds,
       deleted_image_file_ids: deletedImageIds
     }
 
@@ -500,12 +536,17 @@ export function ItemUpdate(props) {
           title: t("successfully") || "Successfully",
           description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`, 
         })
+        // Optionally redirect or close the form
+        // router.push('/profile/items')
+      } else {
+        throw new Error(updateItem.error || "Failed to update item")
       }
     } catch (err) {
-      console.error(err)
+      console.error("Update error:", err)
       toast({
         title: t("error") || "ERROR",
-        description: `${err.message}` || t("Errorupdatingitem") || "Error updating item.",
+        description: err.message || t("Errorupdatingitem") || "Error updating item.",
+        variant: "destructive",
       })
     }
   }
@@ -529,6 +570,16 @@ export function ItemUpdate(props) {
         return
       }
 else{
+      // Prepare image URLs for AI analysis
+      const allImageUrls = [
+        ...existingImages.map(img => img.url),
+        ...imageUrls
+      ].filter(url => url && url !== "/placeholder.svg");
+      
+      const imageContext = allImageUrls.length > 0 
+        ? `\n\nIMAGES PROVIDED: ${allImageUrls.length} images are available for analysis. Please examine these images carefully to assess the visual condition, brand identification, and quality of the item.`
+        : `\n\nNOTE: No images are currently available for visual analysis. Please provide a price estimation based on the text description only.`;
+
       setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
         Item Details:
         - Name: ${name}
@@ -537,6 +588,7 @@ else{
         - Category: ${category}
         - Base Price Reference: ${price} EGP
         - Condition: ${status_item}
+        ${imageContext}
         
         Please examine the uploaded images carefully and provide:
         1. Visual condition assessment based on the images
@@ -643,7 +695,7 @@ else{
   }
 
   const onSubmit = async (data) => {
-    const totalAfterUpdate = retainedExistingFileIds.length + imagesFile.length
+    const totalAfterUpdate = existingImages.length + imagesFile.length
     if (totalAfterUpdate === 0) {
       toast({
         title: t("error") || "ERROR",
@@ -658,10 +710,10 @@ else{
     try {
       await handleSubmit(data)
     } catch (error) {
-      // console.error("Error creating item:", error)
+      console.error("Error updating item:", error)
       toast({
         title: t("error") || "ERROR",
-        description: t("FailedtocreateitemPleasetryagain") || "Failed to create item. Please try again.",
+        description: error.message || t("FailedtoupdateitemPleasetryagain") || "Failed to update item. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -682,9 +734,20 @@ else{
     !!form.watch("quantity")
 
   const isStep2Valid = 
-    (retainedExistingFileIds.length + imagesFile.length) > 0 &&
-    aiPriceEstimation !== null &&
+    (existingImages.length + imagesFile.length) > 0 &&
+    aiPriceEstimation !== null && aiPriceEstimation !== 0 &&
     form.watch("allowed_categories")?.length > 0
+
+  // Debug logging
+  console.log("Debug - existingImages.length:", existingImages.length)
+  console.log("Debug - imagesFile.length:", imagesFile.length)
+  console.log("Debug - aiPriceEstimation:", aiPriceEstimation)
+  console.log("Debug - allowed_categories:", form.watch("allowed_categories"))
+  console.log("Debug - isStep2Valid:", isStep2Valid)
+  console.log("Debug - isDirty:", isDirty)
+  console.log("Debug - isMediaDirty:", isMediaDirty)
+  console.log("Debug - aiPriceEstimation === value_estimate:", aiPriceEstimation === value_estimate)
+  console.log("Debug - value_estimate:", value_estimate)
 
 
 
@@ -1322,11 +1385,11 @@ else{
                       >
                         {t("goBack")}
                       </Button>
-                      <Button
+                        <Button
                         type="submit"
-                        disabled={!isStep2Valid || (!isDirty && !isMediaDirty && aiPriceEstimation === value_estimate) || isSubmitting}
-                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
-                      >
+                          disabled={!isStep2Valid || (!isDirty && !isMediaDirty && aiPriceEstimation === value_estimate && existingImages.length === 0 && imagesFile.length === 0) || isSubmitting}
+                          className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
+                        >
                         {isSubmitting ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

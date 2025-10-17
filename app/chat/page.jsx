@@ -12,7 +12,8 @@ import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, R
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { getOfferById, getOffersNotifications, getMessage, addMessage } from "@/callAPI/swap"
+import { getOfferById, getOffersNotifications, getMessage, addMessage, getOfferItemsByOfferId } from "@/callAPI/swap"
+import { getProductById } from "@/callAPI/products"
 import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 
@@ -70,6 +71,7 @@ const Messages = () => {
   const [myUserId, setMyUserId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [offerItems, setOfferItems] = useState([])
   const { t } = useTranslations()
 
   // Function to fetch offers data
@@ -126,7 +128,7 @@ const Messages = () => {
 
   // Fetch my offers (sent and received) on mount
   useEffect(() => {
-    fetchOffers(true)
+       fetchOffers(true)
   }, [])
 
   // Auto-refresh every 2 seconds
@@ -152,6 +154,26 @@ const Messages = () => {
       // Fetch messages for this offer
       const msgs = await getMessage(selectedOffer.id)
       setMessages(msgs.data || [])
+
+      // Fetch offer items (sender/receiver) and their product details
+      const itemsRes = await getOfferItemsByOfferId(selectedOffer.id)
+      const itemsArr = Array.isArray(itemsRes?.data) ? itemsRes.data : []
+      const itemsWithProducts = await Promise.all(
+        itemsArr.map(async (it) => {
+          try {
+            const product = await getProductById(it.item_id)
+            return {
+              ...product.data,
+              offer_item_id: it.id,
+              offered_by: it.offered_by,
+              offer_id: it.offer_id,
+            }
+          } catch {
+            return null
+          }
+        })
+      )
+      setOfferItems(itemsWithProducts.filter(Boolean))
     } catch (error) {
       // console.error("Error fetching messages:", error)
     }
@@ -420,6 +442,121 @@ const Messages = () => {
                 
                 <ScrollArea className="flex-1 p-4 overflow-y-auto">
                   <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                    {/* Offer state hint for completed/rejected */}
+                    {selectedOffer && (selectedOffer.status_offer === "completed" || selectedOffer.status_offer === "rejected") && (
+                      <motion.div
+                        className={`${selectedOffer.status_offer === "completed" ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"} border rounded-lg p-3`}
+                        variants={chatMessageVariants}
+                        initial="hidden"
+                        animate="visible"
+                      >
+                        <div className="text-sm font-medium">
+                          {selectedOffer.status_offer === "completed"
+                            ? (t("CompletedOffer") || "Completed offer")
+                            : (t("RejectedOffer") || "Rejected offer")}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {selectedOffer.status_offer === "completed"
+                            ? (t("Thisoffercannotbechanged_anychatremainsvisible") || "This offer is completed and cannot be changed. Chat remains visible.")
+                            : (t("Thisoffercannotbechanged_itwasrejected") || "This offer was rejected and cannot be changed.")}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Offer items summary (sender vs receiver) */}
+                    {selectedOffer && offerItems.length > 0 && ["pending", "accepted"].includes(String(selectedOffer.status_offer)) && (
+                      <motion.div
+                        className="bg-muted/30 border rounded-lg p-3"
+                        variants={chatMessageVariants}
+                        initial="hidden"
+                        animate="visible"
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
+                          <div>
+                            <h4 className="text-sm font-semibold mb-2">{t("Senderitems") || "Sender items"}</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              {offerItems
+                                .filter((i) => i.offered_by === selectedOffer.from_user_id)
+                                .slice(0, 4)
+                                .map((i) => {
+                                  const img = i?.images?.[0]?.directus_files_id?.id
+                                  const url = img
+                                    ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img}`
+                                    : "/placeholder.svg"
+                                  return (
+                                    <div key={`${i.offer_item_id}-${i.id}`} className="flex items-center gap-2 bg-card/50 rounded-md p-2">
+                                      <img src={url} alt={i.name || "item"} className="w-12 h-12 object-cover rounded" />
+                                      <div className="min-w-0">
+                                        <div className="text-xs font-medium truncate">{i.name}</div>
+                                        <div className="text-xs text-muted-foreground truncate">{i.price} {t("LE") || "LE"}</div>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                            </div>
+                          </div>
+
+                          <div className="hidden md:flex justify-center items-center">
+                            <ArrowLeft className="h-5 w-5 rotate-180 text-muted-foreground" />
+                          </div>
+
+                          <div>
+                            <h4 className="text-sm font-semibold mb-2">{t("Receiveritems") || "Receiver items"}</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              {offerItems
+                                .filter((i) => i.offered_by === selectedOffer.to_user_id)
+                                .slice(0, 4)
+                                .map((i) => {
+                                  const img = i?.images?.[0]?.directus_files_id?.id
+                                  const url = img
+                                    ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img}`
+                                    : "/placeholder.svg"
+                                  return (
+                                    <div key={`${i.offer_item_id}-${i.id}`} className="flex items-center gap-2 bg-card/50 rounded-md p-2">
+                                      <img src={url} alt={i.name || "item"} className="w-12 h-12 object-cover rounded" />
+                                      <div className="min-w-0">
+                                        <div className="text-xs font-medium truncate">{i.name}</div>
+                                        <div className="text-xs text-muted-foreground truncate">{i.price} {t("LE") || "LE"}</div>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                    {/* Receiver welcome message shown first */}
+                    {selectedOffer && myUserId === selectedOffer.to_user_id && (
+                      <motion.div
+                        variants={chatMessageVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="flex justify-start"
+                      >
+                        <motion.div
+                          className="max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 bg-muted"
+                          whileHover={{ scale: 1.02 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                        >
+                          <div className="text-sm">
+                            {(t("WelcomeReceiverIntro") || "Welcome! You’ve received a new swap offer. You can review details, confirm items, or ask questions here.")}
+                            {" "}
+                            <span className="font-semibold capitalize">{partner?.first_name} {partner?.last_name}</span>
+                          </div>
+                          {!(selectedOffer?.status_offer === "completed" || selectedOffer?.status_offer === "rejected") && (
+                            <div className="mt-2">
+                              <Link href={`/recived-items#${selectedOffer.id}`} className="text-primary underline">
+                                {t("GoToOffer") || "Go to offer details"}
+                              </Link>
+                            </div>
+                          )}
+                          <div className="text-xs opacity-70 mt-2">
+                            {t("OfferTips") || "Tip: Check included items, propose changes, or proceed to confirm when ready."}
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
                     <AnimatePresence>
                       {messages.map((msg, index) => (
                         <motion.div

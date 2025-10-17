@@ -1,0 +1,14 @@
+
+.zoom-bg {
+  width: 320px;
+  height: 320px;
+  background-size: 200%; /* initial zoom level */
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-position 0.05s, transform 0.2s;
+}
+.zoom-bg:hover { cursor: zoom-in; }
+.zoom-bg:active { cursor: zoom-out; }
+.zoom-bg[data-mx][data-my]{
+  /* using inline JS later to update CSS custom properties */
+}

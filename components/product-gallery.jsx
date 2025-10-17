@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState, useCallback } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Play, Pause, Volume2 } from "lucide-react"
@@ -55,6 +55,10 @@ export function ProductGallery({ images, productName }) {
   const [direction, setDirection] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
+  const [isZoomOpen, setIsZoomOpen] = useState(false)
+  const [zoomBgPos, setZoomBgPos] = useState({ x: 50, y: 50 })
+  const mainImageRef = useRef(null)
+  const overlayImageRef = useRef(null)
 
   const nextImage = () => {
     setDirection(1)
@@ -93,6 +97,37 @@ export function ProductGallery({ images, productName }) {
     }
   }
 
+  // Resolve current media once for reuse
+  const currentMedia = {
+    id: images[currentImage]?.directus_files_id.id || '',
+    type: images[currentImage]?.directus_files_id.type || '',
+    url: images[currentImage]?.directus_files_id?.id
+      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
+      : ''
+  }
+  const currentMediaType = getMediaType(currentMedia.type)
+
+  const handleMouseMove = useCallback((e) => {
+    const targetRect = isZoomOpen && overlayImageRef.current
+      ? overlayImageRef.current.getBoundingClientRect()
+      : mainImageRef.current?.getBoundingClientRect()
+    if (!targetRect) return
+    const x = Math.max(0, Math.min(1, (e.clientX - targetRect.left) / targetRect.width))
+    const y = Math.max(0, Math.min(1, (e.clientY - targetRect.top) / targetRect.height))
+    setZoomBgPos({ x: x * 100, y: y * 100 })
+  }, [isZoomOpen])
+
+  const handleMouseEnter = useCallback(() => {
+    if (currentMediaType === 'image') {
+      setIsZoomOpen(true)
+    }
+  }, [currentMediaType])
+
+  const handleMouseLeave = useCallback(() => {
+    // Only close when leaving the overlay; do not bind this to the main image
+    setIsZoomOpen(false)
+  }, [])
+
   return (
     <motion.div
       className="flex flex-col gap-3 sm:gap-4"
@@ -100,7 +135,12 @@ export function ProductGallery({ images, productName }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg max-h-64 sm:max-h-72 md:max-h-80 w-full">
+      <div
+        ref={mainImageRef}
+        className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg max-h-64 sm:max-h-72 md:max-h-80 w-full"
+        onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
+      >
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={currentImage}
@@ -117,14 +157,8 @@ export function ProductGallery({ images, productName }) {
             className="absolute inset-0"
           >
 {(() => {
-              const currentMedia = {
-                id: images[currentImage]?.directus_files_id.id || '',
-                type: images[currentImage]?.directus_files_id.type || '',
-                url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
-              }
               // Determine media type based on URL
-              const mediaType = getMediaType(currentMedia.type)
-              
+              const mediaType = currentMediaType
               if (mediaType === 'video') {
                 return (
                   <video
@@ -256,6 +290,32 @@ export function ProductGallery({ images, productName }) {
           </motion.div>
         )}
       </div>
+
+      {/* Centered zoom overlay */}
+      {isZoomOpen && currentMediaType === 'image' && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center"
+          aria-modal="true"
+          role="dialog"
+          onMouseLeave={handleMouseLeave}
+          onMouseMove={handleMouseMove}
+          onClick={() => setIsZoomOpen(false)}
+        >
+          <div
+            ref={overlayImageRef}
+            className="relative h:[70vh] w-[70vw] max-w-5xl overflow-hidden rounded-lg border bg-background shadow-2xl h-[70vh]"
+          >
+            <div
+              className="absolute inset-0 bg-no-repeat"
+              style={{
+                backgroundImage: `url(${currentMedia.url})`,
+                backgroundSize: "200% 200%",
+                backgroundPosition: `${zoomBgPos.x}% ${zoomBgPos.y}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {images.length > 1 && (
         <motion.div

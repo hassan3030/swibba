@@ -1,5 +1,21 @@
 export const translations = {
   en  :{
+
+    somethingWentWrong :"Something went wrong",
+    tryAgain :"Try again",
+
+    //----------------------------
+    Senderitems: "Sender Elements",
+    Receiveritems:"Receiver Elements",
+    WelcomeReceiverIntro:    "Welcome you have offer with:",
+    GoToOffer: "Go to Offer",
+    OfferTips: "Offer Tips",
+    RejectedOffer: "Rejected Offer",
+    Thisoffercannotbechanged_itwasrejected:"This offer cannot be changed, it has been declined",
+    CompletedOffer:    "Completed Offer",
+    Thisoffercannotbechanged_anychatremainsvisible:"No chats in this offer can be changed",
+    
+
     // ----------------------------- 
     recentProducts:"Recent Products",
     itemMedia:"Item Media",
@@ -1104,6 +1120,31 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    somethingWentWrong :"حدث خطأ ما، حاول مرة أخرى",
+    tryAgain :"حاول مرة أخرى",
+
+    //----------------------
+    Senderitems:   " عناصر المُرسِل",
+    Receiveritems:   "عناصر المُستلِم",
+    WelcomeReceiverIntro:   " مُرحَّبا بك لديك عرضا مع :",
+    GoToOffer:"الانتقال إلى العرض",
+    OfferTips:  "نصائح العرض",
+    RejectedOffer:"العرض المرفوض",
+    Thisoffercannotbechanged_itwasrejected:   "لا يُمكن تغيير هذا العرض، فقد تم رفضه",
+    CompletedOffer:"العرض المُكتمل",
+    Thisoffercannotbechanged_anychatremainsvisible:"لا يُمكن تغيير أي دردشة في هذا العرض",
+
+
+
+     
+
+
+
+   
+ 
+
+  
+   
     itemMedia:"وسائط العنصر",
     recentProducts:"المنتجات الحديثة",
     newMedia: "وسائط جديده",

@@ -57,7 +57,6 @@ const textVariants = {
 
 export function CategoryCard({ name, imageSrc }) {
   const { t } = useTranslations()
-  
 
   return (
     <Link href={`categories/${name}`} className="group block">

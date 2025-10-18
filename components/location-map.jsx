@@ -23,9 +23,12 @@ const LocationMap = ({
     let L
 
     const initMap = async () => {
-      if (!mapRef.current || map) return
+      // Check if map already exists or container is not ready
+      if (!mapRef.current || map || mapRef.current._leaflet_id) return
 
       setIsLoading(true)
+      setError(null)
+      
       try {
         L = (await import("leaflet")).default
         await import("leaflet/dist/leaflet.css")
@@ -90,9 +93,21 @@ const LocationMap = ({
     return () => {
       if (mapInstance) {
         mapInstance.remove()
+        mapInstance = null
       }
     }
-  }, []) // Run only once on mount
+  }, [latitude, longitude, onLocationSelect]) // Include dependencies
+
+  // Cleanup effect for component unmount
+  useEffect(() => {
+    return () => {
+      if (map) {
+        map.remove()
+        setMap(null)
+        setMarker(null)
+      }
+    }
+  }, [map])
 
   useEffect(() => {
     // Invalidate size when the component is visible and has dimensions

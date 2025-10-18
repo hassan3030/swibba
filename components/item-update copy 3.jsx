@@ -1171,7 +1171,7 @@ else{
                     <div className="space-y-2">
                       <FormLabel className="flex items-center gap-2">
                         <ImageIcon className="h-4 w-4 text-primary" />
-                        {t("currentMedia") || "Current Media"}
+                        {t("currentImages") || "Current Images"}
                       </FormLabel>
                       <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <AnimatePresence>

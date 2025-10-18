@@ -3,6 +3,7 @@ export const translations = {
 
     somethingWentWrong :"Something went wrong",
     tryAgain :"Try again",
+    currentMedia: "Current Media",
 
     //----------------------------
     Senderitems: "Sender Elements",
@@ -1122,6 +1123,7 @@ SelectCountry: "Select a country",
   ar: {
     somethingWentWrong :"حدث خطأ ما، حاول مرة أخرى",
     tryAgain :"حاول مرة أخرى",
+    currentMedia: "الوسائط الحالية",
 
     //----------------------
     Senderitems:   " عناصر المُرسِل",

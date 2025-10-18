@@ -347,7 +347,7 @@ export function SwibbaProductCard({
               transition={{ delay: 0.2, duration: 0.3 }}
             >
               {(!isRTL ? translations[0]?.name: translations[1]?.name) || name}
-            </motion.h3>
+            </motion.h3> 
 
             {/* Price */}
             <motion.div className="mb-1 " variants={priceVariants}>

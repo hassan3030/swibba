@@ -112,6 +112,23 @@ export function ItemAdd() {
   const { t } = useTranslations()
   const { isRTL, toggleLanguage } = useLanguage()
   const router = useRouter()
+  
+  // Helper function to get media type
+  const getMediaType = (mimeType) => {
+    if (!mimeType) return 'image'
+    if (mimeType.startsWith('video/')) return 'video'
+    if (mimeType.startsWith('audio/')) return 'audio'
+    if (mimeType.startsWith('image/')) return 'image'
+    // Fallback: check file extension if mime type is not available
+    if (typeof mimeType === 'string' && mimeType.includes('.')) {
+      const ext = mimeType.toLowerCase().split('.').pop()
+      if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v'].includes(ext)) return 'video'
+      if (['mp3', 'wav', 'ogg', 'm4a', 'm4b', 'm4p'].includes(ext)) return 'audio'
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'image'
+    }
+    return 'image'
+  }
+  
   const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
   const ACCEPTED_IMAGE_TYPES = ["image/jpeg", 
                                 "image/jpg",
@@ -1102,42 +1119,88 @@ else{
                     <FormLabel className="font-semibold text-foreground">{t("itemMedia") || "Item Media"}</FormLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       <AnimatePresence>
-                        {imageUrls.map((url, index) => (
-                          <motion.div
-                            key={index}
-                            variants={imageUploadVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="hidden"
-                            whileHover="hover"
-                          >
-                            <Card className="relative overflow-hidden rounded-xl shadow-md border border-border bg-card">
-                              <div className="aspect-square relative">
-                                <Image
-                                  src={url || "/placeholder.svg"}
-                                  alt={`Item Media ${index + 1}`}
-                                  fill
-                                  className="object-cover rounded-xl"
-                                />
-                              </div>
-                              <motion.div
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className="absolute right-2 top-2"
-                              >
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="icon"
-                                  className="h-7 w-7 rounded-full shadow-md"
-                                  onClick={() => removeImage(index)}
+                        {imageUrls.map((url, index) => {
+                          const file = images[index]
+                          const mediaType = getMediaType(file?.type)
+                          console.log('Media type:', { index, fileType: file?.type, mediaType, url: url.substring(0, 50) + '...' })
+                          
+                          return (
+                            <motion.div
+                              key={`media-${index}-${file?.name || 'unknown'}`}
+                              variants={imageUploadVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="hidden"
+                              whileHover="hover"
+                            >
+                              <Card className="relative overflow-hidden rounded-xl shadow-md border border-border bg-card">
+                                <div className="aspect-square relative">
+                                  {mediaType === 'video' ? (
+                                    <video
+                                      src={url}
+                                      className="w-full h-full object-cover rounded-xl"
+                                      controls
+                                      muted
+                                      loop
+                                      playsInline
+                                      preload="metadata"
+                                      onError={(e) => {
+                                        console.error('Video load error:', e, 'URL:', url)
+                                        // Show fallback if video fails to load
+                                        e.target.style.display = 'none'
+                                        e.target.nextElementSibling.style.display = 'flex'
+                                      }}
+                                      onLoadStart={() => console.log('Video loading started:', url)}
+                                      onCanPlay={() => console.log('Video can play:', url)}
+                                    />
+                                  ) : mediaType === 'audio' ? (
+                                    <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center rounded-xl">
+                                      <div className="text-center text-white">
+                                        <div className="text-4xl mb-2">🎵</div>
+                                        <div className="text-sm font-medium">Audio File</div>
+                                      </div>
+                                      <audio
+                                        src={url}
+                                        className="hidden"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <Image
+                                      src={url || "/placeholder.svg"}
+                                      alt={`Item Media ${index + 1}`}
+                                      fill
+                                      className="object-cover rounded-xl"
+                                    />
+                                  )}
+                                  {/* Video fallback */}
+                                  {mediaType === 'video' && (
+                                    <div className="absolute inset-0 bg-gray-200 items-center justify-center hidden rounded-xl" style={{ display: 'none' }}>
+                                      <div className="text-center text-gray-600">
+                                        <div className="text-4xl mb-2">🎥</div>
+                                        <div className="text-sm">Video not available</div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <motion.div
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="absolute right-2 top-2"
                                 >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </Card>
-                          </motion.div>
-                        ))}
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-full shadow-md"
+                                    onClick={() => removeImage(index)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </Card>
+                            </motion.div>
+                          )
+                        })}
                       </AnimatePresence>
 
                       {images.length < MAX_IMAGES && (

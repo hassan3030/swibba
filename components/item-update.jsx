@@ -229,6 +229,7 @@ export function ItemUpdate(props) {
         const list = images.map((img) => ({
           fileId: img.directus_files_id.id,
           url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id.id}`,
+          type: img.directus_files_id.type || 'image/jpeg',
         }))
         console.log("Processed image list (direct):", list)
         setExistingImages(list)
@@ -249,6 +250,7 @@ export function ItemUpdate(props) {
           const list = fetchedImages.data.map((img) => ({
             fileId: img.directus_files_id,
             url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`,
+            type: img.type || 'image/jpeg',
           }))
           console.log("Processed image list:", list)
           setExistingImages(list)
@@ -358,6 +360,22 @@ export function ItemUpdate(props) {
   })
 
   const { formState: { isDirty } } = form
+
+  // Helper function to get media type
+  const getMediaType = (mimeType) => {
+    if (!mimeType) return 'image'
+    if (mimeType.startsWith('video/')) return 'video'
+    if (mimeType.startsWith('audio/')) return 'audio'
+    if (mimeType.startsWith('image/')) return 'image'
+    // Fallback: check file extension if mime type is not available
+    if (typeof mimeType === 'string' && mimeType.includes('.')) {
+      const ext = mimeType.toLowerCase().split('.').pop()
+      if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v'].includes(ext)) return 'video'
+      if (['mp3', 'wav', 'ogg', 'm4a', 'm4b', 'm4p'].includes(ext)) return 'audio'
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'image'
+    }
+    return 'image'
+  }
  
   // Store original translations for comparison
   useEffect(() => {
@@ -414,18 +432,39 @@ export function ItemUpdate(props) {
   }
 
   const removeImage = (index) => {
-    URL.revokeObjectURL(imageUrls[index])
-    setImagesFile((prev) => prev.filter((_, i) => i !== index))
-    setImageUrls((prev) => prev.filter((_, i) => i !== index))
-    setIsMediaDirty(true)
+    // Check if this is an existing image or a new uploaded file
+    const isExistingImage = index < existingImages.length
+    
+    if (isExistingImage) {
+      // This is an existing image, use the existing removal function
+      const fileId = existingImages[index].fileId
+      removeExistingImageById(fileId)
+    } else {
+      // This is a new uploaded file
+      const newFileIndex = index - existingImages.length
+      URL.revokeObjectURL(imageUrls[index])
+      setImagesFile((prev) => prev.filter((_, i) => i !== newFileIndex))
+      setImageUrls((prev) => prev.filter((_, i) => i !== index))
+      setIsMediaDirty(true)
+    }
   }
 
   const removeExistingImageById = async (fileId) => {
     try {
+      // Find the image to get its index
+      const imageToRemove = existingImages.find(img => img.fileId === fileId);
+      const imageIndex = existingImages.findIndex(img => img.fileId === fileId);
+      
       // Add to deleted images array immediately for UI feedback
       setDeletedImageIds((prev) => [...prev, fileId]);
       setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
       setRetainedExistingFileIds((prev) => prev.filter((id) => id !== fileId));
+      
+      // Remove the corresponding URL from imageUrls array
+      if (imageIndex !== -1) {
+        setImageUrls((prev) => prev.filter((_, i) => i !== imageIndex));
+      }
+      
       setIsMediaDirty(true);
       
       // Try to remove from server (but don't fail the UI if it fails)
@@ -1175,20 +1214,64 @@ else{
                       </FormLabel>
                       <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <AnimatePresence>
-                          {existingImages.map((img) => (
-                            <motion.div key={img.fileId} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
-                              <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="aspect-square relative">
-                                  <Image src={img.url || "/placeholder.svg"} alt={`${t("images")} old`} fill className="object-cover" />
-                                </div>
-                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
-                                  <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeExistingImageById(img.fileId)}>
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </motion.div>
-                              </Card>
-                            </motion.div>
-                          ))}
+                          {existingImages.map((img) => {
+                            const mediaType = getMediaType(img.type)
+                            console.log('Existing image media type:', { fileId: img.fileId, type: img.type, mediaType })
+                            
+                            return (
+                              <motion.div key={img.fileId} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
+                                <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                                  <div className="aspect-square relative">
+                                    {mediaType === 'video' ? (
+                                      <div className="w-full h-full relative">
+                                        <video
+                                          src={img.url}
+                                          className="w-full h-full object-cover"
+                                          controls
+                                          muted
+                                          loop
+                                          playsInline
+                                          preload="metadata"
+                                          onError={(e) => {
+                                            console.error('Video load error:', e, 'URL:', img.url)
+                                            // Show fallback if video fails to load
+                                            e.target.style.display = 'none'
+                                            e.target.nextElementSibling.style.display = 'flex'
+                                          }}
+                                          onLoadStart={() => console.log('Video loading started:', img.url)}
+                                          onCanPlay={() => console.log('Video can play:', img.url)}
+                                        />
+                                        <div className="absolute inset-0 bg-gray-200 items-center justify-center hidden" style={{ display: 'none' }}>
+                                          <div className="text-center text-gray-600">
+                                            <div className="text-4xl mb-2">🎥</div>
+                                            <div className="text-sm">Video not available</div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : mediaType === 'audio' ? (
+                                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                        <div className="text-center text-white">
+                                          <div className="text-4xl mb-2">🎵</div>
+                                          <div className="text-sm font-medium">Audio File</div>
+                                        </div>
+                                        <audio
+                                          src={img.url}
+                                          className="hidden"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <Image src={img.url || "/placeholder.svg"} alt={`${t("images")} old`} fill className="object-cover" />
+                                    )}
+                                  </div>
+                                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
+                                    <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeExistingImageById(img.fileId)}>
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </motion.div>
+                                </Card>
+                              </motion.div>
+                            )
+                          })}
                         </AnimatePresence>
                       </div>
                       {existingImages.length === 0 && (
@@ -1204,20 +1287,62 @@ else{
                       </FormLabel>
                       <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <AnimatePresence>
-                          {imageUrls.map((url, index) => (
-                            <motion.div key={index} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
-                              <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="aspect-square relative">
-                                  <Image src={url || "/placeholder.svg"} alt={`${t("images")} ${index + 1}`} fill className="object-cover" />
-                                </div>
-                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
-                                  <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeImage(index)}>
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </motion.div>
-                              </Card>
-                            </motion.div>
-                          ))}
+                          {imageUrls.map((url, index) => {
+                            // Check if this is an existing image or a new uploaded file
+                            const isExistingImage = index < existingImages.length
+                            const file = isExistingImage ? existingImages[index] : imagesFile[index - existingImages.length]
+                            const mediaType = getMediaType(file?.type)
+                            console.log('Image media type:', { 
+                              index, 
+                              isExistingImage, 
+                              fileType: file?.type, 
+                              mediaType, 
+                              url: url.substring(0, 50) + '...' 
+                            })
+                            
+                            return (
+                              <motion.div key={`new-media-${index}-${file?.name || 'unknown'}`} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
+                                <Card className="relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                                  <div className="aspect-square relative">
+                                    {mediaType === 'video' ? (
+                                      <video
+                                        src={isExistingImage ? file.url : url}
+                                        className="w-full h-full object-cover"
+                                        controls
+                                        muted
+                                        loop
+                                        playsInline
+                                        preload="metadata"
+                                        onError={(e) => {
+                                          console.error('Video load error:', e, 'URL:', isExistingImage ? file.url : url)
+                                        }}
+                                        onLoadStart={() => console.log('Video loading started:', isExistingImage ? file.url : url)}
+                                        onCanPlay={() => console.log('Video can play:', isExistingImage ? file.url : url)}
+                                      />
+                                    ) : mediaType === 'audio' ? (
+                                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                        <div className="text-center text-white">
+                                          <div className="text-4xl mb-2">🎵</div>
+                                          <div className="text-sm font-medium">Audio File</div>
+                                        </div>
+                                        <audio
+                                          src={isExistingImage ? file.url : url}
+                                          className="hidden"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <Image src={isExistingImage ? file.url : url || "/placeholder.svg"} alt={`${t("images")} ${index + 1}`} fill className="object-cover" />
+                                    )}
+                                  </div>
+                                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute right-1 top-1">
+                                    <Button type="button" variant="destructive" size="icon" className="h-6 w-6 rounded-full" onClick={() => removeImage(index)}>
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </motion.div>
+                                </Card>
+                              </motion.div>
+                            )
+                          })}
                         </AnimatePresence>
 
                         {(existingImages.length + imagesFile.length) < MAX_IMAGES && (
@@ -1240,11 +1365,6 @@ else{
                         {t("UploadUpTo")} {MAX_IMAGES - existingImages.length} {t("newMedia")}. {t("totalMedia")} {existingImages.length + imagesFile.length}/{MAX_IMAGES}.
                       </p>
                     </div>
-
-                  
-
-          
-
                     {/* Allowed Categories */}
                     <div className="space-y-4">
                       <FormField

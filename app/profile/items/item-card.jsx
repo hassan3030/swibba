@@ -3,7 +3,7 @@ import {  useState } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Eye, MoreHorizontal } from "lucide-react"
+import { Edit, Trash2, Eye, MoreHorizontal, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
@@ -26,6 +26,8 @@ import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
 import { deleteProduct } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
+import { getMediaType } from "@/lib/utils"
+import { useLanguage } from "@/lib/language-provider"
 
 // Animation variants
 const cardVariants = {
@@ -70,6 +72,8 @@ const ItemCard = ({ item }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const { t } = useTranslations()
   const router = useRouter()
+  const { isRTL, toggleLanguage } = useLanguage()
+  const [imageLoaded, setImageLoaded] = useState(false)
 
 
 
@@ -113,12 +117,70 @@ const ItemCard = ({ item }) => {
           variants={imageVariants}
           whileHover="hover"
         >
-          <Image
+          {(() => {
+                    const mediaUrl = {
+                      id: item.images[0]?.directus_files_id.id,
+                      type: item.images[0]?.directus_files_id.type,
+                      url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}`
+                    }
+                    const mediaType = getMediaType(mediaUrl.type)
+                    
+                    if (mediaType === 'video') {
+                      return (
+                        <motion.div variants={imageVariants} className="w-full h-full relative">
+                          <video
+                            src={mediaUrl.url}
+                            className="w-full h-full object-cover transition-transform duration-300"
+                            muted
+                            loop
+                            playsInline
+                            onLoadedData={() => setImageLoaded(true)}
+                          />
+                          {/* Video play overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                            <div className="bg-white/90 rounded-full p-2 group-hover:scale-110 transition-transform">
+                              <Play className="h-6 w-6 text-gray-800 fill-current" />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )
+                    } else if (mediaType === 'audio') {
+                      return (
+                        <motion.div variants={imageVariants} className="w-full h-full relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <div className="text-4xl mb-2">🎵</div>
+                            <div className="text-sm font-medium">Audio File</div>
+                          </div>
+                          <audio
+                            src={mediaUrl.url}
+                            className="hidden"
+                            onLoadedData={() => setImageLoaded(true)}
+                          />
+                        </motion.div>
+                      )
+                    } else {
+                      return (
+                        <motion.div variants={imageVariants} className="w-full h-full">
+                          <Image
+                            src={mediaUrl.url || "/placeholder.svg"}
+                            alt={!isRTL ? item.translations[0]?.name: item.translations[1]?.name || item.name}
+                            fill
+                            className="transition-transform duration-300 object-fill"
+                            placeholder="blur"
+                            blurDataURL="/placeholder.svg?height=300&width=300"
+                            priority
+                            onLoad={() => setImageLoaded(true)}
+                          />
+                        </motion.div>
+                      )
+                    }
+                  })()}
+          {/* <Image
             src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}` || "/placeholder.svg"}
             alt={item.name}
             fill
             className="rounded-t-lg object-cover sm:rounded-l-lg sm:rounded-tr-none"
-          />
+          /> */}
         </motion.div>
         <div className="flex flex-1 flex-col p-4">
           <motion.div
@@ -133,7 +195,9 @@ const ItemCard = ({ item }) => {
                 whileHover={{ x: 5 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
-                {item.name}
+              {(!isRTL ? item.translations[0]?.name: item.translations[1]?.name) || item.name}
+
+            
               </motion.h3>
               <motion.div
                 className="mt-1 flex items-center gap-2 capitalize"
@@ -178,6 +242,10 @@ const ItemCard = ({ item }) => {
                 <span className="text-xs text-muted-foreground">
                   {t("listedOn")} {new Date(item.date_created).toISOString().split("T")[0]}
                 </span>
+
+                <span className="text-sm text-muted-foreground">
+                  {t("quantity")||"Quantity"}: {item.quantity}
+                </span>
               </div>
             </motion.div>
           </motion.div>
@@ -188,7 +256,7 @@ const ItemCard = ({ item }) => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            {item.description}
+             {(!isRTL ? item.translations[0]?.description: item.translations[1]?.description) || item.description}
           </motion.p>
 
           <motion.div
@@ -200,8 +268,8 @@ const ItemCard = ({ item }) => {
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button variant="ghost"  className="text-primary border border-primary font-bold hover:text-white">
+                    {t("more")||"More"}  <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

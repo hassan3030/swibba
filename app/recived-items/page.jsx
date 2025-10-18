@@ -9,6 +9,7 @@ import {
   getAllMessage,
   addMessage,
   acceptedOfferById,
+  deleteFinallyOfferById,
 } from "@/callAPI/swap"
 import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
@@ -370,49 +371,41 @@ const RecivedItems = () => {
       transition={{ duration: 0.5 }}
     >
       {/* Delete Swap Dialog */}
-      <AnimatePresence>
-        {showDeleteDialog && (
-          <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-            <DialogContent asChild>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              >
-                <DialogHeader>
-                  <DialogTitle>{t("DeleteEntireSwapConfirmation") || "Delete Entire Swap?"}</DialogTitle>
-                  <DialogDescription>
-                    {t("Thisisthelastiteminyouroffer_deletingitwilldeletetheentireswap") || "This is the last item in your offer. Deleting it will delete the entire swap. Are you sure?"}
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="flex flex-col gap-2 sm:flex-row">
-                  <DialogClose asChild>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                      <Button
-                        variant="destructive"
-                        className="mx-2"
-                        onClick={async () => {
-                          await handleDeleteSwap(pendingDelete.idOffer)
-                        }}
-                      >
-                        {t("DeleteEntireSwap") || "Delete Entire Swap"}
-                      </Button>
-                    </motion.div>
-                  </DialogClose>
-                  <DialogClose asChild>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                      <Button className="mx-2" variant="secondary" onClick={() => setShowDeleteDialog(false)}>
-                        {t("Cancel") || "Cancel"}
-                      </Button>
-                    </motion.div>
-                  </DialogClose>
-                </DialogFooter>
-              </motion.div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </AnimatePresence>
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <DialogHeader>
+              <DialogTitle>{t("DeleteEntireSwapConfirmation") || "Delete Entire Swap?"}</DialogTitle>
+              <DialogDescription>
+                {t("Thisisthelastiteminyouroffer_deletingitwilldeletetheentireswap") || "This is the last item in your offer. Deleting it will delete the entire swap. Are you sure?"}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col gap-2 sm:flex-row">
+              <DialogClose asChild>
+                <Button
+                  variant="destructive"
+                  className="mx-2"
+                  onClick={async () => {
+                    await handleDeleteSwap(pendingDelete.idOffer)
+                  }}
+                >
+                  {t("DeleteEntireSwap") || "Delete Entire Swap"}
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button className="mx-2" variant="secondary" onClick={() => setShowDeleteDialog(false)}>
+                  {t("Cancel") || "Cancel"}
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Swap Summary Stats */}
@@ -812,7 +805,25 @@ const RecivedItems = () => {
                             animate={{ scale: 1 }}
                             transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
                           >
-                            <Trash2 className="h-8 w-8 mx-auto mb-2" />
+                            <button onClick={async () => {
+                              try {
+                                await deleteFinallyOfferById(offer.id)
+                                toast({
+                                  title: t("successfully") || "Successfully",
+                                  description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
+                                })
+                                getNotifications()
+                                router.refresh()
+                              } catch (err) {
+                                toast({
+                                  title: t("error") || "Error",
+                                  description: t("Failedtodeleteswap") || "Failed to delete swap",
+                                  variant: "destructive",
+                                })
+                              }
+                            }}>
+                              <Trash2 className="h-8 w-8 mx-auto mb-2 hover:scale-110 hover:rotate-45 cursor-pointer" />
+                            </button>
                           </motion.div>
                           <h3 className="text-xl font-semibold mb-2">{t("SwapRejected") || "Swap Rejected"}</h3>
                           <p className="text-muted-foreground mb-4">

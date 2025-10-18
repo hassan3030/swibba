@@ -250,7 +250,7 @@ export const deleteFinallyOfferById = async (id) => {
       }
  
       await axios.patch(`${baseItemsURL}/Offers/${id}`, {
-        finaly_deleted: false,
+        finaly_deleted: true,
       },
             {
               headers: {

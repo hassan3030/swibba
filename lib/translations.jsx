@@ -1489,7 +1489,7 @@ SelectCountry: "اختر الدولة",
     CreateaSwap: "إنشاء تبادل",
     Selectitemsfromyourollectionfirstthenchoosematchingitemsfromotherusers: "حدد العناصر من مجموعتك أولاً، ثم اختر العناصر المطابقة من مستخدمين آخرين",
     Availablecategoriesforswapping: "الفئات المتاحة للتبادل:",
-    SwapRules: "قواعد التبادل:",
+    SwapRules: "قواعد التبادل",
 
     Firstselectyouritemstoseeavailablecategories: "حدد عناصر من مجموعتك أولاً لرؤية الفئات المتاحة",
     Youcanonlyselectitemsfrommatchingcategories: "يمكنك فقط اختيار العناصر من الفئات المطابقة",

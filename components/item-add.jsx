@@ -320,7 +320,8 @@ else{
         ? `Coordinates: ${geo_location.lat.toFixed(6)}, ${geo_location.lng.toFixed(6)} (${geo_location.name || 'User Location'})`
         : 'Location: Not specified';
       
-      setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
+      // Build the AI input message directly instead of using state
+      const aiInputMessage = `Please analyze the provided images along with the following item details to provide an accurate price estimation:
         Item Details:
         - Name: ${name}
         - Description: ${description}
@@ -345,12 +346,15 @@ else{
         "description_translations": { "en": "...", "ar": "..." },
         "city_translations": { "en": "...", "ar": "..." },
         "street_translations": { "en": "...", "ar": "..." }
-        }`)
-          
+        }`
+      
+      // Set the state for display purposes
+      setAiInput(aiInputMessage)
       setIsEstimating(true)
       
       // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
-      const aiResponse = await sendMessage(aiInput, aiSystemPrompt,3, 1000)
+      // Pass the message directly, not from state
+      const aiResponse = await sendMessage(aiInputMessage, aiSystemPrompt, 3, 1000)
       
       // Check if AI request was successful
       if (!aiResponse.success) {

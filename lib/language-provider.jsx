@@ -24,10 +24,18 @@ export function LanguageProvider({ children, defaultLanguage = "en", storageKey 
 
   useEffect(() => {
     const root = window.document.documentElement
+    const body = window.document.body
 
-    // Set language and direction attributes
+    // Set language and direction attributes on html element
     root.lang = language
     root.dir = language === "ar" ? "rtl" : "ltr"
+    
+    // Also set dir on body's first child (the main container)
+    const mainContainer = body.querySelector('.flex.min-h-screen.flex-col')
+    if (mainContainer) {
+      mainContainer.dir = language === "ar" ? "rtl" : "ltr"
+    }
+    
     localStorage.setItem(storageKey, language)
   }, [language, storageKey])
 

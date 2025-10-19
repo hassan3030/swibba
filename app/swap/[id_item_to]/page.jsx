@@ -460,7 +460,7 @@ export default function SwapPage() {
             className="text-center max-w-md mx-auto p-8"
           >
             <div className="text-8xl mb-6">🚫</div>
-            <h1 className="text-3xl font-bold mb-4 text-foreground">{t("CannotSwapWithYourself") || "Cannot Swap With Yourself"}</h1>
+            <h1 className="text-3xl font-bold mb-4 text-foreground text-center">{t("CannotSwapWithYourself") || "Cannot Swap With Yourself"}</h1>
             <p className="text-muted-foreground mb-6 text-lg">{t("YouCannotSwapItemsWithYourOwnAccount") || "You cannot swap items with your own account"}</p>
             <Link href="/products">
               <Button className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-8 py-4 text-lg">
@@ -482,7 +482,7 @@ export default function SwapPage() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
                 <ArrowLeftRight className="h-10 w-10 text-primary" />
               </div>
-              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent text-center">
                 {t("CreateaSwap") || "Create a Swap"}
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -491,8 +491,8 @@ export default function SwapPage() {
             </motion.div>
 
             <Tabs defaultValue="swap" className="w-full">
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <TabsList className={`mb-8 w-full max-w-md mx-auto ${classes.justifyCenter}`}>
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ display: 'flex', justifyContent: 'center' }}>
+                <TabsList className="mb-8 w-full max-w-md">
                   <TabsTrigger value="swap" className="flex-1">{t("Swap") || "Swap"}</TabsTrigger>
                   <TabsTrigger value="history" className="flex-1">{t("swapHistory") || "Swap History"}</TabsTrigger>
                 </TabsList>
@@ -504,7 +504,7 @@ export default function SwapPage() {
                   <motion.div variants={cardVariants}>
                     <Card className="mb-8 border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50 hover:shadow-lg transition-all duration-300">
                       <CardContent className="p-6">
-                        <div className={`flex items-start ${classes.spaceX(4)}`}>
+                        <div className="flex  gap-4" >
                           <motion.div
                             animate={{ scale: [1, 1.1, 1] }}
                             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
@@ -515,7 +515,7 @@ export default function SwapPage() {
                             </div>
                           </motion.div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-yellow-800 mb-3">{t("SwapRules") || "Swap Rules:"}</h3>
+                            <h3 className="text-lg font-semibold text-yellow-800 mb-3 text-start">{t("SwapRules") || "Swap Rules:"}</h3>
                             <motion.ul
                               className="space-y-2 text-sm text-yellow-700"
                               variants={containerVariants}
@@ -527,8 +527,8 @@ export default function SwapPage() {
                                 t("Youcanonlyselectitemsfrommatchingcategories") || "You can only select items from matching categories",
                                 t("Uncheckingyouritemswillclearotherselections") || "Unchecking your items will clear other selections",
                               ].map((rule, index) => (
-                                <motion.li key={index} variants={itemVariants} className="flex items-center">
-                                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3 flex-shrink-0"></div>
+                                <motion.li key={index} variants={itemVariants} className="flex items-center gap-3">
+                                  <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
                                   {t(rule) || rule}
                                 </motion.li>
                               ))}
@@ -551,22 +551,21 @@ export default function SwapPage() {
                       {myItems.length !== 0 ? (
                         <div>
                           <motion.div
-                            className={`flex items-center mb-6 ${classes.justifyStart}`}
+                            className="flex flex-row rtl:flex-row-reverse items-center gap-4 mb-6"
+                            style={{ alignItems: 'center' }}
                             initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
                           >
-                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                               <User className="h-6 w-6 text-primary" />
                             </div>
-                            <div>
-                              <h2 className="text-2xl font-bold text-foreground">{t("YourProducts") || "Your Products"}</h2>
+                            <div className="flex-1">
+                              <h2 className="text-2xl font-bold text-foreground text-start">{t("YourProducts") || "Your Products"}</h2>
                               <p className="text-muted-foreground">{t("Select items to swap") || "Select items to swap"}</p>
                             </div>
                             <motion.div
-                            
                               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                              className="ml-auto"
                             >
                               <Badge variant="secondary" className="text-sm px-3 py-1">
                                 {selectedMyItems.length} {t("selected") || "selected"}
@@ -594,13 +593,12 @@ export default function SwapPage() {
                                     }`}
                                   >
                                     <CardContent className="p-4">
-                                      <div className="flex items-start space-x-4">
-                                        <div className="flex items-center">
+                                      <div className="flex flex-row rtl:flex-row-reverse items-start gap-4">
+                                        <div className="flex items-center flex-shrink-0">
                                           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                             <Checkbox
                                               checked={selectedMyItems.includes(product.id)}
                                               onCheckedChange={() => handleMyItemSelect(product.id)}
-                                              className="mr-3"
                                             />
                                           </motion.div>
                                         </div>
@@ -642,22 +640,21 @@ export default function SwapPage() {
                       {otherItems?.length !== 0 ? (
                         <div>
                           <motion.div
-                            className={`flex items-center mb-6 ${classes.justifyStart}`}
+                            className="flex flex-row rtl:flex-row-reverse items-center gap-4 mb-6"
+                            style={{ alignItems: 'center' }}
                             initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.4 }}
                           >
-                            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mr-4">
+                            <div className="flex-shrink-0 w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
                               <User className="h-6 w-6 text-accent" />
                             </div>
-                            <div>
-                              <h2 className="text-2xl font-bold text-foreground">{t("AvailableProducts") || "Available Products"}</h2>
+                            <div className="flex-1">
+                              <h2 className="text-2xl font-bold text-foreground text-start">{t("AvailableProducts") || "Available Products"}</h2>
                               <p className="text-muted-foreground">{t("Choose items to receive") || "Choose items to receive"}</p>
                             </div>
                             <motion.div
-                            
                               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
-                              className="ml-auto"
                             >
                               <Badge variant="secondary" className="text-sm px-3 py-1">
                                 {selectedOtherItems.length} {t("selected") || "selected"}
@@ -691,14 +688,13 @@ export default function SwapPage() {
                                       }`}
                                     >
                                       <CardContent className="p-4">
-                                        <div className="flex items-start space-x-4">
-                                          <div className="flex items-center">
+                                        <div className="flex flex-row rtl:flex-row-reverse items-start gap-4">
+                                          <div className="flex items-center flex-shrink-0">
                                             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                               <Checkbox
                                                 checked={isSelected}
                                                 onCheckedChange={() => isSelectable && handleOtherItemSelect(product.id)}
                                                 disabled={!isSelectable}
-                                                className="mr-3"
                                               />
                                             </motion.div>
                                           </div>
@@ -708,7 +704,7 @@ export default function SwapPage() {
                                             selectedQuantity={itemQuantities[product.id] || 1}
                                           />
                                           {!isSelectable && (
-                                            <div className="ml-auto">
+                                            <div className="flex-shrink-0">
                                               <AlertCircle className="h-5 w-5 text-destructive" />
                                             </div>
                                           )}
@@ -762,30 +758,30 @@ export default function SwapPage() {
                         <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 hover:shadow-xl transition-all duration-300">
                           <CardContent className="p-8">
                             <motion.div
-                              className={`flex items-center justify-between mb-6 ${classes.container}`}
+                              className="flex flex-row rtl:flex-row-reverse items-center justify-between gap-6 mb-6"
                               variants={containerVariants}
                               initial="hidden"
                               animate="visible"
                             >
-                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
+                              <motion.div className="text-center flex-1" variants={itemVariants} whileHover={{ scale: 1.05 }}>
                                 <div className="relative w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <Avatar className="h-full w-full border">
                                 <AvatarImage
                                   src={
-                                    otherUserData?.avatar
+                                    userData?.avatar
                                       ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userData.avatar}`
                                       : "/placeholder.svg"
                                   }
-                                  alt={otherUserData?.first_name || t("User") || "User"}
+                                  alt={userData?.first_name || t("User") || "User"}
                                   className="object-cover"
                                 />
                                 <AvatarFallback>
-                                  {otherUserData?.first_name?.[0] || "U"}
+                                  {userData?.first_name?.[0] || "U"}
                                 </AvatarFallback>
                               </Avatar>
                                  
-                                {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
-                                    <div className="absolute -top-1 -right-1 z-10">
+                                {(userData?.verified === "true" || userData?.verified === true) && (
+                                    <div className={`absolute -top-1 z-10 ${isRTL ? '-left-1' : '-right-1'}`}>
                                       <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 border border-background" />
                                     </div>
                                   )}
@@ -798,20 +794,19 @@ export default function SwapPage() {
                                   {selectedMyItems.length}
                                 </motion.div>
                                 <div className="text-sm text-muted-foreground mb-2">{t("yourItems") || "Your Items"}</div>
-                                <div className="text-xl font-semibold text-secondary2">{Number(mySelectedValue).toLocaleString()} LE</div>
+                                <div className="text-xl font-semibold text-secondary2">{Number(mySelectedValue).toLocaleString()} {t("LE")}</div>
                               </motion.div>
 
                               <motion.div
-                                className="flex items-center"
-                               
+                                className="flex items-center justify-center flex-shrink-0"
                                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                               >
                                 <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-                                  <ArrowLeftRight className="h-8 w-8 text-white" />
+                                  <ArrowLeftRight className={`h-8 w-8 text-white ${isRTL ? 'rotate-180' : ''}`} />
                                 </div>
                               </motion.div>
 
-                              <motion.div className="text-center" variants={itemVariants} whileHover={{ scale: 1.05 }}>
+                              <motion.div className="text-center flex-1" variants={itemVariants} whileHover={{ scale: 1.05 }}>
                                 <div className="relative w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
                                   <Avatar className="h-full w-full border">
                                   <AvatarImage
@@ -829,7 +824,7 @@ export default function SwapPage() {
                               </Avatar>
                               
                                   {(otherUserData?.verified === "true" || otherUserData?.verified === true) && (
-                                    <div className="absolute -top-1 -right-1 z-10">
+                                    <div className={`absolute -top-1 z-10 ${isRTL ? '-left-1' : '-right-1'}`}>
                                       <Verified className="h-4 w-4 text-accent bg-background rounded-full p-0.5 border border-background" />
                                     </div>
                                   )}
@@ -842,7 +837,7 @@ export default function SwapPage() {
                                   {selectedOtherItems.length}
                                 </motion.div>
                                 <div className="text-sm text-muted-foreground mb-2">{t("Theiritems") || "Their Items"}</div>
-                                <div className="text-xl font-semibold text-secondary2">{Number(otherSelectedValue).toLocaleString()} LE</div>
+                                <div className="text-xl font-semibold text-secondary2">{Number(otherSelectedValue).toLocaleString()} {t("LE")}</div>
                               </motion.div>
                             </motion.div>
 
@@ -899,7 +894,7 @@ export default function SwapPage() {
                                   ) : (
                                     <>
                                       <ArrowLeftRight className={`h-5 w-5 ${getDirectionClass("mr-3", "ml-3")}`} />
-                                      {t("Swap") || "Swap"}
+                                      {t("MakeSwap") || "Make Swap"}
                                     </>
                                   )}
                                 </Button>
@@ -917,8 +912,8 @@ export default function SwapPage() {
                   <motion.div variants={cardVariants}>
                     <Card>
                       <CardHeader>
-                        <CardTitle className="flex items-center text-xl">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                        <CardTitle className="flex items-center text-xl text-start">
+                          <div className={`w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center ${classes.marginEnd(3)}`}>
                             <ArrowLeftRight className="h-5 w-5 text-primary" />
                           </div>
                           {t("swapHistory") || "Swap History"}
@@ -1066,7 +1061,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
 
   return (
     <motion.div
-      className="flex items-start space-x-4 w-full"
+      className="flex flex-row rtl:flex-row-reverse items-start gap-4 w-full"
       whileHover={{ x: isRTL ? -5 : 5 }}
       transition={{ type: "spring", stiffness: 400 }}
     >
@@ -1157,7 +1152,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
           whileHover={{ x: isRTL ? -5 : 5 }}
           transition={{ type: "spring", stiffness: 400 }}
         >
-          {isRTL ? translations[1]?.name : translations[0]?.name}
+          {isRTL ? translations[1]?.name || name : translations[0]?.name || name}
         </motion.h3>
         <motion.div
           className="flex flex-wrap gap-2 mb-3"
@@ -1212,7 +1207,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 }}
                 whileHover={{ scale: 1.05 }}
               >
-                <Badge variant="outline" className={`px-3 py-1 ${getDirectionClass("ml-1", "mr-1")}`}>
+                <Badge variant="outline" className="px-3 py-1">
                   {t(cat) || cat}
                 </Badge>
               </motion.div>

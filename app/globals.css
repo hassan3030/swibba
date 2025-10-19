@@ -164,175 +164,195 @@
   .h-safe-area-inset-bottom {
     height: env(safe-area-inset-bottom);
   }
+  
   /* RTL Direction Support */
-  [dir="rtl"] {
+  [dir="rtl"],
+  [dir="rtl"] * {
     direction: rtl;
-    text-align: right;
-    /* Reverse Tailwind horizontal spacing in RTL */
+  }
+
+  [dir="ltr"],
+  [dir="ltr"] * {
+    direction: ltr;
+  }
+
+  /* Force RTL on containers */
+  [dir="rtl"] .flex,
+  [dir="rtl"] .grid,
+  [dir="rtl"] .inline-flex {
+    direction: rtl;
+  }
+
+  /* RTL Space Reverse - Critical for Tailwind spacing */
+  [dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]),
+  [dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]),
+  [dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]),
+  [dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]),
+  [dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]),
+  [dir="rtl"] .space-x-8 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 1;
   }
 
-  [dir="ltr"] {
-    direction: ltr;
-    text-align: left;
-  }
+  /* RTL Margin ALL sizes */
+  [dir="rtl"] .ml-auto { margin-left: unset !important; margin-right: auto !important; }
+  [dir="rtl"] .mr-auto { margin-right: unset !important; margin-left: auto !important; }
+  [dir="rtl"] .ml-1 { margin-left: unset !important; margin-right: 0.25rem !important; }
+  [dir="rtl"] .mr-1 { margin-right: unset !important; margin-left: 0.25rem !important; }
+  [dir="rtl"] .ml-2 { margin-left: unset !important; margin-right: 0.5rem !important; }
+  [dir="rtl"] .mr-2 { margin-right: unset !important; margin-left: 0.5rem !important; }
+  [dir="rtl"] .ml-3 { margin-left: unset !important; margin-right: 0.75rem !important; }
+  [dir="rtl"] .mr-3 { margin-right: unset !important; margin-left: 0.75rem !important; }
+  [dir="rtl"] .ml-4 { margin-left: unset !important; margin-right: 1rem !important; }
+  [dir="rtl"] .mr-4 { margin-right: unset !important; margin-left: 1rem !important; }
+  [dir="rtl"] .ml-6 { margin-left: unset !important; margin-right: 1.5rem !important; }
+  [dir="rtl"] .mr-6 { margin-right: unset !important; margin-left: 1.5rem !important; }
+  [dir="rtl"] .ml-8 { margin-left: unset !important; margin-right: 2rem !important; }
+  [dir="rtl"] .mr-8 { margin-right: unset !important; margin-left: 2rem !important; }
 
-  /* RTL Margin and Padding Adjustments */
-  [dir="rtl"] .ml-auto {
-    margin-left: unset;
-    margin-right: auto;
-  }
+  /* RTL Padding ALL sizes */
+  [dir="rtl"] .pl-1 { padding-left: unset !important; padding-right: 0.25rem !important; }
+  [dir="rtl"] .pr-1 { padding-right: unset !important; padding-left: 0.25rem !important; }
+  [dir="rtl"] .pl-2 { padding-left: unset !important; padding-right: 0.5rem !important; }
+  [dir="rtl"] .pr-2 { padding-right: unset !important; padding-left: 0.5rem !important; }
+  [dir="rtl"] .pl-3 { padding-left: unset !important; padding-right: 0.75rem !important; }
+  [dir="rtl"] .pr-3 { padding-right: unset !important; padding-left: 0.75rem !important; }
+  [dir="rtl"] .pl-4 { padding-left: unset !important; padding-right: 1rem !important; }
+  [dir="rtl"] .pr-4 { padding-right: unset !important; padding-left: 1rem !important; }
+  [dir="rtl"] .pl-6 { padding-left: unset !important; padding-right: 1.5rem !important; }
+  [dir="rtl"] .pr-6 { padding-right: unset !important; padding-left: 1.5rem !important; }
+  [dir="rtl"] .pl-8 { padding-left: unset !important; padding-right: 2rem !important; }
+  [dir="rtl"] .pr-8 { padding-right: unset !important; padding-left: 2rem !important; }
 
-  [dir="rtl"] .mr-auto {
-    margin-right: unset;
-    margin-left: auto;
-  }
-
-  [dir="rtl"] .ml-4 {
-    margin-left: unset;
-    margin-right: 1rem;
-  }
-
-  [dir="rtl"] .mr-4 {
-    margin-right: unset;
-    margin-left: 1rem;
-  }
-
-  [dir="rtl"] .ml-2 {
-    margin-left: unset;
-    margin-right: 0.5rem;
-  }
-
-  [dir="rtl"] .mr-2 {
-    margin-right: unset;
-    margin-left: 0.5rem;
-  }
-
-  [dir="rtl"] .pl-4 {
-    padding-left: unset;
-    padding-right: 1rem;
-  }
-
-  [dir="rtl"] .pr-4 {
-    padding-right: unset;
-    padding-left: 1rem;
-  }
-
-  [dir="rtl"] .pl-2 {
-    padding-left: unset;
-    padding-right: 0.5rem;
-  }
-
-  [dir="rtl"] .pr-2 {
-    padding-right: unset;
-    padding-left: 0.5rem;
-  }
-
-  /* RTL Flex Direction */
+  /* RTL Flex Direction - MUST reverse */
   [dir="rtl"] .flex-row {
-    flex-direction: row-reverse;
+    flex-direction: row-reverse !important;
   }
 
   [dir="rtl"] .flex-row-reverse {
-    flex-direction: row;
+    flex-direction: row !important;
+  }
+
+  /* RTL Justify Content */
+  [dir="rtl"] .justify-start {
+    justify-content: flex-end !important;
+  }
+
+  [dir="rtl"] .justify-end {
+    justify-content: flex-start !important;
+  }
+
+  /* RTL Items Alignment */
+  [dir="rtl"] .items-start {
+    align-items: flex-end !important;
+  }
+
+  [dir="rtl"] .items-end {
+    align-items: flex-start !important;
   }
 
   /* RTL Text Alignment */
   [dir="rtl"] .text-left {
-    text-align: right;
+    text-align: right !important;
   }
 
   [dir="rtl"] .text-right {
-    text-align: left;
+    text-align: left !important;
+  }
+
+  [dir="rtl"] .text-start {
+    text-align: right !important;
+  }
+
+  [dir="rtl"] .text-end {
+    text-align: left !important;
   }
 
   /* RTL Border Radius */
-  [dir="rtl"] .rounded-l-lg {
-    border-top-left-radius: unset;
-    border-bottom-left-radius: unset;
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
+  [dir="rtl"] .rounded-l,
+  [dir="rtl"] .rounded-l-lg,
+  [dir="rtl"] .rounded-l-md,
+  [dir="rtl"] .rounded-l-sm {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: var(--radius) !important;
+    border-bottom-right-radius: var(--radius) !important;
   }
 
-  [dir="rtl"] .rounded-r-lg {
-    border-top-right-radius: unset;
-    border-bottom-right-radius: unset;
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
+  [dir="rtl"] .rounded-r,
+  [dir="rtl"] .rounded-r-lg,
+  [dir="rtl"] .rounded-r-md,
+  [dir="rtl"] .rounded-r-sm {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: var(--radius) !important;
+    border-bottom-left-radius: var(--radius) !important;
   }
 
-  /* RTL Transform */
-  [dir="rtl"] .transform {
-    transform: scaleX(-1);
-  }
-
-  /* RTL Icons and Images */
+  /* RTL Icons and Images that need flipping */
   [dir="rtl"] .rtl-flip {
-    transform: scaleX(-1);
+    transform: scaleX(-1) !important;
   }
 
   /* RTL Input and Form Elements */
-  [dir="rtl"] input,
+  [dir="rtl"] input:not([type="checkbox"]):not([type="radio"]),
   [dir="rtl"] textarea,
   [dir="rtl"] select {
-    text-align: right;
+    text-align: right !important;
   }
 
   /* RTL Navigation */
   [dir="rtl"] .nav-item {
-    margin-left: unset;
-    margin-right: 1rem;
+    margin-left: unset !important;
+    margin-right: 1rem !important;
   }
 
   /* RTL Dropdown Menus */
   [dir="rtl"] .dropdown-menu {
-    right: auto;
-    left: 0;
-  }
-
-  /* RTL Tooltips */
-  [dir="rtl"] .tooltip {
-    right: auto;
-    left: 0;
-  }
-
-  /* RTL Modal and Dialog */
-  [dir="rtl"] .modal-header .close {
-    right: auto;
-    left: 1rem;
+    right: auto !important;
+    left: 0 !important;
   }
 
   /* RTL Table */
   [dir="rtl"] table th,
   [dir="rtl"] table td {
-    text-align: right;
+    text-align: right !important;
   }
 
   /* RTL List */
   [dir="rtl"] ul,
   [dir="rtl"] ol {
-    padding-left: unset;
-    padding-right: 1.5rem;
+    padding-left: unset !important;
+    padding-right: 1.5rem !important;
   }
 
   /* RTL Blockquote */
   [dir="rtl"] blockquote {
-    border-left: unset;
-    border-right: 4px solid;
-    padding-left: unset;
-    padding-right: 1rem;
+    border-left: unset !important;
+    border-right: 4px solid !important;
+    padding-left: unset !important;
+    padding-right: 1rem !important;
   }
 
-  /* RTL Code blocks */
-  [dir="rtl"] code {
-    direction: ltr;
-    text-align: left;
+  /* Keep code blocks LTR */
+  [dir="rtl"] code,
+  [dir="rtl"] pre {
+    direction: ltr !important;
+    text-align: left !important;
   }
 
-  /* RTL Numbers */
+  /* Keep numbers LTR */
   [dir="rtl"] .rtl-numbers {
-    direction: ltr;
-    text-align: left;
+    direction: ltr !important;
+    text-align: left !important;
+    display: inline-block;
+  }
+
+  /* RTL Specific: Gap-based layouts (modern approach) */
+  [dir="rtl"] .gap-2,
+  [dir="rtl"] .gap-3,
+  [dir="rtl"] .gap-4,
+  [dir="rtl"] .gap-6 {
+    /* Gap is direction-agnostic, so no override needed */
   }
 }
 

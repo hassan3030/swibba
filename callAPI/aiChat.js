@@ -32,9 +32,35 @@ function delay(ms) {
 export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDelay = 1000) {
     let lastError = null;
     
+    // Validate input before making requests
+    if (!input || input.trim() === '') {
+        console.error('AI Request failed: Empty input provided');
+        return {
+            text: "",
+            success: false,
+            status: 400,
+            error: "Empty input provided",
+            data: null,
+            attempts: 0
+        };
+    }
+    
+    if (!systemPrompt || systemPrompt.trim() === '') {
+        console.error('AI Request failed: Empty system prompt provided');
+        return {
+            text: "",
+            success: false,
+            status: 400,
+            error: "Empty system prompt provided",
+            data: null,
+            attempts: 0
+        };
+    }
+    
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             console.log(`AI Request attempt ${attempt}/${maxRetries}`);
+            console.log(`Input length: ${input.length} characters`);
             
             const res = await fetch("/api/chat", {
                 method: "POST",
@@ -50,7 +76,7 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
             const data = await res.json();
             
             const response = {
-                text: data.text, 
+                text: data.text || "", 
                 success: res.ok,
                 status: res.status,
                 data: data,
@@ -64,8 +90,8 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
             }
             
             // If response is invalid, treat as failure
-            console.warn(`AI Request attempt ${attempt} returned invalid response:`, data.text);
-            lastError = new Error(`Invalid AI response: ${data.text || 'empty response'}`);
+            console.warn(`AI Request attempt ${attempt} returned invalid response:`, data.text || 'empty');
+            lastError = new Error(`Invalid AI response: ${data.text || data.error || 'empty response'}`);
             
             // If this isn't the last attempt, wait before retrying
             if (attempt < maxRetries) {

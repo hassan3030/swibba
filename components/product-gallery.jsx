@@ -108,25 +108,13 @@ export function ProductGallery({ images, productName }) {
   const currentMediaType = getMediaType(currentMedia.type)
 
   const handleMouseMove = useCallback((e) => {
-    const targetRect = isZoomOpen && overlayImageRef.current
-      ? overlayImageRef.current.getBoundingClientRect()
-      : mainImageRef.current?.getBoundingClientRect()
+    if (!isZoomOpen) return
+    const targetRect = overlayImageRef.current?.getBoundingClientRect()
     if (!targetRect) return
     const x = Math.max(0, Math.min(1, (e.clientX - targetRect.left) / targetRect.width))
     const y = Math.max(0, Math.min(1, (e.clientY - targetRect.top) / targetRect.height))
     setZoomBgPos({ x: x * 100, y: y * 100 })
   }, [isZoomOpen])
-
-  const handleMouseEnter = useCallback(() => {
-    if (currentMediaType === 'image') {
-      setIsZoomOpen(true)
-    }
-  }, [currentMediaType])
-
-  const handleMouseLeave = useCallback(() => {
-    // Only close when leaving the overlay; do not bind this to the main image
-    setIsZoomOpen(false)
-  }, [])
 
   return (
     <motion.div
@@ -137,9 +125,8 @@ export function ProductGallery({ images, productName }) {
     >
       <div
         ref={mainImageRef}
-        className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg max-h-64 sm:max-h-72 md:max-h-80 w-full"
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={handleMouseMove}
+        className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg max-h-64 sm:max-h-72 md:max-h-80 w-full cursor-pointer"
+        onClick={() => currentMediaType === 'image' && setIsZoomOpen(true)}
       >
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
@@ -297,7 +284,6 @@ export function ProductGallery({ images, productName }) {
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center"
           aria-modal="true"
           role="dialog"
-          onMouseLeave={handleMouseLeave}
           onMouseMove={handleMouseMove}
           onClick={() => setIsZoomOpen(false)}
         >

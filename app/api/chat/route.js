@@ -5,6 +5,18 @@ export async function POST(req) {
     console.log("AI API request received");
     const { messages } = await req.json();
 
+    // Validate messages
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      console.error("Invalid messages format");
+      return Response.json(
+        { 
+          text: "", 
+          error: "Invalid messages format" 
+        },
+        { status: 400 }
+      );
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       console.error("OpenAI API key not configured");
       return Response.json(
@@ -20,6 +32,7 @@ export async function POST(req) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
+    console.log("Sending request to OpenAI...");
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Vision-capable model
       messages: messages ?? [{ role: "user", content: "Hello!" }],
@@ -30,7 +43,8 @@ export async function POST(req) {
     const responseText = completion.choices[0]?.message?.content ?? "";
     
     // Log the response for debugging
-    console.log("AI Response:", responseText.substring(0, 100) + "...");
+    console.log("AI Response received, length:", responseText.length);
+    console.log("AI Response preview:", responseText.substring(0, 100) + "...");
     
     // Check if response is empty or invalid
     if (!responseText || responseText.trim() === "" || responseText.trim() === "0") {

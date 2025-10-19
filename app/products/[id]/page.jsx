@@ -223,21 +223,21 @@ export default function ProductPage() {
     >
      
 
-      <motion.div className="grid gap-4 md:gap-6 md:grid-cols-2" variants={containerVariants} initial="hidden" animate="visible">
-        {/* Product Gallery */}
-        <motion.div variants={itemVariants} className="order-1 md:order-1">
+      <motion.div className="grid gap-4 md:gap-6 md:grid-cols-2" variants={containerVariants} initial="hidden" animate="visible" dir={isRTL ? 'rtl' : 'ltr'}>
+        {/* Product Gallery - Left side in Arabic (RTL), Right side in English (LTR) */}
+        <motion.div variants={itemVariants} className={`order-1 ${isRTL ? 'md:order-2' : 'md:order-2'}`}>
           <ProductGallery images={images} productName={product.name} />
         </motion.div>
 
-        {/* Product Info */}
-        <motion.div className="flex flex-col gap-3 sm:gap-4 order-2 md:order-2" variants={itemVariants}>
+        {/* Product Info - Right side in Arabic (RTL), Left side in English (LTR) */}
+        <motion.div className={`flex flex-col gap-3 sm:gap-4 order-2 ${isRTL ? 'md:order-1' : 'md:order-1'}`} variants={itemVariants}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3 text-start">
                   {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1 truncate">
+                <p className="text-sm text-muted-foreground mt-1 truncate text-start">
                   {t(product.category)}
                 </p>
               </div>
@@ -265,10 +265,10 @@ export default function ProductPage() {
             transition={{ delay: 0.4 }}
           >
             <div className="flex items-center gap-2 sm:gap-3 text-secondary2/90">
-              <div className="flex items-baseline min-w-0">
+              <div className="flex items-baseline min-w-0 gap-1">
                 <span className="text-xs sm:text-sm font-medium flex-shrink-0">{t("le")}</span>
                 <motion.span
-                  className="text-2xl sm:text-3xl md:text-4xl font-bold truncate ml-1"
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold truncate"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
@@ -363,8 +363,8 @@ export default function ProductPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <span className="font-medium block mb-1">{t("description")}:</span>
-            <div className="text-break-responsive whitespace-pre-wrap leading-relaxed line-clamp-1 overflow-ellipsis">
+            <span className="font-medium block mb-1 text-start">{isRTL ? `: ${t("description")}` : `${t("description")}:`}</span>
+            <div className="text-break-responsive whitespace-pre-wrap leading-relaxed line-clamp-1 overflow-ellipsis text-start">
               {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
             </div>
           </motion.div>
@@ -438,8 +438,8 @@ export default function ProductPage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               {product.status_swap === "available" && product.user_id !== tokenId && (
                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                  <Button className="w-full text-sm sm:text-base" onClick={(e)=>{makeSwap(e)}}>
-                    <Repeat className="h-4 w-4 mr-2" />
+                  <Button className="w-full text-sm sm:text-base gap-2" onClick={(e)=>{makeSwap(e)}}>
+                    <Repeat className="h-4 w-4" />
                     {t("swap")}
                   </Button>
                 </motion.div>
@@ -478,46 +478,46 @@ export default function ProductPage() {
                     transition={{ duration: 0.2 }}
                     className="text-sm sm:text-base w-full"
                   >
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("name")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("name")}` : `${t("name")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("location")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("location")}` : `${t("location")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {t(product.country)} - {(!isRTL ? product.translations[0]?.city: product.translations[1]?.city) || product.city} - {(!isRTL ? product.translations[0]?.street: product.translations[1]?.street) || product.street}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("listedOn")|| "Listed on"}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("listedOn") || "Listed on"}` : `${t("listedOn") || "Listed on"}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {new Date(product.date_created).toLocaleDateString('en-US')}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("category")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {t(product.category)}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("price")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("price")}` : `${t("price")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2 text-start">
                       {Number(product.price).toLocaleString('en-US')} {t("le")}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("quantity")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("quantity")}` : `${t("quantity")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {Number(product.quantity).toLocaleString('en-US')}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("status")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("status")}` : `${t("status")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary text-start">
                       {t(product.status_item)}
                     </div>
                     
                     
                     <Separator />
 
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">{t("description")}:</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full ">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("description")}` : `${t("description")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
                     </div>
                     <Separator />

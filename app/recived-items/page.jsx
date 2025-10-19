@@ -475,63 +475,19 @@ const RecivedItems = () => {
                 > 
                   <Card
                     id={offer.id}
-                    className="overflow-hidden border-primary/50 bg-primary/5 hover:shadow-lg transition-shadow"
+                    className="overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300"
                   >
-                    <CardHeader>
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                    <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5 pb-4">
+                      {/* Top Section: User Info & Status Badge */}
+                      <div className="flex items-center justify-between gap-4 mb-4">
                         <motion.div
+                          className="flex items-center gap-3"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
                         >
-                          {offer.status_offer!=='completed' && (<div className="text-sm text-muted-foreground">
-                            {t("Myitems") || "My items"}:{" "}
-                            {
-                              itemsOffer.filter((u) => u.offered_by === offer.to_user_id && u.offer_id === offer.id)
-                                .length
-                            }{" "}
-                            | {t("Theiritems") || "Their items"}:{" "}
-                            {
-                              itemsOffer.filter((u) => u.offered_by !== offer.to_user_id && u.offer_id === offer.id)
-                                .length
-                            }
-                          </div>)}
-                          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {offer.date_created ? new Date(offer.date_created).toLocaleString() : ""}
-                          </div>
-
-                                                    <div
-
-                                                      className={`text-xs mt-1 flex items-center gap-1 ${offer.cash_adjustment ? handlePriceDifference(offer.from_user_id, offer.cash_adjustment).colorClass : ""}`}
-
-                                                    >
-
-                                                      <Scale className="w-3 h-3" />
-
-                                                      {offer.cash_adjustment
-
-                                                        ? `${t("CashAdjustment") || "Cash Adjustment"}: ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}`
-
-                                                        : ""}
-
-                                                    </div>
-
-                          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 capitalize">
-                            <CircleDot className="w-3 h-3" />
-                            {t("Offerstate") || "Offer state"}: {t(offer.status_offer)}
-                          </div>
-                         
-                        </motion.div>
-
-                        <motion.div
-                          className="flex items-center gap-3 mt-2 md:mt-0"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 + 0.2 }}
-                        >
                           <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="relative">
-                            <Avatar className="h-10 w-10 border">
+                            <Avatar className="h-14 w-14 border-2 border-primary shadow-md">
                               <AvatarImage
                                 src={
                                   `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
@@ -545,51 +501,99 @@ const RecivedItems = () => {
                               <AvatarFallback>
                                 {userSwaps.find((u) => u.id === offer.from_user_id)?.first_name?.[0] ||
                                   t("User") ||
-                                  "User"}
+                                  "U"}
                               </AvatarFallback>
                             </Avatar>
                             {(userSwaps.find((u) => u.id === offer.from_user_id)?.verified === "true" || userSwaps.find((u) => u.id === offer.from_user_id)?.verified === true) && (
-                              <div className="absolute -top-1 -right-1">
-                                <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
+                              <div className="absolute -bottom-1 -right-1">
+                                <Verified className="h-5 w-5 text-primary bg-background rounded-full p-0.5 border-2 border-background shadow-sm" />
                               </div>
                             )}
                           </motion.div>
 
-                          <div>
-                            <div className="font-semibold text-base">
+                          <div className="flex-1">
+                            <div className="font-bold text-lg">
                               {`${(String(userSwaps.find((u) => u.id === offer.from_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.from_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.from_user_id)?.first_name).slice(0, 10)) )|| t("account")} 
                              `}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <MapPin className="h-3 w-3" />
+                              <span className="line-clamp-1">
+                                {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country||''} ${
+                                  userSwaps.find((u) => u.id === offer.from_user_id)?.city||''
+                                } ${userSwaps.find((u) => u.id === offer.from_user_id)?.street||''}`}
+                                {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country &&
+                                  userSwaps.find((u) => u.id === offer.from_user_id)?.city &&
+                                  userSwaps.find((u) => u.id === offer.from_user_id)?.street? "": `${t("noAddress") || "No address"}`
+                                }`}
+                              </span>
                             </div>
                           </div>
                         </motion.div>
 
-                        {/* User Info Section */}
                         <motion.div
-                          className="flex items-center space-x-4 mb-4 p-3 bg-muted/30 rounded-lg"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 + 0.2 }}
+                        >
+                          <Badge 
+                            className={`${getStatusColor(offer.status_offer)} text-white px-4 py-2 text-sm font-semibold capitalize shadow-md`}
+                          >
+                            {t(offer.status_offer)}
+                          </Badge>
+                        </motion.div>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <motion.div
+                          className="bg-background/60 backdrop-blur-sm rounded-lg p-3"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 + 0.3 }}
+                          transition={{ delay: index * 0.1 + 0.1 }}
                         >
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-
-{/* 
-{user?.country &&  user?.city && user?.street? "":  `${t("noAddress") || "No address provided"}`}
-                      {`${user?.country || ''} ${user?.city || ''} ${user?.street || ''}`} */}
-
-
-                            <span className="text-sm">
-                              {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country||''} ${
-                                userSwaps.find((u) => u.id === offer.from_user_id)?.city||''
-                              } ${userSwaps.find((u) => u.id === offer.from_user_id)?.street||''}`}
-
-                              {`${userSwaps.find((u) => u.id === offer.from_user_id)?.country &&
-                                userSwaps.find((u) => u.id === offer.from_user_id)?.city &&
-                                userSwaps.find((u) => u.id === offer.from_user_id)?.street? "": `${t("noAddress") || "No address provided"}`
-                              }`}
-                            </span>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>{t("Date") || "Date"}</span>
+                          </div>
+                          <div className="text-sm font-medium">
+                            {offer.date_created ? new Date(offer.date_created).toLocaleDateString() : ""}
                           </div>
                         </motion.div>
+
+                        {offer.status_offer !== 'completed' && (
+                          <motion.div
+                            className="bg-background/60 backdrop-blur-sm rounded-lg p-3"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 + 0.2 }}
+                          >
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                              <ArrowRightLeft className="w-3 h-3" />
+                              <span>{t("Items") || "Items"}</span>
+                            </div>
+                            <div className="text-sm font-medium">
+                              {itemsOffer.filter((u) => u.offered_by === offer.to_user_id && u.offer_id === offer.id).length} ↔️ {itemsOffer.filter((u) => u.offered_by !== offer.to_user_id && u.offer_id === offer.id).length}
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {offer.cash_adjustment && (
+                          <motion.div
+                            className="bg-background/60 backdrop-blur-sm rounded-lg p-3 col-span-2"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 + 0.3 }}
+                          >
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                              <Scale className="w-3 h-3" />
+                              <span>{t("CashAdjustment") || "Cash Adjustment"}</span>
+                            </div>
+                            <div className={`text-sm font-bold ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).colorClass}`}>
+                              {handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}
+                            </div>
+                          </motion.div>
+                        )}
                       </div>
                     </CardHeader>
 
@@ -597,22 +601,27 @@ const RecivedItems = () => {
                       {["pending", "accepted"].includes(offer.status_offer) ? (
                         <>
                           <motion.div
-                            className="grid bg-muted/50 p-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-3 sm:grid-cols-3 xs:grid-cols-1 gap-4 mb-4 items-center"
+                            className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 mb-6"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
                           >
                             {/* My Items */}
-                            <div className="text-center">
-                              <h4 className="font-semibold mb-2">{t("Myitems") || "My items"}</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 mb-4">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <span className="text-sm font-bold text-primary">{swapItems.filter((u) => u.offered_by === offer.to_user_id && u.offer_id === offer.id).length}</span>
+                                </div>
+                                <h4 className="font-bold text-lg text-start">{t("Myitems") || "My items"}</h4>
+                              </div>
+                              <div className="space-y-3">
                                 {swapItems
                                   .filter((u) => u.offered_by === offer.to_user_id && u.offer_id === offer.id)
                                   .map((item, itemIndex) => (
                                     <motion.div
                                       key={item.id}
-                                      initial={{ opacity: 0, scale: 0.9 }}
-                                      animate={{ opacity: 1, scale: 1 }}
+                                      initial={{ opacity: 0, x: -20 }}
+                                      animate={{ opacity: 1, x: 0 }}
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
                                       <CardItemRecivedItem
@@ -625,26 +634,44 @@ const RecivedItems = () => {
                             </div>
 
                             {/* Swap Arrow */}
-                            <motion.div
-                              className="flex flex-col items-center space-y-2"
-                              animate={{ x: [0, 10, -10, 0] }}
-                              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                            >
-                              <ArrowRightLeft className="h-6 w-6 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground">{t("Exchange") || "Exchange"}</span>
-                            </motion.div>
+                            <div className="hidden lg:flex flex-col items-center justify-center py-8">
+                              <motion.div
+                                className="flex flex-col items-center gap-3"
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                              >
+                                <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
+                                  <ArrowRightLeft className="h-6 w-6 text-white" />
+                                </div>
+                                <span className="text-xs font-medium text-muted-foreground">{t("Exchange") || "Exchange"}</span>
+                              </motion.div>
+                            </div>
+
+                            {/* Mobile Divider */}
+                            <div className="lg:hidden flex items-center gap-3 my-4">
+                              <Separator className="flex-1" />
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
+                                <ArrowRightLeft className="h-5 w-5 text-white" />
+                              </div>
+                              <Separator className="flex-1" />
+                            </div>
 
                             {/* Their Items */}
-                            <div className="text-center">
-                              <h4 className="font-semibold mb-2">{t("Theiritems") || "Their Items"}</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 mb-4">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                                  <span className="text-sm font-bold text-accent">{swapItems.filter((u) => u.offered_by !== offer.to_user_id && u.offer_id === offer.id).length}</span>
+                                </div>
+                                <h4 className="font-bold text-lg text-start">{t("Theiritems") || "Their Items"}</h4>
+                              </div>
+                              <div className="space-y-3">
                                 {swapItems
                                   .filter((u) => u.offered_by !== offer.to_user_id && u.offer_id === offer.id)
                                   .map((item, itemIndex) => (
                                     <motion.div
                                       key={item.id}
-                                      initial={{ opacity: 0, scale: 0.9 }}
-                                      animate={{ opacity: 1, scale: 1 }}
+                                      initial={{ opacity: 0, x: 20 }}
+                                      animate={{ opacity: 1, x: 0 }}
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
                                       <CardItemRecivedItem
@@ -976,75 +1003,99 @@ const CardItemRecivedItem = ({ id, name, description, price, status_item, images
   }
 
   return (
-    <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-      <Card key={id} className="overflow-hidden hover:shadow-lg transition-shadow">
-        <motion.div
-          className="h-32 bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
-        >
-          {(() => {
-            const mediaUrl = {
-              id: images[0]?.directus_files_id.id,
-              type: images[0]?.directus_files_id.type,
-              url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
-            }
-            const mediaType = getMediaType(mediaUrl.type)
-            if (mediaType === 'video') {
-              return (
-                <video src={mediaUrl.url} alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} className="w-full h-full object-fill" />
-              )
-            } else if (mediaType === 'audio') {
-              return (
-                <audio src={mediaUrl.url} alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} className="w-full h-full object-fill" />
-              )
-            } else {
-              return (
-                <Image src={mediaUrl.url} alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} width={100} height={100} className="w-full h-full object-fill" />
-              )
-            }
-          })()}
-          
-        </motion.div>
-        <CardContent className="p-3 sm:p-4">
-          <h4 className="font-semibold text-sm mb-1 line-clamp-1">{isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}</h4>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
-         
-            <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity || 1}</p>
-       
-          <div className="flex justify-between items-center mb-3 gap-2">
-            <Badge variant="outline" className="text-xs flex-shrink-0">
-              {t(status_item) || status_item}
-            </Badge>
-            <span className="font-bold text-secondary2 text-sm truncate">{t(price) || price} {t("LE") || "LE"}</span>
+    <motion.div 
+      whileHover={{ scale: 1.02 }} 
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <Card key={id} className="overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+        <div className="flex gap-4 p-4">
+          {/* Image Section */}
+          <motion.div
+            className="relative w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+          >
+            {(() => {
+              const mediaUrl = {
+                id: images[0]?.directus_files_id.id,
+                type: images[0]?.directus_files_id.type,
+                url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+              }
+              const mediaType = getMediaType(mediaUrl.type)
+              if (mediaType === 'video') {
+                return (
+                  <video src={mediaUrl.url} alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} className="w-full h-full object-cover" />
+                )
+              } else if (mediaType === 'audio') {
+                return (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-400">
+                    <span className="text-2xl">🎵</span>
+                  </div>
+                )
+              } else {
+                return (
+                  <Image 
+                    src={mediaUrl.url} 
+                    alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} 
+                    fill
+                    className="object-cover"
+                  />
+                )
+              }
+            })()}
+            
+            {/* Badge Overlay */}
+            <div className="absolute top-1 left-1">
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 shadow-md">
+                {t(status_item) || status_item}
+              </Badge>
+            </div>
+          </motion.div>
+
+          {/* Content Section */}
+          <div className="flex-1 min-w-0 flex flex-col justify-between">
+            <div>
+              <h4 className="font-bold text-sm mb-1 line-clamp-1 text-start">{isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}</h4>
+              <p className="text-xs text-muted-foreground mb-2 line-clamp-2 text-start">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
+            </div>
+            
+            <div className="space-y-2">
+              {/* Price & Quantity */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold text-primary text-sm">{price} {t("LE") || "LE"}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("quantity") || "Qty"}: <span className="font-semibold">{quantity || 1}</span>
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full h-7 text-xs gap-1.5" 
+                    onClick={() => handleView(id)}
+                  >
+                    <Eye className="h-3 w-3" />
+                    {t("view") || "View"}
+                  </Button>
+                </motion.div>
+                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="w-full h-7 text-xs gap-1.5" 
+                    onClick={deleteItem}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    {t("Remove") || "Remove"}
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full text-xs px-2 py-1 h-8 min-h-8" 
-                onClick={() => handleView(id)}
-              >
-                <Eye className="h-3 w-3 sm:mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">{t("view") || "View"}</span>
-                <span className="sm:hidden">{t("view") || "View"}</span>
-              </Button>
-            </motion.div>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="w-full text-xs px-2 py-1 h-8 min-h-8" 
-                onClick={deleteItem}
-              >
-                <Trash2 className="h-3 w-3 sm:mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">{t("soldOut") || "Sold Out"}</span>
-                <span className="sm:hidden">{t("soldOut") || "Sold"}</span>
-              </Button>
-            </motion.div>
-          </div>
-        </CardContent>
+        </div>
       </Card>
     </motion.div>
   )

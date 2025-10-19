@@ -113,7 +113,7 @@ export default async function  RootLayout({ children }) {
       <body className={cairo.className}>
    <ThemeProvider>
           <LanguageProvider>
-                <div className="flex min-h-screen flex-col">
+                <div className="flex min-h-screen flex-col" dir="ltr">
                   {/* Desktop Header - Hidden on mobile */}
                   <div className="hidden md:block">
                     <Header />

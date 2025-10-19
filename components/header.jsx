@@ -264,7 +264,9 @@ export function Header() {
 
   useEffect(() => {
     getUser()
+  }, [])
 
+  useEffect(() => {
     const dataFetch = () => {
       getOffers()
       getWishlist()
@@ -278,7 +280,7 @@ export function Header() {
     return () => {
       clearInterval(interval)
     }
-  }, [])
+  }, []) // Empty dependency array to run only once on mount
 
   useEffect(() => {
     if (!hasSearched) return

@@ -267,13 +267,12 @@ export const deleteFinallyOfferById = async (id) => {
       //     message: "Offer Finally Deleted successfully",
       //   }
 
-      const response = await axios.delete(`${baseItemsURL}/Offers/${id}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-              },
-            })
+      const response = await axios.delete(`${baseItemsURL}/Offers/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
       return {
         success: true,
         data: response.data.data,

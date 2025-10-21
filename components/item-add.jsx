@@ -446,6 +446,17 @@ else{
       return;
     }
 
+    // Prevent saving without AI estimation and show hint toast
+    if (aiPriceEstimation === null || aiPriceEstimation <= 0) {
+      toast({
+        title: t("AIEstimationRequired") || "⚠️ AI Estimation Required",
+        description: t("PleaseclickAIestimatetogetpriceestimatebeforeaddingitem") || "Please click 'Get AI Estimate' to get a price estimate before adding your item!",
+        duration: 5000,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -585,7 +596,7 @@ else{
         ...form.getValues(), 
         user_email: user.email,
         geo_location,
-        value_estimate: aiPriceEstimation ,
+        value_estimate: aiPriceEstimation,
         translations,
       }
       // console.log("Payload:", payload)
@@ -637,7 +648,7 @@ else{
     Object.keys(geo_location).length > 0 
     
    
-  // Validation for step 2 fields
+  // Validation for step 2 fields (requires AI estimation)
   const isStep2Valid = images.length > 0 &&
     aiPriceEstimation !== null &&
     aiPriceEstimation > 0 &&
@@ -1247,14 +1258,20 @@ else{
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild >
-                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className=" max-[370px]:w-full">
+                                  <motion.div 
+                                    variants={buttonVariants} 
+                                    whileHover="hover" 
+                                    whileTap="tap" 
+                                    className="max-[370px]:w-full relative"
+                                   
+                                  >
                                     <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
                                       onClick={() => {requestAiPriceEstimate() }}
                                       disabled={isEstimating}
-                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-muted hover:border-primary transition-all"
+                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-muted hover:border-primary transition-all relative"
                                     >
                                       {isEstimating ? (
                                         <>
@@ -1267,6 +1284,23 @@ else{
                                           {t("GetAIEstimate") || "Get AI Estimate"}
                                         </>
                                       )}
+                                      {/* AI Badge */}
+                                      {!isEstimating && (
+                                        <motion.div
+                                          className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg"
+                                          animate={{ 
+                                            scale: [1, 1.1, 1],
+                                            opacity: [0.8, 1, 0.8]
+                                          }}
+                                          transition={{ 
+                                            duration: 1.5, 
+                                            repeat: Infinity, 
+                                            ease: "easeInOut" 
+                                          }}
+                                        >
+                                          AI
+                                        </motion.div>
+                                      )}
                                     </Button>
                                   </motion.div>
                                 </TooltipTrigger>
@@ -1274,6 +1308,10 @@ else{
                                   <p>
                                     {t("GetAIpoweredpriceestimatebasedonyouritemdetails") ||
                                       "Get an AI-powered price estimate based on your item details"}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {t("Clicktoautomaticallyestimateyouritemprice") ||
+                                      "Click to automatically estimate your item price"}
                                   </p>
                                 </TooltipContent>
                               </Tooltip>

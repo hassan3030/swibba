@@ -665,7 +665,7 @@ export default function SwapPage() {
                               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                             >
                               <Badge variant="secondary" className="text-sm px-3 py-1">
-                                {selectedMyItems.length} {t("selected") || "selected"}
+                                {selectedMyItems.reduce((sum, item) => sum + (item.quantity || 1), 0)} {t("selected") || "selected"}
                               </Badge>
                             </motion.div>
                           </motion.div>
@@ -703,6 +703,7 @@ export default function SwapPage() {
                                           {...product} 
                                           onQuantityChange={handleQuantityChange}
                                           selectedQuantity={itemQuantities[product.id] || 1}
+                                          hasOtherItemsSelected={selectedOtherItems.length > 0}
                                         />
                                       </div>
                                     </CardContent>
@@ -754,7 +755,7 @@ export default function SwapPage() {
                               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
                             >
                               <Badge variant="secondary" className="text-sm px-3 py-1">
-                                {selectedOtherItems.length} {t("selected") || "selected"}
+                                {selectedOtherItems.reduce((sum, item) => sum + (item.quantity || 1), 0)} {t("selected") || "selected"}
                               </Badge>
                             </motion.div>
                           </motion.div>
@@ -909,6 +910,7 @@ export default function SwapPage() {
                                             {...product} 
                                             onQuantityChange={handleQuantityChange}
                                             selectedQuantity={itemQuantities[product.id] || 1}
+                                            hasOtherItemsSelected={selectedOtherItems.length > 0}
                                           />
                                           {!isSelectable && (
                                             <div className="flex-shrink-0">
@@ -999,7 +1001,7 @@ export default function SwapPage() {
                                   animate={{ scale: [1, 1.1, 1] }}
                                   transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
                                 >
-                                  {selectedMyItems.length}
+                                  {selectedMyItems.reduce((sum, item) => sum + (item.quantity || 1), 0)}
                                 </motion.div>
                                 <div className="text-sm text-muted-foreground mb-2">{t("yourItems") || "Your Items"}</div>
                                 <div className="text-xl font-semibold text-secondary2">{Number(mySelectedValue).toLocaleString()} {t("LE")}</div>
@@ -1042,7 +1044,7 @@ export default function SwapPage() {
                                   animate={{ scale: [1, 1.1, 1] }}
                                   transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
                                 >
-                                  {selectedOtherItems.length}
+                                  {selectedOtherItems.reduce((sum, item) => sum + (item.quantity || 1), 0)}
                                 </motion.div>
                                 <div className="text-sm text-muted-foreground mb-2">{t("Theiritems") || "Their Items"}</div>
                                 <div className="text-xl font-semibold text-secondary2">{Number(otherSelectedValue).toLocaleString()} {t("LE")}</div>
@@ -1231,7 +1233,7 @@ export default function SwapPage() {
 }
 
 // ItemCard component
-const ItemCard = ({ id, name, description, price, images, allowed_categories,translations, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1 }) => {
+const ItemCard = ({ id, name, description, price, images, allowed_categories,translations, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1, hasOtherItemsSelected = false }) => {
   // const [bigImage, setBigImage] = useState("")
   const [currentQuantity, setCurrentQuantity] = useState(Number(selectedQuantity) || 1)
   const [totalPrice, setTotalPrice] = useState(Number(price || 0) * (Number(selectedQuantity) || 1))
@@ -1488,7 +1490,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 size="icon"
                 className="h-6 w-6 rounded-full"
                 onClick={decreaseQuantity}
-                disabled={currentQuantity <= 1}
+                disabled={currentQuantity <= 1 || !hasOtherItemsSelected}
               >
                 <Minus className="h-3 w-3" />
               </Button>
@@ -1510,7 +1512,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 size="icon"
                 className="h-6 w-6 rounded-full"
                 onClick={increaseQuantity}
-                disabled={currentQuantity >= maxQty}
+                disabled={currentQuantity >= maxQty || !hasOtherItemsSelected}
               >
                 <Plus className="h-3 w-3" />
               </Button>

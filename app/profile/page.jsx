@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, MapPin, Verified, ArrowLeftRight, Package, Settings, ArrowLeft, BadgeX,  } from "lucide-react"
+import { Star, MapPin, Verified, ArrowLeftRight, Package, Settings , BadgeX } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
@@ -654,7 +654,7 @@ export default function ProfilePage() {
                     <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted">
                       <CardContent className="p-6">
                         {myUnavailableItems.length > 0 ? (
-                          <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} />
+                          <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} showbtn={false} />
                         ) : (
                           <motion.div
                             className="mt-6"

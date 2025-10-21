@@ -442,14 +442,41 @@ if(availablity=="available" ){
     }
     )
 }
+// else if( availablity=="unavailable"){
+//   response = await axios.get(` ${baseItemsURL}/Items`,
+//     {
+//       params: {
+//         fields: "*,images.*,translations.*,images.directus_files_id.*",
+//         filter: {
+//           user_id: { _eq:`${userId}` },
+//           status_swap: { _eq: "unavailable" },
+//         }
+//       }
+//     }
+//     )
+// }
 else if( availablity=="unavailable"){
-  response = await axios.get(` ${baseItemsURL}/Items` ,
+  const unavailableItemsOffers = await axios.get(` ${baseItemsURL}/Offer_Items`,
+    {
+      params: {
+        fields: "*",
+        filter: {
+          offered_by: { _eq:`${userId}` },
+        }
+      }
+    }
+  )
+  console.log("unavailableItemsOffers", unavailableItemsOffers)
+  const unavailableItemsOffersIds = unavailableItemsOffers.data.data.map(item => item.item_id)
+  console.log("unavailableItemsOffersIds", unavailableItemsOffersIds)
+
+
+  response = await axios.get(` ${baseItemsURL}/Items`,
     {
       params: {
         fields: "*,images.*,translations.*,images.directus_files_id.*",
         filter: {
-          user_id: { _eq:`${userId}` },
-          status_swap: { _eq: "unavailable" },
+          id: { _in: unavailableItemsOffersIds },
         }
       }
     }

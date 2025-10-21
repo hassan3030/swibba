@@ -1,5 +1,17 @@
 export const translations = {
   en  :{
+    ClickthebuttontogetAIpoweredpriceestimation: "Click the button to get AI-powered price estimation",
+    GetAIpoweredpriceestimatebasedonyouritemdetails: "Get an AI-powered price estimate based on your item details",
+    YouarewaitingtocompletswapfromanotherUser: "You are waiting to complete swap from another user",
+
+    AIisestimatingprice:"AI is estimating price...",
+    AIEstimationRequired: "AI Estimation Required",
+    PleasegetAIpriceestimationbeforeproceeding: "Please get AI price estimation before proceeding.",
+    Pleasefillallitemdetails: "Please fill all item details before submitting.",
+
+
+    rejectedBy: "Rejected by",
+
 NoOtherProductsFound: "No Other Products Found",
     somethingWentWrong :"Something went wrong",
     tryAgain :"Try again",
@@ -1130,11 +1142,22 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    AIisestimatingprice:"يتم تقدير سعر مدعوم بالذكاء الاصطناعي...",
+    ClickthebuttontogetAIpoweredpriceestimation: "اضغط على الزر للحصول على تقدير سعر مدعوم بالذكاء الاصطناعي",
+    GetAIpoweredpriceestimatebasedonyouritemdetails: "احصل على تقدير سعر مدعوم بالذكاء الاصطناعي بناءً على تفاصيل العنصر الخاص بك",
+
+    AIEstimationRequired: "يرجى الحصول على تقدير سعر مدعوم بالذكاء الاصطناعي",
+    PleasegetAIpriceestimationbeforeproceeding: "يرجى الحصول على تقدير سعر مدعوم بالذكاء الاصطناعي قبل المتابعة.",
+    Pleasefillallitemdetails: "يرجى ملء جميع تفاصيل العنصر قبل التسليم.",
+
+
+
+    YouarewaitingtocompletswapfromanotherUser: "أنت تنتظر الانتهاء من المبادلة من قبل المستخدم الآخر",
 NoOtherProductsFound: "لا توجد منتجات أخرى",
     somethingWentWrong :"حدث خطأ ما، حاول مرة أخرى",
     tryAgain :"حاول مرة أخرى",
     currentMedia: "الوسائط الحالية",
-
+    rejectedBy: "رفض بواسطة",
 
     
     Loadingyourswaps: "جاري تحميل تبديلاتك...",

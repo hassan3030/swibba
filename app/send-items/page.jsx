@@ -177,29 +177,35 @@ const SendItems = () => {
     }
   }
 
-  // Reuse existing removeRejectesSwap logic or provide fallback handler
-  const handleDeleteFinallyLocal = async (offerId) => {
-     // removeRejectesSwap already exists below; call it if available
-     if (typeof removeRejectesSwap === "function") {
-       return removeRejectesSwap(offerId)
-     }
-     if (!confirm(t("Areyousureyouwanttodeletethisswap") || "Are you sure you want to delete this swap permanently?")) return
-     try {
-       await deleteFinallyOfferById(offerId)
-       toast({
-         title: t("successfully") || "Successfully",
-         description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
-       })
-       getOffers()
-       router.refresh()
-     } catch (err) {
-       toast({
-         title: t("error") || "Error",
-         description: t("Failedtodeleteswap") || "Failed to delete swap",
-         variant: "destructive",
-       })
-     }
-   }
+ 
+  // Handler to permanently delete a swap (used by top-left icon)
+  const handleDeleteFinally = async (offerId) => {
+    //  if (!confirm(t("Areyousureyouwanttodeletethisswap") || "Are you sure you want to delete this swap permanently?")) return
+    try {
+      const deletedOffer = await deleteFinallyOfferById(offerId)
+      if(deletedOffer.success){
+        toast({
+          title: t("successfully") || "Successfully",
+          description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
+        })
+        
+        router.refresh()
+      }
+      else {
+        toast({
+          title: t("error") || "Error",
+          description: t("Failedtodeleteswap") || "Failed to delete swap",
+          variant: "destructive",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: t("error") || "Error",
+        description: t("Failedtodeleteswap") || "Failed to delete swap",
+        variant: "destructive",
+      })
+    }
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -405,27 +411,7 @@ const SendItems = () => {
     updateCashAdjustmentAfterRemove()
   }, [getOffers])
 
-  const removeRejectesSwap = async (offerId)=>{
-  const SwapFinallyRemoved = await deleteFinallyOfferById(offerId)
-  if(SwapFinallyRemoved){
-    toast({
-        title: t("successfully") || "Successfully",
-        description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
-      })
-      getOffers()
-      router.refresh()
-  }
-  else {
-     toast({
-        title: t("error") || "Error",
-        description: t("Failedtodeleteswap") || "Failed to delete swap",
-        variant: "destructive",
-      })
-      getOffers()
-      router.refresh()
-  }
-  }
-
+  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -440,7 +426,7 @@ const SendItems = () => {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">Loading your swaps...</p>
+          <p className="text-muted-foreground">{t("Loadingsentitems") || "Loading sent items..."}</p>
         </motion.div>
       </div>
     )
@@ -544,7 +530,7 @@ const SendItems = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-0 py-3">
           {/* Swap Summary Stats */}
           <motion.div
             className="mb-6 grid grid-cols-2 md:grid-cols-5 gap-4"
@@ -604,7 +590,7 @@ const SendItems = () => {
                     variants={cardVariants}
                     layout
                     layoutId={`offer-${offer.id}`}
-                    className="my-2"
+                    className="my-3"
                   >
                     <Card
                       id={`offer-card-${offer.id}`}
@@ -617,7 +603,7 @@ const SendItems = () => {
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
-                            onClick={() => {handleDeleteFinallyLocal(offer.id) }}
+                            onClick={() => {handleDeleteFinally(offer.id) }}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" /> 
                           </Button>
@@ -625,7 +611,7 @@ const SendItems = () => {
                       )}
                       
                       {/* Top-right screenshot button for all cards */}
-                      <div className="absolute z-30 mb-4 top-1 right-2">
+                      <div className="absolute z-30 mb-4 top-1 right-2 bg-white/80">
                         <Button
                           size="icon"
                           variant="ghost"
@@ -655,7 +641,6 @@ const SendItems = () => {
                           <Camera className="h-4 w-4 text-primary" />
                         </Button>
                       </div>
-                      
                       <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5 pb-4 pt-9">
                         {!["rejected", "completed"].includes(offer.status_offer) && (
                           <motion.div
@@ -691,7 +676,7 @@ const SendItems = () => {
 
                                                           {offer.cash_adjustment
 
-                                                            ? `${t("CashAdjustment") || "Cash Adjustment"}: ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}`
+                                                            ? ` ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}`
 
                                                             : ""}
 
@@ -863,14 +848,48 @@ const SendItems = () => {
                               animate={{ scale: 1 }}
                               transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
                             >
-                              <Trash2 className="h-8 w-8 mx-auto mb-2 hover:scale-110 hover:rotate-45 cursor-pointer rounded" 
-                              onClick={()=>{removeRejectesSwap(offer.id)}}
-                              />
+                              <Trash2 className="h-8 w-8 mx-auto mb-2 hover:scale-110  cursor-pointer rounded"  />
                             </motion.div>
                             <h3 className="text-xl font-semibold mb-2">{t("SwapRejected") || "Swap Rejected"}</h3>
                             <p className="text-muted-foreground mb-4">
                               {t("Theswapwasrejectedbyyou") || "The swap was rejected by you."}
                             </p>
+                            
+                            {/* User Avatar for Rejected Offer */}
+                            <div className="flex items-center justify-center gap-3 mt-4">
+                              <div className="relative">
+                                <Avatar className="h-12 w-12 border-2 border-destructive">
+                                  <AvatarImage
+                                    src={
+                                      `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
+                                        userSwaps.find((u) => u.id === offer.to_user_id)?.avatar || "/placeholder.svg"
+                                      }` || "/placeholder.svg"
+                                    }
+                                    alt={
+                                      userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"
+                                    }
+                                  />
+                                  <AvatarFallback>
+                                    {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {(userSwaps.find((u) => u.id === offer.to_user_id)?.verified === "true" || userSwaps.find((u) => u.id === offer.to_user_id)?.verified === true) && (
+                                  <div className="absolute -top-1 -right-1">
+                                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-center">
+                              <div className="text-xs text-muted-foreground">
+                                  {t("rejectedBy") || "Rejected by"}
+                                </div>
+                                <div className="font-semibold text-sm">
+                                  {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).slice(0, 10)) )|| t("account")} `}
+                                  {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.last_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.last_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.last_name).slice(0, 10)) )|| ""}`.trim()}
+                                </div>
+                               
+                              </div>
+                            </div>
                           </motion.div>
                         )}
 
@@ -973,134 +992,118 @@ const SendItems = () => {
 
 export default SendItems
 
-export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations , quantity, available_quantity }) => {
+export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity, available_quantity }) => {
   const router = useRouter()
-  const { isRTL, toggleLanguage } = useLanguage()
+  const { isRTL } = useLanguage()
   const { t } = useTranslations()
-  const cardRef = useRef(null)
+
+  const unitPrice = Number(price || 0)
+  const qty = Number(quantity ?? available_quantity ?? 1)
+  const totalPrice = unitPrice * qty
 
   const handleView = (id) => {
     router.push(`/products/${id}`)
   }
+ 
+   return (
+     <motion.div 
+       whileHover={{ scale: 1.02 }} 
+       transition={{ type: "spring", stiffness: 300, damping: 20 }}
+     >
+       <Card key={id} className="overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+         <div className="flex flex-col sm:flex-row gap-3 p-3 sm:p-4">
+           {/* Image Section */}
+           <motion.div
+             className="relative w-full h-24 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted mx-auto sm:mx-0 max-w-40"
+             whileHover={{ scale: 1.05 }}
+             transition={{ duration: 0.3 }}
+           >
+             {(() => {
+               const mediaUrl = {
+                 id: images[0]?.directus_files_id.id,
+                 type: images[0]?.directus_files_id.type,
+                 url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+               }
+               const mediaType = getMediaType(mediaUrl.type)
+               if (mediaType === 'video') {
+                 return (
+                   <video src={mediaUrl.url} alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} className="w-full h-full object-cover" />
+                 )
+               } else if (mediaType === 'audio') {
+                 return (
+                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-400">
+                     <span className="text-2xl">🎵</span>
+                   </div>
+                 )
+               } else {
+                 return (
+                   <Image 
+                     src={mediaUrl.url} 
+                     alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} 
+                     fill
+                     className="object-cover"
+                   />
+                 )
+               }
+             })()}
+             
+            {/* Badge Overlay */}
+            <div className="absolute top-1 left-1">
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 shadow-md">
+                {t(status_item) || status_item}
+              </Badge>
+            </div>
+           </motion.div>
 
-  // const handleDownloadScreenshot = async () => {
-  //   if (!cardRef.current) return
-  //   try {
-  //     const html2canvas = (await import("html2canvas")).default
-  //     const canvas = await html2canvas(cardRef.current, { useCORS: true, logging: false })
-  //     canvas.toBlob((blob) => {
-  //       if (!blob) return
-  //       const url = URL.createObjectURL(blob)
-  //       const a = document.createElement("a")
-  //       const fileName = ((isRTL ? translations[1]?.name : translations[0]?.name) || name || "card")
-  //         .replace(/\s+/g, "_")
-  //         .substring(0, 50) + ".png"
-  //       a.href = url
-  //       a.download = fileName
-  //       a.click()
-  //       URL.revokeObjectURL(url)
-  //       toast({
-  //         title: t("successfully") || "Successfully",
-  //         description: t("Imagesaved") || "Image saved to your device",
-  //       })
-  //     }, "image/png")
-  //   } catch (err) {
-  //     toast({
-  //       title: t("error") || "Error",
-  //       description: t("Failedtosaveimage") || "Failed to save image",
-  //       variant: "destructive",
-  //     })
-  //   }
-  // }
+           {/* Content Section */}
+           <div className="flex-1 min-w-0 flex flex-col justify-between w-full">
+             <div className="text-center sm:text-start">
+               <h4 className="font-bold text-sm mb-1 line-clamp-1">{isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}</h4>
+               <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
+             </div>
+             
+             <div className="space-y-2">
+               {/* Price & Quantity (unit + total based on quantity) */}
+               <div className="flex items-center justify-between gap-4">
+                 <div>
+                   <div className="text-xs text-muted-foreground"> {t("unitPrice") || "Unit"}</div>
+                   <div className="font-bold text-primary text-sm">{unitPrice.toLocaleString()} {t("LE") || "LE"}</div>
+                 </div>
+                 <div className="text-right">
+                   <div className="text-xs text-muted-foreground">{t("quantity") || "Qty"}: {qty}</div>
+                   <div className="font-semibold">{totalPrice.toLocaleString()} {t("LE") || "LE"}</div>
+                 </div>
+               </div>
 
-  return (
-    <motion.div ref={cardRef} whileHover={{ y: -4, scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-      <Card key={id} className="overflow-hidden hover:shadow-lg transition-shadow">
-        <motion.div
-          className="h-32 bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
-        >
-          
-         {(() => {
-          const mediaUrl = {
-            id: images[0]?.directus_files_id.id,
-            type: images[0]?.directus_files_id.type,
-            url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
-          }
-          const mediaType = getMediaType(mediaUrl.type)
-          if (mediaType === 'video') {
-            return (
-              <video src={mediaUrl.url} alt={isRTL ? translations[1]?.name : translations[0]?.name}  className="w-full h-full object-fill" />
-            )
-          } else if (mediaType === 'audio') {
-            return (
-              <audio src={mediaUrl.url} alt={isRTL ? translations[1]?.name : translations[0]?.name}  className="w-full h-full object-fill" />
-            )
-          } else {
-            return (
-              <Image src={mediaUrl.url} alt={isRTL ? translations[1]?.name : translations[0]?.name} width={100} height={100} className="w-full h-full object-fill" />
-            )
-          }
-         })()}
-         
-        
-        </motion.div>
-        <CardContent className="p-3 sm:p-4">
-          <h4 className="font-semibold text-sm mb-1 line-clamp-1">{isRTL ? translations[1]?.name: translations[0]?.name}</h4>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{isRTL ? translations[1]?.description: translations[0]?.description}</p>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity ?? available_quantity ?? 1}</p>
-          <div className="flex justify-between items-center mb-3 gap-2">
-            <Badge variant="outline" className="text-xs flex-shrink-0">
-              {t(status_item) || status_item}
-            </Badge>
-            <span className="font-bold text-secondary2 text-sm truncate">{t(price) || price} {t("LE") || "LE"}</span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            
-            <motion.div className="flex gap-2 w-full">
-              {/* <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full text-xs px-2 py-1 h-8 min-h-8" 
-                  onClick={handleDownloadScreenshot}
-                >
-                  <Camera className="h-3 w-3 sm:mr-1 flex-shrink-0" />
-                  <span className="hidden sm:inline">{t("saveImage") || "Save Image"}</span>
-                  <span className="sm:hidden">{t("save") || "Save"}</span>
-                </Button>
-              </motion.div> */}
-
-
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full text-xs px-2 py-1 h-8 min-h-8" 
-                onClick={() => handleView(id)}
-              >
-                <Eye className="h-3 w-3 sm:mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">{t("view") || "View"}</span>
-                <span className="sm:hidden">{t("view") || "View"}</span>
-              </Button>
-            </motion.div>
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  className="w-full text-xs px-2 py-1 h-8 min-h-8" 
-                  onClick={deleteItem}
-                >
-                  <Trash2 className="h-3 w-3 sm:mr-1 flex-shrink-0" />
-                  <span className="hidden sm:inline">{t("delete") || "Delete"}</span>
-                  <span className="sm:hidden">{t("delete") || "Del"}</span>
-                </Button>
-              </motion.div>
-            </motion.div>
+               {/* Action Buttons */}
+               <div className="flex flex-col sm:flex-row gap-2">
+                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                   <Button 
+                     variant="outline" 
+                     size="sm" 
+                     className="w-full h-8 sm:h-7 text-xs gap-1.5" 
+                     onClick={() => handleView(id)}
+                   >
+                     <Eye className="h-3 w-3" />
+                     {t("view") || "View"}
+                   </Button>
+                 </motion.div>
+                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                   <Button 
+                     variant="destructive" 
+                     size="sm" 
+                     className="w-full h-8 sm:h-7 text-xs gap-1.5" 
+                     onClick={deleteItem}
+                   >
+                     <Trash2 className="h-3 w-3" />
+                     {t("delete") || "Delete"}
+                   </Button>
+                 </motion.div>
+               </div>
+             </div>
            </div>
-         </CardContent>
+         </div>
        </Card>
      </motion.div>
    )
- }
+}

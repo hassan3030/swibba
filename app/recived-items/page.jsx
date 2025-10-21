@@ -157,7 +157,7 @@ const RecivedItems = () => {
          description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
        })
         //  await getNotifications()
-       router.refresh()
+         router.refresh()
        }
        else {
          toast({
@@ -451,7 +451,7 @@ const RecivedItems = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-0 py-8">
         {/* Swap Summary Stats */}
         <motion.div
           className="mb-6 grid grid-cols-2 md:grid-cols-5 gap-4"
@@ -494,7 +494,7 @@ const RecivedItems = () => {
             <motion.div
               key={index}
               variants={statsVariants}
-              className="bg-white dark:bg-gray-900 rounded-lg shadow p-4 flex flex-col items-center hover:shadow-lg transition-shadow"
+              className="bg-white dark:bg-gray-900  rounded-lg shadow p-4 flex flex-col items-center hover:shadow-lg transition-shadow"
               whileHover={{ y: -2 }}
             >
               <span className="text-lg font-bold">{stat.count === 0 ? t("no") || "No" : stat.count}</span>
@@ -515,12 +515,12 @@ const RecivedItems = () => {
                   variants={cardVariants}
                   layout
                   layoutId={`notification-${offer.id}`}
-                  className="my-2"
+                  className="mb-3"
                 > 
                   <Card
                     id={`offer-card-${offer.id}`}
                     className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300"
-                  >
+                     >
                     {/* Top-left quick delete for rejected/completed swaps */}
                     {(offer.status_offer === "rejected" || offer.status_offer === "completed") && (
                       <div className="absolute z-30 top-1 right-12">
@@ -530,7 +530,7 @@ const RecivedItems = () => {
                           className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
                           onClick={() => {handleDeleteFinally(offer.id) }}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4 text-destructive" /> 
                         </Button>
                       </div>
                     )}
@@ -775,86 +775,87 @@ const RecivedItems = () => {
                           </motion.div>
 
                           {/* Chat Section */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                          >
-                            <Card className="mb-6 mt-2 hover:shadow-md transition-shadow">
-                              <CardHeader>
-                                <motion.div
-                                  className="flex items-center"
-                                  whileHover={{ x: 5 }}
-                                  transition={{ type: "spring", stiffness: 400 }}
-                                >
-                                  <MessageCircle className="h-5 w-5 mr-2" />
-                                  {t("ChatwithSwapPartner") || "Chat with Swap Partner"}
-                                </motion.div>
-                              </CardHeader>
-                              <CardContent>
-                                <ScrollArea className="h-40 w-full border rounded-md p-4 mb-4">
-                                  <motion.div
-                                    className="space-y-3"
-                                    variants={containerVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                  >
-                                    <AnimatePresence>
-                                      {chatMessages
-                                        .filter((m) => m.offer_id === offer.id)
-                                        .map((msg, msgIndex) => (
-                                          <motion.div
-                                            key={msg.id}
-                                            variants={messageVariants}
-                                            initial="hidden"
-                                            animate="visible"
-                                            exit="exit"
-                                            className={`flex ${
-                                              msg.from_user_id === myUserId ? "justify-end" : "justify-start"
-                                            }`}
-                                          >
-                                            <motion.div
-                                              className={`max-w-xs rounded-lg p-3 ${
-                                                msg.from_user_id === myUserId
-                                                  ? "bg-primary text-primary-foreground ml-auto"
-                                                  : "bg-muted"
-                                              }`}
-                                              whileHover={{ scale: 1.02 }}
-                                              transition={{ type: "spring", stiffness: 400 }}
-                                            >
-                                              <div className="text-sm">{msg.message}</div>
-                                              <div className="text-xs opacity-70 mt-1">
-                                                {new Date(msg.date_created).toLocaleString('en-US')}
-                                              </div>
-                                            </motion.div>
-                                          </motion.div>
-                                        ))}
-                                    </AnimatePresence>
-                                  </motion.div>
-                                </ScrollArea>
-                                <div className="flex space-x-2">
-                                  <Input
-                                    placeholder="Type your message..."
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    onKeyDown={(e) =>
-                                      e.key === "Enter" && handleSendMessage(offer.from_user_id, offer.id)
-                                    }
-                                    className="flex-1"
-                                  />
-                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                    <Button onClick={() => handleSendMessage(offer.from_user_id, offer.id)} 
-                                    size="icon"
-                                    disabled={!message.trim()}
-                                    className="mr-1"
+                             <motion.div
+                               initial={{ opacity: 0, y: 20 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               transition={{ delay: 0.5 }}
+                               className="w-full"
+                             >
+                               <Card className="mb-6 mt-2 hover:shadow-md transition-shadow w-full">
+                                 <CardHeader className="px-4 py-3">
+                                   <motion.div
+                                     className="flex items-center"
+                                     whileHover={{ x: 5 }}
+                                     transition={{ type: "spring", stiffness: 400 }}
+                                   >
+                                     <MessageCircle className="h-5 w-5 mr-2" />
+                                     {t("ChatwithSwapPartner") || "Chat with Swap Partner"}
+                                   </motion.div>
+                                 </CardHeader>
+                                 <CardContent className="px-4 py-3">
+                                   <ScrollArea className="h-40 w-full border rounded-md p-1 mb-4">
+                                    <motion.div
+                                      className="space-y-3"
+                                      variants={containerVariants}
+                                      initial="hidden"
+                                      animate="visible"
                                     >
-                                      <Send className="h-4 w-4" />
-                                    </Button>
-                                  </motion.div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </motion.div>
+                                      <AnimatePresence>
+                                        {chatMessages
+                                          .filter((m) => m.offer_id === offer.id)
+                                          .map((msg, msgIndex) => (
+                                            <motion.div
+                                              key={msg.id}
+                                              variants={messageVariants}
+                                              initial="hidden"
+                                              animate="visible"
+                                              exit="exit"
+                                              className={`flex ${
+                                                msg.from_user_id === myUserId ? "justify-end" : "justify-start"
+                                              }`}
+                                            >
+                                              <motion.div
+                                                className={`max-w-xs rounded-lg p-3 ${
+                                                  msg.from_user_id === myUserId
+                                                    ? "bg-primary text-primary-foreground ml-auto"
+                                                    : "bg-muted"
+                                                }`}
+                                                whileHover={{ scale: 1.02 }}
+                                                transition={{ type: "spring", stiffness: 400 }}
+                                              >
+                                                <div className="text-sm">{msg.message}</div>
+                                                <div className="text-xs opacity-70 mt-1">
+                                                  {new Date(msg.date_created).toLocaleString('en-US')}
+                                                </div>
+                                              </motion.div>
+                                            </motion.div>
+                                          ))}
+                                      </AnimatePresence>
+                                    </motion.div>
+                                  </ScrollArea>
+                                   <div className="flex space-x-2 w-full">
+                                     <Input
+                                       placeholder="Type your message..."
+                                       value={message}
+                                       onChange={(e) => setMessage(e.target.value)}
+                                       onKeyDown={(e) =>
+                                         e.key === "Enter" && handleSendMessage(offer.from_user_id, offer.id)
+                                       }
+                                       className="flex-1 w-full"
+                                     />
+                                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                       <Button onClick={() => handleSendMessage(offer.from_user_id, offer.id)} 
+                                       size="icon"
+                                       disabled={!message.trim()}
+                                       className="flex-shrink-0"
+                                       >
+                                         <Send className="h-4 w-4" />
+                                       </Button>
+                                     </motion.div>
+                                   </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
                         </>
                       ) : offer.status_offer === "completed" ? (
                         <motion.div
@@ -1088,13 +1089,13 @@ const CardItemRecivedItem = ({ id, name, description, price, status_item, images
        transition={{ type: "spring", stiffness: 300, damping: 20 }}
      >
        <Card key={id} className="overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300">
-         <div className="flex gap-4 p-4">
+         <div className="flex flex-col sm:flex-row gap-3 p-3 sm:p-4">
            {/* Image Section */}
            <motion.div
-             className="relative w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted"
+             className="relative w-full h-24 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted mx-auto sm:mx-0 max-w-40"
              whileHover={{ scale: 1.05 }}
              transition={{ duration: 0.3 }}
-           >
+               >
              {(() => {
                const mediaUrl = {
                  id: images[0]?.directus_files_id.id,
@@ -1133,32 +1134,32 @@ const CardItemRecivedItem = ({ id, name, description, price, status_item, images
            </motion.div>
 
            {/* Content Section */}
-           <div className="flex-1 min-w-0 flex flex-col justify-between">
-             <div>
-               <h4 className="font-bold text-sm mb-1 line-clamp-1 text-start">{isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}</h4>
-               <p className="text-xs text-muted-foreground mb-2 line-clamp-2 text-start">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
+           <div className="flex-1 min-w-0 flex flex-col justify-between w-full">
+             <div className="text-center sm:text-start">
+               <h4 className="font-bold text-sm mb-1 line-clamp-1">{isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}</h4>
+               <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
              </div>
              
              <div className="space-y-2">
                {/* Price & Quantity (unit + total based on quantity) */}
-               <div className="flex items-center justify-between gap-2">
-                 <div>
+               <div className="flex items-center justify-between gap-4">
+                 <div className="text-center sm:text-start">
                    <div className="text-xs text-muted-foreground"> {t("unitPrice") || "Unit"}</div>
                    <div className="font-bold text-primary text-sm">{unitPrice.toLocaleString()} {t("LE") || "LE"}</div>
                  </div>
-                 <div className="text-right">
+                 <div className="text-center sm:text-right">
                    <div className="text-xs text-muted-foreground">{t("quantity") || "Qty"}: {qty}</div>
                    <div className="font-semibold">{totalPrice.toLocaleString()} {t("LE") || "LE"}</div>
                  </div>
                </div>
 
                {/* Action Buttons */}
-               <div className="flex gap-2">
+               <div className="flex flex-col sm:flex-row gap-2">
                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
                    <Button 
                      variant="outline" 
                      size="sm" 
-                     className="w-full h-7 text-xs gap-1.5" 
+                     className="w-full h-8 sm:h-7 text-xs gap-1.5" 
                      onClick={() => handleView(id)}
                    >
                      <Eye className="h-3 w-3" />
@@ -1169,7 +1170,7 @@ const CardItemRecivedItem = ({ id, name, description, price, status_item, images
                    <Button 
                      variant="destructive" 
                      size="sm" 
-                     className="w-full h-7 text-xs gap-1.5" 
+                     className="w-full h-8 sm:h-7 text-xs gap-1.5" 
                      onClick={deleteItem}
                    >
                      <Trash2 className="h-3 w-3" />

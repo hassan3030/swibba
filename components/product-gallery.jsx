@@ -60,12 +60,16 @@ export function ProductGallery({ images, productName }) {
   const mainImageRef = useRef(null)
   const overlayImageRef = useRef(null)
 
-  const nextImage = () => {
+  const nextImage = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
     setDirection(1)
     setCurrentImage((prev) => (prev + 1) % images.length)
   }
 
-  const prevImage = () => {
+  const prevImage = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
     setDirection(-1)
     setCurrentImage((prev) => (prev - 1 + images.length) % images.length)
   }
@@ -199,7 +203,7 @@ export function ProductGallery({ images, productName }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-md"
-                onClick={prevImage}
+                onClick={(e) => prevImage(e)}
               >
                 <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="sr-only">Previous image</span>
@@ -215,7 +219,7 @@ export function ProductGallery({ images, productName }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-md"
-                onClick={nextImage}
+                onClick={(e) => nextImage(e)}
               >
                 <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="sr-only">Next image</span>

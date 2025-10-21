@@ -795,7 +795,7 @@ export default function PaymentPage({ showHeader = true }) {
                               <div>
                                 <p className="font-medium">{transaction.description || `${transaction.type} transaction`}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {new Date(transaction.date_created).toLocaleDateString()}
+                                  {new Date(transaction.date_created).toLocaleDateString('en-US')}
                                 </p>
                               </div>
                             </div>

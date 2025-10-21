@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -33,7 +33,8 @@ import {
   Scale,
   CircleDot,
   Verified,
-  Play
+  Play,
+  Camera
 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -50,6 +51,7 @@ import SwapRating from "@/components/reviews"
 import Image from "next/image"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
+import { useToast } from "@/components/ui/use-toast"
 
 // Animation variants
 const containerVariants = {
@@ -135,6 +137,69 @@ const SendItems = () => {
   })
   const router = useRouter()
   const { t } = useTranslations()
+  const { toast } = useToast()
+  const offerRefs = useRef({}) // store refs for each offer card
+
+  const handleDownloadOfferScreenshot = async (offerId) => {
+    try {
+      const target = offerRefs.current?.[offerId]
+      if (!target) {
+        toast?.({
+          title: t("error") || "Error",
+          description: t("Offernotfound") || "Offer element not found",
+          variant: "destructive",
+        })
+        return
+      }
+      const html2canvas = (await import("html2canvas")).default
+      const canvas = await html2canvas(target, { useCORS: true, logging: false, scale: 2 })
+      canvas.toBlob((blob) => {
+        if (!blob) return
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        const fileName = `offer_${offerId}.png`
+        a.href = url
+        a.download = fileName
+        a.click()
+        URL.revokeObjectURL(url)
+        toast?.({
+          title: t("successfully") || "Successfully",
+          description: t("Imagesaved") || "Image saved to your device",
+        })
+      }, "image/png")
+    } catch (err) {
+      toast?.({
+        title: t("error") || "Error",
+        description: t("Failedtosaveimage") || "Failed to save image",
+        variant: "destructive",
+      })
+      console.error(err)
+    }
+  }
+
+  // Reuse existing removeRejectesSwap logic or provide fallback handler
+  const handleDeleteFinallyLocal = async (offerId) => {
+     // removeRejectesSwap already exists below; call it if available
+     if (typeof removeRejectesSwap === "function") {
+       return removeRejectesSwap(offerId)
+     }
+     if (!confirm(t("Areyousureyouwanttodeletethisswap") || "Are you sure you want to delete this swap permanently?")) return
+     try {
+       await deleteFinallyOfferById(offerId)
+       toast({
+         title: t("successfully") || "Successfully",
+         description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
+       })
+       getOffers()
+       router.refresh()
+     } catch (err) {
+       toast({
+         title: t("error") || "Error",
+         description: t("Failedtodeleteswap") || "Failed to delete swap",
+         variant: "destructive",
+       })
+     }
+   }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -183,6 +248,7 @@ const SendItems = () => {
         offer_item_id: item.id,
         offered_by: item.offered_by,
         offer_id: item.offer_id,
+        quantity: item.quantity, // Get quantity from Offer_Items collection
       })
     }
 
@@ -242,6 +308,7 @@ const SendItems = () => {
     const item = swapItems.find((itm) => itm.id === itemId)
     if (!item) return
 
+    const _qty = (it) => Number(it?.quantity ?? it?.qty ?? it?.available_quantity ?? 1)
     const myItems = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.offered_by === item.offered_by)
 
     // Calculate new cash adjustment after removing this item
@@ -253,8 +320,12 @@ const SendItems = () => {
       const myItemsAfterDelete = offerItems.filter((itm) => itm.offered_by === offer.from_user_id)
       const theirItems = offerItems.filter((itm) => itm.offered_by !== offer.from_user_id)
       
-      const myTotal = myItemsAfterDelete.reduce((sum, itm) => sum + (Number.parseFloat(itm.price) || 0), 0)
-      const theirTotal = theirItems.reduce((sum, itm) => sum + (Number.parseFloat(itm.price) || 0), 0)
+      const myTotal = myItemsAfterDelete.reduce((sum, itm) => {
+        return sum + (Number.parseFloat(itm.price || 0) || 0) * _qty(itm)
+      }, 0)
+      const theirTotal = theirItems.reduce((sum, itm) => {
+        return sum + (Number.parseFloat(itm.price || 0) || 0) * _qty(itm)
+      }, 0)
       newCashAdjustment = myTotal - theirTotal
     }
 
@@ -535,9 +606,57 @@ const SendItems = () => {
                     layoutId={`offer-${offer.id}`}
                     className="my-2"
                   >
- {
-             offer.finaly_deleted==='true' && (<Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                      <CardHeader>
+                    <Card
+                      id={`offer-card-${offer.id}`}
+                      className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300"
+                    >
+                      {/* Top-left quick delete for rejected/completed swaps */}
+                      {(offer.status_offer === "rejected" || offer.status_offer === "completed") && (
+                        <div className="absolute z-30 top-1 right-12">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
+                            onClick={() => {handleDeleteFinallyLocal(offer.id) }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" /> 
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Top-right screenshot button for all cards */}
+                      <div className="absolute z-30 mb-4 top-1 right-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
+                          onClick={async () => {
+                            try {
+                              const html2canvas = (await import("html2canvas")).default
+                              const cardElement = document.getElementById(`offer-card-${offer.id}`)
+                              if (cardElement) {
+                                const canvas = await html2canvas(cardElement, { 
+                                  useCORS: true, 
+                                  logging: false,
+                                  backgroundColor: '#ffffff',
+                                  scale: 2
+                                })
+                                const link = document.createElement('a')
+                                link.download = `offer-${offer.id}-screenshot.png`
+                                link.href = canvas.toDataURL()
+                                link.click()
+                                toast.success(t("Screenshot saved") || "Screenshot saved successfully!")
+                              }
+                            } catch (error) {
+                              toast.error(t("Failed to take screenshot") || "Failed to take screenshot")
+                            }
+                          }}
+                        >
+                          <Camera className="h-4 w-4 text-primary" />
+                        </Button>
+                      </div>
+                      
+                      <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5 pb-4 pt-9">
                         {!["rejected", "completed"].includes(offer.status_offer) && (
                           <motion.div
                             className="text-right"
@@ -549,17 +668,17 @@ const SendItems = () => {
                               {t("Myitems") || "My items"} :{" "}
                               {
                                 itemsOffer.filter((u) => u.offered_by === offer.from_user_id && u.offer_id === offer.id)
-                                  .length
+                                  .reduce((sum, item) => sum + (item.quantity || 1), 0)
                               }{" "}
                               | {t("Theiritems") || "Their items"}:{" "}
                               {
                                 itemsOffer.filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id)
-                                  .length
+                                  .reduce((sum, item) => sum + (item.quantity || 1), 0)
                               }
                             </div>
                             <div className="text-xs text-muted-foreground mt-1 md:mt-0 flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              {offer.date_created ? new Date(offer.date_created).toLocaleString() : ""}
+                              {offer.date_created ? new Date(offer.date_created).toLocaleString('en-US') : ""}
                             </div>
 
                                                         <div
@@ -815,8 +934,7 @@ const SendItems = () => {
                           ) : null}
                         </motion.div>
                       </CardContent>
-                    </Card>)
-          }
+                    </Card>
                     
                   </motion.div>
                 ))}
@@ -855,17 +973,48 @@ const SendItems = () => {
 
 export default SendItems
 
-export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations , quantity }) => {
+export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations , quantity, available_quantity }) => {
   const router = useRouter()
   const { isRTL, toggleLanguage } = useLanguage()
   const { t } = useTranslations()
+  const cardRef = useRef(null)
 
   const handleView = (id) => {
     router.push(`/products/${id}`)
   }
 
+  // const handleDownloadScreenshot = async () => {
+  //   if (!cardRef.current) return
+  //   try {
+  //     const html2canvas = (await import("html2canvas")).default
+  //     const canvas = await html2canvas(cardRef.current, { useCORS: true, logging: false })
+  //     canvas.toBlob((blob) => {
+  //       if (!blob) return
+  //       const url = URL.createObjectURL(blob)
+  //       const a = document.createElement("a")
+  //       const fileName = ((isRTL ? translations[1]?.name : translations[0]?.name) || name || "card")
+  //         .replace(/\s+/g, "_")
+  //         .substring(0, 50) + ".png"
+  //       a.href = url
+  //       a.download = fileName
+  //       a.click()
+  //       URL.revokeObjectURL(url)
+  //       toast({
+  //         title: t("successfully") || "Successfully",
+  //         description: t("Imagesaved") || "Image saved to your device",
+  //       })
+  //     }, "image/png")
+  //   } catch (err) {
+  //     toast({
+  //       title: t("error") || "Error",
+  //       description: t("Failedtosaveimage") || "Failed to save image",
+  //       variant: "destructive",
+  //     })
+  //   }
+  // }
+
   return (
-    <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+    <motion.div ref={cardRef} whileHover={{ y: -4, scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
       <Card key={id} className="overflow-hidden hover:shadow-lg transition-shadow">
         <motion.div
           className="h-32 bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden"
@@ -900,7 +1049,7 @@ export const CardItemSend = ({ id, name, description, price, status_item, images
         <CardContent className="p-3 sm:p-4">
           <h4 className="font-semibold text-sm mb-1 line-clamp-1">{isRTL ? translations[1]?.name: translations[0]?.name}</h4>
           <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{isRTL ? translations[1]?.description: translations[0]?.description}</p>
-          <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity || 1}</p>
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-1"> {t("quantity") || "quantity"}: {quantity ?? available_quantity ?? 1}</p>
           <div className="flex justify-between items-center mb-3 gap-2">
             <Badge variant="outline" className="text-xs flex-shrink-0">
               {t(status_item) || status_item}
@@ -908,7 +1057,23 @@ export const CardItemSend = ({ id, name, description, price, status_item, images
             <span className="font-bold text-secondary2 text-sm truncate">{t(price) || price} {t("LE") || "LE"}</span>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
+            
+            <motion.div className="flex gap-2 w-full">
+              {/* <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full text-xs px-2 py-1 h-8 min-h-8" 
+                  onClick={handleDownloadScreenshot}
+                >
+                  <Camera className="h-3 w-3 sm:mr-1 flex-shrink-0" />
+                  <span className="hidden sm:inline">{t("saveImage") || "Save Image"}</span>
+                  <span className="sm:hidden">{t("save") || "Save"}</span>
+                </Button>
+              </motion.div> */}
+
+
+              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -920,21 +1085,22 @@ export const CardItemSend = ({ id, name, description, price, status_item, images
                 <span className="sm:hidden">{t("view") || "View"}</span>
               </Button>
             </motion.div>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="w-full text-xs px-2 py-1 h-8 min-h-8" 
-                onClick={deleteItem}
-              >
-                <Trash2 className="h-3 w-3 sm:mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">{t("delete") || "Delete"}</span>
-                <span className="sm:hidden">{t("delete") || "Del"}</span>
-              </Button>
+              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 min-w-0">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="w-full text-xs px-2 py-1 h-8 min-h-8" 
+                  onClick={deleteItem}
+                >
+                  <Trash2 className="h-3 w-3 sm:mr-1 flex-shrink-0" />
+                  <span className="hidden sm:inline">{t("delete") || "Delete"}</span>
+                  <span className="sm:hidden">{t("delete") || "Del"}</span>
+                </Button>
+              </motion.div>
             </motion.div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
-}
+           </div>
+         </CardContent>
+       </Card>
+     </motion.div>
+   )
+ }

@@ -575,7 +575,7 @@ const Messages = () => {
                             transition={{ type: "spring", stiffness: 400 }}
                           >
                             <div className="text-sm">{msg.message}</div>
-                            <div className="text-xs opacity-70 mt-1">{new Date(msg.date_created).toLocaleString()}</div>
+                            <div className="text-xs opacity-70 mt-1">{new Date(msg.date_created).toLocaleString('en-US')}</div>
                           </motion.div>
                         </motion.div>
                       ))}

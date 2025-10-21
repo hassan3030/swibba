@@ -1,10 +1,19 @@
 export const translations = {
   en  :{
-
+NoOtherProductsFound: "No Other Products Found",
     somethingWentWrong :"Something went wrong",
     tryAgain :"Try again",
     currentMedia: "Current Media",
 
+    Loadingyourswaps: "Loading your swaps...",
+    Loadingreceiveditems: "Loading received items...",
+    Loadingsentitems: "Loading sent items...",
+    Loadinguserdata: "Loading user data...",
+    Loadingitems: "Loading items...",
+    Loadingcategories: "Loading categories...",
+    Loadingcountries: "Loading countries...",
+    Loadinglanguages: "Loading languages...",
+    Loadingcurrencies: "Loading currencies...",
     //----------------------------
     Senderitems: "Sender Elements",
     Receiveritems:"Receiver Elements",
@@ -578,7 +587,7 @@ SelectCountry: "Select a country",
     // cart 
     Failedtoacceptswap: "Failed to accept swap",
     AllNotifications: "All Recived Offers",
-    Exchange: "Exchange",
+    Exchange: "Exchange", 
     ChatwithSwapPartner: "Chat with Swap Partner",
     AcceptSwap: "Accept Swap",
     RejectSwap: "Reject Swap",
@@ -1121,10 +1130,22 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+NoOtherProductsFound: "لا توجد منتجات أخرى",
     somethingWentWrong :"حدث خطأ ما، حاول مرة أخرى",
     tryAgain :"حاول مرة أخرى",
     currentMedia: "الوسائط الحالية",
 
+
+    
+    Loadingyourswaps: "جاري تحميل تبديلاتك...",
+    Loadingreceiveditems: "جاري تحميل العناصر المستلمة...",
+    Loadingsentitems: "جاري تحميل العناصر المرسلة...",
+    Loadinguserdata: "جاري تحميل بيانات المستخدم...",
+    Loadingitems: "جاري تحميل العناصر...",
+    Loadingcategories: "جاري تحميل الفئات...",
+    Loadingcountries: "جاري تحميل الدول...",
+    Loadinglanguages: "جاري تحميل اللغات...",
+    Loadingcurrencies: "جاري تحميل العملات...",
     //----------------------
     Senderitems:   " عناصر المُرسِل",
     Receiveritems:   "عناصر المُستلِم",

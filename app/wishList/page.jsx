@@ -100,7 +100,7 @@ const Wishlist = () => {
               name: product.data.name,
               category: product.data.category,
               description: product.data.description,
-              dateAdded: new Date(wish.date_created).toLocaleDateString(),
+              dateAdded: new Date(wish.date_created).toLocaleDateString('en-US'),
             }
           }),
         )

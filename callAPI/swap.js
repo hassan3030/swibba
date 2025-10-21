@@ -248,31 +248,42 @@ export const deleteFinallyOfferById = async (id) => {
       if (!id) {
         throw new Error("Offer ID is required")
       }
- 
-      await axios.patch(`${baseItemsURL}/Offers/${id}`, {
-        finaly_deleted: true,
-      },
+      // const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
+      //   finaly_deleted: true,
+      // },
+      //       {
+      //         headers: {
+      //           "Content-Type": "application/json",
+      //           Authorization: `Bearer ${auth.token}`,
+      //         },
+      //       })
+      // // console.log("Offer Deleted Finally successfully, ID:", id)
+      // return {
+      //   success: true,
+      //   data: {
+      //     offer_id: id,
+      //       response: response.data.data,
+      //     },
+      //     message: "Offer Finally Deleted successfully",
+      //   }
+
+      const response = await axios.delete(`${baseItemsURL}/Offers/${id}`,
             {
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${auth.token}`,
               },
             })
-      // console.log("Offer Deleted Finally successfully, ID:", id)
       return {
         success: true,
-        data: {
-          offer_id: id,
-          items_restored: items.length,
-          restore_results: restoreResults,
-        },
+        data: response.data.data,
         message: "Offer Finally Deleted successfully",
       }
     })
   } catch (error) {
     return handleApiError(error, "Finally Delete Offer By ID")
+    }
   }
-}
 
 // Accept offer (keeping original function name)
 export const acceptedOffer = async (id) => {

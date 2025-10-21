@@ -1,11 +1,13 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" 
+import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified, Search, Filter, X, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image" 
 import { getAvailableAndUnavailableProducts, getProductByUserId, getProductsOwnerById } from "@/callAPI/products"
@@ -21,6 +23,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useRTL } from "@/hooks/use-rtl"
 import { getMediaType } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getHintByName } from "@/callAPI/static";
 
 // Animation variants
 const containerVariants = {
@@ -112,7 +115,36 @@ export default function SwapPage() {
   const [myEmail, setMyEmail] = useState("")
   const [otherEmail, setOtherEmail] = useState("")
   const [userData, setUserData] = useState(null)
+  const [hintSwapRules, setHintSwapRules] = useState([]);
   
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" })
+  const [showFilters, setShowFilters] = useState(false)
+  
+  // Scroll functionality
+  const makeSwapRef = useRef(null)
+  
+  const scrollToMakeSwap = () => {
+    makeSwapRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    })
+  }
+  
+  const getHintSwapRulesData = async (name) => {
+    try {
+      const response = await getHintByName(name);
+      setHintSwapRules(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(() => {
+    getHintSwapRulesData("swap rules");
+  }, []);
   // RTL utilities
   const { isRTL, classes, getDirectionClass } = useRTL()
 
@@ -333,6 +365,67 @@ export default function SwapPage() {
     )
   }
 
+  // Filter out unavailable or out-of-stock items from UI (status_item="unavailable" or quantity === 0)
+  const normalizeQty = (p) => Number(p?.quantity ?? p?.qty ?? p?.available_quantity ?? p?.quantity_available ?? 1)
+  const isVisible = (p) => {
+    const status = String(p?.status_item ?? p?.status_swap ?? "").toLowerCase()
+    return status !== "unavailable" && normalizeQty(p) > 0
+  }
+  const visibleMyItems = myItems.filter(isVisible)
+  
+  // Enhanced filtering logic for other items
+  const filterOtherItems = (items) => {
+    return items.filter(item => {
+      // Basic visibility filter
+      if (!isVisible(item)) return false
+      
+      // Search term filter (name or description)
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase()
+        const nameMatch = item.name?.toLowerCase().includes(searchLower)
+        const descMatch = item.description?.toLowerCase().includes(searchLower)
+        if (!nameMatch && !descMatch) return false
+      }
+      
+      // Category filter
+      if (selectedCategory && selectedCategory !== "all") {
+        if (item.category !== selectedCategory) return false
+      }
+      
+      // Price range filter
+      if (priceRange.min || priceRange.max) {
+        const itemPrice = parseFloat(item.price) || 0
+        const minPrice = parseFloat(priceRange.min) || 0
+        const maxPrice = parseFloat(priceRange.max) || Infinity
+        
+        if (itemPrice < minPrice || itemPrice > maxPrice) return false
+      }
+      
+      return true
+    })
+  }
+  
+  const visibleOtherItems = filterOtherItems(otherItems || [])
+  
+  // Get unique categories from other items
+  const getUniqueCategories = () => {
+    const categories = (otherItems || [])
+      .filter(isVisible)
+      .map(item => item.category)
+      .filter(Boolean)
+    return [...new Set(categories)]
+  }
+  
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm("")
+    setSelectedCategory("all")
+    setPriceRange({ min: "", max: "" })
+  }
+  
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || (selectedCategory && selectedCategory !== "all") || priceRange.min || priceRange.max
+  
   const mySelectedValue = getTotalValue(selectedMyItems, myItems)
   const otherSelectedValue = getTotalValue(selectedOtherItems, otherItems)
   const priceDifference = mySelectedValue - otherSelectedValue
@@ -515,23 +608,27 @@ export default function SwapPage() {
                             </div>
                           </motion.div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-yellow-800 mb-3 text-start">{t("SwapRules") || "Swap Rules:"}</h3>
+                            <h3 className="text-lg font-semibold text-yellow-800 mb-3 text-start capitalize">{isRTL ? hintSwapRules[0]?.translations?.[0]?.title : hintSwapRules[0]?.translations?.[1]?.title}</h3>
                             <motion.ul
                               className="space-y-2 text-sm text-yellow-700"
                               variants={containerVariants}
                               initial="hidden"
                               animate="visible"
                             >
-                              {[
-                                t("Firstselectyouritemstoseeavailablecategories") || "First select your items to see available categories",
-                                t("Youcanonlyselectitemsfrommatchingcategories") || "You can only select items from matching categories",
-                                t("Uncheckingyouritemswillclearotherselections") || "Unchecking your items will clear other selections",
-                              ].map((rule, index) => (
-                                <motion.li key={index} variants={itemVariants} className="flex items-center gap-3">
-                                  <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
-                                  {t(rule) || rule}
-                                </motion.li>
-                              ))}
+                              {(() => {
+                                // Get the correct translation based on isRTL
+                                const currentTranslation = isRTL 
+                                  ? hintSwapRules[0]?.translations?.find(t => t.languages_code === 'ar-SA')
+                                  : hintSwapRules[0]?.translations?.find(t => t.languages_code === 'en-US');
+                                
+                                // Map over the hints_steps array
+                                return currentTranslation?.hints_steps?.map((step, index) => (
+                                  <motion.li key={index} variants={itemVariants} className="flex items-center gap-3">
+                                    <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
+                                    {step}
+                                  </motion.li>
+                                ));
+                              })()}
                             </motion.ul>
                           </div>
                         </div>
@@ -548,7 +645,7 @@ export default function SwapPage() {
                   >
                     {/* My Products */}
                     <motion.div variants={cardVariants}>
-                      {myItems.length !== 0 ? (
+                      {visibleMyItems.length !== 0 ? (
                         <div>
                           <motion.div
                             className="flex flex-row rtl:flex-row-reverse items-center gap-4 mb-6"
@@ -575,7 +672,7 @@ export default function SwapPage() {
 
                           <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
                             <AnimatePresence>
-                              {myItems.map((product, index) => (
+                              {visibleMyItems.map((product, index) => (
                                 <motion.div
                                   key={product.id}
                                   variants={cardVariants}
@@ -637,7 +734,7 @@ export default function SwapPage() {
 
                     {/* Other Users' Products */}
                     <motion.div variants={cardVariants}>
-                      {otherItems?.length !== 0 ? (
+                      {visibleOtherItems.length !== 0 ? (
                         <div>
                           <motion.div
                             className="flex flex-row rtl:flex-row-reverse items-center gap-4 mb-6"
@@ -662,9 +759,119 @@ export default function SwapPage() {
                             </motion.div>
                           </motion.div>
 
+                          {/* Filter Section */}
+                          <motion.div 
+                            className="bg-muted/30 rounded-lg p-4 space-y-4"
+                            variants={cardVariants}
+                            initial="hidden"
+                            animate="visible"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Filter className="h-5 w-5 text-muted-foreground" />
+                                <span className="font-medium">{t("Filters") || "Filters"}</span>
+                                {hasActiveFilters && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {visibleOtherItems.length} {t("results") || "results"}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {hasActiveFilters && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="text-xs"
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    {t("Clear") || "Clear"}
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setShowFilters(!showFilters)}
+                                  className="text-xs"
+                                >
+                                  {showFilters ? t("Hide") || "Hide" : t("Show") || "Show"} {t("Filters") || "Filters"}
+                                </Button>
+                              </div>
+                            </div>
+
+                            {showFilters && (
+                              <motion.div 
+                                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                {/* Search Input */}
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-muted-foreground">
+                                    {t("Search") || "Search"}
+                                  </label>
+                                  <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                      placeholder={t("Search by name or description") || "Search by name or description"}
+                                      value={searchTerm}
+                                      onChange={(e) => setSearchTerm(e.target.value)}
+                                      className="pl-10"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Category Filter */}
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-muted-foreground">
+                                    {t("Category") || "Category"}
+                                  </label>
+                                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={t("All Categories") || "All Categories"} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">{t("All Categories") || "All Categories"}</SelectItem>
+                                      {getUniqueCategories().map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                          {category}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* Price Range */}
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-muted-foreground">
+                                    {t("Price Range") || "Price Range"}
+                                  </label>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      type="number"
+                                      placeholder={t("Min") || "Min"}
+                                      value={priceRange.min}
+                                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                                      className="text-sm"
+                                    />
+                                    <Input
+                                      type="number"
+                                      placeholder={t("Max") || "Max"}
+                                      value={priceRange.max}
+                                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </motion.div>
+
                           <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
                             <AnimatePresence>
-                              {otherItems?.map((product, index) => {
+                              {visibleOtherItems.map((product, index) => {
                                 const isSelectable = isOtherItemSelectable(product)
                                 const isSelected = selectedOtherItems.includes(product.id)
 
@@ -749,6 +956,7 @@ export default function SwapPage() {
                 <AnimatePresence >
                     {canCreateSwap && (
                       <motion.div
+                        ref={makeSwapRef}
                         variants={swapSummaryVariants}
                         initial="hidden"
                         animate="visible"
@@ -988,6 +1196,34 @@ export default function SwapPage() {
               </TabsContent>
             </Tabs>
           </div>
+          
+          {/* Floating Scroll Button */}
+          <AnimatePresence>
+            {canCreateSwap && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="fixed bottom-8 right-8 z-50"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <Button
+                    onClick={scrollToMakeSwap}
+                    size="lg"
+                    className="rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground h-14 w-14 p-0"
+                    aria-label={t("Scroll to Make Swap") || "Scroll to Make Swap"}
+                  >
+                    <ChevronDown className="h-6 w-6" />
+                  </Button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </motion.div>
@@ -997,50 +1233,69 @@ export default function SwapPage() {
 // ItemCard component
 const ItemCard = ({ id, name, description, price, images, allowed_categories,translations, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1 }) => {
   // const [bigImage, setBigImage] = useState("")
-  const [currentQuantity, setCurrentQuantity] = useState(selectedQuantity)
-  const [totalPrice, setTotalPrice] = useState(price * selectedQuantity)
+  const [currentQuantity, setCurrentQuantity] = useState(Number(selectedQuantity) || 1)
+  const [totalPrice, setTotalPrice] = useState(Number(price || 0) * (Number(selectedQuantity) || 1))
   const { t } = useTranslations()
   const { isRTL, getDirectionClass } = useRTL()
   const { toast } = useToast()
-  
-  // Update total price when quantity changes
+  const maxQty = Number(originalQuantity || 1)
+
+  // Keep local quantity in sync when parent changes selectedQuantity
   useEffect(() => {
-    const total = price * currentQuantity
+    const sq = Number(selectedQuantity) || 1
+    if (sq !== currentQuantity) {
+      setCurrentQuantity(sq)
+      setTotalPrice(Number(price || 0) * sq)
+      if (onQuantityChange) onQuantityChange(id, sq, Number(price || 0) * sq)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedQuantity, price, id])
+
+  // Update total price and notify parent when currentQuantity changes
+  useEffect(() => {
+    const total = Number(price || 0) * currentQuantity
     setTotalPrice(total)
     if (onQuantityChange) {
       onQuantityChange(id, currentQuantity, total)
     }
   }, [currentQuantity, price, id, onQuantityChange])
 
-  // Prevent unnecessary re-renders by memoizing the quantity change
-  const handleQuantityChangeInternal = useCallback((newQuantity) => {
-    setCurrentQuantity(newQuantity)
-  }, [])
+  // Use functional updater to avoid stale closures
+  const handleQuantityChangeInternal = useCallback((updater) => {
+    setCurrentQuantity((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater
+      return Math.max(1, Math.min(next, maxQty))
+    })
+  }, [maxQty])
 
   // Quantity handlers
   const increaseQuantity = useCallback(() => {
-    if (currentQuantity >= originalQuantity) {
-      toast({
-        title: t("quantityExceeded") || "Quantity Exceeded",
-        description: t("quantityExceededDescription") || "Cannot exceed available quantity",
-        variant: "destructive",
-      })
-    } else {
-      handleQuantityChangeInternal(currentQuantity + 1)
-    }
-  }, [currentQuantity, originalQuantity, handleQuantityChangeInternal, toast, t])
+    setCurrentQuantity((prev) => {
+      if (prev >= maxQty) {
+        toast({
+          title: t("quantityExceeded") || "Quantity Exceeded",
+          description: t("quantityExceededDescription") || "Cannot exceed available quantity",
+          variant: "destructive",
+        })
+        return prev
+      }
+      return prev + 1
+    })
+  }, [maxQty, toast, t])
 
   const decreaseQuantity = useCallback(() => {
-    if (currentQuantity <= 1) {
-      toast({
-        title: t("minimumQuantity") || "Minimum Quantity",
-        description: t("minimumQuantityDescription") || "Minimum quantity is 1",
-        variant: "destructive",
-      })
-    } else {
-      handleQuantityChangeInternal(currentQuantity - 1)
-    }
-  }, [currentQuantity, handleQuantityChangeInternal, toast, t])
+    setCurrentQuantity((prev) => {
+      if (prev <= 1) {
+        toast({
+          title: t("minimumQuantity") || "Minimum Quantity",
+          description: t("minimumQuantityDescription") || "Minimum quantity is 1",
+          variant: "destructive",
+        })
+        return prev
+      }
+      return prev - 1
+    })
+  }, [toast, t])
 
   const getConditionColor = (itemsStatus) => {
     switch (itemsStatus) {
@@ -1223,9 +1478,9 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
         >
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">{t("quantity") || "Quantity"}</span>
-            <span className="text-sm font-medium">{originalQuantity} {t("items") || "items"}</span>
+            <span className="text-sm font-medium">{maxQty} {t("items") || "items"}</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Button
@@ -1238,7 +1493,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 <Minus className="h-3 w-3" />
               </Button>
             </motion.div>
-            
+
             <motion.span
               className="text-sm font-semibold min-w-[1.5rem] text-center"
               key={currentQuantity}
@@ -1248,14 +1503,14 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
             >
               {currentQuantity}
             </motion.span>
-            
+
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-6 w-6 rounded-full"
                 onClick={increaseQuantity}
-                disabled={currentQuantity >= originalQuantity}
+                disabled={currentQuantity >= maxQty}
               >
                 <Plus className="h-3 w-3" />
               </Button>

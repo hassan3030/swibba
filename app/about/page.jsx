@@ -2,10 +2,27 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Users, Award } from "lucide-react";
 import { useTranslations } from "@/lib/use-translations";
-import { teamMembers } from "../../lib/data";
 import Image from 'next/image';
+import { getFounders } from "../../callAPI/static";
+import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/language-provider";
 const AboutPage = () => {
     const { t } = useTranslations();
+  const { isRTL } = useLanguage()
+
+    const [founders, setFounders] = useState([]);
+    const getAllFounders = async () => {
+      const response = await getFounders();
+      if (response.success) {
+        setFounders(response.data);
+      } else {
+        console.error(response.message);
+      }
+    };
+
+    useEffect(() => {
+      getAllFounders();
+    }, []);
   return (
     <>
 <div className="container mx-auto py-10 px-4 max-w-6xl">
@@ -46,8 +63,6 @@ const AboutPage = () => {
             <CardContent>
               <p>
                 {t("Our diverse team of professionals brings together years of experience and expertise across various industries.")||"Our diverse team of professionals brings together years of experience and expertise across various industries."}
-
-                
               </p>
             </CardContent>
           </Card>
@@ -99,21 +114,40 @@ const AboutPage = () => {
         </Card>
       </section>
 
+     
+
       <section className="mb-12">
         <h2 className="text-3xl font-bold text-center mb-8">{t("OurLeadershipTeam")||"Our Leadership Team"}</h2>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
-          {teamMembers.map((leader, index) => (
-            <Card key={index} className='hover:shadow-lg transition-shadow duration-300 hover:scale-105'>
-              <CardHeader>
-                <CardTitle>{t(leader.name)}</CardTitle>
-                <CardDescription>{t(leader.title)}</CardDescription>
-                <Image src={leader.image} alt={t(leader.name)} width={64} height={64} className="h-16 w-16 rounded-full" />
-              </CardHeader>
-              <CardContent>
-                <p>{t(leader.description)}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {!founders || founders.length === 0 ? (
+            // Skeleton loading UI
+            Array.from({ length: 2 }).map((_, idx) => (
+              <Card key={idx} className="animate-pulse bg-gray-50 dark:bg-gray-800/40 shadow-none">
+                <CardHeader>
+                  <div className="h-6 w-32 bg-gray-300 dark:bg-gray-700 rounded mb-2" />
+                  <div className="h-4 w-24 bg-gray-200 dark:bg-gray-600 rounded mb-3" />
+                  <div className="h-16 w-16 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                  <div className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded" />
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            founders.map((founder, index) => (
+              <Card key={index} className='hover:shadow-lg transition-shadow duration-300 hover:scale-105'>
+                <CardHeader>
+                  <CardTitle>{`${isRTL ? founder.translations?.[1]?.name || founder.name : founder.translations?.[0]?.name ||founder.name}`}</CardTitle>
+                  <CardDescription>{`${isRTL ? founder.translations?.[1]?.job_title || founder.job_title : founder.translations?.[0]?.job_title || founder.job_title}`}</CardDescription>
+                  <Image src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${founder.image.id}`} alt={`${isRTL ? founder.translations?.[1]?.name || founder.name : founder.translations?.[0]?.name ||founder.name}`} width={64} height={64} className="h-16 w-16 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                  <p>{`${isRTL ? founder.translations?.[1]?.description || founder.description : founder.translations?.[0]?.description || founder.description}`}</p>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </section>
     </div> 

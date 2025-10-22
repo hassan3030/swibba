@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Play, Pause, Volume2 } from "lucide-react"
@@ -132,6 +132,9 @@ export function ProductGallery({ images, productName }) {
       const x = Math.max(0, Math.min(1, (touch.clientX - targetRect.left) / targetRect.width))
       const y = Math.max(0, Math.min(1, (touch.clientY - targetRect.top) / targetRect.height))
       setZoomBgPos({ x: x * 100, y: y * 100 })
+      
+      // Store initial touch position for tap detection
+      handleTouchStart.initialTouch = { x: touch.clientX, y: touch.clientY, time: Date.now() }
     }
   }, [isZoomOpen])
 
@@ -172,6 +175,46 @@ export function ProductGallery({ images, productName }) {
     if (!isZoomOpen) return
     e.preventDefault()
     handleTouchMove.lastDistance = null
+    
+    // Detect tap to close zoom (single touch, short duration, minimal movement)
+    if (e.touches.length === 0 && handleTouchStart.initialTouch) {
+      const touch = e.changedTouches[0]
+      const initialTouch = handleTouchStart.initialTouch
+      const timeDiff = Date.now() - initialTouch.time
+      const distance = Math.sqrt(
+        Math.pow(touch.clientX - initialTouch.x, 2) + 
+        Math.pow(touch.clientY - initialTouch.y, 2)
+      )
+      
+      // If it's a quick tap (less than 300ms) with minimal movement (less than 10px)
+      if (timeDiff < 300 && distance < 10) {
+        setIsZoomOpen(false)
+      }
+    }
+    
+    handleTouchStart.initialTouch = null
+  }, [isZoomOpen])
+
+  // Handle keyboard events for accessibility
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isZoomOpen && e.key === 'Escape') {
+        setIsZoomOpen(false)
+      }
+    }
+
+    if (isZoomOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      // Prevent body scroll when zoom is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
   }, [isZoomOpen])
 
   return (
@@ -360,11 +403,28 @@ export function ProductGallery({ images, productName }) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={() => setIsZoomOpen(false)}
+          onClick={(e) => {
+            // Close zoom when clicking on the background (blur space)
+            if (e.target === e.currentTarget) {
+              setIsZoomOpen(false)
+            }
+          }}
         >
+          {/* Close button for better mobile UX */}
+          <button
+            className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            onClick={() => setIsZoomOpen(false)}
+            aria-label="Close zoom"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
           <div
             ref={overlayImageRef}
             className="relative h:[70vh] w-[70vw] max-w-5xl overflow-hidden rounded-lg border bg-background shadow-2xl h-[70vh]"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image
           >
             <div
               className="absolute inset-0 bg-no-repeat"

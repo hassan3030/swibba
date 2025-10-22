@@ -42,7 +42,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/lib/theme-provider"
 import { removeCookie, getCookie, decodedToken } from "@/callAPI/utiles"
-import { getOfferById, getOffersNotifications, getWishList, getMessage, getMessagesByUserId } from "@/callAPI/swap"
+import { getOfferById, getOffeReceived, getWishList, getMessage, getMessagesByUserId } from "@/callAPI/swap"
 import { categoriesName } from "@/lib/data"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
@@ -239,7 +239,7 @@ export function Header() {
         ? offers.data.filter((offer) => offer.status_offer === "pending" || offer.status_offer === "accepted")
         : []
 
-      const notifications = await getOffersNotifications(id)
+      const notifications = await getOffeReceived(id)
 
       const filteredNotifications = Array.isArray(notifications.data)
         ? notifications.data.filter(

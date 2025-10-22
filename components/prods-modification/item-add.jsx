@@ -184,11 +184,16 @@ export function ItemAdd() {
     country: z.string().min(1, t("SelectCountry") || "Select country"),
     city: z.string().min(1, t("Cityisrequired") || "City is required"),
     street: z.string().min(1, t("Streetisrequired") || "Street is required"),
-    quantity: z.coerce.number().positive(t("Quantitycannotbenegative") || "Quantity cannot be negative"),
+    quantity: z.coerce.number({
+      required_error: t("Quantityisrequired") || "Quantity is required",
+      invalid_type_error: t("Quantitymustbeanumber") || "Quantity must be a number"
+    }).min(1, t("Quantitymustbegreaterthan0") || "Quantity must be greater than 0").max(100, t("Quantitymustbelessthan100") || "Quantity must be less than 100"),
   })
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -413,7 +418,7 @@ else{
       
       toast({
         title: t("error") || "ERROR ",
-        description: errorMessage,
+        description: t(errorMessage) || errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -725,7 +730,23 @@ else{
                         <FormItem>
                           <FormLabel className="text-foreground">{t("quantity") || "Quantity"}</FormLabel>
                           <FormControl>
-                            <Input placeholder={t("quantityofyouritem") || "Quantity of your item"} {...field} type="number" min={1} className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all" />
+                            <Input 
+                              placeholder={t("quantityofyouritem") || "Quantity of your item"} 
+                              {...field} 
+                              type="number" 
+                              min={1} 
+                              max={100} 
+                              className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
+                              onChange={(e) => {
+                                const value = e.target.value
+                                console.log("Quantity changed to:", value)
+                                field.onChange(value)
+                                // Trigger validation
+                                form.trigger("quantity").then((isValid) => {
+                                  console.log("Quantity validation result:", isValid)
+                                })
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -833,16 +854,17 @@ else{
                     <FormField
                       control={form.control}
                       name="category"
+                     
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">{t("category") || "Category"}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                          <Select onValueChange={field.onChange} defaultValue={field.value || ""} >
                             <FormControl>
                               <SelectTrigger className="bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                                 <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-background border-input text-foreground">
+                            <SelectContent className="bg-background border-input text-foreground z-[9999]">
                               {categoriesName.map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {t(category) || category}
@@ -856,6 +878,7 @@ else{
                     />
 
                     <FormField
+                    className="z-11"
                       control={form.control}
                       name="status_item"
                       render={({ field }) => (
@@ -867,7 +890,7 @@ else{
                                 <SelectValue placeholder={t("SelectCondition") || "Select condition"} />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-background border-input text-foreground">
+                            <SelectContent className="bg-background border-input text-foreground z-[9999]">
                               {itemsStatus.map((condition) => (
                                 <SelectItem key={condition} value={condition} className="capitalize">
                                   {t(condition) || condition}
@@ -961,7 +984,7 @@ else{
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.8 }}
-                              className="flex items-center text-sm text-muted-foreground ml-auto"
+                              className="flex items-center text-sm text-muted-foreground ml-auto z-10"
                             >
                               <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
                               <span>Updating...</span>

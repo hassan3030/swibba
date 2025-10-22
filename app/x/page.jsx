@@ -9,7 +9,7 @@ export default function XPage() {
   }, [])
 
   const addCompletedOfferToUsers = async () => {
-    const response = await addCompletedOfferToUser()
+    const response = await addCompletedOfferToUser("ac3e8c52-62a0-47c8-b96a-5b6736814cc5" ,"f684eab7-8e73-4caf-b663-1366c5939eef")
     console.log("response : " , response)
   }
   return <div>XPage

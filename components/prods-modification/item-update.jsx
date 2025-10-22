@@ -210,7 +210,11 @@ export function ItemUpdate(props) {
     country: z.string().min(1, t("SelectCountry") || "Select country"),
     city: z.string().min(1, t("Cityisrequired") || "City is required"),
     street: z.string().min(1, t("Streetisrequired") || "Street is required"),
-    quantity: z.coerce.number().positive(t("Quantitycannotbenegative") || "Quantity cannot be negative"),
+    quantity: z.coerce.number({
+      required_error: t("Quantityisrequired") || "Quantity is required",
+      invalid_type_error: t("Quantitymustbeanumber") || "Quantity must be a number"
+    }).min(1, t("Quantitymustbegreaterthan0") || "Quantity must be greater than 0").max(100, t("Quantitymustbelessthan100") || "Quantity must be less than 100"),
+
   })
 
   // Get images
@@ -342,6 +346,8 @@ export function ItemUpdate(props) {
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
           defaultValues: {
         name: translations ? (!isRTL ? translations[0]?.name : translations[1]?.name) || name : name,
         description: translations ? (!isRTL ? translations[0]?.description : translations[1]?.description) || description : description,
@@ -873,8 +879,15 @@ else{
                                   placeholder={t("quantityofyouritem")||"Quantity of your item"}
                                   {...field}
                                   type="number"
+                                  min={1}
+                                  max={100}
                                   className="transition-all duration-200 bg-background border-input focus:ring-2 focus:ring-ring/20 focus:border-ring"
-
+                                  onChange={(e) => {
+                                    const value = e.target.value
+                                    field.onChange(value)
+                                    // Trigger validation
+                                    form.trigger("quantity")
+                                  }}
                                 />
                               </motion.div>
                             </FormControl>
@@ -1010,7 +1023,7 @@ else{
                                     </SelectTrigger>
                                   </motion.div>
                                 </FormControl>
-                                <SelectContent>
+                                <SelectContent className="z-[9999]">
                                   {categoriesName.map((category) => (
                                     <SelectItem key={category} value={category}>
                                       {t(category)}
@@ -1037,7 +1050,7 @@ else{
                                     </SelectTrigger>
                                   </motion.div>
                                 </FormControl>
-                                <SelectContent>
+                                <SelectContent className="z-[9999]">
                                   {itemsStatus.map((condition) => (
                                     <SelectItem key={condition} value={condition}>
                                       {t(condition)}

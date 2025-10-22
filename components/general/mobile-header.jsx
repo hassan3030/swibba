@@ -19,6 +19,9 @@ import {
   MessageCircle,
   Moon,
   Sun,
+  HandPlatter,
+  ListChecks,
+  Heart,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -28,7 +31,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { useRouter } from "next/navigation"
 import { getCookie, decodedToken, removeCookie } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
-import { getOffersNotifications, getMessagesByUserId } from "@/callAPI/swap"
+import { getOffeReceived, getMessagesByUserId } from "@/callAPI/swap"
 import Image from "next/image"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
@@ -93,9 +96,9 @@ export function MobileHeader() {
             const userData = await getUserById(decoded.id)
             setUser(userData.data)
             
-            // Fetch notifications
-            const notifications = await getOffersNotifications(decoded.id)
-            setNotificationCount(notifications?.data?.length || 0)
+            // Fetch offersReceived
+            const offersReceived = await getOffeReceived(decoded.id)
+            setNotificationCount(offersReceived?.data?.length || 0)
             
             // Fetch messages
             const messages = await getMessagesByUserId(decoded.id)
@@ -126,16 +129,7 @@ export function MobileHeader() {
     router.refresh()
   }
 
-  const menuItems = [
-    { icon: Home, label: t("Home") || "Home", href: "/" },
-    { icon: Plus, label: t("add") || "Add", href: "/profile/settings/editItem/new" },
-    { icon: TbShoppingCartUp, label: t("sendItems") || "Send Items", href: "/send-items" },
-    { icon: BiCartDownload, label: t("receivedItems") || "Received Items", href: "/recived-items" },
-    { icon: Search, label: t("browse") || "Browse", href: "/products" },
-    { icon: MessageCircle, label: t("messages") || "Messages", href: "/chat" },
-    { icon: User, label: t("profile") || "Profile", href: "/profile" },
-    { icon: Settings, label: t("settings") || "Settings", href: "/profile/settings" },
-  ]
+ 
 
   return (
     <>
@@ -180,7 +174,7 @@ export function MobileHeader() {
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* Notifications */}
+        
             {user && (
               <Button
                 variant="ghost"
@@ -308,7 +302,7 @@ export function MobileHeader() {
                         router.push("/auth/register")
                       }}
                     >
-                      {t("getStarted") || "Get Started"}
+                      {t("signUp") || "Sign Up"}
                     </Button>
                   </div>
                 )}
@@ -316,7 +310,7 @@ export function MobileHeader() {
                 {/* Menu Items - Scrollable */}
                 <div className="flex-1 relative overflow-hidden">
                   <div className="h-full overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
-                    {menuItems.map((item, index) => (
+                    {/* {menuItems.map((item, index) => (
                       <Link
                         key={index}
                         href={item.href}
@@ -326,28 +320,111 @@ export function MobileHeader() {
                         <item.icon className="h-5 w-5 text-primary" />
                         <span className="font-medium">{item.label}</span>
                       </Link>
-                    ))}
+                    ))} */}
 
-                    {user && (
+                    {user ? (
                       <>
-                        <Link
+                        {/* <Link
                           href="/payment"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           <Wallet className="h-5 w-5 text-primary" />
                           <span className="font-medium">{t("payment") || "Payment & Wallet"}</span>
-                        </Link>
+                        </Link> */}
                         
+                       
                         <Link
-                          href="/profile/settings/editProfile"
+                          href="/"
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <Settings className="h-5 w-5 text-primary" />
-                          <span className="font-medium">{t("settings") || "Settings"}</span>
+                          <Home className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("Home") || "Home"}</span>
+                        </Link>
+
+                        <Link
+                          href="/profile/settings/editItem/new"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Plus className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("add") || "Add"}</span>
+                        </Link>
+
+                        <Link
+                          href="/products"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Search className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("browse") || "Browse"}</span>
+                        </Link>
+
+                        <Link
+                          href="/send-items"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <TbShoppingCartUp className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("sendItems") || "Send Items"}</span>
+                        </Link>
+
+                        <Link
+                          href="/recived-items"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <BiCartDownload className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("receivedItems") || "Received Items"}</span>
+                        </Link>
+
+                        <Link
+                          href="/chat"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <MessageCircle className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("messages") || "Messages"}</span>
+                        </Link>
+
+                        <Link
+                          href="/profile/items"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <ListChecks className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("manageItems") || "Manage Items"}</span>
+                        </Link>
+
+                        <Link
+                          href="/wishList"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Heart className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("MyWishlist") || "My Wishlist"}</span>
                         </Link>
                         
+                        <Link
+                          href="/customerService"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <HandPlatter className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("customerService") || "Customer Service"}</span>
+                        </Link>
+
+                        <Link
+                          href="/about"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Info className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("about") || "About"}</span>
+                        </Link>
+
+
                         <button 
                           onClick={handleLogout}
                           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
@@ -360,12 +437,38 @@ export function MobileHeader() {
                         <button  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
                         >
                         <LanguageToggle />
+                        <ThemeToggle />
                         </button>
 
-                        <button   className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
-                       >
+                      
+
+                      </>
+                    ):(
+                      <>
+
+                        <Link
+                          href="/customerService"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <HandPlatter className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("customerService") || "Customer Service"}</span>
+                        </Link>
+
+                        <Link
+                          href="/about"
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Info className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{t("about") || "About"}</span>
+                        </Link>
+
+                        <button  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                        >
+                        <LanguageToggle />
                         <ThemeToggle />
-                       </button>
+                        </button>
 
                       </>
                     )}

@@ -184,16 +184,20 @@ const SendItems = () => {
   const handleDeleteFinally = async (offerId) => {
     //  if (!confirm(t("Areyousureyouwanttodeletethisswap") || "Are you sure you want to delete this swap permanently?")) return
     try {
-      const deletedOffer = await deleteFinallyOfferById(offerId)
+      const deletedOffer = await deleteFinallyOfferById(offerId, "from")
+      console.log("deleteFinallyOfferById", deletedOffer)
+      console.log("deletedOffer.success:", deletedOffer.success)
       if(deletedOffer.success){
+        router.refresh()
+        console.log("Calling router.refresh()")
         toast({
           title: t("successfully") || "Successfully",
           description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
         })
         
-        router.refresh()
       }
       else {
+        console.log("deletedOffer.success is false, not calling router.refresh()")
         toast({
           title: t("error") || "Error",
           description: t("Failedtodeleteswap") || "Failed to delete swap",
@@ -745,7 +749,7 @@ const SendItems = () => {
                             </motion.div>
                           )}
 
-                          {offer.cash_adjustment && (
+                          {offer.cash_adjustment !== null && offer.cash_adjustment !== undefined && offer.cash_adjustment !== "" && offer.cash_adjustment !== 0 && (
                             <motion.div
                               className="bg-background/60 backdrop-blur-sm rounded-lg p-3 col-span-2"
                               initial={{ opacity: 0, y: 10 }}

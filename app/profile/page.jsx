@@ -12,7 +12,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
 import { getProductByUserId, getProductById } from "@/callAPI/products"
-import { getOfferById, getOfferItemsByOfferId, getOffersNotifications, getReview } from "@/callAPI/swap"
+import { getOfferById, getOfferItemsByOfferId, getOffeReceived, getReview } from "@/callAPI/swap"
 import { decodedToken, getCookie, validateAuth } from "@/callAPI/utiles"
 import RecivedItems from "@/app/recived-items/page"
 import SendItems from "@/app/send-items/page"
@@ -224,7 +224,7 @@ export default function ProfilePage() {
   const getNotificationsLength = async () => {
     try {
       const { userId } = await validateAuth()
-      const notifications = await getOffersNotifications(userId)
+      const notifications = await getOffeReceived(userId)
       if (notifications.success && Array.isArray(notifications.data)) {
         const filteredOffers = notifications.data.filter(
           (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"

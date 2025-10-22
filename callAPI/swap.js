@@ -51,11 +51,20 @@ export const getOfferById = async (id) => {
 
     const auth = await validateAuth()
 
-    const response = await axios.get(`${baseItemsURL}/Offers?filter[from_user_id][_eq]=${id}&sort=-date_created`,
+    const response = await axios.get(`${baseItemsURL}/Offers`,
       {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
+        params: {
+          fields: "*",
+          filter: {
+            from_user_id: {
+              _eq: id
+            },
+            from_finaly_deleted: {
+              _in: ["false", "False" , false]
+            }
+          },
+          sort: "-date_created",
+        }
       })
 
     // console.log("Sent offers retrieved successfully for user:", id)
@@ -72,19 +81,28 @@ export const getOfferById = async (id) => {
 }
 
 // Get offers notifications (to_user_id)
-export const getOffersNotifications = async (id) => {
+export const getOffeReceived = async (id) => {
   try {
     if (!id) {
       throw new Error("User ID is required")
     }
 
-    const auth = await validateAuth()
+    // const auth = await validateAuth()
 
-    const response = await axios.get(`${baseItemsURL}/Offers?filter[to_user_id][_eq]=${id}&sort=-date_created`,
+    const response = await axios.get(`${baseItemsURL}/Offers`,
       {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
+        params: {
+          fields: "*",
+          filter: {
+            to_user_id: {
+              _eq: id
+            },
+            to_finaly_deleted: {
+              _in: ["false", "False" , false]
+            }
+          },
+          sort: "-date_created"
+        }
       })
 
     // console.log("Received offers retrieved successfully for user:", id)
@@ -93,10 +111,10 @@ export const getOffersNotifications = async (id) => {
       data: response.data.data || [],
       count: response.data.data?.length || 0,
       user_id: id,
-      message: "Received offers retrieved successfully",
+      message: "Offers received retrieved successfully",
     }
   } catch (error) {
-    return handleApiError(error, "Get Offers Notifications")
+    return handleApiError(error, "Get Offers Received")
   }
 }
 
@@ -241,38 +259,37 @@ export const deleteOfferById = async (id) => {
 
 
 // Finally Delete offer by ID 
-export const deleteFinallyOfferById = async (id) => {
+export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
   try {
     const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
-      if (!id) {
+      if (!offer_id) {
         throw new Error("Offer ID is required")
       }
-      // const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
-      //   finaly_deleted: true,
-      // },
-      //       {
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //           Authorization: `Bearer ${auth.token}`,
-      //         },
-      //       })
-      // // console.log("Offer Deleted Finally successfully, ID:", id)
-      // return {
-      //   success: true,
-      //   data: {
-      //     offer_id: id,
-      //       response: response.data.data,
-      //     },
-      //     message: "Offer Finally Deleted successfully",
-      //   }
-
-      const response = await axios.delete(`${baseItemsURL}/Offers/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.token}`,
+      let response;
+      if(from_to_user === "from") {
+        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+          from_finaly_deleted: "true",
         },
-      })
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              })
+      } else if(from_to_user === "to") {  
+        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+          to_finaly_deleted: "true",
+        },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              })
+      } else {
+        throw new Error("From or To user is required")
+      }
       return {
         success: true,
         data: response.data.data,
@@ -281,8 +298,8 @@ export const deleteFinallyOfferById = async (id) => {
     })
   } catch (error) {
     return handleApiError(error, "Finally Delete Offer By ID")
-    }
   }
+}
 
 // Accept offer (keeping original function name)
 export const acceptedOffer = async (id) => {
@@ -382,42 +399,48 @@ export const acceptedOfferById = async (id_offer) => {
 }
 
 // Add completed offer to user's completedSwaps count
-export const addCompletedOfferToUser = async () => {
+export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
   try {
-    let currentCompletedSwaps = 0
-    const decoded = await decodedToken()
-    const token = await getCookie()
-    if (!decoded?.id || !token) {
-      throw new Error("Authentication required")
+    let currentCompletedSwapsFrom = 0
+    let currentCompletedSwapsTo = 0
+    if (!from_user_id || !to_user_id) {
+      throw new Error("From user ID and To user ID are required")
     }
-    const currentUser = await getUserById(decoded.id)
-    if (currentUser.success) {
-      console.log("currentUser.data.completedSwaps : " , currentUser)
-    currentCompletedSwaps = Number(currentUser.data.completedSwaps) || 0
+    const currentUserFrom = await getUserById(from_user_id)
+    const currentUserTo = await getUserById(to_user_id)
+    if (currentUserFrom.success) {
+      currentCompletedSwapsFrom = Number(currentUserFrom.data.completedSwaps) || 0
     }
-
+    if (currentUserTo.success) {
+      currentCompletedSwapsTo = Number(currentUserTo.data.completedSwaps) || 0
+    }
 
 // update user's completedSwaps count
-    const response = await axios.patch(`${baseURL}/users/${decoded.id}`, {
-      completedSwaps: Number(currentCompletedSwaps) + 1,
+    const responseFrom = await axios.patch(`${baseURL}/users/${from_user_id}`, {
+      completedSwaps: Number(currentCompletedSwapsFrom) + 1,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+      })      
+
+    const responseTo = await axios.patch(`${baseURL}/users/${to_user_id}`, {
+      completedSwaps: Number(currentCompletedSwapsTo) + 1,
     }, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         },
       })
-
-          return {
-        success: true,
-        data: {
-          userId: decoded.id,
-          previousCount: currentCompletedSwaps,
-          newCount: currentCompletedSwaps + 1,
-
-        },
-        message: "Completed swaps count updated successfully",
-      }
-    
+    return {
+      success: true,
+      data: {
+        responseFrom: responseFrom.data.data,
+        responseTo: responseTo.data.data,
+      },
+      message: "Completed swaps count updated successfully",
+    }
   } catch (error) {
     return handleApiError(error, "Add Completed Offer To User")
   }
@@ -496,7 +519,7 @@ export const completedOfferById = async (id_offer) => {
       console.log("Offer completed successfully, ID:", id_offer)
       
       // Add completed offer to user's completedSwaps count
-        await addCompletedOfferToUser()
+        await addCompletedOfferToUser( response.data.data.from_user_id, response.data.data.to_user_id )
       
       return {
         success: true,
@@ -504,6 +527,7 @@ export const completedOfferById = async (id_offer) => {
           ...response.data.data,
           items_traded: items.length,
           delete_results: deleteResults,
+          response: response.data.data,
         },
         message: "Offer completed successfully",
       }

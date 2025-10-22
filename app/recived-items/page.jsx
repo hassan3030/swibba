@@ -5,7 +5,7 @@ import {
   getOfferItemsByOfferId,
   deleteOfferById,
   deleteOfferItemsById,
-  getOffersNotifications,
+  getOffeReceived,
   getAllMessage,
   addMessage,
   acceptedOfferById,
@@ -150,8 +150,11 @@ const RecivedItems = () => {
     //  if (!confirm(t("Areyousureyouwanttodeletethisswap") || "Are you sure you want to delete this swap permanently?")) return
      try {
     // alert(offerId)
-       const deletedOffer = await deleteFinallyOfferById(offerId)
+       const deletedOffer = await deleteFinallyOfferById(offerId, "to")
+       console.log("deleteFinallyOfferById", deletedOffer)
+       console.log("deletedOffer.success:", deletedOffer.success)
        if(deletedOffer.success){
+       console.log("Calling router.refresh()")
        toast({
          title: t("successfully") || "Successfully",
          description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
@@ -160,6 +163,7 @@ const RecivedItems = () => {
          router.refresh()
        }
        else {
+         console.log("deletedOffer.success is false, not calling router.refresh()")
          toast({
            title: t("error") || "Error",
            description: t("Failedtodeleteswap") || "Failed to delete swap",
@@ -237,9 +241,9 @@ const RecivedItems = () => {
     const usersSwaper = []
     const { id } = await decodedToken()
 
-    const offers = await getOffersNotifications(id)
-
-    for (const offer of offers.data) {
+    const offersReceived = await getOffeReceived(id)
+console.log(offersReceived.data)
+    for (const offer of offersReceived.data) {
       const offerItem = await getOfferItemsByOfferId(offer.id)
       const user_from = await getUserById(offer.from_user_id)
       const user_to = await getUserById(offer.to_user_id)
@@ -263,7 +267,7 @@ const RecivedItems = () => {
 
     const uniqueUsers = Array.from(new Map(usersSwaper.map((user) => [user.id, user])).values())
 
-    setOffers(offers.data)
+    setOffers(offersReceived.data)
     setUserSwaps(uniqueUsers)
     setSwapItems(items)
     setItemsOffer(offerItems)

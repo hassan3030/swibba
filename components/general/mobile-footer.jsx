@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/use-translations"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
-import { getOffersNotifications, getMessagesByUserId } from "@/callAPI/swap"
+import { getOffeReceived, getMessagesByUserId } from "@/callAPI/swap"
 
 const tabVariants = {
   inactive: {

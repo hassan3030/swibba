@@ -1,5 +1,16 @@
 export const translations = {
   en  :{
+
+ 
+"AI response format error. The AI returned invalid JSON format.": "AI response format error. The AI returned invalid JSON format.",
+  "AI service is currently unavailable. All retry attempts failed. Please try again later.": "AI service is currently unavailable. All retry attempts failed. Please try again later.",
+ "AI returned invalid price estimation. Please enter your own estimate.": "AI returned invalid price estimation. Please enter your own estimate.",
+
+
+
+
+
+
     ClickthebuttontogetAIpoweredpriceestimation: "Click the button to get AI-powered price estimation",
     GetAIpoweredpriceestimatebasedonyouritemdetails: "Get an AI-powered price estimate based on your item details",
     YouarewaitingtocompletswapfromanotherUser: "You are waiting to complete swap from another user",
@@ -1142,6 +1153,11 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    
+"AI response format error. The AI returned invalid JSON format.": "خطأ في تنسيق الاستجابة من الذكاء الاصطناعي. أعاد الذكاء الاصطناعي تنسيق JSON غير صالح.",
+"AI service is currently unavailable. All retry attempts failed. Please try again later.": "خطأ في الخدمة الحالية. لم ينجح أي محاولة اعادة. يرجى المحاولة مرة أخرى لاحقا.",
+"AI returned invalid price estimation. Please enter your own estimate.": "تم إرجاع تقدير سعر غير صالح من الذكاء الاصطناعي. يرجى إدخال تقديرك الخاص." ,
+
     AIisestimatingprice:"يتم تقدير سعر مدعوم بالذكاء الاصطناعي...",
     ClickthebuttontogetAIpoweredpriceestimation: "اضغط على الزر للحصول على تقدير سعر مدعوم بالذكاء الاصطناعي",
     GetAIpoweredpriceestimatebasedonyouritemdetails: "احصل على تقدير سعر مدعوم بالذكاء الاصطناعي بناءً على تفاصيل العنصر الخاص بك",

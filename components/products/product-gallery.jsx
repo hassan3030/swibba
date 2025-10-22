@@ -57,6 +57,7 @@ export function ProductGallery({ images, productName }) {
   const [isMuted, setIsMuted] = useState(true)
   const [isZoomOpen, setIsZoomOpen] = useState(false)
   const [zoomBgPos, setZoomBgPos] = useState({ x: 50, y: 50 })
+  const [zoomScale, setZoomScale] = useState(2)
   const mainImageRef = useRef(null)
   const overlayImageRef = useRef(null)
 
@@ -120,6 +121,59 @@ export function ProductGallery({ images, productName }) {
     setZoomBgPos({ x: x * 100, y: y * 100 })
   }, [isZoomOpen])
 
+
+  const handleTouchStart = useCallback((e) => {
+    if (!isZoomOpen) return
+    e.preventDefault()
+    if (e.touches.length === 1) {
+      const touch = e.touches[0]
+      const targetRect = overlayImageRef.current?.getBoundingClientRect()
+      if (!targetRect) return
+      const x = Math.max(0, Math.min(1, (touch.clientX - targetRect.left) / targetRect.width))
+      const y = Math.max(0, Math.min(1, (touch.clientY - targetRect.top) / targetRect.height))
+      setZoomBgPos({ x: x * 100, y: y * 100 })
+    }
+  }, [isZoomOpen])
+
+  const handleTouchMove = useCallback((e) => {
+    if (!isZoomOpen) return
+    e.preventDefault()
+    
+    // Handle pinch-to-zoom
+    if (e.touches.length === 2) {
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      const distance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+      )
+      
+      // Store initial distance for comparison
+      if (!handleTouchMove.lastDistance) {
+        handleTouchMove.lastDistance = distance
+      }
+      
+      const scaleChange = distance / handleTouchMove.lastDistance
+      const newScale = Math.max(1.5, Math.min(4, zoomScale * scaleChange))
+      setZoomScale(newScale)
+      handleTouchMove.lastDistance = distance
+    } else if (e.touches.length === 1) {
+      // Handle single touch for panning
+      const touch = e.touches[0]
+      const targetRect = overlayImageRef.current?.getBoundingClientRect()
+      if (!targetRect) return
+      const x = Math.max(0, Math.min(1, (touch.clientX - targetRect.left) / targetRect.width))
+      const y = Math.max(0, Math.min(1, (touch.clientY - targetRect.top) / targetRect.height))
+      setZoomBgPos({ x: x * 100, y: y * 100 })
+    }
+  }, [isZoomOpen, zoomScale])
+
+  const handleTouchEnd = useCallback((e) => {
+    if (!isZoomOpen) return
+    e.preventDefault()
+    handleTouchMove.lastDistance = null
+  }, [isZoomOpen])
+
   return (
     <motion.div
       className="flex flex-col gap-3 sm:gap-4"
@@ -130,7 +184,21 @@ export function ProductGallery({ images, productName }) {
       <div
         ref={mainImageRef}
         className="relative aspect-square overflow-hidden rounded-lg border bg-muted shadow-lg max-h-64 sm:max-h-72 md:max-h-80 w-full cursor-pointer"
-        onClick={() => currentMediaType === 'image' && setIsZoomOpen(true)}
+        onClick={() => {
+          if (currentMediaType === 'image') {
+            setZoomScale(2)
+            setZoomBgPos({ x: 50, y: 50 })
+            setIsZoomOpen(true)
+          }
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault()
+          if (currentMediaType === 'image') {
+            setZoomScale(2)
+            setZoomBgPos({ x: 50, y: 50 })
+            setIsZoomOpen(true)
+          }
+        }}
       >
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
@@ -289,6 +357,9 @@ export function ProductGallery({ images, productName }) {
           aria-modal="true"
           role="dialog"
           onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onClick={() => setIsZoomOpen(false)}
         >
           <div
@@ -299,7 +370,7 @@ export function ProductGallery({ images, productName }) {
               className="absolute inset-0 bg-no-repeat"
               style={{
                 backgroundImage: `url(${currentMedia.url})`,
-                backgroundSize: "200% 200%",
+                backgroundSize: `${zoomScale * 100}% ${zoomScale * 100}%`,
                 backgroundPosition: `${zoomBgPos.x}% ${zoomBgPos.y}%`,
               }}
             />

@@ -10,7 +10,7 @@ import { getWishList, deleteWishList } from "@/callAPI/swap"
 import { getProductById, getImageProducts } from "@/callAPI/products"
 import { decodedToken } from "@/callAPI/utiles"
 import { useTranslations } from "@/lib/use-translations"
-import LoadingSpinner from '@/components/loading-spinner'
+import LoadingSpinner from '@/components/loading/loading-spinner'
 import Image from "next/image"
 // Animation variants
 const containerVariants = {

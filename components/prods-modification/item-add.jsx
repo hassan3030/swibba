@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import {countriesList} from "@/lib/data";
 import { countriesListWithFlags } from "@/lib/countries-data";
-import FlagIcon from "./flag-icon"; 
+import FlagIcon from "@/components/general/flag-icon"; 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -27,7 +27,7 @@ import { useLanguage } from "@/lib/language-provider"
 import {  decodedToken } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
-import LocationMap from "@/components/location-map"
+import LocationMap from "@/components/general/location-map"
 import { set } from "date-fns"
 
 const containerVariants = {

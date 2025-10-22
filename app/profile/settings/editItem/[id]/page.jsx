@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { ItemUpdate } from "@/components/item-update"
+import { ItemUpdate } from "@/components/prods-modification/item-update"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { getProductById } from "@/callAPI/products"

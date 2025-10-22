@@ -1,5 +1,5 @@
 import {  getProducts} from "@/callAPI/products"
-import { ItemsList } from "@/components/items-list";
+import { ItemsList } from "@/components/products/items-list";
 
 const FilterItemsCategoryPage = async ({params}) => {
     const {cat} =  await params ;

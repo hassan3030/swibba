@@ -10,7 +10,7 @@ import { Loader2, Phone, Shield, Check, X, AlertCircle } from "lucide-react"
 import { useTranslations } from "@/lib/use-translations"
 import { useToast } from "@/components/ui/use-toast"
 import { countriesWithFlags, validatePhoneNumber } from "@/lib/countries-data"
-import FlagIcon from "./flag-icon"
+import FlagIcon from "@/components/general/flag-icon" 
 
 const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerified, isVerified = false }) => {
   const { t } = useTranslations()

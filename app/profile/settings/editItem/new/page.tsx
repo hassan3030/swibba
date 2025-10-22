@@ -1,6 +1,6 @@
 "use client"
 
-import { ItemAdd } from "@/components/item-add"
+import { ItemAdd } from "@/components/prods-modification/item-add"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"

@@ -1,13 +1,11 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/use-translations"
-
 import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, RefreshCw } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
@@ -72,6 +70,7 @@ const Messages = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [offerItems, setOfferItems] = useState([])
+  const [unreadCounts, setUnreadCounts] = useState({})
   const { t } = useTranslations()
 
   // Function to fetch offers data
@@ -182,7 +181,21 @@ const Messages = () => {
   // When an offer is selected, fetch partner and messages
   useEffect(() => {
     fetchMessages()
+    // Mark messages as read when conversation is selected
+    if (selectedOffer) {
+      markMessagesAsRead(selectedOffer.id)
+    }
   }, [selectedOffer, myUserId])
+
+  // Mark messages as read (this would need to be implemented in your API)
+  const markMessagesAsRead = async (offerId) => {
+    // This function would call an API to mark messages as read
+    // For now, we'll just update the local state
+    setUnreadCounts(prev => ({
+      ...prev,
+      [offerId]: 0
+    }))
+  }
 
   // Auto-refresh messages every 2 seconds when conversation is selected
   useEffect(() => {
@@ -197,6 +210,34 @@ const Messages = () => {
 
   // Filter offers by partner name
   const filteredOffers = offers.filter((offer) => offer.partner_name?.toLowerCase().includes(searchQuery.toLowerCase()))
+
+  // Calculate unread message counts for each offer
+  const calculateUnreadCounts = async () => {
+    if (!myUserId || offers.length === 0) return
+
+    const counts = {}
+    
+    for (const offer of offers) {
+      try {
+        const msgs = await getMessage(offer.id)
+        const unreadMessages = msgs.data?.filter(msg => 
+          msg.from_user_id !== myUserId && 
+          (!msg.read_at || msg.read_at === null)
+        ) || []
+        
+        counts[offer.id] = unreadMessages.length
+      } catch (error) {
+        counts[offer.id] = 0
+      }
+    }
+    
+    setUnreadCounts(counts)
+  }
+
+  // Update unread counts when offers or messages change
+  useEffect(() => {
+    calculateUnreadCounts()
+  }, [offers, myUserId])
 
   // Handle send message
   const handleSendMessage = async () => {
@@ -253,6 +294,15 @@ const Messages = () => {
               <div className="flex items-center">
                 <MessageCircle className="h-6 w-6 mr-3 text-primary" />
                 <h2 className="text-xl font-bold">{t("Messages") || "Messages"}</h2>
+                {Object.values(unreadCounts).reduce((sum, count) => sum + count, 0) > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] ml-2 right-2 left-2"
+                  >
+                    {Object.values(unreadCounts).reduce((sum, count) => sum + count, 0)}
+                  </motion.div>
+                )}
               </div>
               {isRefreshing && (
                 <motion.div
@@ -284,7 +334,7 @@ const Messages = () => {
             </motion.div>
 
             {/* Offers List */}
-            <ScrollArea className="h-[calc(100vh-200px)]">
+            <ScrollArea className="h-[calc(100vh-200px)] border-t ">
               <motion.div className="space-y-2" variants={containerVariants} initial="hidden" animate="visible">
                 <AnimatePresence mode="popLayout">
                   {filteredOffers.map((offer, index) => (
@@ -297,14 +347,14 @@ const Messages = () => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <Card
-                        className={`cursor-pointer transition-all duration-200 mt-1 mx-1 ${
+                        className={`cursor-pointer transition-all duration-200 mt-1 mx-1 border border-none ${
                           selectedOffer?.id === offer.id ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"
                         }`}
                         onClick={() => setSelectedOffer(offer)}
                       >
                         <CardContent className="p-0 mt-0">
                           <div className="flex items-start space-x-3">
-                            <div className="flex items-center text-sm">
+                            <div className="flex items-center text-sm w-full ">
                               <motion.div
                                 className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 relative"
                                 whileHover={{ scale: 1.1 }}
@@ -326,9 +376,20 @@ const Messages = () => {
                                   </div>
                                 ) : null}
                               </motion.div>
-                              <div className="flex flex-col ml-2">
-                                <span className="px-1 text-gray-400 capitalize">{offer.partner_name || ""}</span>
-                                <span className="px-1 text-gray-400 ">{offer.last_message || ""}</span>
+                              <div className="flex flex-col ml-2 flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <span className="px-1 text-gray-400 capitalize truncate">{offer.partner_name || ""}</span>
+                                  {unreadCounts[offer.id] > 0 && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      className="bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] mx-1"
+                                    >
+                                      {unreadCounts[offer.id] > 99 ? "99+" : unreadCounts[offer.id]}
+                                    </motion.div>
+                                  )}
+                                </div>
+                                <span className="px-1 text-gray-400 truncate">{offer.last_message || ""}</span>
                               </div>
                             </div>
                           </div>

@@ -69,4 +69,5 @@ export const AnimatedCounter = ({ value, duration = 2, className , shape=true}) 
     
     )
   }
-  
+
+  export default AnimatedCounter

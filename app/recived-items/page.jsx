@@ -53,7 +53,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
-import SwapRating from "@/components/reviews"
+import SwapRating from "@/components/reviews/reviews"
 import Image from "next/image"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
@@ -803,6 +803,7 @@ const RecivedItems = () => {
                                       <AnimatePresence>
                                         {chatMessages
                                           .filter((m) => m.offer_id === offer.id)
+                                          .sort((a, b) => new Date(a.date_created) - new Date(b.date_created))
                                           .map((msg, msgIndex) => (
                                             <motion.div
                                               key={msg.id}
@@ -907,9 +908,13 @@ const RecivedItems = () => {
                                     ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userToRate.avatar}`
                                     : "/placeholder.svg"
                                 }
+                                onRatingSubmitted={() => {
+                                  // Refresh the page data when rating is submitted
+                                  getNotifications()
+                                  router.refresh()
+                                }}
                               />
-                            )
-                          })()}
+                            )})()}
                         </motion.div>
                       ) : (
                         <motion.div

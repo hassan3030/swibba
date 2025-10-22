@@ -93,7 +93,7 @@ const successVariants = {
   },
 }
 
-const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  }) => {
+const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, onRatingSubmitted }) => {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [message, setMessage] = useState("")
@@ -187,7 +187,23 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar  
         title: t("Ratingsubmitted") || "Rating submitted",
         description: t("Thankyouforrating") || "Thank you for rating",
       })
+      
+      // Set hasReviewed to true to show success message
+      setHasReviewed(true)
+      
+      // Call the callback function if provided
+      if (onRatingSubmitted) {
+        onRatingSubmitted()
+      }
+      
+      // Refresh the page data
       router.refresh()
+      
+      // Also try window.location.reload() as fallback
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+      
     } catch (error) {
       toast({
         title: t("error") || "Error",

@@ -19,6 +19,8 @@ import Image from "next/image";
       subcategory: "Latest Tech",
       className: "w-64 h-48 top-8 right-16",
       delay: 0,
+      floatPattern: [0, -15, 0],
+      floatDuration: 2.5,
     },
     {
       src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=225",
@@ -27,6 +29,8 @@ import Image from "next/image";
       subcategory: "",
       className: "w-48 h-36 top-32 right-2",
       delay: 0.5,
+      floatPattern: [0, -25, 0],
+      floatDuration: 3.5,
     },
     {
       src: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&h=200",
@@ -35,6 +39,8 @@ import Image from "next/image";
       subcategory: "",
       className: "w-40 h-32 top-56 right-24",
       delay: 1,
+      floatPattern: [0, -20, 0],
+      floatDuration: 4,
     },
   ];
 
@@ -127,43 +133,57 @@ import Image from "next/image";
 
           {/* Floating Images */}
           <div className={`relative hidden lg:block -mt-72 lg:mr-32 `}>
-            <div className="absolute inset-0 bg-transparent">
+            <div className="absolute inset-0 bg-transparent rounded-2xl">
               {heroImages.map((image, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 50 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{
-                    duration: 0.8,
+                    duration: 1,
                     delay: image.delay,
                     ease: "easeOut",
                   }}
-                  className={`absolute ${image.className} bg-transparent rounded-2xl  overflow-hidden group cursor-pointer`}
+                  className={`absolute ${image.className} bg-transparent rounded-2xl  group cursor-pointer`}
                 >
                   <motion.div
-                    variants={floatingAnimation}
-                    animate="animate"
-                    style={{ animationDelay: `${image.delay}s` }}
-                    whileHover={{ 
-                      scale: 1.05,
-                      transition: { duration: 0.3 }
+                    animate={{
+                      y: image.floatPattern,
                     }}
-                    className="relative w-full h-full"
+                    transition={{
+                      duration: image.floatDuration,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: image.delay
+                    }}
+                    whileHover={{ 
+                      // scale: 1.08,
+                      y: -15,
+                      transition: { 
+                        duration: 0.4,
+                        ease: "easeOut"
+                      }
+                    }}
+                    whileTap={{
+                      // scale: 0.95,
+                      transition: { duration: 0.1 }
+                    }}
+                    className="relative w-full h-full rounded-2xl "
                   >
                     <Image 
                       src={image.src}
                       width={100}
                       height={100}
                       alt={image.alt}
-                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 rounded-2xl"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl transition-all duration-700 ease-out group-hover:scale-110" />
                     <div className="absolute bottom-4 left-4 text-white">
                       <motion.p
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: image.delay + 0.5 }}
-                        className="text-sm font-medium"
+                        className="text-sm font-medium transition-all duration-500 ease-out group-hover:scale-105"
                       >
                         {image.category}
                       </motion.p>
@@ -172,7 +192,7 @@ import Image from "next/image";
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: image.delay + 0.7 }}
-                          className="text-xs opacity-80"
+                          className="text-xs opacity-80 transition-all duration-500 ease-out group-hover:scale-105"
                         >
                           {image.subcategory}
                         </motion.p>

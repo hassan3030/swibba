@@ -1,9 +1,9 @@
 import { Inter , Cairo } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { MobileHeader } from "@/components/mobile-header"
-import { MobileFooter } from "@/components/mobile-footer"
+import { Header } from "@/components/general/header"
+import { Footer } from "@/components/general/footer"
+import { MobileHeader } from "@/components/general/mobile-header"
+import { MobileFooter } from "@/components/general/mobile-footer"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { LanguageProvider } from "@/lib/language-provider"
 import { headers } from "next/headers";

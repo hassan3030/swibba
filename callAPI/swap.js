@@ -1,6 +1,6 @@
 import axios from "axios"
-import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
-import { getUserByProductId } from "./users.js"
+import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest, decodedToken, getCookie } from "./utiles.js"
+import { getUserById, getUserByProductId } from "./users.js"
  
 
 // ========================= OFFERS MANAGEMENT =========================
@@ -381,6 +381,48 @@ export const acceptedOfferById = async (id_offer) => {
   }
 }
 
+// Add completed offer to user's completedSwaps count
+export const addCompletedOfferToUser = async () => {
+  try {
+    let currentCompletedSwaps = 0
+    const decoded = await decodedToken()
+    const token = await getCookie()
+    if (!decoded?.id || !token) {
+      throw new Error("Authentication required")
+    }
+    const currentUser = await getUserById(decoded.id)
+    if (currentUser.success) {
+      console.log("currentUser.data.completedSwaps : " , currentUser)
+    currentCompletedSwaps = Number(currentUser.data.completedSwaps) || 0
+    }
+
+
+// update user's completedSwaps count
+    const response = await axios.patch(`${baseURL}/users/${decoded.id}`, {
+      completedSwaps: Number(currentCompletedSwaps) + 1,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+      })
+
+          return {
+        success: true,
+        data: {
+          userId: decoded.id,
+          previousCount: currentCompletedSwaps,
+          newCount: currentCompletedSwaps + 1,
+
+        },
+        message: "Completed swaps count updated successfully",
+      }
+    
+  } catch (error) {
+    return handleApiError(error, "Add Completed Offer To User")
+  }
+}
+
 // Complete offer by ID
 export const completedOfferById = async (id_offer) => {
   try {
@@ -452,6 +494,10 @@ export const completedOfferById = async (id_offer) => {
             })
 
       console.log("Offer completed successfully, ID:", id_offer)
+      
+      // Add completed offer to user's completedSwaps count
+        await addCompletedOfferToUser()
+      
       return {
         success: true,
         data: {
@@ -462,6 +508,7 @@ export const completedOfferById = async (id_offer) => {
         message: "Offer completed successfully",
       }
     })
+   
   } catch (error) {
     return handleApiError(error, "Complete Offer By ID")
   }

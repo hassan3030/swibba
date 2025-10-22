@@ -34,7 +34,9 @@ import {
   CircleDot,
   Verified,
   Play,
-  Camera
+  Camera,
+  MapPin,
+  ArrowRightLeft
 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -47,7 +49,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog"
-import SwapRating from "@/components/reviews"
+import SwapRating from "@/components/reviews/reviews"
 import Image from "next/image"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
@@ -642,94 +644,16 @@ const SendItems = () => {
                         </Button>
                       </div>
                       <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5 pb-4 pt-9">
-                        {!["rejected", "completed"].includes(offer.status_offer) && (
+                        {/* Top Section: User Info & Status Badge */}
+                        <div className="flex items-center justify-between gap-4 mb-4">
                           <motion.div
-                            className="text-right"
-                            initial={{ opacity: 0, x: 20 }}
+                            className="flex items-center gap-3"
+                            initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 }}
                           >
-                            <div className="text-sm text-muted-foreground">
-                              {t("Myitems") || "My items"} :{" "}
-                              {
-                                itemsOffer.filter((u) => u.offered_by === offer.from_user_id && u.offer_id === offer.id)
-                                  .reduce((sum, item) => sum + (item.quantity || 1), 0)
-                              }{" "}
-                              | {t("Theiritems") || "Their items"}:{" "}
-                              {
-                                itemsOffer.filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id)
-                                  .reduce((sum, item) => sum + (item.quantity || 1), 0)
-                              }
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1 md:mt-0 flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {offer.date_created ? new Date(offer.date_created).toLocaleString('en-US') : ""}
-                            </div>
-
-                                                        <div
-
-                                                          className={`text-xs mt-1 flex items-center gap-1 ${offer.cash_adjustment ? handlePriceDifference(offer.from_user_id, offer.cash_adjustment).colorClass : ""}`}
-
-                                                        >
-
-                                                          <Scale className="w-3 h-3" />
-
-                                                          {offer.cash_adjustment
-
-                                                            ? ` ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}`
-
-                                                            : ""}
-
-                                                        </div>
-
-                            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 capitalize">
-                              <CircleDot className="w-3 h-3" />
-                              {t("Offerstate") || "Offer state"} : {t(offer.status_offer)}
-                            </div>
-                           
-                          </motion.div>
-                        )}
-                      </CardHeader>
-                      
-                      <CardContent>
-                        {["pending", "accepted"].includes(offer.status_offer) ? (
-                          
-                          <>
-                            {/* My Items */}
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.2 }}
-                            >
-                              <h4 className="font-semibold mb-2">{t("Myitems") || "My items"}</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                                {swapItems
-                                  .filter((u) => u.offered_by === offer.from_user_id && u.offer_id === offer.id)
-                                  .map((item, itemIndex) => (
-                                    <motion.div
-                                      key={item.id}
-                                      initial={{ opacity: 0, scale: 0.9 }}
-                                      animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ delay: itemIndex * 0.1 }}
-                                    >
-                                      <CardItemSend
-                                        {...item}
-                                        deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
-                                      />
-                                    </motion.div>
-                                  ))}
-                              </div>
-                            </motion.div>
-
-                            {/* Their Items */}
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.3 }}
-                            >
-                               <div className="flex items-center gap-3 my-2 md:mt-0">
-                            <div className="relative">
-                              <Avatar className="h-10 w-10 border">
+                            <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="relative">
+                              <Avatar className="h-14 w-14 border-2 border-primary shadow-md">
                                 <AvatarImage
                                   src={
                                     `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
@@ -741,39 +665,189 @@ const SendItems = () => {
                                   }
                                 />
                                 <AvatarFallback>
-                                  {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
+                                  {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] ||
+                                    t("User") ||
+                                    "U"}
                                 </AvatarFallback>
                               </Avatar>
                               {(userSwaps.find((u) => u.id === offer.to_user_id)?.verified === "true" || userSwaps.find((u) => u.id === offer.to_user_id)?.verified === true) && (
-                                <div className="absolute -top-1 -right-1">
-                                  <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
+                                <div className="absolute -bottom-1 -right-1">
+                                  <Verified className="h-5 w-5 text-primary bg-background rounded-full p-0.5 border-2 border-background shadow-sm" />
                                 </div>
                               )}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-base capitalize">
-                                {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).slice(0, 10)) )|| t("account")} `}
+                            </motion.div>
+
+                            <div className="flex-1">
+                              <div className="font-bold text-lg">
+                                {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).slice(0, 10)) )|| t("account")} 
+                               `}
                               </div>
-                            </div>                            
-                          </div>
-                          {/* <Separator/> */}
-                              {/* <h4 className="font-semibold mb-2">{t("Theiritems") || "Their Items"}</h4> */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                                {swapItems
-                                  .filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id)
-                                  .map((item, itemIndex) => (
-                                    <motion.div
-                                      key={item.id}
-                                      initial={{ opacity: 0, scale: 0.9 }}
-                                      animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ delay: itemIndex * 0.1 }}
-                                    >
-                                      <CardItemSend
-                                        {...item}
-                                        deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
-                                      />
-                                    </motion.div>
-                                  ))}
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                <MapPin className="h-3 w-3" />
+                                <span className="line-clamp-1">
+                                  {`${userSwaps.find((u) => u.id === offer.to_user_id)?.country||''} ${
+                                    userSwaps.find((u) => u.id === offer.to_user_id)?.city||''
+                                  } ${userSwaps.find((u) => u.id === offer.to_user_id)?.street||''}`}
+                                  {`${userSwaps.find((u) => u.id === offer.to_user_id)?.country &&
+                                    userSwaps.find((u) => u.id === offer.to_user_id)?.city &&
+                                    userSwaps.find((u) => u.id === offer.to_user_id)?.street? "": `${t("noAddress") || "No address"}`
+                                  }`}
+                                </span>
+                              </div>
+                            </div>
+                          </motion.div>
+
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.1 + 0.2 }}
+                          >
+                            <Badge 
+                              className={`${getStatusColor(offer.status_offer)} text-white px-4 py-2 text-sm font-semibold capitalize shadow-md`}
+                            >
+                              {t(offer.status_offer)}
+                            </Badge>
+                          </motion.div>
+                        </div>
+
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <motion.div
+                            className="bg-background/60 backdrop-blur-sm rounded-lg p-3"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 + 0.1 }}
+                          >
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                              <Calendar className="w-3 h-3" />
+                              <span>{t("Date") || "Date"}</span>
+                            </div>
+                            <div className="text-sm font-medium">
+                              {offer.date_created ? new Date(offer.date_created).toLocaleDateString('en-US') : ""}
+                            </div>
+                          </motion.div>
+
+                          {offer.status_offer !== 'completed' && offer.status_offer !== 'rejected' && (
+                            <motion.div
+                              className="bg-background/60 backdrop-blur-sm rounded-lg p-3"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 + 0.2 }}
+                            >
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                                <ArrowRightLeft className="w-3 h-3" />
+                                <span>{t("Items") || "Items"}</span>
+                              </div>
+                              
+                              <div className="text-sm font-medium">
+                                {itemsOffer.filter((u) => u.offered_by === offer.from_user_id && u.offer_id === offer.id).reduce((sum, item) => sum + (item.quantity || 1), 0)} ↔️ {itemsOffer.filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id).reduce((sum, item) => sum + (item.quantity || 1), 0)}
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {offer.cash_adjustment && (
+                            <motion.div
+                              className="bg-background/60 backdrop-blur-sm rounded-lg p-3 col-span-2"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 + 0.3 }}
+                            >
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                                <Scale className="w-3 h-3" />
+                                <span>{t("CashAdjustment") || "Cash Adjustment"}</span>
+                              </div>
+                              <div className={`text-sm font-bold ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment).colorClass}`}>
+                                {handlePriceDifference(offer.from_user_id, offer.cash_adjustment).text}
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent>
+                        {["pending", "accepted"].includes(offer.status_offer) ? (
+                          <>
+                            <motion.div
+                              className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 mb-6"
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 }}
+                            >
+                              {/* My Items */}
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <span className="text-sm font-bold text-primary">{swapItems.filter((u) => u.offered_by === offer.from_user_id && u.offer_id === offer.id).reduce((sum, item) => sum + (item.quantity || 1), 0)}</span>
+                                  </div>
+                                  <h4 className="font-bold text-lg text-start">{t("Myitems") || "My items"}</h4>
+                                </div>
+                                <div className="space-y-3">
+                                  {swapItems
+                                    .filter((u) => u.offered_by === offer.from_user_id && u.offer_id === offer.id)
+                                    .map((item, itemIndex) => (
+                                      <motion.div
+                                        key={item.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: itemIndex * 0.1 }}
+                                      >
+                                        <CardItemSend
+                                          {...item}
+                                          deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
+                                        />
+                                      </motion.div>
+                                    ))}
+                                </div>
+                              </div>
+
+                              {/* Swap Arrow */}
+                              <div className="hidden lg:flex flex-col items-center justify-center py-8">
+                                <motion.div
+                                  className="flex flex-col items-center gap-3"
+                                  animate={{ scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                                >
+                                  <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
+                                    <ArrowRightLeft className="h-6 w-6 text-white" />
+                                  </div>
+                                  <span className="text-xs font-medium text-muted-foreground">{t("Exchange") || "Exchange"}</span>
+                                </motion.div>
+                              </div>
+
+                              {/* Mobile Divider */}
+                              <div className="lg:hidden flex items-center gap-3 my-4">
+                                <Separator className="flex-1" />
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
+                                  <ArrowRightLeft className="h-5 w-5 text-white" />
+                                </div>
+                                <Separator className="flex-1" />
+                              </div>
+
+                              {/* Their Items */}
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                                    <span className="text-sm font-bold text-accent">{swapItems.filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id).reduce((sum, item) => sum + (item.quantity || 1), 0)}</span>
+                                  </div>
+                                  <h4 className="font-bold text-lg text-start">{t("Theiritems") || "Their Items"}</h4>
+                                </div>
+                                <div className="space-y-3">
+                                  {swapItems
+                                    .filter((u) => u.offered_by !== offer.from_user_id && u.offer_id === offer.id)
+                                    .map((item, itemIndex) => (
+                                      <motion.div
+                                        key={item.id}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: itemIndex * 0.1 }}
+                                      >
+                                        <CardItemSend
+                                          {...item}
+                                          deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
+                                        />
+                                      </motion.div>
+                                    ))}
+                                </div>
                               </div>
                             </motion.div>
                           </>
@@ -797,19 +871,16 @@ const SendItems = () => {
                             <p className="text-muted-foreground mb-4">
                               {t("Thankyouforcompletingtheswap") || "Thank you for completing the swap!"}
                             </p>
-
                             <p className="text-muted-foreground mb-4">
                               {t("Contactphone") || "Contact phone"}: {(() => {
                                 const userToContact =
                                   userSwaps.find(
                                     (u) =>
-                                      u.id ===
-                                      (myUserId === offer.from_user_id ? offer.to_user_id : offer.from_user_id),
+                                      u.id === (myUserId === offer.from_user_id ? offer.to_user_id : offer.from_user_id),
                                   ) || {}
                                 return userToContact.phone_number || t("Nophoneavailable") || "No phone available"
                               })()}
                             </p>
-
                             {(() => {
                               const userToRate =
                                 userSwaps.find(
@@ -822,9 +893,8 @@ const SendItems = () => {
                                   from_user_id={myUserId}
                                   to_user_id={userToRate.id}
                                   offer_id={offer.id}
-                                  userName={ 
-                                    `${(String(userToRate.first_name).length <= 11 ? (String(userToRate.first_name)) : (String(userToRate.first_name).slice(0, 10)) )|| t("account")} 
-                                    ${(String(userToRate.last_name).length <= 11 ? (String(userToRate.last_name)) : (String(userToRate.last_name).slice(0, 10)) )|| ""}`.trim()
+                                  userName={`${(String(userToRate.first_name).length <= 11 ? (String(userToRate.first_name)) : (String(userToRate.first_name).slice(0, 10)) )|| t("account")} 
+                                  ${(String(userToRate.last_name).length <= 11 ? (String(userToRate.last_name)) : (String(userToRate.last_name).slice(0, 10)) )|| ""}`.trim()
                                   }
                                   userAvatar={
                                     userToRate.avatar
@@ -832,13 +902,11 @@ const SendItems = () => {
                                       : "/placeholder.svg"
                                   }
                                 />
-                              )
-                            })()}
+                              )})()}
                           </motion.div>
                         ) : (
-                         
                           <motion.div
-                            className="text-center text-destructive"
+                            className="text-center text-destructive" 
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -848,71 +916,29 @@ const SendItems = () => {
                               animate={{ scale: 1 }}
                               transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
                             >
-                              <Trash2 className="h-8 w-8 mx-auto mb-2 hover:scale-110  cursor-pointer rounded"  />
+                              <Trash2 className="h-8 w-8 mx-auto my-2 hover:scale-110 cursor-pointer" />
                             </motion.div>
                             <h3 className="text-xl font-semibold mb-2">{t("SwapRejected") || "Swap Rejected"}</h3>
                             <p className="text-muted-foreground mb-4">
                               {t("Theswapwasrejectedbyyou") || "The swap was rejected by you."}
                             </p>
-                            
-                            {/* User Avatar for Rejected Offer */}
-                            <div className="flex items-center justify-center gap-3 mt-4">
-                              <div className="relative">
-                                <Avatar className="h-12 w-12 border-2 border-destructive">
-                                  <AvatarImage
-                                    src={
-                                      `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
-                                        userSwaps.find((u) => u.id === offer.to_user_id)?.avatar || "/placeholder.svg"
-                                      }` || "/placeholder.svg"
-                                    }
-                                    alt={
-                                      userSwaps.find((u) => u.id === offer.to_user_id)?.first_name || t("User") || "User"
-                                    }
-                                  />
-                                  <AvatarFallback>
-                                    {userSwaps.find((u) => u.id === offer.to_user_id)?.first_name?.[0] || "U"}
-                                  </AvatarFallback>
-                                </Avatar>
-                                {(userSwaps.find((u) => u.id === offer.to_user_id)?.verified === "true" || userSwaps.find((u) => u.id === offer.to_user_id)?.verified === true) && (
-                                  <div className="absolute -top-1 -right-1">
-                                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="text-center">
-                              <div className="text-xs text-muted-foreground">
-                                  {t("rejectedBy") || "Rejected by"}
-                                </div>
-                                <div className="font-semibold text-sm">
-                                  {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.first_name).slice(0, 10)) )|| t("account")} `}
-                                  {`${(String(userSwaps.find((u) => u.id === offer.to_user_id)?.last_name).length <= 11 ? (String(userSwaps.find((u) => u.id === offer.to_user_id)?.last_name)) : (String(userSwaps.find((u) => u.id === offer.to_user_id)?.last_name).slice(0, 10)) )|| ""}`.trim()}
-                                </div>
-                               
-                              </div>
-                            </div>
                           </motion.div>
                         )}
 
                         <Separator className="my-4" />
 
-                        <motion.div
-                          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-6 border-t pt-4"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
-                        >
-                         
-                         
-
-                          {offer.status_offer === "pending" ? (
-                            <motion.div
-                              className="flex items-center text-sm mt-2 md:mt-0"
-                              variants={buttonVariants}
-                              whileHover="hover"
-                              whileTap="tap"
-                            >
-                              <span
-                                className="text-muted-foreground text-red-600 hover:scale-110 cursor-pointer flex items-center gap-1"
+                        {/* Action Buttons */}
+                        {offer.status_offer === "pending" && (
+                          <motion.div
+                            className="flex justify-around gap-2 mt-4"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                          >
+                            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                              <Button
+                                variant="destructive"
+                                size="sm"
                                 onClick={() => {
                                   setPendingDelete({
                                     idItem: null,
@@ -921,20 +947,23 @@ const SendItems = () => {
                                   })
                                   setShowDeleteDialog(true)
                                 }}
+                                className="flex items-center gap-1"
                               >
-                                <Trash2 className="inline h-4 w-4 align-middle mr-1" />
+                                <Trash2 className="h-4 w-4" />
                                 {t("DeleteSwap") || "Delete Swap"}
-                              </span>
+                              </Button>
                             </motion.div>
-                          ) : null}
+                          </motion.div>
+                        )}
 
-                          {offer.status_offer === "accepted" ? (
-                            <motion.div
-                              className="flex items-center text-sm mt-2 md:mt-0"
-                              variants={buttonVariants}
-                              whileHover="hover"
-                              whileTap="tap"
-                            >
+                        {offer.status_offer === "accepted" && (
+                          <motion.div
+                            className="flex justify-around gap-2 mt-4"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                          >
+                            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                               <Button
                                 size="sm"
                                 onClick={() => {
@@ -950,8 +979,8 @@ const SendItems = () => {
                                 {t("CompleteSwap") || "Complete Swap"}
                               </Button>
                             </motion.div>
-                          ) : null}
-                        </motion.div>
+                          </motion.div>
+                        )}
                       </CardContent>
                     </Card>
                     

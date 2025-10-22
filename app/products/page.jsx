@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { getProducts } from "@/callAPI/products"
 import { getCookie } from "@/callAPI/utiles"
-import { ItemsList } from "@/components/items-list"
+import { ItemsList } from "@/components/products/items-list"
 
 const containerVariants = {
   hidden: { opacity: 0 },

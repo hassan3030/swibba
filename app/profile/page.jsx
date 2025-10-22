@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { ItemsList } from "@/components/items-list"
+import { ItemsList } from "@/components/products/items-list"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -454,13 +454,13 @@ export default function ProfilePage() {
                     >
                       <Link href={`profile/settings/editProfile`}>{t("editProfile") || "Edit Profile"}</Link>
                     </Button>
-                    <Button
+                    {/* <Button
                       variant="outline"
                       className="w-full mt-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground border-0 hover:from-secondary hover:to-accent shadow-lg hover:shadow-xl transition-all duration-300"
                       asChild
                     >
                       <Link href={`/payment`}>{t("payment") || "Payment"}</Link>
-                    </Button>
+                    </Button> */}
                   </motion.div>
                 </div>
               </CardContent>

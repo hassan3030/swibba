@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
-import { CategoryCard } from "@/components/category-card"
+import { CategoryCard } from "@/components/products/category-card"
 import { categories } from "@/lib/data"
 
 const containerVariants = {

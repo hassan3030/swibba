@@ -1,7 +1,7 @@
 "use client"
 import { motion } from "framer-motion"
-import { getProductSearchFilter, getProducts } from "@/callAPI/products"
-import { ItemsList } from "@/components/items-list"
+import {  getProducts } from "@/callAPI/products"
+import { ItemsList } from "@/components/products/items-list"
 import { useState, useEffect } from "react"
 
 const containerVariants = {

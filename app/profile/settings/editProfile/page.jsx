@@ -398,10 +398,6 @@ please return ONLY a JSON response in this format:
         }
       }));
 
-      toast({
-        title: t("translationComplete") || "Translation complete",
-        description: t("arabicFieldsUpdated") || "The Arabic fields have been updated with the AI translation.",
-      });
 
     } catch (error) {
       console.error("Error getting AI translation:", error);
@@ -608,7 +604,7 @@ please return ONLY a JSON response in this format:
 
         toast({
           title: t("CurrentLocationFound") || "Current location found",
-          description: `Lat: ${pos.lat.toFixed(6)}, Lng: ${pos.lng.toFixed(6)}`,
+          description: `${t("Latitude")}: ${pos.lat.toFixed(6)}, ${t("Longitude")}: ${pos.lng.toFixed(6)}`,
         })
       },
       (error) => {

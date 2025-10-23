@@ -12,7 +12,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/use-translations"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
 import { getProductByUserId, getProductById } from "@/callAPI/products"
-import { getOfferById, getOfferItemsByOfferId, getOffeReceived, getReview } from "@/callAPI/swap"
+import { getOfferById, getOfferItemsByOfferId, getOffeReceived, getReview , getCompletedOffer} from "@/callAPI/swap"
 import { decodedToken, getCookie, validateAuth } from "@/callAPI/utiles"
 import RecivedItems from "@/app/recived-items/page"
 import SendItems from "@/app/send-items/page"
@@ -149,13 +149,28 @@ export default function ProfilePage() {
   const [full_name, setFullName] = useState("")
   const [userOffers, setUserOffers] = useState([])
   const [sentOffersCount, setSentOffersCount] = useState(0)
-  const [notificationsLength, setNotificationsLength] = useState(0)
+  const [recievedOffers, setrecievedOffers] = useState(0)
   const [myAvailableItems, setmyAvailableItems] = useState([])
   const [myUnavailableItems, setmyUnavailableItems] = useState([])
   const [userSwaps, setUserSwaps] = useState([])
   const [swapItems, setSwapItems] = useState([])
   const [showSwitchHeart, setShowSwitchHeart] = useState(false)
-  
+  const [completedOffersCount, setCompletedOffersCount] = useState(0)
+
+  const getCompletedOffers = async () => {
+    try {
+      const decoded = await decodedToken()
+      const completedOffers = await getCompletedOffer(decoded.id)
+      if (completedOffers.success) {
+        setCompletedOffersCount(completedOffers.count)
+      } else {
+        setCompletedOffersCount(0)
+      }
+    } catch (error) {
+      console.error("Error fetching completed offers:", error)
+      setCompletedOffersCount(0)
+    }
+  }
   const getUser = async () => {
     const token = await getCookie()
     if (token) {
@@ -221,7 +236,7 @@ export default function ProfilePage() {
     return productsData
   }
 
-  const getNotificationsLength = async () => {
+  const getrecievedOffers = async () => {
     try {
       const { userId } = await validateAuth()
       const notifications = await getOffeReceived(userId)
@@ -229,13 +244,13 @@ export default function ProfilePage() {
         const filteredOffers = notifications.data.filter(
           (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
         );
-        setNotificationsLength(filteredOffers.length);
+        setrecievedOffers(filteredOffers.length);
       } else {
-        setNotificationsLength(0);
+        setrecievedOffers(0);
       }
     } catch (error) {
       //  console.error("Error fetching notifications:", error)
-      setNotificationsLength(0)
+      setrecievedOffers(0)
     }
   }
 
@@ -293,7 +308,8 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    getNotificationsLength()
+    getCompletedOffers()
+    getrecievedOffers()
     getUser()
     getOffers()
     setFullName(`${user?.first_name || ""} ${user?.last_name || ""}`.trim())
@@ -432,7 +448,7 @@ export default function ProfilePage() {
                     className="flex items-center gap-2 text-sm p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
                     variants={statsVariants}
                     whileHover="hover"
-                  >
+                  > 
                     <motion.div
                       animate={{ x: [-2, 2, -2] }}
                       transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
@@ -440,9 +456,11 @@ export default function ProfilePage() {
                       <ArrowLeftRight className="h-4 w-4 text-primary" />
                     </motion.div>
                     <span className="font-medium">
-                      {!user?.completedSwaps || user?.completedSwaps === 0
+                      {!completedOffersCount || completedOffersCount === 0
                         ? (t("noCompletedSwaps") || "No completed swaps")
-                        : `${user?.completedSwaps || 0} ${t("completedSwaps") || "Completed swaps"}`}
+                        : completedOffersCount > 1000
+                        ? (t("moreThan1000CompletedSwaps") || "More than 1000 completed swaps")
+                        : `${completedOffersCount || 0} ${t("completedSwaps") || "Completed swaps"}`}
                     </span>
                   </motion.div>
 
@@ -487,7 +505,7 @@ export default function ProfilePage() {
                       value: "recivedOffers",
                       icon: BiCartDownload,
                       label: t("recivedOffers") || "Recived Offers",
-                      count: notificationsLength,
+                      count: recievedOffers,
                     },
                   ].map((tab, index) => (
                     <TooltipProvider key={tab.value} >

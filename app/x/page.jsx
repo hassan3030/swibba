@@ -1,11 +1,19 @@
 "use client"
 import { useEffect } from "react"
-import { addCompletedOfferToUser } from "@/callAPI/swap"
+import { addCompletedOfferToUser , getCompletedOffer} from "@/callAPI/swap"
 import { Button } from "@/components/ui/button"
+import { decodedToken } from "@/callAPI/utiles"
 
 export default function XPage() {
+
+  const getCompletedOffers = async () => {
+    const decoded = await decodedToken()
+    const completedOffers = await getCompletedOffer(decoded.id)
+    console.log("completed offers : " , completedOffers)
+  }
   useEffect(() => {
-   
+
+  getCompletedOffers()
   }, [])
 
   const addCompletedOfferToUsers = async () => {

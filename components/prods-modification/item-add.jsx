@@ -378,10 +378,6 @@ else{
       jsonString = jsonString.trim()
       
       const jsonObject = JSON.parse(jsonString)
-      // console.log("Parsed AI Response:", jsonObject)
-      // console.log("Estimated Price:", jsonObject.estimated_price)
-      // console.log("Name Translations:", jsonObject.name_translations)
-      // console.log("Description Translations:", jsonObject.description_translations)
       
       // Validate the parsed response
       if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {

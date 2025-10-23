@@ -1,6 +1,7 @@
 export const translations = {
   en  :{
 
+    moreThan1000CompletedSwaps: "More 1000 completed swaps",
  
 "AI response format error. The AI returned invalid JSON format.": "AI response format error. The AI returned invalid JSON format.",
   "AI service is currently unavailable. All retry attempts failed. Please try again later.": "AI service is currently unavailable. All retry attempts failed. Please try again later.",
@@ -1153,7 +1154,7 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
-    
+    moreThan1000CompletedSwaps: "أكثر من 1000 مبادلة",
 "AI response format error. The AI returned invalid JSON format.": "خطأ في تنسيق الاستجابة من الذكاء الاصطناعي. أعاد الذكاء الاصطناعي تنسيق JSON غير صالح.",
 "AI service is currently unavailable. All retry attempts failed. Please try again later.": "خطأ في الخدمة الحالية. لم ينجح أي محاولة اعادة. يرجى المحاولة مرة أخرى لاحقا.",
 "AI returned invalid price estimation. Please enter your own estimate.": "تم إرجاع تقدير سعر غير صالح من الذكاء الاصطناعي. يرجى إدخال تقديرك الخاص." ,

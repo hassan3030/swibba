@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, RefreshCw } from "lucide-react"
+import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, Map, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { getImageProducts } from "@/callAPI/products"
@@ -25,8 +25,8 @@ import { updateProduct } from "@/callAPI/products"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
 import LocationMap from "@/components/general/location-map"
-// import {  decodedToken } from "@/callAPI/utiles"
-// import { getUserById } from "@/callAPI/users"
+import {  decodedToken } from "@/callAPI/utiles"
+import { getUserById } from "@/callAPI/users"
 
 // Animation variants
 const containerVariants = {
@@ -149,12 +149,37 @@ export function ItemUpdate(props) {
 //AI chat
   const [aiResponse, setAiResponse] = useState(null)
   const [isAiProcessing, setIsAiProcessing] = useState(false)
-  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
+  const [aiSystemPrompt, setAiSystemPrompt] = useState("You are an expert product appraiser and translator that analyzes both text descriptions and visual images to provide accurate price estimations. You can identify products, assess their condition from photos, and provide realistic market valuations. You also provide high-quality translations between Arabic and English. For location translations, use the actual city and street names provided by the user, not generic terms like 'Current Location'. IMPORTANT: Respond ONLY with valid JSON - no markdown, no code blocks, no extra text, just the JSON object.")
   const [aiReply, setAiReply] = useState(null)
   const [aiInput, setAiInput] = useState("")
   const [user, setUser] = useState()
   const [originalTranslations, setOriginalTranslations] = useState(null)
   const { isRTL, toggleLanguage } = useLanguage()
+
+  // Auto-refresh map every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsMapRefreshing(true)
+      // Simulate map refresh
+      setTimeout(() => {
+        setIsMapRefreshing(false)
+      }, 500)
+    }, 2000) // 2 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const getUser = async () => {
+    const decoded = await decodedToken()
+    if (decoded) {
+      const user = await getUserById(decoded.id)
+      setUser(user.data)
+    }
+  }
+
+  useEffect(() => {
+    getUser()
+  }, [isRTL])
 
 
   const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
@@ -584,8 +609,8 @@ export function ItemUpdate(props) {
           title: t("successfully") || "Successfully",
           description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`, 
         })
-        // Optionally redirect or close the form
-        // router.push('/profile/items')
+        // Redirect to profile items page
+        router.push('/profile/items')
       } else {
         throw new Error(updateItem.error || "Failed to update item")
       }
@@ -608,9 +633,8 @@ export function ItemUpdate(props) {
     try {
       // Check if all required fields are filled
       if (!name || !description || !category || !status_item || !price || 
-          !geoLocation || Object.keys(geoLocation).length === 0 
-          // || !images || images.length === 0
-        ) {
+          !geoLocation || Object.keys(geoLocation).length === 0 || 
+          !images || images.length === 0) {
         toast({
           title: t("error") || "ERROR ",
           description:
@@ -621,31 +645,29 @@ export function ItemUpdate(props) {
         return
       }
 else{
-      // Prepare image URLs for AI analysis
-      const allImageUrls = [
-        ...existingImages.map(img => img.url),
-        ...imageUrls
-      ].filter(url => url && url !== "/placeholder.svg");
+      // Get location context for AI
+      const locationContext = geoLocation && geoLocation.lat && geoLocation.lng 
+        ? `Coordinates: ${geoLocation.lat.toFixed(6)}, ${geoLocation.lng.toFixed(6)} (${geoLocation.name || 'User Location'})`
+        : 'Location: Not specified';
       
-      const imageContext = allImageUrls.length > 0 
-        ? `\n\nIMAGES PROVIDED: ${allImageUrls.length} images are available for analysis. Please examine these images carefully to assess the visual condition, brand identification, and quality of the item.`
-        : `\n\nNOTE: No images are currently available for visual analysis. Please provide a price estimation based on the text description only.`;
-
-      setAiInput(`Please analyze the provided images along with the following item details to provide an accurate price estimation:
+      // Build the AI input message directly instead of using state
+      const aiInputMessage = `Please analyze the provided images along with the following item details to provide an accurate price estimation:
         Item Details:
         - Name: ${name}
         - Description: ${description}
-        - Location: ${JSON.stringify(geoLocation)}
+        - Location: ${locationContext}
+        - User Location Details: Country: ${form.getValues('country')}, City: ${form.getValues('city')}, Street: ${form.getValues('street')}
         - Category: ${category}
         - Base Price Reference: ${price} EGP
         - Condition: ${status_item}
-        ${imageContext}
         
         Please examine the uploaded images carefully and provide:
         1. Visual condition assessment based on the images
         2. Brand/model identification if visible
         3. Quality and wear analysis from the images
         4. Market value estimation considering visual condition
+        
+        For location translations, please provide proper location names based on the user's country, city, and street information provided above. Do not use generic terms like "Current Location".
         
         please return ONLY a JSON response in this format:
         {
@@ -654,72 +676,73 @@ else{
         "description_translations": { "en": "...", "ar": "..." },
         "city_translations": { "en": "...", "ar": "..." },
         "street_translations": { "en": "...", "ar": "..." }
-        }`)
-          
+        }`
+      
+      // Set the state for display purposes
+      setAiInput(aiInputMessage)
       setIsEstimating(true)
-    // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
-    const aiResponse = await sendMessage(aiInput, aiSystemPrompt, 3, 1000)
-    
-    // Check if AI request was successful
-    if (!aiResponse.success) {
-      throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts")
-    }
-    
-    let jsonString = aiResponse.text
-    
-    // Extract JSON from markdown code blocks if present
-    const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonString = jsonMatch[1]
-    }
-    
-    // Clean up any remaining markdown or extra characters
-    jsonString = jsonString.trim()
-    
-    const jsonObject = JSON.parse(jsonString)
-    // console.log("Parsed AI Response:", jsonObject)
-    // console.log("Estimated Price:", jsonObject.estimated_price)
-    // console.log("Name Translations:", jsonObject.name_translations)
-    // console.log("Description Translations:", jsonObject.description_translations)
-    
-    // Validate the parsed response
-    if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
-      throw new Error("AI returned invalid price estimation")
-    }
-    
-    setAiResponse(jsonObject)
-    setAiPriceEstimation(jsonObject.estimated_price)
-    // Compare and optionally apply AI translations to form
-    const current = form.getValues()
-    const proposed = {
-      name: jsonObject?.name_translations?.[!isRTL ? 'en' : 'ar'] ?? current.name,
-      description: jsonObject?.description_translations?.[!isRTL ? 'en' : 'ar'] ?? current.description,
-      city: jsonObject?.city_translations?.[!isRTL ? 'en' : 'ar'] ?? current.city,
-      street: jsonObject?.street_translations?.[!isRTL ? 'en' : 'ar'] ?? current.street,
-    }
-    const changedFields = []
-    ;(['name','description','city','street']).forEach((key) => {
-      if (proposed[key] && proposed[key] !== current[key]) {
-        form.setValue(key, proposed[key])
-        changedFields.push(key)
+      
+      // Use enhanced AI function with automatic retry (3 attempts, starting with 1 second delay)
+      // Pass the message directly, not from state
+      const aiResponse = await sendMessage(aiInputMessage, aiSystemPrompt, 3, 1000)
+      
+      // Check if AI request was successful
+      if (!aiResponse.success) {
+        throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts")
       }
-    })
-    if (changedFields.length > 0) {
-      toast({ title: t("success") || "Success", description: `${t("UpdatedFields") || "Updated fields"}: ${changedFields.join(', ')}` })
-    } else {
-      toast({ title: t("Note") || "Note", description: t("NoFieldChangesFromAI") || "AI did not suggest changes to text fields." })
-    }
-    
-    // Show success message with attempt info
-    if (aiResponse.attempt > 1) {
-      toast({
-        title: t("success") || "Success",
-        description: `AI price estimation successful after ${aiResponse.attempt} attempts!`,
-        variant: "default",
+      
+      let jsonString = aiResponse.text
+      
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+      if (jsonMatch) {
+        jsonString = jsonMatch[1]
+      }
+      
+      // Clean up any remaining markdown or extra characters
+      jsonString = jsonString.trim()
+      
+      const jsonObject = JSON.parse(jsonString)
+      
+      // Validate the parsed response
+      if (!jsonObject.estimated_price || jsonObject.estimated_price === 0) {
+        throw new Error("AI returned invalid price estimation")
+      }
+      
+      setAiResponse(jsonObject)
+      setAiPriceEstimation(jsonObject.estimated_price)
+      
+      // Compare and optionally apply AI translations to form
+      const current = form.getValues()
+      const proposed = {
+        name: jsonObject?.name_translations?.[!isRTL ? 'en' : 'ar'] ?? current.name,
+        description: jsonObject?.description_translations?.[!isRTL ? 'en' : 'ar'] ?? current.description,
+        city: jsonObject?.city_translations?.[!isRTL ? 'en' : 'ar'] ?? current.city,
+        street: jsonObject?.street_translations?.[!isRTL ? 'en' : 'ar'] ?? current.street,
+      }
+      const changedFields = []
+      ;(['name','description','city','street']).forEach((key) => {
+        if (proposed[key] && proposed[key] !== current[key]) {
+          form.setValue(key, proposed[key])
+          changedFields.push(key)
+        }
       })
-    }
-    
-    setIsEstimating(false)
+      if (changedFields.length > 0) {
+        toast({ title: t("success") || "Success", description: `${t("UpdatedFields") || "Updated fields"}: ${changedFields.join(', ')}` })
+      } else {
+        toast({ title: t("Note") || "Note", description: t("NoFieldChangesFromAI") || "AI did not suggest changes to text fields." })
+      }
+      
+      // Show success message with attempt info
+      if (aiResponse.attempt > 1) {
+        toast({
+          title: t("success") || "Success",
+          description: `${t("AIpriceestimationsuccessfulafter") || "AI price estimation successful after"} ${aiResponse.attempt} ${t("attempts") || "attempts"}!`,
+          variant: "default",
+        })
+      }
+      
+      setIsEstimating(false)
     }
     } catch (error) {
       // console.error("Error getting AI price estimate:", error)
@@ -728,7 +751,7 @@ else{
         "Failed to get AI price estimate. Please try again or enter your own estimate."
       
       if (error instanceof SyntaxError && error.message.includes("JSON")) {
-        errorMessage = `AI response format error: ${error.message}. Raw response: ${aiResponse?.text}`
+        errorMessage = "AI response format error. The AI returned invalid JSON format."
       } else if (error.message.includes("retry attempts")) {
         errorMessage = "AI service is currently unavailable. All retry attempts failed. Please try again later."
       } else if (error.message.includes("invalid price")) {
@@ -737,7 +760,7 @@ else{
       
       toast({
         title: t("error") || "ERROR ",
-        description: errorMessage,
+        description: t(errorMessage) || errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -756,7 +779,16 @@ else{
       return
     }
 
-    
+    // Prevent saving without AI estimation and show hint toast
+    if (aiPriceEstimation === null || aiPriceEstimation <= 0) {
+      toast({
+        title: t("AIEstimationRequired") || "⚠️ AI Estimation Required",
+        description: t("PleaseclickAIestimatetogetpriceestimatebeforeaddingitem") || "Please click 'Get AI Estimate' to get a price estimate before adding your item!",
+        duration: 5000,
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       await handleSubmit(data)
@@ -784,7 +816,7 @@ else{
 
   const isStep2Valid = 
     (existingImages.length + imagesFile.length) > 0 &&
-    aiPriceEstimation !== null && aiPriceEstimation !== 0 &&
+    aiPriceEstimation !== null && aiPriceEstimation > 0 &&
     form.watch("allowed_categories")?.length > 0
 
   // Debug logging
@@ -1136,7 +1168,7 @@ else{
                               animate={{ rotate: [0, 360] }}
                               transition={{ repeat: Number.POSITIVE_INFINITY, duration: 8, ease: "linear" }}
                             >
-                              <Navigation className="h-5 w-5 text-primary" />
+                              <Map className="h-5 w-5 text-primary" />
                             </motion.div>
                             {t("InteractiveMap") || "Interactive Map"}
                             {isMapRefreshing && (
@@ -1144,7 +1176,7 @@ else{
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
-                                className="flex items-center text-sm text-muted-foreground ml-auto"
+                                className="flex items-center text-sm text-muted-foreground ml-auto z-10"
                               >
                                 <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
                                 <span>Updating...</span>
@@ -1153,10 +1185,11 @@ else{
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {/* Interactive Map */}
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
+                            transition={{ delay: 0.4 }}
                           >
                             <LocationMap
                               latitude={selectedPosition?.lat || geoLocation?.lat || 30.0444}
@@ -1169,12 +1202,25 @@ else{
                               className="shadow-lg"
                             />
                           </motion.div>
-                          <motion.div className="flex flex-wrap gap-4 justify-center" variants={itemVariants}>
+
+                          {/* Map Controls */}
+                          <motion.div
+                            className="flex flex-wrap gap-4 justify-center"
+                            variants={itemVariants}
+                          >
                             <motion.div whileHover="hover" whileTap="tap">
-                              <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="bg-primary hover:bg-primary/90 text-white shadow-lg">
+                              <Button
+                                type="button"
+                                onClick={getCurrentPosition}
+                                disabled={isGettingLocation}
+                                className="bg-primary hover:bg-primary/90 text-white shadow-lg"
+                              >
                                 {isGettingLocation ? (
                                   <>
-                                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}>
+                                    <motion.div
+                                      animate={{ rotate: 360 }}
+                                      transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}
+                                    >
                                       <Loader2 className="mr-2 h-4 w-4" />
                                     </motion.div>
                                     {t("GettingLocation") || "Getting Location..."}
@@ -1187,6 +1233,7 @@ else{
                                 )}
                               </Button>
                             </motion.div>
+
                             <motion.div whileHover="hover" whileTap="tap">
                               <Button
                                 type="button"
@@ -1201,6 +1248,22 @@ else{
                                 {t("RefreshMap") || "Refresh Map"}
                               </Button>
                             </motion.div>
+                          </motion.div>
+
+                          {/* Map Info */}
+                          <motion.div
+                            className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg"
+                            variants={itemVariants}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <RefreshCw className="h-4 w-4 text-primary" />
+                              <span className="font-medium text-primary dark:text-primary/40">
+                                {t("AutoRefresh") || "Auto Refresh"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-primary dark:text-primary/40">
+                              {t("MapUpdatesEvery2Seconds") || "This map automatically updates every 2 seconds to show the latest location data."}
+                            </p>
                           </motion.div>
                         </CardContent>
                       </Card>
@@ -1445,73 +1508,95 @@ else{
 
                       {/* Value Estimation */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <FormLabel>{t("aIExpectedPrice")} ( {t("LE")} )</FormLabel>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={requestAiPriceEstimate}
-                                  disabled={isEstimating}
-                                  className="h-8 gap-1"
+                      <FormField
+                        control={form.control}
+                        name="value_estimate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild >
+                                    <motion.div 
+                                      variants={buttonVariants} 
+                                      whileHover="hover" 
+                                      whileTap="tap" 
+                                      className="max-[370px]:w-full relative"
+                                    >
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {requestAiPriceEstimate() }}
+                                        disabled={isEstimating}
+                                        className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-muted hover:border-primary transition-all relative"
+                                      >
+                                        {isEstimating ? (
+                                          <>
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                            {t("Estimating") || "Estimating..."}
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Info className="h-3 w-3" />
+                                            {t("GetAIEstimate") || "Get AI Estimate"}
+                                          </>
+                                        )}
+                                        {/* AI Badge */}
+                                        {!isEstimating && (
+                                          <motion.div
+                                            className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg"
+                                            animate={{ 
+                                              scale: [1, 1.1, 1],
+                                              opacity: [0.8, 1, 0.8]
+                                            }}
+                                            transition={{ 
+                                              duration: 1.5, 
+                                              repeat: Infinity, 
+                                              ease: "easeInOut" 
+                                            }}
+                                          >
+                                            AI
+                                          </motion.div>
+                                        )}
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>
+                                      {t("GetAIpoweredpriceestimatebasedonyouritemdetails") ||
+                                        "Get an AI-powered price estimate based on your item details"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {t("Clicktoautomaticallyestimateyouritemprice") ||
+                                        "Click to automatically estimate your item price"}
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+
+                              </TooltipProvider>
+                            </div>
+                            
+                            <AnimatePresence>
+                              {aiPriceEstimation !== null && (
+                                <motion.p
+                                  className="text-md text-secondary2 font-semibold"
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
                                 >
-                                  <AnimatePresence mode="wait">
-                                    {isEstimating ? (
-                                      <motion.div
-                                        key="estimating"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <motion.div
-                                          animate={{ rotate: 360 }}
-                                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                        >
-                                          <Loader2 className="h-3 w-3" />
-                                        </motion.div>
-                                        {t("Estimating")}
-                                      </motion.div>
-                                    ) : (
-                                      <motion.div
-                                        key="estimate"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <Info className="h-3 w-3" />
-                                        {t("GetAIEstimate")}
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </Button>
-                              </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t("GetAIEstimateTooltip")}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <AnimatePresence>
-                        {aiPriceEstimation !== null && (
-                          <motion.div
-                            className="text-lg text-primary font-bold p-4 bg-primary/10 rounded-lg text-center"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            {t("aIExpectedPrice")} {t("LE")} {aiPriceEstimation}
-                          </motion.div>
+                                  {t("AIsuggestsvalueof") || "AI suggests a value of"} {t('le')||"LE"} {aiPriceEstimation}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
+                            <FormDescription className="text-muted-foreground">
+                              {t("Setfairmarketvaluetohelpfacilitatebalancedswaps") ||
+                                "Set a fair market value to help facilitate balanced swaps."}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </AnimatePresence>
-                      <FormDescription className="text-muted-foreground">{t("SetAFairMarketValue")}</FormDescription>
-                      <FormMessage />
+                      />
                     </div>
                     <div className="flex flex-col-2 gap-2">
                       <Button

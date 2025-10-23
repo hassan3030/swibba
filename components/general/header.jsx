@@ -1,5 +1,5 @@
 "use client"
-import { MessageCircle, Verified } from "lucide-react"
+import { List, ListChecks, MessageCircle, Verified } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -523,6 +523,8 @@ export function Header() {
                           <span>{t("profile")}</span>
                         </Link>
                       </DropdownMenuItem>
+
+                     
                       <DropdownMenuItem asChild>
                         <Link
                           href={`/profile/settings/editProfile/`}
@@ -530,6 +532,13 @@ export function Header() {
                         >
                           <Settings className="mr-2 h-4 w-4" />
                           <span>{t("settings")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile/items" className="dark:hover:bg-[#2a2a2a] dark:focus:bg-[#2a2a2a]">
+                          <ListChecks className="mr-2 h-4 w-4" />
+                          <span>{t("manageItems")}</span>
                         </Link>
                       </DropdownMenuItem>
                     </>

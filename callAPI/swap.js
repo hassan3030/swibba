@@ -398,48 +398,166 @@ export const acceptedOfferById = async (id_offer) => {
   }
 }
 
+
+export const getCompletedOffer = async (user_id) => {
+  try {
+    const token = await getCookie()
+    if (!token) {
+      throw new Error("Token is required")
+    }
+    
+    const response = await axios.get(`${baseItemsURL}/completed_rate_offer`,
+      {
+        params: {
+          filter: {
+            owner_user: {
+              _eq: user_id
+            }
+          }
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        }
+      })
+    console.log("response completed offer", response)
+    return {
+      success: true,
+      count: response.data.data?.[0]?.num_comp_offer || 0,
+      user_id: user_id,
+      data: response.data.data,
+      message: "Completed offer retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Completed Offer")
+  }
+}
+
 // Add completed offer to user's completedSwaps count
 export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
   try {
+    const token = await getCookie()
+    if (!token) {
+      throw new Error("Token is required")
+    }
     let currentCompletedSwapsFrom = 0
     let currentCompletedSwapsTo = 0
+    let responseFrom = []
+    let responseTo = []
     if (!from_user_id || !to_user_id) {
       throw new Error("From user ID and To user ID are required")
     }
-    const currentUserFrom = await getUserById(from_user_id)
-    const currentUserTo = await getUserById(to_user_id)
-    if (currentUserFrom.success) {
-      currentCompletedSwapsFrom = Number(currentUserFrom.data.completedSwaps) || 0
+    // get completed offer to user id
+    const getCompletedOfferToUserId = async (to_user_id) => {
+      const response = await axios.get(`${baseItemsURL}/completed_rate_offer`,
+        {
+          params: {
+            filter: {
+              owner_user: {
+                _eq: to_user_id
+              }
+            }
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          }
+        })
+      return response.data.data
     }
-    if (currentUserTo.success) {
-      currentCompletedSwapsTo = Number(currentUserTo.data.completedSwaps) || 0
-    }
-
-// update user's completedSwaps count
-    const responseFrom = await axios.patch(`${baseURL}/users/${from_user_id}`, {
-      completedSwaps: Number(currentCompletedSwapsFrom) + 1,
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        },
-      })      
-
-    const responseTo = await axios.patch(`${baseURL}/users/${to_user_id}`, {
-      completedSwaps: Number(currentCompletedSwapsTo) + 1,
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    
+    // Call the function to get the data
+    const completedOfferToUserData = await getCompletedOfferToUserId(to_user_id)
+    
+    // if completed offer to user id exists, update the number of completed offers
+    if(completedOfferToUserData.length > 0){
+      currentCompletedSwapsTo = Number(completedOfferToUserData[0].num_comp_offer) || 0
+      const responseTo = await axios.patch(`${baseItemsURL}/completed_rate_offer/${completedOfferToUserData[0].id}`, {
+        num_comp_offer: Number(currentCompletedSwapsTo) + 1,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          },
+        })    
+        return {
+          success: true,
+          data: responseTo.data.data,
+          message: "Completed offer to user updated successfully",
+        }
+    }else{
+      responseTo = await axios.post(`${baseItemsURL}/completed_rate_offer`, {
+        owner_user: to_user_id,
+        num_comp_offer: 1,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       })
+    }
+
+
+
+
+    // get completed offer from user id
+    const getCompletedOfferFromUserId = async (from_user_id) => {
+      const response = await axios.get(`${baseItemsURL}/completed_rate_offer`,
+        {
+          params: {
+            filter: {
+              owner_user: {
+                _eq: from_user_id
+              }
+            }
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          }
+        })
+      return response.data.data
+    }
+    
+    // Call the function to get the data
+    const completedOfferFromUserData = await getCompletedOfferFromUserId(from_user_id)
+    
+    // if completed offer from user id exists, update the number of completed offers
+    if(completedOfferFromUserData.length > 0){
+      currentCompletedSwapsFrom = Number(completedOfferFromUserData[0].num_comp_offer) || 0
+      const responseFrom = await axios.patch(`${baseItemsURL}/completed_rate_offer/${completedOfferFromUserData[0].id}`, {
+        num_comp_offer: Number(currentCompletedSwapsFrom) + 1,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          },
+        })    
     return {
       success: true,
-      data: {
-        responseFrom: responseFrom.data.data,
-        responseTo: responseTo.data.data,
-      },
-      message: "Completed swaps count updated successfully",
+      data: responseFrom.data.data,
+      message: "Completed offer from user updated successfully",
+    }
+}else{
+    responseFrom = await axios.post(`${baseItemsURL}/completed_rate_offer`, {
+    owner_user: from_user_id,
+    num_comp_offer: 1,
+  }, {
+    headers: {
+        Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+  
+  }
+console.log("responseFrom", responseFrom)
+console.log("responseTo", responseTo)
+
+  return {
+    success: true,
+    dataFrom: responseFrom.data.data,
+    dataTo: responseTo.data.data,
+    message: "Completed offer from user created successfully",
     }
   } catch (error) {
     return handleApiError(error, "Add Completed Offer To User")

@@ -16,6 +16,7 @@ import { decodedToken, getCookie, validateAuth ,setTarget } from "@/callAPI/util
 import { getKYC, getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
+import { getCompletedOffer } from "@/callAPI/swap"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -60,6 +61,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [originalquantity, setOriginalquantity] = useState(1)
   const [totalPrice, setTotalPrice] = useState(0)
+  const [completedOffersCount, setCompletedOffersCount] = useState(0)
   const { t } = useTranslations()
   const params = useParams()
   const router = useRouter()
@@ -74,6 +76,8 @@ export default function ProductPage() {
       // This is expected for public visitors, so we can ignore the error.
     }
   }
+
+  
 
   // Set original quantity from product and initialize selected quantity
   useEffect(() => {
@@ -180,6 +184,24 @@ export default function ProductPage() {
   //     router.push(`/auth/login`)
   //   }
   // }
+  const getCompletedOffers = async () => {
+    try {
+      const userId = user?.id
+      if (!userId) {
+        return
+      } else {
+      const completedOffers = await getCompletedOffer(userId)
+      setCompletedOffersCount(completedOffers.count)
+    }
+  } catch (error) {
+    console.error("Error fetching completed offers:", error)
+    setCompletedOffersCount(0)
+  }
+  }
+  useEffect(() => {
+    getCompletedOffers()
+  }, [user])
+
 
   const makeSwap = async (e) => {
     e.preventDefault()
@@ -418,8 +440,12 @@ export default function ProductPage() {
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <ArrowLeftRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="px-1">{user?.completedSwaps ?? 0}</span>
-                    <span className="px-1 truncate">{t("swaps")}</span>
+                    <span className="px-1">
+                      {completedOffersCount > 1000 
+                        ? (t("moreThan1000CompletedSwaps") || "More than 1000 completed swaps")
+                        : `${completedOffersCount || 0} ${t("completedSwaps") || "Completed swaps"}`}
+                    </span>
+                  
                   </div>
                 </div>
               </div>

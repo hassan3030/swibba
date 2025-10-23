@@ -89,17 +89,7 @@ export default function EditItemPage({ params }) {
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants}>
-          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/profile">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                {t("goBackProfile")||"Back to profile"}
-                
-              </Link>
-            </Button>
-          </motion.div>
-        </motion.div>
+        
       </motion.div> 
 
       <motion.div className="mb-2 " variants={itemVariants} initial="hidden" animate="visible">

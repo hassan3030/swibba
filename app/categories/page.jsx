@@ -4,7 +4,10 @@ import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { CategoryCard } from "@/components/products/category-card"
-import { categories } from "@/lib/data"
+import { categories as fallbackCategories } from "@/lib/data"
+import { getAllCategories } from "@/callAPI/static"
+import { useState, useEffect } from "react"
+import LoadingSpinner from "@/components/loading/loading-spinner"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,6 +49,51 @@ const headerVariants = {
 
 const CategoriesPage = () => {
   const { t } = useTranslations()
+  const [categories, setCategories] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true)
+        const response = await getAllCategories()
+        
+        if (response.success) {
+          // Transform API data to match expected format
+          const transformedCategories = response.data.map(category => ({
+            name: category.name,
+            imageSrc: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${category.main_image?.id}`,
+            translations: category.translations || [],
+            catLevels: category.cat_levels || null,
+          }))
+          setCategories(transformedCategories)
+        } else {
+          // Use fallback categories if API fails
+          setCategories(fallbackCategories)
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error)
+        setError(error)
+        // Use fallback categories on error
+        setCategories(fallbackCategories)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCategories()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -92,7 +140,7 @@ const CategoriesPage = () => {
               }}
               whileTap={{ scale: 0.95 }}
             >
-              <CategoryCard {...category} />
+              <CategoryCard {...category} showCategoryLevels={true} />
             </motion.div>
           ))}
         </motion.div>

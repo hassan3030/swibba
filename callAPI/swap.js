@@ -5,6 +5,48 @@ import { getUserById, getUserByProductId } from "./users.js"
 
 // ========================= OFFERS MANAGEMENT =========================
 
+
+// Get product by ID with enhanced validation
+export const getProductOfferItemById = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Product ID is required")
+    }
+    // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
+    const response = await axios.get(
+      `${baseItemsURL}/Items/${id}`,
+      {
+        params: {
+          fields: "*,translations.*,images.*,images.directus_files_id.*"
+        }
+      }
+    );
+    // console.log("response", response)
+    // console.log("response.data.data", response.data.data)
+    if (!response.data.data) {
+      throw new Error("Product not found")
+    }
+
+    // console.log("Product retrieved successfully, ID:", id)
+    return {
+      success: true,
+      data: response.data.data || [],
+      message: "Product retrieved successfully",
+    }
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return {
+        success: false,
+        error: "Product not found",
+        status: 404,
+        context: "Get Product By ID",
+      }
+    }
+    return handleApiError(error, "Get Product By ID")
+  }
+}
+
+
 // Get all offers with enhanced filtering
 export const getAllOffers = async (filters = {}) => {
   try {
@@ -49,14 +91,12 @@ export const getOfferById = async (id) => {
       throw new Error("User ID is required")
     }
 
-    const auth = await validateAuth()
-
     const response = await axios.get(`${baseItemsURL}/Offers`,
       {
         params: {
           fields: "*",
           filter: {
-            from_user_id: {
+            from_user_id: {  // how ?
               _eq: id
             },
             from_finaly_deleted: {
@@ -124,9 +164,7 @@ export const getItemsByOfferId = async (id) => {
     if (!id) {
       throw new Error("Offer ID is required")
     }
-
     const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${id}`)
-
     return {
       success: true,
       data: response.data.data || [],
@@ -139,12 +177,57 @@ export const getItemsByOfferId = async (id) => {
   }
 }
 
-// Delete offer by ID (reject offer)
-export const deleteOfferById = async (id) => {
+
+
+
+// Finally Delete offer by ID 
+export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
+  try {
+    const auth = await validateAuth()
+    return await makeAuthenticatedRequest(async () => {
+      if (!offer_id) {
+        throw new Error("Offer ID is required")
+      }
+      let response;
+      if(from_to_user === "from") {
+        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+          from_finaly_deleted: "true",
+        },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              })
+      } else if(from_to_user === "to") {  
+        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+          to_finaly_deleted: "true",
+        },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              })
+      } else {
+        throw new Error("From or To user is required")
+      }
+      return {
+        success: true,
+        data: response.data.data,
+        message: "Offer Finally Deleted successfully",
+      }
+    })
+  } catch (error) {
+    return handleApiError(error, "Finally Delete Offer By ID")
+  }
+}
+
+//  (reject offer) offer by ID
+export const rejectOfferById = async (id) => {
    
   try {
     const auth = await validateAuth()
-
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer ID is required")
@@ -162,6 +245,7 @@ export const deleteOfferById = async (id) => {
       const restoreItems = items.map(async (item) => {
         if (item.item_id) {
           try {
+
             // Get current item state
             const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.item_id}`)
             const currentItem = itemResponse.data.data
@@ -192,13 +276,25 @@ export const deleteOfferById = async (id) => {
       const deleteOfferItems = items.map(async (item) => {
         if (item.id) {
           try {
-            await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-              },
-            })
+            await axios.delete(`${baseItemsURL}/Offer_Items`,
+              {          
+            params: {
+                filter: {
+                  id: {
+                    _eq: item.id
+                  },
+                  offer_id: {
+                    _eq: id
+                  }
+                }
+              }
+            ,
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              }
+            )
             return { offer_item_id: item.id, success: true }
           } catch (error) {
             console.warn(`Failed to delete offer item ${item.id}:`, error.message)
@@ -252,65 +348,51 @@ export const deleteOfferById = async (id) => {
       }
     })
   } catch (error) {
-    return handleApiError(error, "Delete Offer By ID")
+    return handleApiError(error, "Reject Offer By ID")
   }
 }
 
 
+// // Accept offer (keeping original function name)
+// export const acceptedOffer = async (id) => {
+//   try {
+//     const auth = await validateAuth()
+//     return await makeAuthenticatedRequest(async () => {
+//       if (!id) {
+//         throw new Error("Offer ID is required")
+//       }
 
-// Finally Delete offer by ID 
-export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
+//       const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
+//         status_offer: "accepted",
+//       },
+//             {
+//               headers: {
+//                 "Content-Type": "application/json",
+//                 Authorization: `Bearer ${auth.token}`,
+//               },
+//             })
+
+//       // console.log("Offer accepted successfully, ID:", id)
+//       return {
+//         success: true,
+//         data: response.data.data,
+//         message: "Offer accepted successfully",
+//       }
+//     })
+//   } catch (error) {
+//     return handleApiError(error, "Accept Offer")
+//   }
+// }
+// Accept offer by ID (keeping original function name)  without remove item
+export const acceptedOfferById = async (id_offer) => {
   try {
     const auth = await validateAuth()
     return await makeAuthenticatedRequest(async () => {
-      if (!offer_id) {
-        throw new Error("Offer ID is required")
-      }
-      let response;
-      if(from_to_user === "from") {
-        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
-          from_finaly_deleted: "true",
-        },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${auth.token}`,
-                },
-              })
-      } else if(from_to_user === "to") {  
-        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
-          to_finaly_deleted: "true",
-        },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${auth.token}`,
-                },
-              })
-      } else {
-        throw new Error("From or To user is required")
-      }
-      return {
-        success: true,
-        data: response.data.data,
-        message: "Offer Finally Deleted successfully",
-      }
-    })
-  } catch (error) {
-    return handleApiError(error, "Finally Delete Offer By ID")
-  }
-}
-
-// Accept offer (keeping original function name)
-export const acceptedOffer = async (id) => {
-  try {
-    const auth = await validateAuth()
-    return await makeAuthenticatedRequest(async () => {
-      if (!id) {
+      if (!id_offer) {
         throw new Error("Offer ID is required")
       }
 
-      const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
+      const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
         status_offer: "accepted",
       },
             {
@@ -320,7 +402,7 @@ export const acceptedOffer = async (id) => {
               },
             })
 
-      // console.log("Offer accepted successfully, ID:", id)
+      console.log("Offer accepted successfully, ID:", id_offer)
       return {
         success: true,
         data: response.data.data,
@@ -328,9 +410,10 @@ export const acceptedOffer = async (id) => {
       }
     })
   } catch (error) {
-    return handleApiError(error, "Accept Offer")
+    return handleApiError(error, "Accept Offer By ID")
   }
 }
+
 
 // Update offer by ID (cash adjustment) when remove item
 export const updateOfferById = async (id, cash_adjustment) => {
@@ -367,38 +450,8 @@ export const updateOfferById = async (id, cash_adjustment) => {
   }
 }
 
-// Accept offer by ID (keeping original function name)  without remove item
-export const acceptedOfferById = async (id_offer) => {
-  try {
-    const auth = await validateAuth()
-    return await makeAuthenticatedRequest(async () => {
-      if (!id_offer) {
-        throw new Error("Offer ID is required")
-      }
 
-      const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
-        status_offer: "accepted",
-      },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-              },
-            })
-
-      console.log("Offer accepted successfully, ID:", id_offer)
-      return {
-        success: true,
-        data: response.data.data,
-        message: "Offer accepted successfully",
-      }
-    })
-  } catch (error) {
-    return handleApiError(error, "Accept Offer By ID")
-  }
-}
-
-
+// get number of completed offer
 export const getCompletedOffer = async (user_id) => {
   try {
     const token = await getCookie()
@@ -564,6 +617,71 @@ console.log("responseTo", responseTo)
   }
 }
 
+
+// Get all offer items
+export const getOfferItems = async () => {
+  try {
+    const response = await axios.get(`${baseItemsURL}/Offer_Items`)
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      message: "Offer items retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Offer Items")
+  }
+}
+
+// Get offer item by ID
+export const getOfferItemsById = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Offer item ID is required")
+    }
+
+    const response = await axios.get(`${baseItemsURL}/Offer_Items/${id}`)
+
+    return {
+      success: true,
+      data: response.data.data,
+      count: response.data.data?.length || 0,
+      message: "Offer item retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Offer Items By ID")
+  }
+}
+
+// Get offer items by offer ID
+export const getOfferItemsByOfferId = async (offer_id) => {
+  try {
+    if (!offer_id) {
+      throw new Error("Offer ID is required")
+    }
+
+    const auth = await validateAuth()
+
+    const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${offer_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      offer_id: offer_id,
+      message: "Offer items retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Offer Items By Offer ID")
+  }
+}
+
 // Complete offer by ID
 export const completedOfferById = async (id_offer) => {
   try {
@@ -571,7 +689,7 @@ export const completedOfferById = async (id_offer) => {
     return await makeAuthenticatedRequest(async () => {
       if (!id_offer) {
         throw new Error("Offer ID is required")
-      }
+      } 
 
       // Get all items in the offer
       const itemsResult = await getItemsByOfferId(id_offer)
@@ -585,13 +703,28 @@ export const completedOfferById = async (id_offer) => {
       const deleteItems = items.map(async (item) => {
         if (item.item_id) {
           try {
-            await axios.delete(`${baseItemsURL}/Items/${item.item_id}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-              },
-            })
+            // check if item is in ore  offer items
+            const offerItemResponse = getOfferItemsById(item.item_id)
+            if(offerItemResponse.count > 1){
+              await axios.delete(`${baseItemsURL}/Offer_Items/${item.data.id}`,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${auth.token}`,
+                  },
+                })
+            }else{
+              await axios.delete(`${baseItemsURL}/Items/${item.item_id}`,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${auth.token}`,
+                  },
+                })
+
+            }
+
+          
             return { item_id: item.item_id, success: true }
           } catch (error) {
             console.warn(`Failed to delete item ${item.item_id}:`, error.message)
@@ -602,26 +735,6 @@ export const completedOfferById = async (id_offer) => {
 
       const deleteResults = await Promise.allSettled(deleteItems)
 
-      // Delete offer items
-      const deleteOfferItems = items.map(async (item) => {
-        if (item.id) {
-          try {
-            await axios.delete(`${baseItemsURL}/Offer_Items/${item.id}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-              },
-            })
-            return { offer_item_id: item.id, success: true }
-          } catch (error) {
-            console.warn(`Failed to delete offer item ${item.id}:`, error.message)
-            return { offer_item_id: item.id, success: false, error: error.message }
-          }
-        }
-      })
-
-      await Promise.allSettled(deleteOfferItems)
 
       // Update offer status to completed
       const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
@@ -864,68 +977,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
 
 // ========================= OFFER ITEMS MANAGEMENT =========================
 
-// Get all offer items
-export const getOfferItems = async () => {
-  try {
-    const response = await axios.get(`${baseItemsURL}/Offer_Items`)
 
-    return {
-      success: true,
-      data: response.data.data || [],
-      count: response.data.data?.length || 0,
-      message: "Offer items retrieved successfully",
-    }
-  } catch (error) {
-    return handleApiError(error, "Get Offer Items")
-  }
-}
-
-// Get offer item by ID
-export const getOfferItemsById = async (id) => {
-  try {
-    if (!id) {
-      throw new Error("Offer item ID is required")
-    }
-
-    const response = await axios.get(`${baseItemsURL}/Offer_Items/${id}`)
-
-    return {
-      success: true,
-      data: response.data.data,
-      message: "Offer item retrieved successfully",
-    }
-  } catch (error) {
-    return handleApiError(error, "Get Offer Items By ID")
-  }
-}
-
-// Get offer items by offer ID
-export const getOfferItemsByOfferId = async (offer_id) => {
-  try {
-    if (!offer_id) {
-      throw new Error("Offer ID is required")
-    }
-
-    const auth = await validateAuth()
-
-    const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${offer_id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      })
-
-    return {
-      success: true,
-      data: response.data.data || [],
-      count: response.data.data?.length || 0,
-      offer_id: offer_id,
-      message: "Offer items retrieved successfully",
-    }
-  } catch (error) {
-    return handleApiError(error, "Get Offer Items By Offer ID")
-  }
-}
 
 // Delete offer item by ID with quantity restoration
 export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, offer_id) => {
@@ -1125,6 +1177,8 @@ export const getMessagesByUserId = async (user_id) => {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
+      myMessages: response.data.data?.filter(msg => msg.from_user_id === user_id),
+      partnerMessages: response.data.data?.filter(msg => msg.to_user_id === user_id),
       user_id,
       message: "User messages retrieved successfully",
     }
@@ -1133,6 +1187,36 @@ export const getMessagesByUserId = async (user_id) => {
   }
 }
 
+export const getMessagesByOfferId = async (offer_id) => {
+  try {
+    if (!offer_id) {
+      throw new Error("Offer ID is required")
+    }
+
+    const auth = await validateAuth()
+
+    // Fetch messages where user is either sender or recipient
+    const response = await axios.get(
+      `${baseItemsURL}/Chat?filter[offer_id][_eq]=${offer_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      },
+    )
+
+    // for each message, get the user details
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      offer_id: offer_id,
+      message: "Messages retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Messages By Offer ID")
+  }
+}
 // Get all messages
 export const getAllMessage = async () => {
   try {
@@ -1155,6 +1239,30 @@ export const getAllMessage = async () => {
   }
 }
 
+export const deleteMessageByOfferId = async (offer_id) => {  
+  try {
+    const auth = await validateAuth()
+    const messages = await getMessagesByOfferId(offer_id)
+    if(messages.success){
+      const message = messages.data.find(msg => msg.offer_id === offer_id)
+      if(message){
+        await axios.delete(`${baseItemsURL}/Chat/${message.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          })
+      }
+    }
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Message deleted successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Delete Message By ID")
+  }
+}
 // ========================= WISHLIST MANAGEMENT =========================
 
 // Add to wishlist
@@ -1165,19 +1273,7 @@ export const addWishList = async (item_id, user_id) => {
       throw new Error("Item ID and user ID are required")
     } 
 
-    // // Check if item already in wishlist
-    // const existingResponse = await axios.get(
-    //   `${baseItemsURL}/WishList?filter[item_id][_eq]=${item_id}&filter[user_id][_eq]=${user_id}`,
-    // )
-
-    // if (existingResponse.data.data.length > 0) {
-    //   return {
-    //     success: false,
-    //     error: "Item already in wishlist",
-    //     status: 409,
-    //   }
-    // }
-
+   
     const response = await axios.post(`${baseItemsURL}/WishList`, {
       item_id,
       user_id,
@@ -1270,6 +1366,7 @@ export const deleteWishList = async (id) => {
     return handleApiError(error, "Delete Wish List")
   }
 }
+
 
 // ========================= REVIEWS SYSTEM =========================
 

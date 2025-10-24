@@ -1,5 +1,6 @@
 export const translations = {
   en  :{
+    ThisItemIsNotAvailableForSwap: "This item is not available for swap",
 
     moreThan1000CompletedSwaps: "More 1000 completed swaps",
  
@@ -1154,6 +1155,8 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    ThisItemIsNotAvailableForSwap: "هذا العنصر غير متوفر للمبادلة",
+
     moreThan1000CompletedSwaps: "أكثر من 1000 مبادلة",
 "AI response format error. The AI returned invalid JSON format.": "خطأ في تنسيق الاستجابة من الذكاء الاصطناعي. أعاد الذكاء الاصطناعي تنسيق JSON غير صالح.",
 "AI service is currently unavailable. All retry attempts failed. Please try again later.": "خطأ في الخدمة الحالية. لم ينجح أي محاولة اعادة. يرجى المحاولة مرة أخرى لاحقا.",

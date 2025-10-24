@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   getOfferItemsByOfferId,
-  deleteOfferById,
+  rejectOfferById,
   deleteOfferItemsById,
   getOffeReceived,
   getAllMessage,
@@ -348,7 +348,7 @@ console.log(offersReceived.data)
 
   const handleDeleteSwap = async (swapId) => {
     try {
-      await deleteOfferById(swapId)
+      await rejectOfferById(swapId)
       toast({
         title: t("successfully") || "Successfully",
         description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",

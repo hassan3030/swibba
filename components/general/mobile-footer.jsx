@@ -64,7 +64,7 @@ export function MobileFooter() {
             
             // Fetch messages count
             const messages = await getMessagesByUserId(decoded.id)
-            setMessageCount(messages?.data?.length || 0)
+            setMessageCount(messages?.partnerMessages?.length || 0)
           }
         }
       } catch (error) {

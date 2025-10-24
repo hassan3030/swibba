@@ -5,6 +5,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { motion} from "framer-motion"
 import { useTranslations } from "@/lib/use-translations"
+import { useLanguage } from "@/lib/language-provider"
+import { CategoryLevelsHover } from "./category-levels-hover"
+import { List } from "lucide-react"
 
 
 const cardVariants = {
@@ -56,9 +59,10 @@ const textVariants = {
   },
 }
 
-export function CategoryCard({ name, imageSrc }) {
+export function CategoryCard({ name, imageSrc, translations, showCategoryLevels = false, catLevels }) {
   const { t } = useTranslations()
   const [src, setSrc] = useState(imageSrc)
+  const { isRTL } = useLanguage()
 
   return (
     <Link href={`categories/${name}`} className="group block">
@@ -96,8 +100,25 @@ export function CategoryCard({ name, imageSrc }) {
           variants={textVariants}
           whileHover="hover"
         >
-          {t(`${name}`)}
+          {isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}
         </motion.span>
+        
+        {
+          showCategoryLevels && (
+           <>
+             <CategoryLevelsHover 
+              catLevels={catLevels} 
+              className="inline-block"
+            >
+              <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 hover:bg-muted rounded-md transition-colors cursor-pointer">
+                <List className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Levels</span>
+              </div>
+            </CategoryLevelsHover>
+           </>
+          )
+        }
+        {/* <CategoryLevelsTest catLevels={catLevels} className="inline-block" /> */}
       </motion.div>
     </Link>
   )

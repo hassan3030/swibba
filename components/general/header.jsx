@@ -220,7 +220,7 @@ export function Header() {
     }
     const { id } = decoded
     const chat = await getMessagesByUserId(id)
-    setChatLength(Array.isArray(chat.data) ? chat.data.length : 0)
+    setChatLength( chat?.partnerMessages?.length || 0)
   }
 
   const getOffers = async () => {

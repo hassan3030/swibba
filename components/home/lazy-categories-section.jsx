@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { motion, useAnimation } from "framer-motion"
 import { TrendingUp } from "lucide-react"
-import { categories } from "@/lib/data"
+import { categories as fallbackCategories } from "@/lib/data" // Fallback categories
 import { CategoryCard } from "@/components/products/category-card"
 import { CategoryCardSkeleton } from "@/components/loading/category-card-skeleton"
 import { useInView } from "react-intersection-observer"
@@ -64,10 +64,21 @@ const containerVariants = {
   }
 
 // Lazy-loaded Categories Section Component
-const LazyCategoriesSection = ({ t }) => {
+const LazyCategoriesSection = ({ t, categories = [], categoriesNames = [] }) => {
     const [isLoading, setIsLoading] = useState(true)
     const [hasLoaded, setHasLoaded] = useState(false)
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 })
+    
+    // Use API categories or fallback to static categories
+    const displayCategories = categories.length > 0 ? categories.map(category => ({
+      name: category.name,
+      imageSrc: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${category.main_image?.id}`,
+      translations: category.translations || [],
+      cat_levels: category.cat_levels || null,
+    })) : fallbackCategories.map(category => ({
+      ...category,
+      translations: [] // Add empty translations array for fallback categories
+    }))
   
     useEffect(() => {
       if (inView && !hasLoaded) {
@@ -129,7 +140,7 @@ const LazyCategoriesSection = ({ t }) => {
                       <CategoryCardSkeleton />
                     </motion.div>
                   ))
-                : categories.slice(0, 2).map((category, index) => (
+                : displayCategories.slice(0, 2).map((category, index) => (
                     <motion.div
                       key={category.name}
                       variants={itemVariants}
@@ -142,7 +153,7 @@ const LazyCategoriesSection = ({ t }) => {
                       whileTap={{ scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
-                      <CategoryCard {...category} />
+                      <CategoryCard {...category} showCategoryLevels={false} />
                     </motion.div>
                   ))}
             </div>
@@ -158,9 +169,9 @@ const LazyCategoriesSection = ({ t }) => {
                   >
                     <CategoryCardSkeleton />
                   </motion.div>
-                ) : categories.length > 2 ? (
+                ) : displayCategories.length > 2 ? (
                   <motion.div
-                    key={categories[2].name}
+                    key={displayCategories[2].name}
                     variants={itemVariants}
                     custom={2}
                     whileHover={{
@@ -171,7 +182,7 @@ const LazyCategoriesSection = ({ t }) => {
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   >
-                    <CategoryCard {...categories[2]} />
+                      <CategoryCard {...displayCategories[2]} showCategoryLevels={false} />
                   </motion.div>
                 ) : null}
               </div>
@@ -190,7 +201,7 @@ const LazyCategoriesSection = ({ t }) => {
                       <CategoryCardSkeleton />
                     </motion.div>
                   ))
-                : categories.slice(3, 5).map((category, index) => (
+                : displayCategories.slice(3, 5).map((category, index) => (
                     <motion.div
                       key={category.name}
                       variants={itemVariants}
@@ -203,7 +214,7 @@ const LazyCategoriesSection = ({ t }) => {
                       whileTap={{ scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
-                      <CategoryCard {...category} />
+                      <CategoryCard {...category} showCategoryLevels={false} />
                     </motion.div>
                   ))}
             </div>
@@ -228,7 +239,7 @@ const LazyCategoriesSection = ({ t }) => {
                   <CategoryCardSkeleton />
                 </motion.div>
               ))
-            : categories.slice(0, 10).map((category, index) => (
+            : displayCategories.slice(0, 10).map((category, index) => (
                 <motion.div
                   key={category.name}
                   variants={itemVariants}
@@ -241,7 +252,7 @@ const LazyCategoriesSection = ({ t }) => {
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
-                  <CategoryCard {...category} />
+                  <CategoryCard {...category} showCategoryLevels={false} />
                 </motion.div>
               ))}
         </motion.div>

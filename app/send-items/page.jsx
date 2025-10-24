@@ -10,7 +10,7 @@ import { getProductById } from "@/callAPI/products"
 import {
   getOfferById,
   getOfferItemsByOfferId,
-  deleteOfferById,
+  rejectOfferById,
   deleteOfferItemsById,
   completedOfferById,
   deleteFinallyOfferById
@@ -387,7 +387,7 @@ const SendItems = () => {
 
   const handleDeleteSwap = async (swapId) => {
     try {
-      await deleteOfferById(swapId)
+      await rejectOfferById(swapId)
       toast({
         title: t("successfully") || "Successfully",
         description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",

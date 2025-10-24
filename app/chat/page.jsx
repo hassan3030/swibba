@@ -6,14 +6,15 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useTranslations } from "@/lib/use-translations"
-import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, RefreshCw } from "lucide-react"
+import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, RefreshCw, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { getOfferById, getOffersNotifications, getMessage, addMessage, getOfferItemsByOfferId } from "@/callAPI/swap"
+import { getOfferById, getOffeReceived, getMessage, addMessage, getOfferItemsByOfferId, deleteMessageByOfferId, getMessagesByOfferId } from "@/callAPI/swap"
 import { getProductById } from "@/callAPI/products"
 import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
+import { useToast } from "@/components/ui/use-toast"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -70,9 +71,8 @@ const Messages = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [offerItems, setOfferItems] = useState([])
-  const [unreadCounts, setUnreadCounts] = useState({})
   const { t } = useTranslations()
-
+  const { toast } = useToast()
   // Function to fetch offers data
   const fetchOffers = async (isInitialLoad = false) => {
     if (isInitialLoad) {
@@ -82,43 +82,87 @@ const Messages = () => {
     }
     
     const token = await getCookie()
+    // console.log("🔍 DEBUG - Authentication:", {
+    //   hasToken: !!token,
+    //   token: token ? "Present" : "Missing"
+    // })
+    
     if (!token) {
+      // console.log("🔍 DEBUG - No token found, stopping fetch")
       setIsLoading(false)
       setIsRefreshing(false)
       return
     }
-    const { id } = await decodedToken(token)
+    
+    const decoded = await decodedToken(token)
+    // console.log("🔍 DEBUG - Decoded Token:", {
+    //   decoded: decoded,
+    //   userId: decoded?.id
+    // })
+    
+    const { id } = decoded
     setMyUserId(id)
 
     try {
       // Get offers where I am sender
       const sentOffers = await getOfferById(id)
       // Get offers where I am receiver
-      const receivedOffers = await getOffersNotifications(id)
+      const receivedOffers = await getOffeReceived(id)
+
+      // console.log("🔍 DEBUG - API Responses:", {
+      //   sentOffers: sentOffers,
+      //   receivedOffers: receivedOffers,
+      //   sentCount: sentOffers.data?.length || 0,
+      //   receivedCount: receivedOffers.data?.length || 0
+      // })
 
       // Combine and remove duplicates (by offer id)
-      const allOffers = [...sentOffers.data, ...receivedOffers.data].filter(
+      const allOffers = [...(sentOffers.data || []), ...(receivedOffers.data || [])].filter(
         (offer, idx, arr) => arr.findIndex((o) => o.id === offer.id) === idx,
       )
+
+      // console.log("🔍 DEBUG - All Offers:", {
+      //   totalOffers: allOffers.length,
+      //   offers: allOffers
+      // })
 
       // Attach partner info to each offer
       const offersWithPartner = await Promise.all(
         allOffers.map(async (offer) => {
           const partnerId = offer.from_user_id === id ? offer.to_user_id : offer.from_user_id
           const partnerUser = await getUserById(partnerId)
+          
+          // console.log("🔍 DEBUG - Partner Fetch:", {
+          //   offerId: offer.id,
+          //   partnerId: partnerId,
+          //   partnerUserSuccess: partnerUser.success,
+          //   partnerUserData: partnerUser.data,
+          //   partnerUserError: partnerUser.error
+          // })
+          
           return {
             ...offer,
+            partnerUser: partnerUser.data,
             partner_id: partnerId,
-            partner_name: partnerUser.data
+            partner_name: partnerUser.success && partnerUser.data
               ? `${partnerUser.data.first_name} ${partnerUser.data.last_name || ""}`
               : `${t("Unknown") || "Unknown"}`,
-            partner_avatar: partnerUser.data?.avatar || "/placeholder.svg",
+            // partner_avatar: partnerUser.success && partnerUser.data?.avatar 
+            //   ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${partnerUser.data.avatar}`
+            //   : "/placeholder.svg",
+            partner_verified: partnerUser.success && partnerUser.data?.verified || false,
           }
         }),
       )
+      
+      // console.log("🔍 DEBUG - Final Offers with Partners:", {
+      //   totalOffers: offersWithPartner.length,
+      //   offers: offersWithPartner
+      // })
+      
       setOffers(offersWithPartner)
     } catch (error) {
-      // console.error("Error fetching offers:", error)
+      // console.error("🔍 DEBUG - Error fetching offers:", error)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
@@ -181,21 +225,8 @@ const Messages = () => {
   // When an offer is selected, fetch partner and messages
   useEffect(() => {
     fetchMessages()
-    // Mark messages as read when conversation is selected
-    if (selectedOffer) {
-      markMessagesAsRead(selectedOffer.id)
-    }
   }, [selectedOffer, myUserId])
 
-  // Mark messages as read (this would need to be implemented in your API)
-  const markMessagesAsRead = async (offerId) => {
-    // This function would call an API to mark messages as read
-    // For now, we'll just update the local state
-    setUnreadCounts(prev => ({
-      ...prev,
-      [offerId]: 0
-    }))
-  }
 
   // Auto-refresh messages every 2 seconds when conversation is selected
   useEffect(() => {
@@ -208,36 +239,20 @@ const Messages = () => {
     return () => clearInterval(interval)
   }, [selectedOffer])
 
-  // Filter offers by partner name
-  const filteredOffers = offers.filter((offer) => offer.partner_name?.toLowerCase().includes(searchQuery.toLowerCase()))
+  // Filter offers by partner name and exclude rejected offers
+  const filteredOffers = offers.filter((offer) => 
+    offer.partner_name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    offer.status_offer !== "rejected"
+  )
+  
+  // console.log("🔍 DEBUG - Render State:", {
+  //   totalOffers: offers.length,
+  //   filteredOffers: filteredOffers.length,
+  //   searchQuery: searchQuery,
+  //   isLoading: isLoading,
+  //   offers: offers
+  // })
 
-  // Calculate unread message counts for each offer
-  const calculateUnreadCounts = async () => {
-    if (!myUserId || offers.length === 0) return
-
-    const counts = {}
-    
-    for (const offer of offers) {
-      try {
-        const msgs = await getMessage(offer.id)
-        const unreadMessages = msgs.data?.filter(msg => 
-          msg.from_user_id !== myUserId && 
-          (!msg.read_at || msg.read_at === null)
-        ) || []
-        
-        counts[offer.id] = unreadMessages.length
-      } catch (error) {
-        counts[offer.id] = 0
-      }
-    }
-    
-    setUnreadCounts(counts)
-  }
-
-  // Update unread counts when offers or messages change
-  useEffect(() => {
-    calculateUnreadCounts()
-  }, [offers, myUserId])
 
   // Handle send message
   const handleSendMessage = async () => {
@@ -245,6 +260,26 @@ const Messages = () => {
     const newMsg = await addMessage(message, selectedOffer.partner_id, selectedOffer.id)
     setMessages((prev) => [...prev, newMsg.data])
     setMessage("")
+  }
+
+  // Handle remove completed offer
+  const handleRemoveCompletedOffer = async (offerId) => {
+    const response = await deleteMessageByOfferId(offerId)
+    // const response = await getMessagesByOfferId(offerId)
+    console.log("🔍 DEBUG - Response:", response)
+    console.log("🔍 DEBUG - Offer ID:", offerId)
+    if(response.success){
+      toast({
+        title: t("successfully") || "Successfully",
+        description: t("Offerremovedsuccessfully") || "Offer removed successfully",
+      })
+    }else{
+      toast({
+        title: t("error") || "Error",
+        description: t("Failedtoremoveoffer") || "Failed to remove offer",
+        variant: "destructive",
+      })
+    }
   }
 
   if (isLoading) {
@@ -262,6 +297,29 @@ const Messages = () => {
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
           <p className="text-muted-foreground">Loading messages...</p>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Check if user is not authenticated
+  if (!myUserId) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">{t("AuthenticationRequired") || "Authentication Required"}</h3>
+          <p className="text-muted-foreground mb-4">
+            {t("PleaseLoginToViewMessages") || "Please log in to view your messages"}
+          </p>
+          <Link href="/auth/login">
+            <Button>{t("Login") || "Login"}</Button>
+          </Link>
         </motion.div>
       </div>
     )
@@ -293,16 +351,7 @@ const Messages = () => {
             >
               <div className="flex items-center">
                 <MessageCircle className="h-6 w-6 mr-3 text-primary" />
-                <h2 className="text-xl font-bold">{t("Messages") || "Messages"}</h2>
-                {Object.values(unreadCounts).reduce((sum, count) => sum + count, 0) > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] ml-2 right-2 left-2"
-                  >
-                    {Object.values(unreadCounts).reduce((sum, count) => sum + count, 0)}
-                  </motion.div>
-                )}
+                 <h2 className="text-xl font-bold">{t("Messages") || "Messages"}</h2>
               </div>
               {isRefreshing && (
                 <motion.div
@@ -334,10 +383,24 @@ const Messages = () => {
             </motion.div>
 
             {/* Offers List */}
-            <ScrollArea className="h-[calc(100vh-200px)] border-t ">
+            <ScrollArea className="h-[calc(100vh-200px)] border-t [&_[data-radix-scroll-area-scrollbar]]:hidden">
               <motion.div className="space-y-2" variants={containerVariants} initial="hidden" animate="visible">
-                <AnimatePresence mode="popLayout">
-                  {filteredOffers.map((offer, index) => (
+                {filteredOffers.length === 0 ? (
+                  <motion.div
+                    className="flex flex-col items-center justify-center py-8 text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">{t("NoConversations") || "No conversations yet"}</h3>
+                    <p className="text-muted-foreground text-sm">
+                      {t("StartSwappingToSeeMessages") || "Start swapping items to see your conversations here"}
+                    </p>
+                  </motion.div>
+                ) : (
+                  <AnimatePresence mode="popLayout">
+                    {filteredOffers.map((offer, index) => (
                     <motion.div
                       key={offer.id}
                       variants={messageVariants}
@@ -346,12 +409,14 @@ const Messages = () => {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <Card
-                        className={`cursor-pointer transition-all duration-200 mt-1 mx-1 border border-none ${
-                          selectedOffer?.id === offer.id ? "ring-2 ring-primary bg-primary/5" : "hover:bg-muted/50"
-                        }`}
-                        onClick={() => setSelectedOffer(offer)}
-                      >
+                       <Card
+                         className={`cursor-pointer transition-all duration-200 mt-1 mx-1 border border-none ${
+                           selectedOffer?.id === offer.id ? "ring-2 ring-primary bg-primary/5" : 
+                           offer.status_offer === "completed" ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" :
+                           "hover:bg-muted/50"
+                         }`}
+                         onClick={() => setSelectedOffer(offer)}
+                       >
                         <CardContent className="p-0 mt-0">
                           <div className="flex items-start space-x-3">
                             <div className="flex items-center text-sm w-full ">
@@ -362,11 +427,9 @@ const Messages = () => {
                               >
                                 <Avatar className="h-12 w-12">
                                   <AvatarImage
-                                    src={
-                                      `https://deel-deal-directus.csiwm3.easypanel.host/assets/${offer.partner_avatar || "/placeholder.svg"}` ||
-                                      "/placeholder.svg"
-                                    }
-                                    alt={offer.partner_name || t("Unknown")}
+                                    src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${offer.partnerUser.avatar}`}
+                                   
+                                  alt={offer.partner_name || t("Unknown")}
                                   />
                                   <AvatarFallback>{offer.partner_name?.[0] || "U"}</AvatarFallback>
                                 </Avatar>
@@ -377,18 +440,31 @@ const Messages = () => {
                                 ) : null}
                               </motion.div>
                               <div className="flex flex-col ml-2 flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <span className="px-1 text-gray-400 capitalize truncate">{offer.partner_name || ""}</span>
-                                  {unreadCounts[offer.id] > 0 && (
-                                    <motion.div
-                                      initial={{ scale: 0 }}
-                                      animate={{ scale: 1 }}
-                                      className="bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] mx-1"
-                                    >
-                                      {unreadCounts[offer.id] > 99 ? "99+" : unreadCounts[offer.id]}
-                                    </motion.div>
-                                  )}
-                                </div>
+                                 <div className="flex items-center justify-between">
+                                   <span className="px-1 text-gray-400 capitalize truncate">{offer.partner_name || ""}</span>
+                                   {/* {offer.status_offer === "completed" && (
+                                     <motion.div
+                                       initial={{ scale: 0 }}
+                                       animate={{ scale: 1 }}
+                                       whileHover={{ scale: 1.1 }}
+                                       whileTap={{ scale: 0.9 }}
+                                     >
+                                       <Button
+                                         variant="ghost"
+                                         size="icon"
+                                         className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                         onClick={(e) => {
+                                          e.stopPropagation()
+                                          e.preventDefault()
+                                           handleRemoveCompletedOffer(offer.id)
+                                          //  fetchOffers(true)
+                                         }}
+                                       >
+                                         <X className="h-3 w-3" />
+                                       </Button>
+                                     </motion.div>
+                                   )} */}
+                                 </div>
                                 <span className="px-1 text-gray-400 truncate">{offer.last_message || ""}</span>
                               </div>
                             </div>
@@ -396,8 +472,9 @@ const Messages = () => {
                         </CardContent>
                       </Card>
                     </motion.div>
-                  ))}
-                </AnimatePresence>
+                    ))}
+                  </AnimatePresence>
+                )}
               </motion.div>
             </ScrollArea>
           </div>
@@ -501,7 +578,7 @@ const Messages = () => {
                   </motion.div>
                 )} */}
                 
-                <ScrollArea className="flex-1 p-4 overflow-y-auto">
+                <ScrollArea className="flex-1 p-4 overflow-y-auto [&_[data-radix-scroll-area-scrollbar]]:hidden">
                   <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
                     {/* Offer state hint for completed/rejected */}
                     {selectedOffer && (selectedOffer.status_offer === "completed" || selectedOffer.status_offer === "rejected") && (

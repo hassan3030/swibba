@@ -8,18 +8,17 @@ export const getAllCategories = async () => {
   try {
    
     const response = await axios.get(
-      `${baseItemsURL}/Categories`
-      , {
-        filter: { },
-        fields: "*",
-      },   
-      { }
+      `${baseItemsURL}/Categories`,
+      {
+         params: { fields: "*,translations.*, main_image.*,*.*.*", sort: "name" } 
+    } 
     );
     console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
+      names: response.data.data.map(category => category.name) || [],
       message: `All categories retrieved successfully`,
     };
   } catch (error) {

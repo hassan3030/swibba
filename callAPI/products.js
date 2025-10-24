@@ -2,8 +2,6 @@ import axios from "axios"
 import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth , getOptionalAuth } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 
-
-
 // Get available/unavailable products by user ID
 export const getAvailableAndUnavailableProducts = async (user_id) => {
   try {
@@ -62,10 +60,12 @@ export const getProducts = async (filters = {} , additionalParams = {}) => {
   if (token) {
     // Authenticated access - exclude user's own items and unavailable items
       baseFilter.status_swap = { _eq: "available" }
+      baseFilter.quantity = { _gt	: 0 }
       baseFilter.user_id = { _neq: `${userId}` } 
   } else { // finished it here 
    // Public access - show only available items
     baseFilter.status_swap = { _eq: "available" }
+    baseFilter.quantity = { _gt: 0 }
   }
   
 
@@ -108,6 +108,7 @@ export const getProductTopPrice = async (limit = 10) => {
     let url
     const queryParams = new URLSearchParams()
     queryParams.append("filter[status_swap][_eq]", "available")
+    queryParams.append("filter[quantity][_gt]", 0)
     queryParams.append("sort", "-price")
     queryParams.append("limit", limit.toString())
     
@@ -147,6 +148,7 @@ export const getProductSearchFilter = async (filter) => {
     const queryParams = new URLSearchParams()
 
     queryParams.append("filter[_and][0][status_swap][_neq]", "unavailable")
+    queryParams.append("filter[_and][0][quantity][_gt]", 0)
     queryParams.append("filter[_and][1][_or][0][name][_contains]", encodeURIComponent(cleanFilter))
     queryParams.append("filter[_and][1][_or][1][description][_contains]", encodeURIComponent(cleanFilter))
     queryParams.append("filter[_and][1][_or][2][category][_contains]", encodeURIComponent(cleanFilter))
@@ -169,7 +171,10 @@ export const getProductSearchFilter = async (filter) => {
 
 // Get products by category with validation
 export const getProductByCategory = async (category) => {
+  
   try {
+    const user = await decodedToken()
+    
     if (!category || typeof category !== "string" || category.trim().length === 0) {
       throw new Error("Category is required and must be a non-empty string")
     }
@@ -183,6 +188,8 @@ export const getProductByCategory = async (category) => {
           filter: {
             category: { _eq: cleanCategory },
             status_swap: { _eq: "available" },
+            quantity: { _gt: 0 },
+            user_id: { _neq: `${user?.id}` },
           }
         }
       })
@@ -204,27 +211,33 @@ export const getProductByCategory = async (category) => {
 export const getProductsEnhanced = async (filters = {}) => {
   try {
     const token = await getCookie()
-    
+    const { userId } = await validateAuth()
     // Build comprehensive filter object
     const apiFilter = {}
     const params = {
       fields: "*,images.*,translations.*,images.directus_files_id.*",
+      filter: {
+        quantity: { _gt: 0 },
+      }
     }
 
     // Base authentication filters
     if (!token) {
       // Public access - show only available items
       apiFilter.status_swap = { _eq: "available" }
+      apiFilter.quantity = { _gt: 0 }
     } else {
       // Authenticated access - exclude user's own items and unavailable items
-      const { userId } = await validateAuth()
+      
       if (userId) {
         apiFilter._and = [
           { user_id: { _neq: `${userId}` } },
-          { status_swap: { _eq: "available" } }
+          { status_swap: { _eq: "available" } },
+          { quantity: { _gt: 0 } }
         ]
       } else {
         apiFilter.status_swap = { _eq: "available" }
+        apiFilter.quantity = { _gt: 0 }
       }
     }
 
@@ -420,6 +433,9 @@ export const getProductById = async (id) => {
     return handleApiError(error, "Get Product By ID")
   }
 }
+
+
+
 // Get products by current user ID
 export const getProductByUserId = async (availablity) => {
   try {
@@ -437,6 +453,7 @@ if(availablity=="available" ){
         filter: {
           user_id: { _eq:`${userId}` },
           status_swap: { _eq: "available"  },
+          quantity: { _gt: 0 },
         }
       }
     }
@@ -462,6 +479,7 @@ else if( availablity=="unavailable"){
         fields: "*",
         filter: {
           offered_by: { _eq:`${userId}` },
+          // quantity: { _gt: 0 },
         }
       }
     }
@@ -494,20 +512,6 @@ else{
     }
     )
 }
-// else{ 
-//   response = await axios.get(` ${baseItemsURL}/Items` ,
-//     {
-//       params: {
-//         fields: "*,images.*,translations.*,images.directus_files_id.*",
-//         filter: {
-//           user_id: { _eq:`${userId}` },
-//         }
-//       }
-//     }
-//     )
-// }
-      
-
       // console.log("User products retrieved successfully, count:", response.data.data?.length || 0)
       return {
         success: true,
@@ -542,6 +546,7 @@ export const getProductsOwnerById = async (productId) => {
           filter: {
             status_swap: { _eq: "available" },
             user_id: { _eq: userResult.data.id },
+            quantity: { _gt: 0 },
           }
         }
       }
@@ -650,11 +655,8 @@ export const deleteProduct = async (id) => {
       if (!id) {
         throw new Error("Product ID is required")
       }
-
-      // Verify ownership before deletion
       const {token , userId   } = await validateAuth()
       const productResult = await getProductById(id)
-
       if (!productResult.success) {
         throw new Error("Product not found")
       }
@@ -662,58 +664,65 @@ export const deleteProduct = async (id) => {
       if (productResult.data.user_id !== userId) {
         throw new Error("Unauthorized: You can only delete your own products")
       }
+// ------------------------------------
+      const isItemsOffers = await axios.get(` ${baseItemsURL}/Offer_Items`,
+        {
+          params: {
+            fields: "*",
+            filter: {
+              offered_by: { _eq:`${userId}` },
+              item_id: { _eq:`${id}` },
+            }
+          }
+        }
+      )
 
-      // Add delay for better UX
-      await new Promise((resolve) => setTimeout(resolve, 500))
- // -------------------------------------------------
- let productImages = await axios.get(`${baseItemsURL}/Items/${id}`, {
-  params: {
-    fields: "*,images.*,images.directus_files_id.*",
-  },
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-})
-console.log("productImages", productImages)
-// delete the product
-      await axios.delete(`${baseItemsURL}/Items/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
 
-      // console.log("productImages", productImages)
-      productImages.data.data.images.forEach(async (image) => {
-       await axios.delete(`${baseURL}/Files/${image.directus_files_id.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      console.log("productImages")
-      })
-      // -------------------------------------------------
-// // delete the product images
-// let productImages = await axios.get(`${baseItemsURL}/Items_files?filter[Items_id][_eq]=${id}`, {
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//   },
-// })
+      if(isItemsOffers.data.data.length > 0){
+        // updat quantity to 0
+        const updateQuantity = await axios.patch(`${baseItemsURL}/Items/${id}`, {
+          quantity: 0,
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+        return {
+          success: true,
+          data: {  updateQuantity: updateQuantity.data.data   },
+          message: "Product  successfully and quantity updated to 0",
+        }
+      }else{
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        // -------------------------------------------------
+        let productImages = await axios.get(`${baseItemsURL}/Items/${id}`, {
+         params: {
+           fields: "*,images.*,images.directus_files_id.*",
+         },
+         headers: {
+           Authorization: `Bearer ${token}`,
+         },
+       })
+       console.log("productImages", productImages)
+       // delete the product
+             await axios.delete(`${baseItemsURL}/Items/${id}`, {
+               headers: {
+                 Authorization: `Bearer ${token}`,
+               },
+             })
+       
+             // console.log("productImages", productImages)
+             productImages.data.data.images.forEach(async (image) => {
+              await axios.delete(`${baseURL}/Files/${image.directus_files_id.id}`, {
+               headers: {
+                 Authorization: `Bearer ${token}`,
+               },
+             })
+             console.log("productImages")
+             })
+      }
 
-// productImages.data.data.forEach(async (image) => {
-//  await axios.delete(`${baseURL}/Files/${image.directus_files_id}`, {
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//   },
-// })
-// })
-
-// await axios.delete(`${baseItemsURL}/Items_files?filter[Items_id][_eq]=${id}`, {
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//   },
-// })
-
-      // console.log("Product deleted successfully, ID:", id)
       return {
         success: true,
         data: { deleted_id: id },

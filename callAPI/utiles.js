@@ -2,7 +2,7 @@ import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 
 export const baseURL = process.env.BASE_URL || "https://dev-dashboard.swibba.com/"
-export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items"
+export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items/"
 export const mediaURL = process.env.MEDIA_URL || 'https://deel-deal-directus.csiwm3.easypanel.host/assets/' 
 export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
 

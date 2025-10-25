@@ -103,7 +103,7 @@ export function CategoryCard({ name, imageSrc, translations, showCategoryLevels 
         >
           {isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}
         </motion.span>
-        
+{/*         
         {
           showCategoryLevels && (
            <>
@@ -118,7 +118,7 @@ export function CategoryCard({ name, imageSrc, translations, showCategoryLevels 
             </CategoryLevelsHover>
            </>
           )
-        }
+        } */}
         {/* <CategoryLevelsTest catLevels={catLevels} className="inline-block" /> */}
       </motion.div>
     </Link>

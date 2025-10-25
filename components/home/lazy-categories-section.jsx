@@ -6,6 +6,7 @@ import { categories as fallbackCategories } from "@/lib/data" // Fallback catego
 import { CategoryCard } from "@/components/products/category-card"
 import { CategoryCardSkeleton } from "@/components/loading/category-card-skeleton"
 import { useInView } from "react-intersection-observer"
+import { mediaURL } from "@/callAPI/utiles";
 
 
 
@@ -72,7 +73,7 @@ const LazyCategoriesSection = ({ t, categories = [], categoriesNames = [] }) => 
     // Use API categories or fallback to static categories
     const displayCategories = categories.length > 0 ? categories.map(category => ({
       name: category.name,
-      imageSrc: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${category.main_image?.id}`,
+      imageSrc: `${mediaURL}${category.main_image?.id}`,
       translations: category.translations || [],
       cat_levels: category.cat_levels || null,
     })) : fallbackCategories.map(category => ({

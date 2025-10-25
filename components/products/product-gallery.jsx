@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Play, Pause, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMediaType } from "@/lib/utils"
+import { mediaURL } from "@/callAPI/utiles";
 
 const imageVariants = {
   enter: (direction) => ({
@@ -107,7 +108,7 @@ export function ProductGallery({ images, productName }) {
     id: images[currentImage]?.directus_files_id.id || '',
     type: images[currentImage]?.directus_files_id.type || '',
     url: images[currentImage]?.directus_files_id?.id
-      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
+      ? `${mediaURL}${images[currentImage]?.directus_files_id.id}`
       : ''
   }
   const currentMediaType = getMediaType(currentMedia.type)
@@ -344,7 +345,7 @@ export function ProductGallery({ images, productName }) {
           const currentMedia = {
             id: images[currentImage]?.directus_files_id.id || '',
             type: images[currentImage]?.directus_files_id.type || '',
-            url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[currentImage]?.directus_files_id.id}`
+            url: `${mediaURL}${images[currentImage]?.directus_files_id.id}`
           }
           // console.log("currentMedia", currentMedia)
           // Determine media type based on URL
@@ -462,7 +463,7 @@ export function ProductGallery({ images, productName }) {
                 const imageUrl = {
                   id: image.directus_files_id.id,
                   type: image.directus_files_id.type,
-                  url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${image.directus_files_id.id}`
+                    url: `${mediaURL}${image.directus_files_id.id}`
                 }
                 const mediaType = getMediaType(imageUrl.type)
                 

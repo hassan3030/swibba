@@ -13,6 +13,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { getUserById } from "@/callAPI/users"
 import { getCurrentUserId } from "@/callAPI/utiles"
 import Image from "next/image"
+import { mediaURL } from "@/callAPI/utiles";
 
 // Animation variants 
 const cardVariants = {

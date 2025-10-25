@@ -20,7 +20,7 @@ export const getAvailableAndUnavailableProducts = async (user_id) => {
 
     const response = await axios.get(
       // `${baseItemsURL}/Items?filter[user_id][_eq]=${user_id}&filter[status_swap][_eq]=${status}&fields=*,translations.*,images.*,images.directus_files_id.*`,
-      `${baseItemsURL}/Items`
+      `${baseItemsURL}Items`
       , {
         filter: {
           user_id: { _eq: user_id },
@@ -83,7 +83,7 @@ export const getProducts = async (filters = {} , additionalParams = {}) => {
   
   let response;
   try {
-    response = await axios.get(`${baseItemsURL}/Items`, {
+    response = await axios.get(`${baseItemsURL}Items`, {
       params: finalParams
     })
     
@@ -116,7 +116,7 @@ export const getProductTopPrice = async (limit = 10) => {
       queryParams.append("filter[user_id][_neq]", decoded.id)
     }
 
-    url = `${baseItemsURL}/Items?${queryParams.toString()}`
+    url = `${baseItemsURL}Items?${queryParams.toString()}`
     ,
       {
         params: {
@@ -152,8 +152,10 @@ export const getProductSearchFilter = async (filter) => {
     queryParams.append("filter[_and][1][_or][0][name][_contains]", encodeURIComponent(cleanFilter))
     queryParams.append("filter[_and][1][_or][1][description][_contains]", encodeURIComponent(cleanFilter))
     queryParams.append("filter[_and][1][_or][2][category][_contains]", encodeURIComponent(cleanFilter))
+    queryParams.append("filter[_and][1][_or][3][translations.name][_contains]", encodeURIComponent(cleanFilter))
+    queryParams.append("filter[_and][1][_or][4][translations.description][_contains]", encodeURIComponent(cleanFilter))
 
-    const url = `${baseItemsURL}/Items?${queryParams.toString()}&fields=*,translations.*,images.*,images.directus_files_id.*`
+    const url = `${baseItemsURL}Items?${queryParams.toString()}&fields=*,translations.*,images.*,images.directus_files_id.*`
     const response = await axios.get(url)
 
     // console.log("Search completed, results:", response.data.data?.length || 0)
@@ -181,7 +183,7 @@ export const getProductByCategory = async (category) => {
 
     const cleanCategory = category.trim().toLowerCase()
     // console.log('getProductByCategory: Searching for category:', cleanCategory)
-    const response = await axios.get(`${baseItemsURL}/Items`,
+    const response = await axios.get(`${baseItemsURL}Items`,
       {
         params: {
           fields: "*,images.*,translations.*,images.directus_files_id.*",
@@ -260,19 +262,26 @@ export const getProductsEnhanced = async (filters = {}) => {
       // console.log('Enhanced API: Multiple categories filter applied:', normalizedCategories)
     }
 
-    // Search filter
+    // Search filter with RTL support
     if (filters.search) {
       additionalFilters.push({
         _or: [
           { name: { _contains: filters.search } },
-          { description: { _contains: filters.search } }
+          { description: { _contains: filters.search } },
+          { "translations.name": { _contains: filters.search } },
+          { "translations.description": { _contains: filters.search } }
         ]
       })
     }
 
-    // Name filter
+    // Name filter with RTL support
     if (filters.name) {
-      additionalFilters.push({ name: { _contains: filters.name } })
+      additionalFilters.push({
+        _or: [
+          { name: { _contains: filters.name } },
+          { "translations.name": { _contains: filters.name } }
+        ]
+      })
     }
 
     // Price range filters
@@ -345,7 +354,7 @@ export const getProductsEnhanced = async (filters = {}) => {
 
     // console.log("Enhanced API Filter params:", JSON.stringify(params, null, 2))
 
-    const response = await axios.get(`${baseItemsURL}/Items`, { params })
+    const response = await axios.get(`${baseItemsURL}Items`, { params })
     
     let resultData = response.data.data || []
 
@@ -400,9 +409,9 @@ export const getProductById = async (id) => {
     if (!id) {
       throw new Error("Product ID is required")
     }
-    // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
+    // const response = await axios.get(`${baseItemsURL}Items/${id}?fields=*,translations.*,images.*`)
     const response = await axios.get(
-      `${baseItemsURL}/Items/${id}`,
+      `${baseItemsURL}Items/${id}`,
       {
         params: {
           fields: "*,translations.*,images.*,images.directus_files_id.*"
@@ -446,34 +455,22 @@ export const getProductByUserId = async (availablity) => {
       }
       let response;
 if(availablity=="available" ){
-  response = await axios.get(` ${baseItemsURL}/Items` ,
+  response = await axios.get(` ${baseItemsURL}Items` ,
     {
       params: {
-        fields: "*,images.*,translations.*,images.directus_files_id.*",
+        fields: "*,images.*,translations.*.*,images.directus_files_id.*",
         filter: {
           user_id: { _eq:`${userId}` },
-          status_swap: { _eq: "available"  },
+          status_swap: { _eq: "available"},
           quantity: { _gt: 0 },
         }
       }
     }
     )
 }
-// else if( availablity=="unavailable"){
-//   response = await axios.get(` ${baseItemsURL}/Items`,
-//     {
-//       params: {
-//         fields: "*,images.*,translations.*,images.directus_files_id.*",
-//         filter: {
-//           user_id: { _eq:`${userId}` },
-//           status_swap: { _eq: "unavailable" },
-//         }
-//       }
-//     }
-//     )
-// }
+
 else if( availablity=="unavailable"){
-  const unavailableItemsOffers = await axios.get(` ${baseItemsURL}/Offer_Items`,
+  const unavailableItemsOffers = await axios.get(` ${baseItemsURL}Offer_Items`,
     {
       params: {
         fields: "*",
@@ -489,19 +486,24 @@ else if( availablity=="unavailable"){
   console.log("unavailableItemsOffersIds", unavailableItemsOffersIds)
 
 
-  response = await axios.get(` ${baseItemsURL}/Items`,
+  response = await axios.get(` ${baseItemsURL}Items`,
     {
       params: {
         fields: "*,images.*,translations.*,images.directus_files_id.*",
         filter: {
-          id: { _in: unavailableItemsOffersIds },
+      _or: [
+        { id: { _in: unavailableItemsOffersIds } } ,
+         { quantity: { _eq: 0 } },
+         { status_swap: { _eq: "unavailable" } }
+      ],
+            user_id: { _eq:`${userId}` } ,
         }
       }
     }
     )
 }
 else{
-  response = await axios.get(` ${baseItemsURL}/Items` ,
+  response = await axios.get(` ${baseItemsURL}Items` ,
     {
       params: {
         fields: "*,images.*,translations.*,images.directus_files_id.*",
@@ -538,7 +540,7 @@ export const getProductsOwnerById = async (productId) => {
       throw new Error(userResult.error)
     }
 
-    const response = await axios.get(`${baseItemsURL}/Items`,
+    const response = await axios.get(`${baseItemsURL}Items`,
       
       {
         params: {
@@ -607,7 +609,7 @@ export const removeProductImage = async (itemId, fileId) => {
       const { token } = await validateAuth();
 
       // Find the specific Items_files entry to delete
-      const relationRes = await axios.get(`${baseItemsURL}/Items_files`, {
+      const relationRes = await axios.get(`${baseItemsURL}Items_files`, {
         params: {
           filter: {
             Items_id: { _eq: itemId },
@@ -630,7 +632,7 @@ export const removeProductImage = async (itemId, fileId) => {
       }
 
       // Delete the Items_files entry
-      await axios.delete(`${baseItemsURL}/Items_files/${relation.id}`, {
+      await axios.delete(`${baseItemsURL}Items_files/${relation.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -665,7 +667,7 @@ export const deleteProduct = async (id) => {
         throw new Error("Unauthorized: You can only delete your own products")
       }
 // ------------------------------------
-      const isItemsOffers = await axios.get(` ${baseItemsURL}/Offer_Items`,
+      const isItemsOffers = await axios.get(` ${baseItemsURL}Offer_Items`,
         {
           params: {
             fields: "*",
@@ -680,7 +682,7 @@ export const deleteProduct = async (id) => {
 
       if(isItemsOffers.data.data.length > 0){
         // updat quantity to 0
-        const updateQuantity = await axios.patch(`${baseItemsURL}/Items/${id}`, {
+        const updateQuantity = await axios.patch(`${baseItemsURL}Items/${id}`, {
           quantity: 0,
         }, {
           headers: {
@@ -696,7 +698,7 @@ export const deleteProduct = async (id) => {
       }else{
         await new Promise((resolve) => setTimeout(resolve, 500))
         // -------------------------------------------------
-        let productImages = await axios.get(`${baseItemsURL}/Items/${id}`, {
+        let productImages = await axios.get(`${baseItemsURL}Items/${id}`, {
          params: {
            fields: "*,images.*,images.directus_files_id.*",
          },
@@ -706,7 +708,7 @@ export const deleteProduct = async (id) => {
        })
        console.log("productImages", productImages)
        // delete the product
-             await axios.delete(`${baseItemsURL}/Items/${id}`, {
+             await axios.delete(`${baseItemsURL}Items/${id}`, {
                headers: {
                  Authorization: `Bearer ${token}`,
                },
@@ -771,7 +773,7 @@ export const addProduct = async (payload, files) => {
 
       // Create the item
       const itemRes = await axios.post(
-        `${baseItemsURL}/Items`,
+        `${baseItemsURL}Items`,
         {
           ...payload,
           user_id: userId,
@@ -817,7 +819,7 @@ export const addProduct = async (payload, files) => {
             throw new Error("Authentication required")
           }
           await axios.post(
-            `${baseItemsURL}/Items_files`,
+            `${baseItemsURL}Items_files`,
             {
               Items_id: itemId,
               directus_files_id: fileId,
@@ -901,7 +903,7 @@ export const updateProduct = async (payload, files, itemId) => {
 
       // Update the item with translations included (Directus native approach)
       const itemRes = await axios.patch(
-        `${baseItemsURL}/Items/${itemId}`,
+        `${baseItemsURL}Items/${itemId}`,
         {
           ...payload,
           date_updated: new Date().toISOString(),
@@ -923,7 +925,7 @@ export const updateProduct = async (payload, files, itemId) => {
         for (const fileId of deletedIds) {
           try {
             // Find and delete the Items_files relation
-            const relationRes = await axios.get(`${baseItemsURL}/Items_files`, {
+            const relationRes = await axios.get(`${baseItemsURL}Items_files`, {
               params: {
                 filter: {
                   Items_id: { _eq: itemId },
@@ -936,7 +938,7 @@ export const updateProduct = async (payload, files, itemId) => {
 
             const relation = relationRes.data?.data?.[0];
             if (relation) {
-              await axios.delete(`${baseItemsURL}/Items_files/${relation.id}`, {
+              await axios.delete(`${baseItemsURL}Items_files/${relation.id}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
             }
@@ -970,7 +972,7 @@ export const updateProduct = async (payload, files, itemId) => {
           }
 
           await axios.post(
-            `${baseItemsURL}/Items_files`,
+            `${baseItemsURL}Items_files`,
             {
               Items_id: itemId,
               directus_files_id: fileId,
@@ -1011,3 +1013,48 @@ export const updateProduct = async (payload, files, itemId) => {
     return handleApiError(error, "Update Product")
   }
 } 
+
+
+// Update product quantity
+export const updateProductQuantity = async (itemId, quantity , status_swap) => {
+  try {
+    return await makeAuthenticatedRequest(async () => {
+      if (!itemId || !quantity || !status_swap) {
+        throw new Error("Item ID, quantity and status are required")
+      }
+
+      const { token, userId } = await validateAuth()
+
+      if (!token || !userId) {
+        throw new Error("Authentication required")
+      }
+
+      // Update the item with translations included (Directus native approach)
+      const itemRes = await axios.patch(
+        `${baseItemsURL}Items/${itemId}`,
+        {
+          quantity: quantity,
+          status_swap: status_swap,
+          date_updated: new Date().toISOString(),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+
+      return {
+        success: true,
+        data: {
+          ...itemRes.data.data,
+        },
+        message: "Product quantity updated successfully to " + quantity + " and status updated to " + status_swap,
+      }
+    })
+  } catch (error) {
+    return handleApiError(error, "Update Product Quantity")
+  }
+}
+    

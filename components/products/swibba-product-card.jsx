@@ -14,6 +14,7 @@ import { decodedToken, getCookie  , setTarget} from "@/callAPI/utiles"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
 import { getKYC } from "@/callAPI/users"
+import { mediaURL } from "@/callAPI/utiles";
  
 
 const cardVariants = {
@@ -249,7 +250,7 @@ export function SwibbaProductCard({
                     const mediaUrl = {
                       id: images[0]?.directus_files_id.id,
                       type: images[0]?.directus_files_id.type,
-                      url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+                      url: `${mediaURL}${images[0]?.directus_files_id.id}`
                     }
                     const mediaType = getMediaType(mediaUrl.type)
                     

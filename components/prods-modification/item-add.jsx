@@ -107,7 +107,7 @@ export function ItemAdd() {
   const [aiReply, setAiReply] = useState(null)
   const [user, setUser] = useState()
   const [isMapRefreshing, setIsMapRefreshing] = useState(false)
-
+  const [aiPriceEstimationHint, setAiPriceEstimationHint] = useState(false)
   const { toast } = useToast()
   const { t } = useTranslations()
   const { isRTL, toggleLanguage } = useLanguage()
@@ -447,15 +447,14 @@ else{
       return;
     }
 
-    // Prevent saving without AI estimation and show hint toast
+    // Show hint toast if AI estimation is not available, but don't prevent saving
     if (aiPriceEstimation === null || aiPriceEstimation <= 0) {
       toast({
-        title: t("AIEstimationRequired") || "⚠️ AI Estimation Required",
-        description: t("PleaseclickAIestimatetogetpriceestimatebeforeaddingitem") || "Please click 'Get AI Estimate' to get a price estimate before adding your item!",
-        duration: 5000,
-        variant: "destructive",
+        title: t("AIEstimationRecommended") || "💡 AI Estimation Recommended",
+        description: t("ConsidergettingAIestimatetogetbetterpriceestimate") || "Consider getting an AI estimate for a better price estimation!",
+        duration: 4000,
+        variant: "default",
       });
-      return;
     }
 
     setIsSubmitting(true);
@@ -492,14 +491,38 @@ else{
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const country = form.getValues('country') || 'Unknown Country';
-        const city = form.getValues('city') || 'Unknown City';
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        // Try to get location name using reverse geocoding
+        let locationName = 'Current Location';
+        try {
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            if (data.city && data.countryName) {
+              locationName = `${data.city}, ${data.countryName}`;
+              // Auto-fill form fields if they're empty
+              if (!form.getValues('country')) {
+                form.setValue('country', data.countryName);
+              }
+              if (!form.getValues('city')) {
+                form.setValue('city', data.city);
+              }
+            }
+          }
+        } catch (error) {
+          console.log('Reverse geocoding failed, using coordinates only');
+        }
+        
         const pos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          lat: lat,
+          lng: lng,
           accuracy: position.coords.accuracy,
-          name: `${city}, ${country}`,
+          name: locationName,
         }
         setCurrentPosition(pos)
         setSelectedPosition(pos)
@@ -514,7 +537,7 @@ else{
         setIsGettingLocation(false)
         toast({
           title: t("CurrentLocationFound") || "Current location found",
-          description: `${t("Latitude")}: ${pos.lat.toFixed(6)}, ${t("Longitude")}: ${pos.lng.toFixed(6)}`,
+          description: `${locationName} - ${t("Latitude")}: ${pos.lat.toFixed(6)}, ${t("Longitude")}: ${pos.lng.toFixed(6)}`,
         })
       },
       (error) => {
@@ -539,24 +562,53 @@ else{
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
+        timeout: 15000,
+        maximumAge: 30000,
       },
     )
   }
 
-  const handleLocationSelect = (location) => {
+  const handleLocationSelect = async (location) => {
+    let locationName = location.name || "Selected Location";
+    
+    // Try to get location name using reverse geocoding
+    try {
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${location.lat}&longitude=${location.lng}&localityLanguage=en`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.city && data.countryName) {
+          locationName = `${data.city}, ${data.countryName}`;
+          // Auto-fill form fields if they're empty
+          if (!form.getValues('country')) {
+            form.setValue('country', data.countryName);
+          }
+          if (!form.getValues('city')) {
+            form.setValue('city', data.city);
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Reverse geocoding failed for selected location');
+    }
+    
+    const updatedLocation = {
+      ...location,
+      name: locationName
+    };
+    
     set_geo_location({
       lat: location.lat,
       lng: location.lng,
       accuracy: 0,
-      name: location.name || "Selected Location",
+      name: locationName,
     })
-    setSelectedPosition(location)
+    setSelectedPosition(updatedLocation)
     
     toast({
       title: t("locationSelected") || "Location Selected",
-      description: `${t("selectedLocation") || "Selected location"}: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+      description: `${locationName} - ${t("Latitude")}: ${location.lat.toFixed(6)}, ${t("Longitude")}: ${location.lng.toFixed(6)}`,
     })
   }
 
@@ -571,10 +623,20 @@ else{
       })
       return
     }
+    
+    if (!form.getValues('value_estimate') && !aiPriceEstimation) {
+      setAiPriceEstimationHint(true)
+      toast({
+        title: t("error") || "ERROR ",
+        description: t("PleasegetAIestimatetosetvalueestimate") || "Please get an AI estimate to set a value estimate for your item!",
+        variant: "destructive",
+      }) 
+      setIsSubmitting(false)
+      return
+    }
 
     try {
     getUser()
-
       // Create translations with fallbacks
       const translations = [
         {
@@ -649,10 +711,8 @@ else{
     Object.keys(geo_location).length > 0 
     
    
-  // Validation for step 2 fields (requires AI estimation)
+  // Validation for step 2 fields (no longer requires AI estimation)
   const isStep2Valid = images.length > 0 &&
-    aiPriceEstimation !== null &&
-    aiPriceEstimation > 0 &&
     form.watch("allowed_categories")?.length > 0 &&
     form.watch("quantity") &&
     form.watch("quantity") > 0 &&
@@ -1354,6 +1414,23 @@ else{
                             {t("Setfairmarketvaluetohelpfacilitatebalancedswaps") ||
                               "Set a fair market value to help facilitate balanced swaps."}
                           </FormDescription>
+                        {
+                           aiPriceEstimationHint && 
+                            ( <div className="mt-2">
+                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-300 text-blue-900 text-xs font-medium rounded px-3 py-2">
+                              <svg width="16" height="16" fill="none" viewBox="0 0 20 20" className="flex-shrink-0 text-blue-400">
+                                <circle cx="10" cy="10" r="10" fill="#3B82F6" fillOpacity="0.15"/>
+                                <path d="M10 6.667V10M10 13.333h.008" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <span>
+                                {t("hintfairmarketvalueAI") ||
+                                  "Hint: Using the AI estimate helps ensure your item is priced fairly for swaps. You can adjust the value if you think the suggestion is off."}
+                              </span>
+                            </div>
+                          </div>)
+                           
+                        }
+                          
                           <FormMessage />
                         </FormItem>
                       )}

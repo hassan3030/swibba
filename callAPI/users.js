@@ -262,7 +262,7 @@ export const getUserByProductId = async (productId) => {
       throw new Error("Product ID is required")
     }
 
-    const productRes = await axios.get(`${baseItemsURL}/Items/${productId}?fields=*,translations.*,images.*`)
+    const productRes = await axios.get(`${baseItemsURL}Items/${productId}?fields=*,translations.*,images.*`)
     const userId = productRes.data?.data?.user_id
      // console.log('userId' , userId)
     if (!userId) {

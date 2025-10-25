@@ -11,6 +11,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { useToast } from "@/components/ui/use-toast"
 import { useRTL } from "@/hooks/use-rtl"
 import { getMediaType } from "@/lib/utils"
+import { mediaURL } from "@/callAPI/utiles";
 
 // ItemCard component
 const ItemCard = ({ id, name, description, price, images, allowed_categories,translations, status_swap, category, quantity: originalQuantity = 1, onQuantityChange, selectedQuantity = 1, hasOtherItemsSelected = false }) => {
@@ -116,7 +117,7 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
           const currentMedia = {
             id: images[0].directus_files_id.id,
             type: images[0].directus_files_id.type,
-            url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0].directus_files_id.id}`
+            url: `${mediaURL}${images[0].directus_files_id.id}`
           }
           
           // Get media type from the MIME type

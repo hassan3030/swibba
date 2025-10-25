@@ -11,6 +11,7 @@ import { ArrowLeftRight, ChevronRight, Heart, Star, Play, Verified } from "lucid
 import { useRouter } from "next/navigation"
 import { cn, formatCurrency, formatRelativeTime, getMediaType } from "@/lib/utils"
 import { useCardTranslation } from "@/components/with-translation"
+import { mediaURL } from "@/callAPI/utiles";
   
 
 
@@ -129,7 +130,7 @@ export function ItemCard({ item }) {
                 const mediaUrl = {
                   id: item.images[0]?.directus_files_id.id,
                   type: item.images[0]?.directus_files_id.type,
-                  url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}`
+                  url: `${mediaURL}${item.images[0]?.directus_files_id.id}`
                 }
                 const mediaType = getMediaType(mediaUrl.type)
                 

@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "@/lib/theme-provider"
 import { removeCookie, getCookie, decodedToken } from "@/callAPI/utiles"
 import { getOfferById, getOffeReceived, getWishList, getMessage, getMessagesByUserId } from "@/callAPI/swap"
+import { getProductSearchFilter } from "@/callAPI/products"
 import { categoriesName } from "@/lib/data"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
@@ -56,7 +57,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
-
+import { mediaURL } from "@/callAPI/utiles";
 const navVariants = {
   hidden: { opacity: 0, y: -20 },
   visible: {
@@ -176,9 +177,31 @@ export function Header() {
 
 
   const handlegetProductSearchFilter = () => {
-    // const filterTrim = filter.trim()
-    if (filter) {
-      router.push(`/filterItems/${filter.toLocaleString().toLowerCase().trim()}`)
+    if (filter && filter.trim()) {
+      // RTL-aware search - the filter page will handle RTL logic
+      const searchTerm = filter.trim()
+      router.push(`/filterItems/${encodeURIComponent(searchTerm)}`)
+    }
+  }
+
+  // Enhanced RTL-aware search function
+  const handleRTLSearch = async (searchTerm) => {
+    if (!searchTerm.trim()) return
+    
+    try {
+      // Use the RTL-aware API search function
+      const results = await getProductSearchFilter(searchTerm.trim())
+      if (results.success && results.data.length > 0) {
+        // Redirect to filter page with results
+        router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
+      } else {
+        // Still redirect to filter page for "no results" display
+        router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
+      }
+    } catch (error) {
+      console.error("Search error:", error)
+      // Fallback to simple redirect
+      router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
     }
   }
 
@@ -287,7 +310,7 @@ export function Header() {
     if (filter === "") {
       router.push("/")
     } else if (filter.trim() !== "") {
-      handlegetProductSearchFilter()
+      handleRTLSearch(filter)
     }
   }, [filter, hasSearched])
 
@@ -456,7 +479,7 @@ export function Header() {
                 onBlur={() => setIsSearchFocused(false)}
                 onKeyUp={(e) => {
                   if (e.key === "Enter") {
-                    handlegetProductSearchFilter()
+                    handleRTLSearch(filter)
                     setHasSearched(true)
                   }
                 }}
@@ -468,7 +491,7 @@ export function Header() {
                     className={`absolute top-1/2 -translate-y-1/2 h-full rounded-full ${
                       isRTL ? "right-0 " : "left-0 -mr-2 "
                     } px-3 py-1`}
-                    onClick={() => handlegetProductSearchFilter()}
+                    onClick={() => handleRTLSearch(filter)}
                     variant="default"
                   >
                     <Search />
@@ -495,7 +518,7 @@ export function Header() {
                             width={100}
                             height={100}
                             src={
-                              `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar || "/placeholder.svg"}` || "/placeholder.svg"
+                              `${mediaURL}${user.avatar || "/placeholder.svg"}` || "/placeholder.svg"
                             }
                             alt={user?.first_name || t("account")}
                             className="h-6 w-6 rounded-full object-cover"

@@ -45,6 +45,7 @@ import FlagIcon from "@/components/general/flag-icon"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
 import PaymentPage from "@/app/payment/page"
+import { mediaURL } from "@/callAPI/utiles";
 
 // Animation variants
 const containerVariants = {
@@ -278,7 +279,7 @@ export default function ProfileSettingsPage() {
 
 
   useEffect(() => {
-    setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user?.avatar}` || "/placeholder-user.jpg")
+    setAvatarPath(`${mediaURL}${user?.avatar}` || "/placeholder-user.jpg")
     setFirstName(user?.first_name || "")
     setLasttName(user?.last_name || "")
     setGender(user?.gender || "")

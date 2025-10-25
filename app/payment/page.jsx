@@ -55,6 +55,7 @@ import {
   getTransactionHistory,
   checkAndUpdateUserVerification 
 } from "@/callAPI/payment"
+import { mediaURL } from "@/callAPI/utiles";
 
 // Animation variants
 const containerVariants = {
@@ -557,7 +558,7 @@ export default function PaymentPage({ showHeader = true }) {
               <Avatar className="h-10 w-10 ring-2 ring-primary/20">
               
                 <AvatarImage
-                  src={user?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}` : "/placeholder.svg"}
+                  src={user?.avatar ? `${mediaURL}${user.avatar}` : "/placeholder.svg"}
                   alt={user?.first_name || t("account")}
                 />
                 

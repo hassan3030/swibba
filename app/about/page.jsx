@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getFounders } from "../../callAPI/static";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/language-provider";
+import { mediaURL } from "@/callAPI/utiles";
 const AboutPage = () => {
     const { t } = useTranslations();
   const { isRTL } = useLanguage()
@@ -140,7 +141,7 @@ const AboutPage = () => {
                 <CardHeader>
                   <CardTitle>{`${isRTL ? founder.translations?.[1]?.name || founder.name : founder.translations?.[0]?.name ||founder.name}`}</CardTitle>
                   <CardDescription>{`${isRTL ? founder.translations?.[1]?.job_title || founder.job_title : founder.translations?.[0]?.job_title || founder.job_title}`}</CardDescription>
-                  <Image src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${founder.image.id}`} alt={`${isRTL ? founder.translations?.[1]?.name || founder.name : founder.translations?.[0]?.name ||founder.name}`} width={64} height={64} className="h-16 w-16 rounded-full" />
+                  <Image src={`${mediaURL}${founder.image.id}`} alt={`${isRTL ? founder.translations?.[1]?.name || founder.name : founder.translations?.[0]?.name ||founder.name}`} width={64} height={64} className="h-16 w-16 rounded-full" />
                 </CardHeader>
                 <CardContent>
                   <p>{`${isRTL ? founder.translations?.[1]?.description || founder.description : founder.translations?.[0]?.description || founder.description}`}</p>

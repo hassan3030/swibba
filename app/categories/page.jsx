@@ -8,6 +8,7 @@ import { categories as fallbackCategories } from "@/lib/data"
 import { getAllCategories } from "@/callAPI/static"
 import { useState, useEffect } from "react"
 import LoadingSpinner from "@/components/loading/loading-spinner"
+import { mediaURL } from "@/callAPI/utiles";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -63,7 +64,7 @@ const CategoriesPage = () => {
           // Transform API data to match expected format
           const transformedCategories = response.data.map(category => ({
             name: category.name,
-            imageSrc: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${category.main_image?.id}`,
+            imageSrc: `${mediaURL}${category.main_image?.id}`,
             translations: category.translations || [],
             catLevels: category.cat_levels || null,
           }))

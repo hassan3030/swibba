@@ -24,10 +24,12 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
-import { deleteProduct } from "@/callAPI/products"
+import { deleteProduct ,updateProductQuantity } from "@/callAPI/products"
+import { checkItemInOfferItems, deleteOfferItemsById, updateOfferItemsById } from "@/callAPI/swap"
 import { useTranslations } from "@/lib/use-translations"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
+import { mediaURL } from "@/callAPI/utiles";
 
 // Animation variants
 const cardVariants = {
@@ -70,22 +72,36 @@ const ItemCard = ({ item }) => {
   // const [bigImage, setBigImage] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false)
+  const [newQuantity, setNewQuantity] = useState(1)
+  const [isProcessing, setIsProcessing] = useState(false)
   const { t } = useTranslations()
   const router = useRouter()
   const { isRTL, toggleLanguage } = useLanguage()
   const [imageLoaded, setImageLoaded] = useState(false)
 
+  
 
 
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await deleteProduct(item.id)
-      toast({
-        title: t("itemDeleted") || "Item Deleted",
-        description: t("itemDeletedDesc") || "The item has been successfully deleted.",
-        variant: "default",
-      })
+      const deleteItem = await deleteProduct(item.id)
+      if (deleteItem.success) {
+        toast({
+          title: t("itemUpdated") || "Item Updated",
+          description: t("itemQuantitySetToZero") || "Item quantity has been set to 0 in all offers.",
+          variant: "default",
+        })
+      } else {
+        // Item doesn't exist in offers, delete it completely
+        await deleteProduct(item.id)
+        toast({
+          title: t("itemDeleted") || "Item Deleted",
+          description: t("itemDeletedDesc") || "The item has been successfully deleted.",
+          variant: "default",
+        })
+      }
       router.refresh()
     } catch (error) {
       toast({
@@ -95,6 +111,54 @@ const ItemCard = ({ item }) => {
       })
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleUpdate = async () => {
+    setIsProcessing(true)
+    try {
+      // Check if item exists in Offer_Items
+      const offerCheck = await checkItemInOfferItems(item.id)
+      
+      if (offerCheck.success && offerCheck.exists) {
+        // Item doesn't exist in offers, show quantity dialog
+        setShowQuantityDialog(true)
+      } else {
+         // Item exists in offers, redirect to edit page
+        router.push(`/profile/settings/editItem/${item.id}`)
+       
+      }
+    } catch (error) {
+      toast({
+        title: t("error") || "Error",
+        description: t("updateError") || "Failed to update item. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleAddQuantity = async ( quantity, status_swap) => {
+    setIsProcessing(true)
+    try {
+      // Update item quantity
+      await updateProductQuantity(item.id, quantity, status_swap) // This will be replaced with proper quantity update
+      toast({
+        title: t("quantityAdded") || "Quantity Added",
+        description: t("newQuantityAdded") || "New quantity has been added to the item.",
+        variant: "default",
+      })
+      setShowQuantityDialog(false)
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: t("error") || "Error",
+        description: t("quantityError") || "Failed to add quantity. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -121,7 +185,7 @@ const ItemCard = ({ item }) => {
                     const mediaUrl = {
                       id: item.images[0]?.directus_files_id.id,
                       type: item.images[0]?.directus_files_id.type,
-                      url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}`
+                      url: `${mediaURL}${item.images[0]?.directus_files_id.id}`
                     }
                     const mediaType = getMediaType(mediaUrl.type)
                     
@@ -219,6 +283,11 @@ const ItemCard = ({ item }) => {
                 <Badge>
                   {t("statusSwap")}: {t(item.status_swap)}
                 </Badge>
+                {item.quantity === 0 && (
+                  <Badge variant="destructive" className="bg-orange-100 text-orange-800 border-orange-200">
+                    {t("allItemsInOffer") || "All items in offer"}
+                  </Badge>
+                )}
               </motion.div>
             </div>
 
@@ -279,15 +348,13 @@ const ItemCard = ({ item }) => {
                       {t("view")}
                     </Link>
                   </DropdownMenuItem>
-                  {item.status_swap === "available" && (
-                  <DropdownMenuItem asChild>
-                    <Link href={`settings/editItem/${item.id}`} className="flex items-center w-full">
+                  {item.quantity > 0 && item.status_swap === "available" && (
+                    <DropdownMenuItem onClick={handleUpdate} disabled={isProcessing}>
                       <Edit className="mr-2 h-4 w-4" />
                       {t("edit")}
-                    </Link>
-                  </DropdownMenuItem>
+                    </DropdownMenuItem>
                   )}
-                  {item.status_swap === "available" && (
+                  {item.quantity > 0 && item.status_swap === "available" && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)} className="text-destructive">
@@ -320,7 +387,7 @@ const ItemCard = ({ item }) => {
                     <DialogClose asChild>
                       <Button variant="outline">{t("cancel") || "Cancel"}</Button>
                     </DialogClose>
-                    <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                    <Button variant="destructive" onClick={() => handleDelete()} disabled={isDeleting}>
                       {isDeleting ? (
                         <>
                           <motion.div
@@ -336,6 +403,60 @@ const ItemCard = ({ item }) => {
                         </>
                       ) : (
                         t("delete") || "Delete"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </motion.div>
+              </DialogContent>
+            </Dialog>
+            
+            {/* Quantity Dialog */}
+            <Dialog open={showQuantityDialog} onOpenChange={setShowQuantityDialog}>
+              <DialogContent>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  <DialogHeader>
+                    <DialogTitle>{t("addQuantity") || "Add Quantity"}</DialogTitle>
+                    <DialogDescription>
+                      {t("addQuantityDesc") || "This item is not in any offers. Add a new quantity to make it available."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">{t("quantity") || "Quantity"}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={newQuantity}
+                        onChange={(e) => setNewQuantity(parseInt(e.target.value) || 1)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter className="flex mt-2">
+                    <DialogClose asChild>
+                      <Button variant="outline">{t("cancel") || "Cancel"}</Button>
+                    </DialogClose>
+                    <Button onClick={() => handleAddQuantity(newQuantity, "available")} disabled={isProcessing}>
+                      {isProcessing ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              ease: "linear",
+                            }}
+                            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                          />
+                          {t("adding") || "Adding..."}
+                        </>
+                      ) : (
+                        t("addQuantity") || "Add Quantity"
                       )}
                     </Button>
                   </DialogFooter>

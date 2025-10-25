@@ -120,6 +120,7 @@ export function ItemsList({
   showbtn = true,
   showSwitchHeart = true,
   defaultCategory = "all",
+  LinkItemOffer=false,
 }) {
   const [displayedItems, setDisplayedItems] = useState(items || [])
   const [isLoading, setIsLoading] = useState(false)
@@ -130,8 +131,7 @@ export function ItemsList({
   const [showFilterSidebar, setShowFilterSidebar] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
   const { toast } = useToast()
-  const [isGettingLocation, setIsGettingLocation] = useState(false)
-  // Advanced filter states
+  const [isGettingLocation, setIsGettingLocation] = useState(false)  // Advanced filter states
   const [filters, setFilters] = useState({
     name: "",
     categories: [],
@@ -276,19 +276,23 @@ export function ItemsList({
       // Use passed items directly and apply local filtering
       let filteredItems = [...items]
       
-      // Apply local search filter
+      // Apply local search filter with RTL support
       if (searchTerm) {
-        filteredItems = filteredItems.filter(item => 
-          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.description?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        filteredItems = filteredItems.filter(item => {
+          const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
+          const itemDescription = !isRTL ? item.translations?.[0]?.description : item.translations?.[1]?.description || item.description
+          
+          return itemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                 itemDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+        })
       }
       
-      // Apply local name filter
+      // Apply local name filter with RTL support
       if (filters.name) {
-        filteredItems = filteredItems.filter(item => 
-          item.name?.toLowerCase().includes(filters.name.toLowerCase())
-        )
+        filteredItems = filteredItems.filter(item => {
+          const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
+          return itemName?.toLowerCase().includes(filters.name.toLowerCase())
+        })
       }
       
       // Apply local category filter
@@ -691,7 +695,7 @@ export function ItemsList({
                       transition: { type: "spring", stiffness: 300, damping: 30 },
                     }}
                   >
-                    <ItemCardProfile {...item} showbtn={showbtn} showSwitchHeart={showSwitchHeart} />
+                    <ItemCardProfile {...item} showbtn={showbtn} showSwitchHeart={showSwitchHeart} LinkItemOffer={LinkItemOffer} />
                   </motion.div>
                 ))}
               </AnimatePresence>

@@ -51,7 +51,7 @@ const FilterItemsPage = ({ params }) => {
         setProducts(productsData.data)
         // console.log("productsData (all)", productsData)
       } else {
-        // Filter by search term with partial text matching across multiple fields
+        // Filter by search term with partial text matching across multiple fields including translations
         const filters = {
           _or: [
             { name: { _contains: searchTerm } },
@@ -59,7 +59,9 @@ const FilterItemsPage = ({ params }) => {
             { city: { _contains: searchTerm } },
             { country: { _contains: searchTerm } },
             { street: { _contains: searchTerm } },
-            { price: { _contains: searchTerm } }
+            { price: { _contains: searchTerm } },
+            { "translations.name": { _contains: searchTerm } },
+            { "translations.description": { _contains: searchTerm } }
           ]
         }
         

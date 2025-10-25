@@ -10,6 +10,7 @@ import { decodedToken } from "@/callAPI/utiles"
 import { useTranslations } from "@/lib/use-translations"
 import LoadingSpinner from '@/components/loading/loading-spinner'
 import WishlistCard from "@/components/wishlist/wishlist-card"
+import { mediaURL } from "@/callAPI/utiles";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },

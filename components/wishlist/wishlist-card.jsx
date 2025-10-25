@@ -8,7 +8,8 @@ import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import Image from "next/image"
 import { useLanguage } from "@/lib/language-provider"
-
+import { mediaURL } from "@/callAPI/utiles";
+  
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -55,7 +56,7 @@ const WishlistCard = ({ item, onRemove }) => {
              
   
   <Image
-              src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}` || "/placeholder.svg"}
+              src={`${mediaURL}${item.images[0]?.directus_files_id.id}` || "/placeholder.svg"}
               width={100}
               height={100}
               alt={isRTL ? item.translations[1]?.name || item.name : item.translations[0]?.name || item.name}

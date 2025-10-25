@@ -27,6 +27,7 @@ import { useLanguage } from "@/lib/language-provider"
 import LocationMap from "@/components/general/location-map"
 import {  decodedToken } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
+import { mediaURL } from "@/callAPI/utiles";
 
 // Animation variants
 const containerVariants = {
@@ -257,7 +258,7 @@ export function ItemUpdate(props) {
         console.log("Images have direct structure, processing directly")
         const list = images.map((img) => ({
           fileId: img.directus_files_id.id,
-          url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id.id}`,
+          url: `${mediaURL}${img.directus_files_id.id}`,
           type: img.directus_files_id.type || 'image/jpeg',
         }))
         console.log("Processed image list (direct):", list)
@@ -278,7 +279,7 @@ export function ItemUpdate(props) {
           setBigImage(fetchedImages.data[0].directus_files_id)
           const list = fetchedImages.data.map((img) => ({
             fileId: img.directus_files_id,
-            url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img.directus_files_id}`,
+            url: `${mediaURL}${img.directus_files_id}`,
             type: img.type || 'image/jpeg',
           }))
           console.log("Processed image list:", list)

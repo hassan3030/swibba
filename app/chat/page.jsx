@@ -15,6 +15,7 @@ import { getProductById } from "@/callAPI/products"
 import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
+import { mediaURL } from "@/callAPI/utiles";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -427,7 +428,7 @@ const Messages = () => {
                               >
                                 <Avatar className="h-12 w-12">
                                   <AvatarImage
-                                    src={`https://deel-deal-directus.csiwm3.easypanel.host/assets/${offer.partnerUser.avatar}`}
+                                    src={`${mediaURL}${offer.partnerUser.avatar}`}
                                    
                                   alt={offer.partner_name || t("Unknown")}
                                   />
@@ -507,7 +508,7 @@ const Messages = () => {
                       <Avatar className="h-10 w-10 border">
                         <AvatarImage
                           src={
-                            `https://deel-deal-directus.csiwm3.easypanel.host/assets/${partner.avatar || "/placeholder.svg"}` || "/placeholder.svg"
+                            `${mediaURL}${partner.avatar || "/placeholder.svg"}` || "/placeholder.svg"
                           }
                           alt={partner.first_name || t("User") || "User"}
                         />
@@ -619,7 +620,7 @@ const Messages = () => {
                                 .map((i) => {
                                   const img = i?.images?.[0]?.directus_files_id?.id
                                   const url = img
-                                    ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img}`
+                                    ? `${mediaURL}${img}`
                                     : "/placeholder.svg"
                                   return (
                                     <div key={`${i.offer_item_id}-${i.id}`} className="flex items-center gap-2 bg-card/50 rounded-md p-2">
@@ -647,7 +648,7 @@ const Messages = () => {
                                 .map((i) => {
                                   const img = i?.images?.[0]?.directus_files_id?.id
                                   const url = img
-                                    ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${img}`
+                                    ? `${mediaURL}${img}`
                                     : "/placeholder.svg"
                                   return (
                                     <div key={`${i.offer_item_id}-${i.id}`} className="flex items-center gap-2 bg-card/50 rounded-md p-2">

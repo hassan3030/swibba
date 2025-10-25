@@ -12,9 +12,9 @@ export const getProductOfferItemById = async (id) => {
     if (!id) {
       throw new Error("Product ID is required")
     }
-    // const response = await axios.get(`${baseItemsURL}/Items/${id}?fields=*,translations.*,images.*`)
+    // const response = await axios.get(`${baseItemsURL}Items/${id}?fields=*,translations.*,images.*`)
     const response = await axios.get(
-      `${baseItemsURL}/Items/${id}`,
+      `${baseItemsURL}Items/${id}`,
       {
         params: {
           fields: "*,translations.*,images.*,images.directus_files_id.*"
@@ -68,7 +68,7 @@ export const getAllOffers = async (filters = {}) => {
       queryParams.append("sort", "-date_created")
     }
 
-    const url = `${baseItemsURL}/Offers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
+    const url = `${baseItemsURL}Offers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
     const response = await axios.get(url)
 
      // console.log("Offers retrieved successfully, count:", response.data.data?.length || 0)
@@ -91,7 +91,7 @@ export const getOfferById = async (id) => {
       throw new Error("User ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Offers`,
+    const response = await axios.get(`${baseItemsURL}Offers`,
       {
         params: {
           fields: "*",
@@ -129,7 +129,7 @@ export const getOffeReceived = async (id) => {
 
     // const auth = await validateAuth()
 
-    const response = await axios.get(`${baseItemsURL}/Offers`,
+    const response = await axios.get(`${baseItemsURL}Offers`,
       {
         params: {
           fields: "*",
@@ -164,7 +164,7 @@ export const getItemsByOfferId = async (id) => {
     if (!id) {
       throw new Error("Offer ID is required")
     }
-    const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${id}`)
+    const response = await axios.get(`${baseItemsURL}Offer_Items?filter[offer_id][_eq]=${id}`)
     return {
       success: true,
       data: response.data.data || [],
@@ -190,7 +190,7 @@ export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
       }
       let response;
       if(from_to_user === "from") {
-        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+        response = await axios.patch(`${baseItemsURL}Offers/${offer_id}`, {
           from_finaly_deleted: "true",
         },
               {
@@ -200,7 +200,7 @@ export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
                 },
               })
       } else if(from_to_user === "to") {  
-        response = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+        response = await axios.patch(`${baseItemsURL}Offers/${offer_id}`, {
           to_finaly_deleted: "true",
         },
               {
@@ -247,13 +247,13 @@ export const rejectOfferById = async (id) => {
           try {
 
             // Get current item state
-            const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.item_id}`)
+            const itemResponse = await axios.get(`${baseItemsURL}Items/${item.item_id}`)
             const currentItem = itemResponse.data.data
             const currentQuantity = currentItem.quantity || 0
             const offerQuantity = item.quantity || 1
             const restoredQuantity = currentQuantity + offerQuantity
 
-            await axios.patch(`${baseItemsURL}/Items/${item.item_id}`, {
+            await axios.patch(`${baseItemsURL}Items/${item.item_id}`, {
               quantity: restoredQuantity,
               status_swap: "available",
             }, {
@@ -276,7 +276,7 @@ export const rejectOfferById = async (id) => {
       const deleteOfferItems = items.map(async (item) => {
         if (item.id) {
           try {
-            await axios.delete(`${baseItemsURL}/Offer_Items`,
+            await axios.delete(`${baseItemsURL}Offer_Items`,
               {          
             params: {
                 filter: {
@@ -307,11 +307,11 @@ export const rejectOfferById = async (id) => {
 
       // Delete related chats
       try {
-        const chatRes = await axios.get(`${baseItemsURL}/Chat?filter[offer_id][_eq]=${id}`)
+        const chatRes = await axios.get(`${baseItemsURL}Chat?filter[offer_id][_eq]=${id}`)
         const chats = chatRes.data?.data || []
 
         const deleteChats = chats.map((chat) =>
-          chat.id ? axios.delete(`${baseItemsURL}/Chat/${chat.id}`,
+            chat.id ? axios.delete(`${baseItemsURL}Chat/${chat.id}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -326,7 +326,7 @@ export const rejectOfferById = async (id) => {
       }
 
       // Update offer status to rejected
-      await axios.patch(`${baseItemsURL}/Offers/${id}`, {
+      await axios.patch(`${baseItemsURL}Offers/${id}`, {
         status_offer: "rejected",
       },
             {
@@ -392,7 +392,7 @@ export const acceptedOfferById = async (id_offer) => {
         throw new Error("Offer ID is required")
       }
 
-      const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
+      const response = await axios.patch(`${baseItemsURL}Offers/${id_offer}`, {
         status_offer: "accepted",
       },
             {
@@ -428,7 +428,7 @@ export const updateOfferById = async (id, cash_adjustment) => {
         throw new Error("Cash adjustment must be a number")
       }
 
-      const response = await axios.patch(`${baseItemsURL}/Offers/${id}`, {
+      const response = await axios.patch(`${baseItemsURL}Offers/${id}`, {
         cash_adjustment,
       },
             {
@@ -459,7 +459,7 @@ export const getCompletedOffer = async (user_id) => {
       throw new Error("Token is required")
     }
     
-    const response = await axios.get(`${baseItemsURL}/completed_rate_offer`,
+    const response = await axios.get(`${baseItemsURL}completed_rate_offer`,
       {
         params: {
           filter: {
@@ -502,7 +502,7 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
     }
     // get completed offer to user id
     const getCompletedOfferToUserId = async (to_user_id) => {
-      const response = await axios.get(`${baseItemsURL}/completed_rate_offer`,
+      const response = await axios.get(`${baseItemsURL}completed_rate_offer`,
         {
           params: {
             filter: {
@@ -525,7 +525,7 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
     // if completed offer to user id exists, update the number of completed offers
     if(completedOfferToUserData.length > 0){
       currentCompletedSwapsTo = Number(completedOfferToUserData[0].num_comp_offer) || 0
-      const responseTo = await axios.patch(`${baseItemsURL}/completed_rate_offer/${completedOfferToUserData[0].id}`, {
+      const responseTo = await axios.patch(`${baseItemsURL}completed_rate_offer/${completedOfferToUserData[0].id}`, {
         num_comp_offer: Number(currentCompletedSwapsTo) + 1,
       }, {
         headers: {
@@ -539,7 +539,7 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
           message: "Completed offer to user updated successfully",
         }
     }else{
-      responseTo = await axios.post(`${baseItemsURL}/completed_rate_offer`, {
+      responseTo = await axios.post(`${baseItemsURL}completed_rate_offer`, {
         owner_user: to_user_id,
         num_comp_offer: 1,
       }, {
@@ -555,7 +555,7 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
 
     // get completed offer from user id
     const getCompletedOfferFromUserId = async (from_user_id) => {
-      const response = await axios.get(`${baseItemsURL}/completed_rate_offer`,
+      const response = await axios.get(`${baseItemsURL}completed_rate_offer`,
         {
           params: {
             filter: {
@@ -578,7 +578,7 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
     // if completed offer from user id exists, update the number of completed offers
     if(completedOfferFromUserData.length > 0){
       currentCompletedSwapsFrom = Number(completedOfferFromUserData[0].num_comp_offer) || 0
-      const responseFrom = await axios.patch(`${baseItemsURL}/completed_rate_offer/${completedOfferFromUserData[0].id}`, {
+      const responseFrom = await axios.patch(`${baseItemsURL}completed_rate_offer/${completedOfferFromUserData[0].id}`, {
         num_comp_offer: Number(currentCompletedSwapsFrom) + 1,
       }, {
         headers: {
@@ -592,7 +592,7 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
       message: "Completed offer from user updated successfully",
     }
 }else{
-    responseFrom = await axios.post(`${baseItemsURL}/completed_rate_offer`, {
+    responseFrom = await axios.post(`${baseItemsURL}completed_rate_offer`, {
     owner_user: from_user_id,
     num_comp_offer: 1,
   }, {
@@ -621,7 +621,7 @@ console.log("responseTo", responseTo)
 // Get all offer items
 export const getOfferItems = async () => {
   try {
-    const response = await axios.get(`${baseItemsURL}/Offer_Items`)
+      const response = await axios.get(`${baseItemsURL}Offer_Items`)
 
     return {
       success: true,
@@ -641,7 +641,7 @@ export const getOfferItemsById = async (id) => {
       throw new Error("Offer item ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Offer_Items/${id}`)
+    const response = await axios.get(`${baseItemsURL}Offer_Items/${id}`)
 
     return {
       success: true,
@@ -654,6 +654,40 @@ export const getOfferItemsById = async (id) => {
   }
 }
 
+
+// Get offer item by ID
+export const getOfferItemsByItemIdItself = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Offer item ID is required")
+    }
+
+
+    const response = await axios.get(`${baseItemsURL}Offer_Items`, {
+      params: {
+        filter: {
+          item_id: { _eq: id },
+        }
+      },
+    })
+
+    // Calculate total quantity from all offer items
+    const total_quantity = response.data.data.reduce((sum, item) => sum + (item.quantity || 0), 0)
+    return {
+      success: true,
+      data: {
+        offer_items: response.data.data,
+        total_quantity: total_quantity,
+      },
+      count: response.data.data?.length || 0,
+      total_quantity: response.data.data.reduce((sum, item) => sum + (item.quantity || 0), 0),
+      message: "Offer item retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Offer Items By Item ID Itself")
+  }
+}
+
 // Get offer items by offer ID
 export const getOfferItemsByOfferId = async (offer_id) => {
   try {
@@ -663,7 +697,7 @@ export const getOfferItemsByOfferId = async (offer_id) => {
 
     const auth = await validateAuth()
 
-    const response = await axios.get(`${baseItemsURL}/Offer_Items?filter[offer_id][_eq]=${offer_id}`,
+    const response = await axios.get(`${baseItemsURL}Offer_Items?filter[offer_id][_eq]=${offer_id}`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -706,7 +740,7 @@ export const completedOfferById = async (id_offer) => {
             // check if item is in ore  offer items
             const offerItemResponse = getOfferItemsById(item.item_id)
             if(offerItemResponse.count > 1){
-              await axios.delete(`${baseItemsURL}/Offer_Items/${item.data.id}`,
+              await axios.delete(`${baseItemsURL}Offer_Items/${item.data.id}`,
                 {
                   headers: {
                     "Content-Type": "application/json",
@@ -714,7 +748,7 @@ export const completedOfferById = async (id_offer) => {
                   },
                 })
             }else{
-              await axios.delete(`${baseItemsURL}/Items/${item.item_id}`,
+              await axios.delete(`${baseItemsURL}Items/${item.item_id}`,
                 {
                   headers: {
                     "Content-Type": "application/json",
@@ -737,7 +771,7 @@ export const completedOfferById = async (id_offer) => {
 
 
       // Update offer status to completed
-      const response = await axios.patch(`${baseItemsURL}/Offers/${id_offer}`, {
+      const response = await axios.patch(`${baseItemsURL}Offers/${id_offer}`, {
         status_offer: "completed",
       },
             {
@@ -813,7 +847,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
 
       // Validate all items exist and have sufficient quantity
       for (const item of allProcessedItems) {
-        const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.itemId}`)
+        const itemResponse = await axios.get(`${baseItemsURL}Items/${item.itemId}`)
         const itemData = itemResponse.data.data
 
         if (!itemData) {
@@ -875,14 +909,14 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
 
       // Update items quantity and availability status
       for (const item of allProcessedItems) {
-        const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.itemId}`)
+        const itemResponse = await axios.get(`${baseItemsURL}Items/${item.itemId}`)
         const currentItem = itemResponse.data.data
         const currentQuantity = currentItem.quantity || 1
         const newQuantity = currentQuantity - item.quantity
 
         if (newQuantity <= 0) {
           // If all quantity is taken, mark as unavailable
-          await axios.patch(`${baseItemsURL}/Items/${item.itemId}`, {
+          await axios.patch(`${baseItemsURL}Items/${item.itemId}`, {
             quantity: 0,
             status_swap: "unavailable",
           }, {
@@ -892,7 +926,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
           })
         } else {
           // If partial quantity is taken, update quantity but keep available
-          await axios.patch(`${baseItemsURL}/Items/${item.itemId}`, {
+          await axios.patch(`${baseItemsURL}Items/${item.itemId}`, {
             quantity: newQuantity,
             status_swap: "available",
           }, {
@@ -927,11 +961,11 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       // Restore item quantities and statuses
       for (const item of allProcessedItems.filter(item => updatedItemIds.includes(item.itemId))) {
         try {
-          const itemResponse = await axios.get(`${baseItemsURL}/Items/${item.itemId}`)
+          const itemResponse = await axios.get(`${baseItemsURL}Items/${item.itemId}`)
           const currentItem = itemResponse.data.data
           const restoredQuantity = (currentItem.quantity || 0) + item.quantity
           
-          await axios.patch(`${baseItemsURL}/Items/${item.itemId}`, {
+          await axios.patch(`${baseItemsURL}Items/${item.itemId}`, {
             quantity: restoredQuantity,
             status_swap: "available",
           }, {
@@ -946,7 +980,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
 
       // Delete created offer items
       for (const offerItemId of createdItemIds) {
-        await axios.delete(`${baseItemsURL}/Offer_Items/${offerItemId}`,
+        await axios.delete(`${baseItemsURL}Offer_Items/${offerItemId}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -957,7 +991,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
 
       // Delete created offer
       if (offer_id) {
-        await axios.delete(`${baseItemsURL}/Offers/${offer_id}`,
+        await axios.delete(`${baseItemsURL}Offers/${offer_id}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -975,7 +1009,49 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
   }
 }
 
-// ========================= OFFER ITEMS MANAGEMENT =========================
+// Get offer item by ID
+export const getOfferItemsByIdDisplayInOnePage = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Offer item ID is required")
+    }
+    
+    // get original item to all details
+    const original_items = await axios.get(`${baseItemsURL}Items`,{
+      params: {
+        fields: "*,*.*.*,images.*,translations.*,images.directus_files_id.*",
+        filter: {
+          id: { _eq: id },
+        }
+      },
+    })
+    // get offer items to quantity details
+    const offer_items = await axios.get(`${baseItemsURL}Offer_Items`, {
+      params: {
+        filter: {
+          item_id: { _eq: id },
+        },
+      },
+    })
+
+    // Calculate total quantity from offer items
+    // const total_quantity = offer_items_response.data.data.reduce((sum, item) => sum + (item.quantity || 0), 0)
+console.log("original_items_responses", original_items)
+console.log("offer_items_response", offer_items)
+    return {
+      success: true,
+      data: {
+        original_items: original_items.data.data,
+        offer_items: offer_items.data.data[0],
+        total_quantity: offer_items.data.data[0].quantity,
+      },
+      count: offer_items.data.data[0]?.length || 0,
+      message: "Offer item retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Offer Items By ID")
+  }
+}
 
 
 
@@ -989,18 +1065,18 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
       }
 
       // Get the offer item to retrieve quantity information
-      const offerItemResponse = await axios.get(`${baseItemsURL}/Offer_Items/${id}`)
+      const offerItemResponse = await axios.get(`${baseItemsURL}Offer_Items/${id}`)
       const offerItem = offerItemResponse.data.data
       const offerQuantity = offerItem.quantity || 1
 
       // Get current item state and restore quantity
-      const itemResponse = await axios.get(`${baseItemsURL}/Items/${idItemItself}`)
+      const itemResponse = await axios.get(`${baseItemsURL}Items/${idItemItself}`)
       const currentItem = itemResponse.data.data
       const currentQuantity = currentItem.quantity || 0
       const restoredQuantity = currentQuantity + offerQuantity
 
       // Restore item availability and quantity
-      await axios.patch(`${baseItemsURL}/Items/${idItemItself}`, {
+      await axios.patch(`${baseItemsURL}Items/${idItemItself}`, {
         quantity: restoredQuantity,
         status_swap: "available",
       }, {
@@ -1011,7 +1087,7 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
       })
 
       // Delete offer item
-      await axios.delete(`${baseItemsURL}/Offer_Items/${id}`,
+      await axios.delete(`${baseItemsURL}Offer_Items/${id}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -1021,7 +1097,7 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
 
       // Update cash adjustment if provided
       if (offer_id && cashAdjustment !== null && cashAdjustment !== undefined && !isNaN(cashAdjustment)) {
-        const patchRes = await axios.patch(`${baseItemsURL}/Offers/${offer_id}`, {
+        const patchRes = await axios.patch(`${baseItemsURL}Offers/${offer_id}`, {
           cash_adjustment: cashAdjustment,
         },
             {
@@ -1064,7 +1140,7 @@ export const updateOfferItemsById = async (id, updateData = {}) => {
         throw new Error("Update data is required")
       }
 
-      const response = await axios.patch(`${baseItemsURL}/Offer_Items/${id}`, updateData,
+      const response = await axios.patch(`${baseItemsURL}Offer_Items/${id}`, updateData,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -1084,6 +1160,36 @@ export const updateOfferItemsById = async (id, updateData = {}) => {
   }
 }
 
+
+// Check if item exists in Offer_Items
+export const checkItemInOfferItems = async (item_id) => {
+  try {
+    const auth = await validateAuth()
+    return await makeAuthenticatedRequest(async () => {
+      if (!item_id) {
+        throw new Error("Item ID is required")
+      }
+
+      const response = await axios.get(`${baseItemsURL}Offer_Items?filter[item_id][_eq]=${item_id}`, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+
+      return {
+        success: true,
+        data: response.data.data || [],
+        count: response.data.data?.length || 0,
+        exists: (response.data.data?.length || 0) > 0,
+        message: "Offer items check completed",
+      }
+    })
+  } catch (error) {
+    return handleApiError(error, "Check Item In Offer Items")
+  }
+}
+
+
 // ========================= CHAT/MESSAGING SYSTEM =========================
 
 // Add message
@@ -1101,7 +1207,7 @@ export const addMessage = async (message, to_user_id, offer_id) => {
 
       const auth = await validateAuth()
 
-      const response = await axios.post(`${baseItemsURL}/Chat`, {
+      const response = await axios.post(`${baseItemsURL}Chat`, {
         from_user_id: auth.userId,
         to_user_id,
         offer_id,
@@ -1135,7 +1241,7 @@ export const getMessage = async (offer_id) => {
 
     const auth = await validateAuth()
 
-    const response = await axios.get(`${baseItemsURL}/Chat?filter[offer_id][_eq]=${offer_id}&sort=date_created`,
+    const response = await axios.get(`${baseItemsURL}Chat?filter[offer_id][_eq]=${offer_id}&sort=date_created`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -1165,7 +1271,7 @@ export const getMessagesByUserId = async (user_id) => {
 
     // Fetch messages where user is either sender or recipient
     const response = await axios.get(
-      `${baseItemsURL}/Chat?filter[_or][0][from_user_id][_eq]=${user_id}&filter[_or][1][to_user_id][_eq]=${user_id}&sort=-date_created`,
+      `${baseItemsURL}Chat?filter[_or][0][from_user_id][_eq]=${user_id}&filter[_or][1][to_user_id][_eq]=${user_id}&sort=-date_created`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -1197,7 +1303,7 @@ export const getMessagesByOfferId = async (offer_id) => {
 
     // Fetch messages where user is either sender or recipient
     const response = await axios.get(
-      `${baseItemsURL}/Chat?filter[offer_id][_eq]=${offer_id}`,
+      `${baseItemsURL}Chat?filter[offer_id][_eq]=${offer_id}`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -1221,7 +1327,7 @@ export const getMessagesByOfferId = async (offer_id) => {
 export const getAllMessage = async () => {
   try {
     const auth = await validateAuth()
-    const response = await axios.get(`${baseItemsURL}/Chat?sort=-date_created`,
+    const response = await axios.get(`${baseItemsURL}Chat?sort=-date_created`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -1246,7 +1352,7 @@ export const deleteMessageByOfferId = async (offer_id) => {
     if(messages.success){
       const message = messages.data.find(msg => msg.offer_id === offer_id)
       if(message){
-        await axios.delete(`${baseItemsURL}/Chat/${message.id}`,
+          await axios.delete(`${baseItemsURL}Chat/${message.id}`,
           {
             headers: {
               Authorization: `Bearer ${auth.token}`,
@@ -1274,7 +1380,7 @@ export const addWishList = async (item_id, user_id) => {
     } 
 
    
-    const response = await axios.post(`${baseItemsURL}/WishList`, {
+    const response = await axios.post(`${baseItemsURL}WishList`, {
       item_id,
       user_id,
     },
@@ -1305,7 +1411,7 @@ export const getWishList = async (user_id) => {
 
     const auth = await validateAuth()
 
-    const response = await axios.get(`${baseItemsURL}/WishList?filter[user_id][_eq]=${user_id}`,
+    const response = await axios.get(`${baseItemsURL}WishList?filter[user_id][_eq]=${user_id}`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -1327,7 +1433,7 @@ export const getWishList = async (user_id) => {
 // Get all wishlists
 export const getAllWishList = async () => {
   try {
-    const response = await axios.get(`${baseItemsURL}/WishList`)
+    const response = await axios.get(`${baseItemsURL}WishList`)
 
     return {
       success: true,
@@ -1348,7 +1454,7 @@ export const deleteWishList = async (id) => {
       throw new Error("Wishlist ID is required")
     }
    const auth = await validateAuth()
-    await axios.delete(`${baseItemsURL}/WishList/${id}`,
+    await axios.delete(`${baseItemsURL}WishList/${id}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -1385,7 +1491,7 @@ export const addReview = async (from_user_id, to_user_id, offer_id, rating, comm
 
       // Check if review already exists
       const existingResponse = await axios.get(
-        `${baseItemsURL}/Reviews?filter[from_user_id][_eq]=${from_user_id}&filter[offer_id][_eq]=${offer_id}`,
+        `${baseItemsURL}Reviews?filter[from_user_id][_eq]=${from_user_id}&filter[offer_id][_eq]=${offer_id}`,
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -1401,7 +1507,7 @@ export const addReview = async (from_user_id, to_user_id, offer_id, rating, comm
         }
       }
 
-      const response = await axios.post(`${baseItemsURL}/Reviews`, {
+      const response = await axios.post(`${baseItemsURL}Reviews`, {
         from_user_id,
         to_user_id,
         offer_id,
@@ -1435,7 +1541,7 @@ export const getReview = async (to_user_id) => {
       throw new Error("User ID is required")
     }
 
-    const response = await axios.get(`${baseItemsURL}/Reviews?filter[to_user_id][_eq]=${to_user_id}`)
+    const response = await axios.get(`${baseItemsURL}Reviews?filter[to_user_id][_eq]=${to_user_id}`)
 
     const reviews = response.data.data || []
     const averageRating =
@@ -1465,7 +1571,7 @@ export const getReviewConditins = async (from_user_id, offer_id) => {
     const auth = await validateAuth()
 
     const response = await axios.get(
-      `${baseItemsURL}/Reviews?filter[from_user_id][_eq]=${from_user_id}&filter[offer_id][_eq]=${offer_id}`,
+        `${baseItemsURL}Reviews?filter[from_user_id][_eq]=${from_user_id}&filter[offer_id][_eq]=${offer_id}`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,

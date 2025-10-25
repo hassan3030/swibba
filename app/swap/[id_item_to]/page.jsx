@@ -25,7 +25,7 @@ import { getMediaType } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getHintByName } from "@/callAPI/static";
 import ItemCard from "@/components/swap/item-card"
-
+import { mediaURL } from "@/callAPI/utiles";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -980,7 +980,7 @@ export default function SwapPage() {
                                 <AvatarImage
                                   src={
                                     userData?.avatar
-                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userData.avatar}`
+                                      ? `${mediaURL}${userData.avatar}`
                                       : "/placeholder.svg"
                                   }
                                   alt={userData?.first_name || t("User") || "User"}
@@ -1023,7 +1023,7 @@ export default function SwapPage() {
                                   <AvatarImage
                                   src={
                                     otherUserData?.avatar
-                                      ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${otherUserData.avatar}`
+                                      ? `${mediaURL}${otherUserData.avatar}`
                                       : "/placeholder.svg"
                                   }
                                   alt={otherUserData?.first_name || t("User") || "User"}

@@ -8,7 +8,7 @@ export const getAllCategories = async () => {
   try {
    
     const response = await axios.get(
-      `${baseItemsURL}/Categories`,
+      `${baseItemsURL}Categories`,
       {
          params: { fields: "*,translations.*, main_image.*,*.*.*", sort: "name" } 
     } 
@@ -32,7 +32,7 @@ export const getLevelOneCategories = async () => {
    
    
     const response = await axios.get(
-      `${baseItemsURL}/Cat_level_one`
+      `${baseItemsURL}Cat_level_one`
       , {
         filter: { },
         fields: "*",
@@ -58,7 +58,7 @@ export const getLevelTwoCategories = async () => {
    
    
     const response = await axios.get(
-      `${baseItemsURL}/Cat_level_two`
+      `${baseItemsURL}Cat_level_two`
       , {
         filter: { },
         fields: "*",
@@ -103,7 +103,7 @@ export const getFounders = async () => {
 // Get all Hints 
 export const getAllHints = async () => {
   try {
-    const response = await axios.get(`${baseItemsURL}/Hints?fields=*,*.* &sort=date_created`)
+    const response = await axios.get(`${baseItemsURL}Hints?fields=*,*.* &sort=date_created`)
     console.log(`Retrieved All hints:`, response.data.data);
     return {
       success: true,
@@ -119,7 +119,7 @@ export const getAllHints = async () => {
 // Get Hint by name
 export const getHintByName = async (name) => {
   try {
-    const response = await axios.get(`${baseItemsURL}/Hints?filter[title][_eq]=${name}&fields=*,*.*&sort=date_created`)
+    const response = await axios.get(`${baseItemsURL}Hints?filter[title][_eq]=${name}&fields=*,*.*&sort=date_created`)
     console.log(`Retrieved Hint by name:`, response.data.data);
     return {
       success: true,

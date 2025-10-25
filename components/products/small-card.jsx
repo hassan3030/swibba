@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
+import { mediaURL } from "@/callAPI/utiles";
 
 
 
@@ -39,7 +40,7 @@ export default function SmallCard({item}) {
                             const mediaUrl = {
                               id: item.images[0]?.directus_files_id.id,
                               type: item.images[0]?.directus_files_id.type,
-                              url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.images[0]?.directus_files_id.id}`
+                              url: `${mediaURL}${item.images[0]?.directus_files_id.id}`
                             }
                             const mediaType = getMediaType(mediaUrl.type)
                             

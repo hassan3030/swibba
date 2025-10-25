@@ -18,6 +18,7 @@ import { useTranslations } from "@/lib/use-translations"
 
 import { useLanguage } from "@/lib/language-provider"
 import { getKYC } from "@/callAPI/users"
+import { mediaURL } from "@/callAPI/utiles";
   
 
 const cardVariants = {
@@ -86,6 +87,7 @@ export function ItemCardProfile({
   showbtn,
   translations,
   showSwitchHeart = true,
+  LinkItemOffer,
 }) {
   const { t } = useTranslations()
   const { toast } = useToast()
@@ -95,6 +97,7 @@ export function ItemCardProfile({
   // const [bigImage, setBigImage] = useState("")
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  let linkToItemOffer = LinkItemOffer ? `/profile/items/${id}` : `/products/${id}`  // Advanced filter states
 
   // const getDataImage = async () => {
   //   try {
@@ -186,7 +189,7 @@ export function ItemCardProfile({
   }, [switchHeart])
 
   return (
-    <Link href={`/products/${id}`}>
+    <Link href={linkToItemOffer}>
       <motion.div  initial="hidden" animate="visible" whileHover="hover">
         <Card className="overflow-hidden w-[150px] transition-all duration-200 hover:shadow-md ">
           <div className="relative">
@@ -200,7 +203,7 @@ export function ItemCardProfile({
                       const mediaUrl ={
                         id: images[0]?.directus_files_id.id,
                         type: images[0]?.directus_files_id.type,
-                        url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+                        url: `${mediaURL}${images[0]?.directus_files_id.id}`
                       }
                       
                       const mediaType = getMediaType(mediaUrl.type)

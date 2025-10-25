@@ -39,6 +39,8 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useTheme } from "@/lib/theme-provider"
 import { useLanguage } from "@/lib/language-provider"
+import { getProductSearchFilter } from "@/callAPI/products"
+import { mediaURL } from "@/callAPI/utiles"
 const slideVariants = {
   closed: {
     // x: "-100%",
@@ -116,8 +118,31 @@ export function MobileHeader() {
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/filterItems/${encodeURIComponent(searchQuery.trim())}`)
+      // RTL-aware search - the filter page will handle RTL logic
+      const searchTerm = searchQuery.trim()
+      router.push(`/filterItems/${encodeURIComponent(searchTerm)}`)
       setSearchQuery("")
+    }
+  }
+
+  // Enhanced RTL-aware search function
+  const handleRTLSearch = async (searchTerm) => {
+    if (!searchTerm.trim()) return
+    
+    try {
+      // Use the RTL-aware API search function
+      const results = await getProductSearchFilter(searchTerm.trim())
+      if (results.success && results.data.length > 0) {
+        // Redirect to filter page with results
+        router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
+      } else {
+        // Still redirect to filter page for "no results" display
+        router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
+      }
+    } catch (error) {
+      console.error("Search error:", error)
+      // Fallback to simple redirect
+      router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
     }
   }
 
@@ -170,6 +195,7 @@ export function MobileHeader() {
               size="icon"
               onClick={() => router.push("/products")}
               className="h-10 w-10"
+              title={t("search") || "Search"}
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -247,7 +273,7 @@ export function MobileHeader() {
                       <div className="relative">
                         <Avatar className="h-12 w-12">
                           <AvatarImage
-                            src={user?.avatar ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}` : "/placeholder.svg"}
+                            src={user?.avatar ? `${mediaURL}${user.avatar}` : "/placeholder.svg"}
                             alt={user?.first_name || t("account")}
                           />
                           <AvatarFallback className="bg-primary text-white">

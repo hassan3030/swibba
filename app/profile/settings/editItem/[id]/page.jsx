@@ -7,7 +7,7 @@ import { getProductById } from "@/callAPI/products"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { useState, useEffect } from "react"
-
+import { mediaURL } from "@/callAPI/utiles";
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {

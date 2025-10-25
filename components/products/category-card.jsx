@@ -8,6 +8,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { CategoryLevelsHover } from "./category-levels-hover"
 import { List } from "lucide-react"
+import { mediaURL } from "@/callAPI/utiles";
 
 
 const cardVariants = {

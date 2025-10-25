@@ -19,6 +19,7 @@ import SendItems from "@/app/send-items/page"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
+import { mediaURL } from "@/callAPI/utiles";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -322,7 +323,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       handleGetBreviousRating(user.id)
-      setAvatarPath(`https://deel-deal-directus.csiwm3.easypanel.host/assets/${user.avatar}`)
+      setAvatarPath(`${mediaURL}${user.avatar}`)
       const firstName = String(user?.first_name || "")
       const lastName = String(user?.last_name || "")
       
@@ -672,7 +673,7 @@ export default function ProfilePage() {
                     <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted">
                       <CardContent className="p-6">
                         {myUnavailableItems.length > 0 ? (
-                          <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} showbtn={false} />
+                          <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} showbtn={false} LinkItemOffer={true} />
                         ) : (
                           <motion.div
                             className="mt-6"

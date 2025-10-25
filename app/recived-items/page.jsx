@@ -57,6 +57,8 @@ import SwapRating from "@/components/reviews/reviews"
 import Image from "next/image"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
+import { mediaURL } from "@/callAPI/utiles";
+
 
 // Animation variants
 const containerVariants = {
@@ -583,7 +585,7 @@ console.log(offersReceived.data)
                             <Avatar className="h-14 w-14 border-2 border-primary shadow-md">
                               <AvatarImage
                                 src={
-                                  `https://deel-deal-directus.csiwm3.easypanel.host/assets/${
+                                  `${mediaURL}${
                                     userSwaps.find((u) => u.id === offer.from_user_id)?.avatar || "/placeholder.svg"
                                   }` || "/placeholder.svg"
                                 }
@@ -909,7 +911,7 @@ console.log(offersReceived.data)
                                 }
                                 userAvatar={
                                   userToRate.avatar
-                                    ? `https://deel-deal-directus.csiwm3.easypanel.host/assets/${userToRate.avatar}`
+                                    ? `${mediaURL}${userToRate.avatar}`
                                     : "/placeholder.svg"
                                 }
                                 onRatingSubmitted={() => {
@@ -1109,7 +1111,7 @@ const CardItemRecivedItem = ({ id, name, description, price, status_item, images
                const mediaUrl = {
                  id: images[0]?.directus_files_id.id,
                  type: images[0]?.directus_files_id.type,
-                 url: `https://deel-deal-directus.csiwm3.easypanel.host/assets/${images[0]?.directus_files_id.id}`
+                 url: `${mediaURL}${images[0]?.directus_files_id.id}`
                }
                const mediaType = getMediaType(mediaUrl.type)
                if (mediaType === 'video') {

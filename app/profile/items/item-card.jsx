@@ -343,7 +343,7 @@ const ItemCard = ({ item }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/products/${item.id}`} className="flex items-center w-full">
+                    <Link href={item.quantity > 0 ? `/products/out_offer/${item.id}` :`/products/in_offer/${item.id}` } className="flex items-center w-full">
                       <Eye className="mr-2 h-4 w-4" />
                       {t("view")}
                     </Link>

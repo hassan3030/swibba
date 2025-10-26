@@ -833,7 +833,7 @@ else{
                                   )}
                                 </SelectValue>
                               </SelectTrigger>
-                              <SelectContent className="bg-background border-input text-foreground">
+                              <SelectContent className="bg-background border-input text-foreground h-40">
                                 {countriesListWithFlags.map((country) => (
                                   <SelectItem key={country.name} value={country.name} className="text-right">
                                     <div className="flex items-center gap-2">
@@ -920,7 +920,7 @@ else{
                                 <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-background border-input text-foreground z-[9999]">
+                            <SelectContent className="bg-background border-input text-foreground z-[9999] h-40">
                               {categoriesName.map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {t(category) || category}
@@ -1417,7 +1417,7 @@ else{
                         {
                            aiPriceEstimationHint && 
                             ( <div className="mt-2">
-                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-300 text-blue-900 text-xs font-medium rounded px-3 py-2">
+                            <div className="flex items-center gap-2 bg-white border border-primary text-destructive text-xs font-medium rounded px-3 py-2">
                               <svg width="16" height="16" fill="none" viewBox="0 0 20 20" className="flex-shrink-0 text-blue-400">
                                 <circle cx="10" cy="10" r="10" fill="#3B82F6" fillOpacity="0.15"/>
                                 <path d="M10 6.667V10M10 13.333h.008" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

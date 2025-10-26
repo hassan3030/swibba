@@ -19,7 +19,7 @@ export const auth = async (email, password) => {
       throw new Error("Email and password are required")
     }
 
-    const authResponse = await axios.post(`${baseURL}/auth/login`, {
+    const authResponse = await axios.post(`${baseURL}auth/login`, {
       email: email.trim(),
       password,
     }
@@ -60,7 +60,7 @@ export const login = async (email, password) => {
       throw new Error("Failed to decode user token")
     }
 
-    const response = await axios.get(`${baseURL}/users/${decoded.id}`, {
+    const response = await axios.get(`${baseURL}users/${decoded.id}`, {
       headers: {
         Authorization: `Bearer ${authResult.data.access_token}`,
         "Content-Type": "application/json",
@@ -119,7 +119,7 @@ export const register = async (email, password, first_name, additional_data = {}
 
    try {
   
-    const response = await axios.post(`${baseURL}/users/register`, {
+    const response = await axios.post(`${baseURL}users/register`, {
       email: cleanEmail,
       password: password,
       first_name: cleanFirstName,
@@ -128,7 +128,7 @@ export const register = async (email, password, first_name, additional_data = {}
       );
       
 
-      const getRes = await axios.get(`${baseURL}/users`, {
+      const getRes = await axios.get(`${baseURL}users`, {
       params: {
         filter: { email: { _eq: cleanEmail } },
       },
@@ -146,7 +146,7 @@ export const register = async (email, password, first_name, additional_data = {}
     // console.log('i am in regisration userId ',userId )
 
     // Step 2: Update (PATCH) the user status to active
-    const patchRes = await axios.patch(`${baseURL}/users/${userId}`,
+    const patchRes = await axios.patch(`${baseURL}users/${userId}`,
       { status: 'active' ,
         role:STANDARD_ROLE_ID
       },
@@ -187,7 +187,7 @@ export const getUserById = async (id) => {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await axios.get(`${baseURL}/users/${id}?fields=*,translations.*`, { headers });
+    const response = await axios.get(`${baseURL}users/${id}?fields=*,translations.*`, { headers });
 
     // console.log("User data retrieved for ID:", id);
 
@@ -243,7 +243,7 @@ export const getKYC = async (id) => {
 // Get all user 
 export const getAllUsers = async () => {
   try {
-    const response = await axios.get(`${baseURL}/users`);
+    const response = await axios.get(`${baseURL}users`);
     return {
       success: true,
       data: response.data.data,
@@ -416,7 +416,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
           // Remove old avatar if exists
           const currentUser = await getUserById(decoded.id)
           if (currentUser.success && currentUser.data.avatar) {
-            await axios.delete(`${baseURL}/files/${currentUser.data.avatar}`, {
+            await axios.delete(`${baseURL}files/${currentUser.data.avatar}`, {
               headers: { Authorization: `Bearer ${token}` },
             })
           }
@@ -425,7 +425,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
           const formData = new FormData()
           formData.append("file", avatar)
 
-          const avatarResponse = await axios.post(`${baseURL}/files`, formData, {
+          const avatarResponse = await axios.post(`${baseURL}files`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
@@ -438,7 +438,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
         }
       }
 
-      const response = await axios.patch(`${baseURL}/users/${decoded.id}`, updateData, {
+      const response = await axios.patch(`${baseURL}users/${decoded.id}`, updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -487,7 +487,7 @@ export const resetPassword = async (newPassword, email) => {
 
       const token = await getCookie()
       const response = await axios.patch(
-        `${baseURL}/users/${decoded.id}`,
+        `${baseURL}users/${decoded.id}`,
         {
           password: newPassword,
         },
@@ -546,7 +546,7 @@ export const updatePhoneVerification = async (userId, phoneNumber, isVerified = 
     };
 
     const response = await axios.patch(
-      `${baseURL}/users/${userId}`,
+      `${baseURL}users/${userId}`,
       updateData,
       {
         headers: {
@@ -598,7 +598,7 @@ export const addMessage = async (email, name, message, phone_number) => {
     }
 
     const response = await axios.post(
-      `${baseURL}/items/Customers_Problems`,
+      `${baseItemsURL}Customers_Problems`,
       messageData,
       { headers }
     );

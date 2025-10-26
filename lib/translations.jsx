@@ -1,5 +1,8 @@
 export const translations = {
   en  :{
+    goToNotifications: "Go to Recived Offers",
+    goToSendItems: "Go to Send Items",
+    goToRecivedItems: "Go to Recived Items",
   deleteOneItem : "Delete Item",
   deleteDialogDesc : "Are you sure you want to delete this item? This action cannot be undone.",
   areYouSureDelete : "This will permanently remove the item from your listings.",
@@ -209,7 +212,7 @@ myRecivedOffers: "My Recived Offers",
     Home: "Home",
     Manageyourpaymentmethods: "Manage your payment methods",
     payment: "Payment & Wallet",
-    DescFaildSwapKYC: "Required information for swap. Please complete your information.",
+    DescFaildSwapKYC: "Required information for swap. Please complete your profile.",
     DescFaildSwapLogin: "Invalid swap without login. Please try to login.",
   Youhavenotupdatedanyfield: "You have not updated any field.",
  Pleasetranslatethedescriptionstreetcity: "Please translate the description, street, and city.",
@@ -1171,6 +1174,9 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    goToNotifications: "الانتقال إلى عروض المستلمة",
+    goToSendItems: "الانتقال إلى العناصر المرسلة",
+    goToRecivedItems: "الانتقال إلى العناصر المستلمة",
 
     deleteOneItem : "حذف العنصر",
     deleteDialogDesc : "Are you sure you want to delete this item? This action cannot be undone.",

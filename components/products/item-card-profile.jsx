@@ -97,7 +97,7 @@ export function ItemCardProfile({
   // const [bigImage, setBigImage] = useState("")
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  let linkToItemOffer = LinkItemOffer ? `/profile/items/${id}` : `/products/${id}`  // Advanced filter states
+  let linkToItemOffer = LinkItemOffer ? `/products/in_offer/${id}` : `/products/out_offer/${id}`  // Advanced filter states
 
   // const getDataImage = async () => {
   //   try {

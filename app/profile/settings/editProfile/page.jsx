@@ -1,4 +1,4 @@
-"use client"
+"use client" 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -854,7 +854,7 @@ please return ONLY a JSON response in this format:
                                 >
                                   {t("Country") || "Country"}
                                 </Label>
-                                <motion.div whileFocus="focus">
+                                <motion.div whileFocus="focus" >
                                   <Select
                                     value={country}
                                     onValueChange={setCountry}
@@ -873,7 +873,7 @@ please return ONLY a JSON response in this format:
                                         )}
                                       </SelectValue>
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="h-40">
                                       {countriesListWithFlags.map((c) => (
                                         <SelectItem key={c.name} value={c.name} className="text-right">
                                           <div className="flex items-center gap-2">

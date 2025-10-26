@@ -144,7 +144,7 @@ export function SwibbaProductCard({
       if (kyc.data === false) {
         toast({
           title: t("faildSwap") || "Failed Swap",
-          description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+          description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your profile.",
           variant: "default",
         })
       }
@@ -226,7 +226,7 @@ export function SwibbaProductCard({
     <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover" className="group">
     
       
-      <Link href={`/products/${id}`}>
+      <Link href={`/products/out_offer/${id}`}>
         <div className="group relative flex lg:w-[210px] w-[150px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
           {/* Image container */}
           <div className="relative aspect-square overflow-hidden">

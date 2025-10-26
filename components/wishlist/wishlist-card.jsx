@@ -119,11 +119,11 @@ const WishlistCard = ({ item, onRemove }) => {
             </motion.p>
           </CardContent>
          {
-            item.status_swap == "available"? (
+            item.status_swap == "available" && item.quantity > 0 ? (
                 <CardFooter className="p-4 pt-0">
             <motion.div className="flex gap-2 w-full" variants={containerVariants} initial="hidden" animate="visible">
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                <Link href={`/products/${item.id}`} className="w-full">
+                <Link href={`/products/out_offer/${item.id}`} className="w-full">
                   <Button variant="outline" className="w-full">
                     {t("ViewDetails") || " View Details"}
                   </Button>

@@ -107,6 +107,8 @@ const Wishlist = () => {
             }
           }),
         )
+        // filter items by quantity > 0
+        // const filteredItems = items.filter((item) => item.quantity > 0)
         setWishlistItems(items)
       } catch (err) {
         setWishlistItems([])

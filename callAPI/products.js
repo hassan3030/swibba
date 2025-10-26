@@ -463,7 +463,9 @@ if(availablity=="available" ){
           user_id: { _eq:`${userId}` },
           status_swap: { _eq: "available"},
           quantity: { _gt: 0 },
-        }
+        
+        },
+        sort: "-date_created",
       }
     }
     )
@@ -477,7 +479,8 @@ else if( availablity=="unavailable"){
         filter: {
           offered_by: { _eq:`${userId}` },
           // quantity: { _gt: 0 },
-        }
+        },
+        sort: "-date_created",
       }
     }
   )
@@ -497,7 +500,8 @@ else if( availablity=="unavailable"){
          { status_swap: { _eq: "unavailable" } }
       ],
             user_id: { _eq:`${userId}` } ,
-        }
+        },
+        sort: "-date_created",
       }
     }
     )
@@ -509,7 +513,8 @@ else{
         fields: "*,images.*,translations.*,images.directus_files_id.*",
         filter: {
           user_id: { _eq:`${userId}` },
-        }
+        },
+        sort: "-date_created",
       }
     }
     )
@@ -549,7 +554,8 @@ export const getProductsOwnerById = async (productId) => {
             status_swap: { _eq: "available" },
             user_id: { _eq: userResult.data.id },
             quantity: { _gt: 0 },
-          }
+          },
+          sort: "-date_created",
         }
       }
     )
@@ -579,7 +585,7 @@ export const getImageProducts = async (images) => {
       return { success: true, data: [], message: "No valid file IDs provided." };
     }
 
-    const response = await axios.get(`${baseURL}/files`, {
+    const response = await axios.get(`${baseURL}files`, {
       params: {
         filter: {
           id: { _in: fileIds },
@@ -716,7 +722,7 @@ export const deleteProduct = async (id) => {
        
              // console.log("productImages", productImages)
              productImages.data.data.images.forEach(async (image) => {
-              await axios.delete(`${baseURL}/Files/${image.directus_files_id.id}`, {
+              await axios.delete(`${baseURL}Files/${image.directus_files_id.id}`, {
                headers: {
                  Authorization: `Bearer ${token}`,
                },
@@ -803,7 +809,7 @@ export const addProduct = async (payload, files) => {
           let formData = new FormData()
           formData.append("file", file)
 
-          const fileRes = await axios.post(`${baseURL}/files`, formData, {
+          const fileRes = await axios.post(`${baseURL}files`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
@@ -863,7 +869,7 @@ export const addProduct = async (payload, files) => {
 }
 
 // Update product with images and comprehensive validation
-export const updateProduct = async (payload, files, itemId) => {
+export const updateProduct = async (payload, files, itemId) => { 
   try {
     return await makeAuthenticatedRequest(async () => {
       if (!payload || typeof payload !== "object" || !itemId) {
@@ -878,7 +884,10 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("At least one image is required")
       }
 
-      const { token, userId } = await validateAuth()
+      // const { token, userId } = await validateAuth()
+      const token = await getCookie()
+      const decoded = await decodedToken()
+      const userId = decoded.id
 
       if (!token || !userId) {
         throw new Error("Authentication required")
@@ -902,10 +911,13 @@ export const updateProduct = async (payload, files, itemId) => {
       }
 
       // Update the item with translations included (Directus native approach)
+      console.log("payload in products.js", payload)
       const itemRes = await axios.patch(
         `${baseItemsURL}Items/${itemId}`,
         {
+          // here is payload from the component
           ...payload,
+          // name: "my y item name",
           date_updated: new Date().toISOString(),
         },
         {
@@ -915,7 +927,7 @@ export const updateProduct = async (payload, files, itemId) => {
           },
         },
       )
-
+console.log("itemRes", itemRes)
       if (!itemRes.data?.data?.id) {
         throw new Error("Failed to update product")
       }
@@ -933,14 +945,20 @@ export const updateProduct = async (payload, files, itemId) => {
                 },
                 limit: 1,
               },
-              headers: { Authorization: `Bearer ${token}` },
+              headers: {
+                 Authorization: `Bearer ${token}`,
+                 "Content-Type": "application/json",
+               },
             });
-
+console.log("relationRes", relationRes)
             const relation = relationRes.data?.data?.[0];
             if (relation) {
               await axios.delete(`${baseItemsURL}Items_files/${relation.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
               });
+              console.log("relation deleted" + relation.id)
             }
           } catch (deleteError) {
             console.warn(`Failed to delete image relation for file ${fileId}:`, deleteError.message);
@@ -959,19 +977,19 @@ export const updateProduct = async (payload, files, itemId) => {
           const formData = new FormData()
           formData.append("file", file)
 
-          const fileRes = await axios.post(`${baseURL}/files`, formData, {
+          const fileRes = await axios.post(`${baseURL}files`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
             },
           })
-
+console.log("fileRes", fileRes)
           const fileId = fileRes.data?.data?.id
           if (!fileId) {
             throw new Error(`Failed to upload image ${i + 1}`)
           }
 
-          await axios.post(
+        const fileUploadRes = await axios.post(
             `${baseItemsURL}Items_files`,
             {
               Items_id: itemId,
@@ -984,7 +1002,7 @@ export const updateProduct = async (payload, files, itemId) => {
               },
             },
           )
-
+console.log("fileUploadRes" + fileUploadRes)
           uploadResults.push({ index: i, file_id: fileId, success: true })
         } catch (uploadError) {
           console.error(`Failed to upload image ${i + 1}:`, uploadError.message)

@@ -58,7 +58,7 @@ import Image from "next/image"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
 import { mediaURL } from "@/callAPI/utiles";
-
+import CardItemRecived from "@/components/send-received-item/card-item-recived"
 
 // Animation variants
 const containerVariants = {
@@ -720,7 +720,7 @@ console.log(offersReceived.data)
                                       animate={{ opacity: 1, x: 0 }}
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
-                                      <CardItemRecivedItem
+                                      <CardItemRecived
                                         {...item}
                                         deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                       />
@@ -770,7 +770,7 @@ console.log(offersReceived.data)
                                       animate={{ opacity: 1, x: 0 }}
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
-                                      <CardItemRecivedItem
+                                      <CardItemRecived
                                         {...item}
                                         deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                       />
@@ -1079,120 +1079,3 @@ console.log(offersReceived.data)
 }
 
 export default RecivedItems
-
-// CardItemRecivedItem component
-const CardItemRecivedItem = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity, available_quantity }) => {
-  const router = useRouter()
-  const { isRTL } = useLanguage()
-  const { t } = useTranslations()
-
-  const unitPrice = Number(price || 0)
-  const qty = Number(quantity ?? available_quantity ?? 1)
-  const totalPrice = unitPrice * qty
-
-  const handleView = (id) => {
-    router.push(`/products/${id}`)
-  }
- 
-   return (
-     <motion.div 
-       whileHover={{ scale: 1.02 }} 
-       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-     >
-       <Card key={id} className="overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300">
-         <div className="flex flex-col sm:flex-row gap-3 p-3 sm:p-4">
-           {/* Image Section */}
-           <motion.div
-             className="relative w-full h-24 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted mx-auto sm:mx-0 max-w-40"
-             whileHover={{ scale: 1.05 }}
-             transition={{ duration: 0.3 }}
-               >
-             {(() => {
-               const mediaUrl = {
-                 id: images[0]?.directus_files_id.id,
-                 type: images[0]?.directus_files_id.type,
-                 url: `${mediaURL}${images[0]?.directus_files_id.id}`
-               }
-               const mediaType = getMediaType(mediaUrl.type)
-               if (mediaType === 'video') {
-                 return (
-                   <video src={mediaUrl.url} alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} className="w-full h-full object-cover" />
-                 )
-               } else if (mediaType === 'audio') {
-                 return (
-                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-400">
-                     <span className="text-2xl">🎵</span>
-                   </div>
-                 )
-               } else {
-                 return (
-                   <Image 
-                     src={mediaUrl.url} 
-                     alt={isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name} 
-                     fill
-                     className="object-cover"
-                   />
-                 )
-               }
-             })()}
-             
-            {/* Badge Overlay */}
-            <div className="absolute top-1 left-1">
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 shadow-md">
-                {t(status_item) || status_item}
-              </Badge>
-            </div>
-           </motion.div>
-
-           {/* Content Section */}
-           <div className="flex-1 min-w-0 flex flex-col justify-between w-full">
-             <div className="text-center sm:text-start">
-               <h4 className="font-bold text-sm mb-1 line-clamp-1">{isRTL ? translations?.[1]?.name || name : translations?.[0]?.name || name}</h4>
-               <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{!isRTL ? translations?.[0]?.description || description : translations?.[1]?.description || description}</p>
-             </div>
-             
-             <div className="space-y-2">
-               {/* Price & Quantity (unit + total based on quantity) */}
-               <div className="flex items-center justify-between gap-4">
-                 <div className="text-center sm:text-start">
-                   <div className="text-xs text-muted-foreground"> {t("unitPrice") || "Unit"}</div>
-                   <div className="font-bold text-primary text-sm">{unitPrice.toLocaleString()} {t("LE") || "LE"}</div>
-                 </div>
-                 <div className="text-center sm:text-right">
-                   <div className="text-xs text-muted-foreground">{t("quantity") || "Qty"}: {qty}</div>
-                   <div className="font-semibold">{totalPrice.toLocaleString()} {t("LE") || "LE"}</div>
-                 </div>
-               </div>
-
-               {/* Action Buttons */}
-               <div className="flex flex-col sm:flex-row gap-2">
-                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                   <Button 
-                     variant="outline" 
-                     size="sm" 
-                     className="w-full h-8 sm:h-7 text-xs gap-1.5" 
-                     onClick={() => handleView(id)}
-                   >
-                     <Eye className="h-3 w-3" />
-                     {t("view") || "View"}
-                   </Button>
-                 </motion.div>
-                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                   <Button 
-                     variant="destructive" 
-                     size="sm" 
-                     className="w-full h-8 sm:h-7 text-xs gap-1.5" 
-                     onClick={deleteItem}
-                   >
-                     <Trash2 className="h-3 w-3" />
-                     {t("Remove") || "Remove"}
-                   </Button>
-                 </motion.div>
-               </div>
-             </div>
-           </div>
-         </div>
-       </Card>
-     </motion.div>
-   )
-}

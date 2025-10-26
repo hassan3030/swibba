@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { zodResolver } from "@hookform/resolvers/zod" 
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
@@ -247,21 +247,21 @@ export function ItemUpdate(props) {
   useEffect(() => {
     const fetchImages = async () => {
       if (!images || images.length === 0) {
-        console.log("No images prop provided")
+        // console.log("No images prop provided")
         return
       }
       
-      console.log("Images prop:", images)
+      // console.log("Images prop:", images)
       
       // Check if images already have directus_files_id (direct structure)
       if (images[0] && images[0].directus_files_id) {
-        console.log("Images have direct structure, processing directly")
+        // console.log("Images have direct structure, processing directly")
         const list = images.map((img) => ({
           fileId: img.directus_files_id.id,
           url: `${mediaURL}${img.directus_files_id.id}`,
           type: img.directus_files_id.type || 'image/jpeg',
         }))
-        console.log("Processed image list (direct):", list)
+        // console.log("Processed image list (direct):", list)
         setExistingImages(list)
         setImageUrls(list.map(x => x.url))
         setRetainedExistingFileIds(list.map(x => x.fileId))
@@ -273,7 +273,7 @@ export function ItemUpdate(props) {
       
       try {
         const fetchedImages = await getImageProducts(images)
-        console.log("Fetched images response:", fetchedImages)
+        //  console.log("Fetched images response:", fetchedImages)
         
         if (fetchedImages.success && fetchedImages.data && fetchedImages.data.length > 0) {
           setBigImage(fetchedImages.data[0].directus_files_id)
@@ -282,15 +282,15 @@ export function ItemUpdate(props) {
             url: `${mediaURL}${img.directus_files_id}`,
             type: img.type || 'image/jpeg',
           }))
-          console.log("Processed image list:", list)
+          // console.log("Processed image list:", list)
           setExistingImages(list)
           setImageUrls(list.map(x => x.url))
           setRetainedExistingFileIds(list.map(x => x.fileId))
         } else {
-          console.log("No images found in response or fetch failed")
+          // console.log("No images found in response or fetch failed")
         }
       } catch (err) {
-        console.error("Failed to fetch images", err)
+        // console.error("Failed to fetch images", err)
       }
     }
     fetchImages()
@@ -322,7 +322,7 @@ export function ItemUpdate(props) {
           const data = await response.json()
           pos.name = data.display_name || "Current Location"
         } catch (error) {
-          console.error("Reverse geocoding failed", error)
+          // console.error("Reverse geocoding failed", error)
           pos.name = "Current Location"
         }
 
@@ -504,11 +504,11 @@ export function ItemUpdate(props) {
       if (result.success) {
         toast({ title: "Success", description: "Image removed." });
       } else {
-        console.warn("Failed to remove image from server:", result.error);
+        // console.warn("Failed to remove image from server:", result.error);
         // Keep the UI change even if server removal fails
       }
     } catch (error) {
-      console.warn("Error removing image:", error.message);
+      // console.warn("Error removing image:", error.message);
       // Keep the UI change even if server removal fails
       toast({ title: "Image removed from preview", description: "Will be removed on save." });
     }
@@ -589,7 +589,7 @@ export function ItemUpdate(props) {
       retained_image_file_ids: retainedExistingFileIds,
       deleted_image_file_ids: deletedImageIds
     }
-
+console.log("payload in update page", payload)
     if ((existingImages.length + files.length) === 0) {
       toast({
         title: t("error") || "ERROR",
@@ -600,7 +600,7 @@ export function ItemUpdate(props) {
     }
 
     try {
-      console.log("Payload being sent:", payload)
+      // console.log("Payload being sent:", payload)
       console.log("Translations being sent:", translationsToSend)
       
       const updateItem = await updateProduct(payload, files, id)
@@ -617,7 +617,7 @@ export function ItemUpdate(props) {
       }
     } catch (err) {
       setIsSubmitting(false) 
-      console.error("Update error:", err)
+      // console.error("Update error:", err)
       toast({
         title: t("error") || "ERROR",
         description: err.message || t("Errorupdatingitem") || "Error updating item.",
@@ -821,15 +821,15 @@ else{
     form.watch("allowed_categories")?.length > 0
 
   // Debug logging
-  console.log("Debug - existingImages.length:", existingImages.length)
-  console.log("Debug - imagesFile.length:", imagesFile.length)
-  console.log("Debug - aiPriceEstimation:", aiPriceEstimation)
-  console.log("Debug - allowed_categories:", form.watch("allowed_categories"))
-  console.log("Debug - isStep2Valid:", isStep2Valid)
-  console.log("Debug - isDirty:", isDirty)
-  console.log("Debug - isMediaDirty:", isMediaDirty)
-  console.log("Debug - aiPriceEstimation === value_estimate:", aiPriceEstimation === value_estimate)
-  console.log("Debug - value_estimate:", value_estimate)
+  // console.log("Debug - existingImages.length:", existingImages.length)
+  // console.log("Debug - imagesFile.length:", imagesFile.length)
+  // console.log("Debug - aiPriceEstimation:", aiPriceEstimation)
+  // console.log("Debug - allowed_categories:", form.watch("allowed_categories"))
+  // console.log("Debug - isStep2Valid:", isStep2Valid)
+  // console.log("Debug - isDirty:", isDirty)
+  // console.log("Debug - isMediaDirty:", isMediaDirty)
+  // console.log("Debug - aiPriceEstimation === value_estimate:", aiPriceEstimation === value_estimate)
+  // console.log("Debug - value_estimate:", value_estimate)
 
 
 
@@ -957,7 +957,7 @@ else{
                                     )}
                                   </SelectValue>
                                 </SelectTrigger>
-                                <SelectContent className="bg-background border-input">
+                                <SelectContent className="bg-background border-input h-40">
                                   {countriesListWithFlags.map((country) => (
                                     <SelectItem key={country.name} value={country.name} className="text-right">
                                       <div className="flex items-center gap-2">
@@ -1056,7 +1056,7 @@ else{
                                     </SelectTrigger>
                                   </motion.div>
                                 </FormControl>
-                                <SelectContent className="z-[9999]">
+                                <SelectContent className="z-[9999] h-40">
                                   {categoriesName.map((category) => (
                                     <SelectItem key={category} value={category}>
                                       {t(category)}
@@ -1293,7 +1293,7 @@ else{
                         <AnimatePresence>
                           {existingImages.map((img) => {
                             const mediaType = getMediaType(img.type)
-                            console.log('Existing image media type:', { fileId: img.fileId, type: img.type, mediaType })
+                            // console.log('Existing image media type:', { fileId: img.fileId, type: img.type, mediaType })
                             
                             return (
                               <motion.div key={img.fileId} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>
@@ -1369,13 +1369,13 @@ else{
                             const isExistingImage = index < existingImages.length
                             const file = isExistingImage ? existingImages[index] : imagesFile[index - existingImages.length]
                             const mediaType = getMediaType(file?.type)
-                            console.log('Image media type:', { 
-                              index, 
-                              isExistingImage, 
-                              fileType: file?.type, 
-                              mediaType, 
-                              url: url.substring(0, 50) + '...' 
-                            })
+                            // console.log('Image media type:', { 
+                            //   index, 
+                            //   isExistingImage, 
+                            //   fileType: file?.type, 
+                            //   mediaType, 
+                            //   url: url.substring(0, 50) + '...' 
+                            // })
                             
                             return (
                               <motion.div key={`new-media-${index}-${file?.name || 'unknown'}`} variants={imageVariants} initial="hidden" animate="visible" exit="exit" layout>

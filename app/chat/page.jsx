@@ -16,7 +16,8 @@ import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { mediaURL } from "@/callAPI/utiles";
-
+import { BiCartDownload } from "react-icons/bi";
+import { TbShoppingCartUp } from "react-icons/tb";
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -538,9 +539,9 @@ const Messages = () => {
                           router.push(`/send-items#${selectedOffer.id}`)
                         }}
                       >
-                        <ShoppingCart className="h-8 w-8" />
+                        <TbShoppingCartUp className="h-8 w-8" />
                         <span className="pointer-events-none absolute top-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100">
-                          {t("goToCart") || "Go to Cart"}
+                          {t("goToSendItems") || "Go to Send Items"}
                         </span>
                       </Button>
                     </motion.div>
@@ -554,9 +555,9 @@ const Messages = () => {
                           router.push(`/recived-items#${selectedOffer.id}`)
                         }}
                       >
-                        <Bell className="h-8 w-8" />
+                        <BiCartDownload className="h-8 w-8" />
                         <span className="pointer-events-none absolute top-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100">
-                          {t("goToNotifications") || "Go to Notifications"}
+                          {t("goToNotifications") || "Go to Recived Offers"}
                         </span>
                       </Button>
                     </motion.div>

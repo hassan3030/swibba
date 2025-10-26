@@ -13,10 +13,10 @@ import { useTranslations } from "@/lib/use-translations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getProductById } from "@/callAPI/products"
 import { decodedToken, getCookie, validateAuth ,setTarget } from "@/callAPI/utiles"
-import { getKYC, getUserByProductId, getUserById } from "@/callAPI/users"
+import { getKYC, getUserByProductId } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
-import { getCompletedOffer, getReview  , getOfferItemsByItemIdItself} from "@/callAPI/swap"
+import { getCompletedOffer, getReview } from "@/callAPI/swap"
 import { mediaURL } from "@/callAPI/utiles";
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -58,18 +58,16 @@ export default function ProductPage() {
   const [name, setName] = useState("")
   const [tokenId, setTokenId] = useState()
   const [avatar, setAvatar] = useState("")
-  const [offerQuantity, setOfferQuantity] = useState(1) 
-  const [totalQuantity, setTotalQuantity] = useState()
+  const [quantity, setQuantity] = useState(1)
+  const [originalquantity, setOriginalquantity] = useState(1)
   const [totalPrice, setTotalPrice] = useState(0)
   const [completedOffersCount, setCompletedOffersCount] = useState(0)
   const [rate, setRate] = useState(0)
-  const [partnerUsers, setPartnerUsers] = useState([])
   const { t } = useTranslations()
   const params = useParams()
-  const id = params.item_offer_id
+  const router = useRouter()
+  const id = params.item_id
   const { isRTL, toggleLanguage } = useLanguage()
-
-
   const getToken = async () => {
     try {
       const { userId } = await validateAuth()
@@ -82,79 +80,41 @@ export default function ProductPage() {
 
   
 
- 
-
-  
-const getOfferQuantity = async () => {
-  try {
-    const offerItems = await getOfferItemsByItemIdItself(id)
-    console.log("offerItems", offerItems)
-    if (offerItems.success && offerItems.data) {
-      setTotalQuantity(offerItems.data.total_quantity || 0)
-      
-      // Extract unique partner users from offer items (excluding current user)
-      const uniqueUsers = []
-      const userIds = new Set()
-      
-      offerItems.data.offer_items?.forEach(offer => {
-        // Only include users who are not the current user (if tokenId is available)
-        if (offer.offered_by && !userIds.has(offer.offered_by) && 
-            (tokenId ? offer.offered_by !== tokenId : true)) {
-          userIds.add(offer.offered_by)
-          uniqueUsers.push({
-            id: offer.offered_by,
-            quantity: offer.quantity,
-            total_price: offer.total_price,
-            email_user_from: offer.email_user_from,
-            email_user_to: offer.email_user_to
-          })
-        }
-      })
-      
-      setPartnerUsers(uniqueUsers)
-      
-      // Fetch user details for each partner
-      const fetchPartnerDetails = async () => {
-        const usersWithDetails = await Promise.all(
-          uniqueUsers.map(async (partner) => {
-            try {
-              const userDetails = await getUserById(partner.id)
-              return {
-                ...partner,
-                name: userDetails.data ? 
-                  `${userDetails.data.first_name || ''} ${userDetails.data.last_name || ''}`.trim() || partner.email_user_from :
-                  partner.email_user_from,
-                avatar: userDetails.data?.avatar ? 
-                  `${mediaURL}${userDetails.data.avatar}` : 
-                  null
-              }
-            } catch (error) {
-              console.error(`Error fetching user details for ${partner.id}:`, error)
-              return {
-                ...partner,
-                name: partner.email_user_from,
-                avatar: null
-              }
-            }
-          })
-        )
-        setPartnerUsers(usersWithDetails)
-      }
-      
-      fetchPartnerDetails()
-    } else {
-      setTotalQuantity(0)
-      setPartnerUsers([])
-    }
-  } catch (error) {
-    console.error("Error fetching offer quantity:", error)
-    setTotalQuantity(0)
-    setPartnerUsers([])
-  }
-}
+  // Set original quantity from product and initialize selected quantity
   useEffect(() => {
-    getOfferQuantity()
-  }, [id])
+    if (product) {
+      const stock = product.quantity || 0;
+      setOriginalquantity(stock);
+      setQuantity(stock > 0 ? 1 : 0);
+    }
+  }, [product]);
+
+  // Calculate total price whenever quantity or product price changes
+  useEffect(() => {
+    if (product?.price) {
+      const price = parseFloat(product.price) || 0;
+      setTotalPrice(price * quantity);
+    }
+  }, [quantity, product?.price]);
+
+  // Quantity handlers
+  const increaseQuantity = () => {
+    if (quantity < originalquantity) {
+      setQuantity(q => q + 1);
+    } else {
+      toast({
+        title: t("quantityExceeded") || "Maximum quantity reached",
+        description: t("quantityExceededDescription") || `You cannot add more than the available stock of ${originalquantity}.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(q => q - 1);
+    }
+  };
 
   // Fetch product and related data
   useEffect(() => {
@@ -162,8 +122,6 @@ const getOfferQuantity = async () => {
     const fetchData = async () => {
       try {
         const prod = await getProductById(id)
-        
-  
         if (!prod.data) {
          return notFound()
           
@@ -200,6 +158,33 @@ const getOfferQuantity = async () => {
     fetchData()
   }, [id])
 
+  // const makeSwap = async (e) => {
+  //   e.preventDefault()
+  //   e.stopPropagation()
+  //   const token = await getCookie()
+  //   const decoded = await decodedToken(token)
+
+  //   if (token) {
+  //     const kyc = await getKYC(decoded.id) /// ------------- take id user
+  //     if (kyc.data === false || kyc.data == "false") {
+  //       toast({
+  //         title: t("faildSwap") || "Failed Swap",
+  //         description: t("DescFaildSwapKYC") || "KYC is required for swap. Please complete your KYC.",
+  //         variant: "destructive",
+  //       })
+  //     }
+  //     else {
+  //       router.push(`/swap/${id}`)
+  //     }
+  //   } else {
+  //     toast({
+  //       title: t("faildSwap") || "Failed Swap",
+  //       description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
+  //       variant: "destructive",
+  //     })
+  //     router.push(`/auth/login`)
+  //   }
+  // }
   const getCompletedOffers = async () => {
     try {
       const userId = user?.id
@@ -236,6 +221,35 @@ const getOfferQuantity = async () => {
       handleGetBreviousRating(user.id)
     }
   }, [user])
+
+
+  const makeSwap = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const token = await getCookie()
+    const decoded = await decodedToken(token)
+    if (token) {
+      const kyc = await getKYC(decoded.id) /// ------------- take id user
+      if (kyc.data === false) {
+        toast({
+          title: t("faildSwap") || "Failed Swap",
+          description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+          variant: "default",
+        })
+      }
+      else {
+        router.push(`/swap/${id}`)
+      }
+    } else {
+    await setTarget(id)
+      toast({
+        title: t("faildSwap") || "Failed Swap",
+        description: t("DescFaildSwapLogin") ||   "Invalid swap without login. Please try to login.",
+        variant: "default",
+      })
+      router.push(`/auth/login`)
+    }
+  }
 
 
   if (!product) {
@@ -310,10 +324,80 @@ const getOfferQuantity = async () => {
               {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: {Number(product.price).toLocaleString('en-US')} {t("le")}
             </div>
             <div className="text-xs text-secondary2/85 line-clamp-2">
-              {t("quantity")}: {totalQuantity || product.quantity || 0}
+              {t("quantity")}: {Number(originalquantity).toLocaleString('en-US')}
             </div>
           </motion.div>
 
+          {/* Quantity Selector */}
+          <motion.div
+            className="flex flex-col gap-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{t("quantity") || "Quantity"}:</span>
+              <div className="flex items-center gap-3">
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={()=>{decreaseQuantity()}}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+                <motion.span
+                  className="text-lg font-semibold min-w-[2rem] text-center"
+                  key={quantity}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  {quantity}
+                </motion.span>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    onClick={()=>{increaseQuantity()}}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Total Price Display */}
+            {totalPrice > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t("totalPrice") || "Total Price"}:
+                  </span>
+                  <motion.span
+                    className="text-xl font-bold text-primary"
+                    key={totalPrice}
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    {totalPrice.toLocaleString('en-US')} {t("le") || "EGP"}
+                  </motion.span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {Number(product.price).toLocaleString('en-US')} × {quantity} = {totalPrice.toLocaleString('en-US')}
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
 
           <motion.div
             className="text-muted-foreground text-sm sm:text-base leading-relaxed"
@@ -390,62 +474,6 @@ const getOfferQuantity = async () => {
 
           <Separator />
 
-          {/* Partner Users Section */}
-          {/* {partnerUsers.length > 0 && (
-            <motion.div
-              className="flex flex-col gap-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              <h3 className="text-lg font-semibold text-start">
-                {t("otherUsersWithOffers") || "Other Users with Offers"} ({partnerUsers.length})
-              </h3>
-              <div className="grid gap-2 max-h-48 overflow-y-auto">
-                {partnerUsers.map((partner, index) => (
-                  <motion.div
-                    key={partner.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border hover:bg-muted/80 transition-colors"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 + index * 0.1 }}
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarImage src={partner.avatar || "/placeholder.svg"} alt={partner.name || `Partner ${index + 1}`} />
-                        <AvatarFallback className="text-sm">
-                          {partner.name?.charAt(0)?.toUpperCase() || partner.email_user_from?.charAt(0)?.toUpperCase() || "P"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">
-                          {partner.name || partner.email_user_from || `Partner ${index + 1}`}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {t("quantity")}: {partner.quantity} | {t("price")}: {partner.total_price} {t("le")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Link href={`/send-items?partner=${partner.id}&item=${id}`}>
-                        <Button size="sm" variant="outline" className="text-xs">
-                          {t("send") || "Send"}
-                        </Button>
-                      </Link>
-                      <Link href={`/recived-items?partner=${partner.id}&item=${id}`}>
-                        <Button size="sm" variant="outline" className="text-xs">
-                          {t("receive") || "Receive"}
-                        </Button>
-                      </Link>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )} */}
-
-          <Separator />
-
           {/* Add to Cart Section */}
           <motion.div
             className="grid gap-3 sm:gap-4"
@@ -454,17 +482,25 @@ const getOfferQuantity = async () => {
             transition={{ delay: 0.7 }}
           >
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                <Link href={`/profile`} className="block w-full">
+              {product.status_swap === "available" && product.user_id !== tokenId && (
+                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                  <Button className="w-full text-sm sm:text-base gap-2" onClick={(e)=>{makeSwap(e)}}>
+                    <Repeat className="h-4 w-4" />
+                    {t("swap")}
+                  </Button>
+                </motion.div>
+              )}
+              {/* <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                <Link href={tokenId? `/profile` : `/`} className="block w-full">
                   <Button variant="secondary" className="w-full text-sm sm:text-base">
                     {t("goBack")}
                   </Button>
                 </Link>
-              </motion.div>
+              </motion.div> */}
             </div>
           </motion.div>
 
-          <Separator className="my-3 sm:my-4" />
+          {/* <Separator className="my-3 sm:my-4" /> */}
 
           {/* Product Details Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
@@ -515,7 +551,7 @@ const getOfferQuantity = async () => {
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("quantity")}` : `${t("quantity")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {totalQuantity || product.quantity || 0}
+                      {Number(product.quantity).toLocaleString('en-US')}
                     </div>
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("status")}` : `${t("status")}:`}</h2>

@@ -690,6 +690,7 @@ export const deleteProduct = async (id) => {
         // updat quantity to 0
         const updateQuantity = await axios.patch(`${baseItemsURL}Items/${id}`, {
           quantity: 0,
+          status_swap: "unavailable",
         }, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -722,7 +723,7 @@ export const deleteProduct = async (id) => {
        
              // console.log("productImages", productImages)
              productImages.data.data.images.forEach(async (image) => {
-              await axios.delete(`${baseURL}Files/${image.directus_files_id.id}`, {
+              await axios.delete(`${baseURL}files/${image.directus_files_id.id}`, {
                headers: {
                  Authorization: `Bearer ${token}`,
                },
@@ -741,6 +742,8 @@ export const deleteProduct = async (id) => {
     return handleApiError(error, "Delete Product")
   }
 }
+
+
 
 
 // Add product with images and comprehensive validation
@@ -909,7 +912,8 @@ export const updateProduct = async (payload, files, itemId) => {
       if (invalidFiles.length > 0) {
         throw new Error("Only JPEG, PNG, and WebP images are allowed")
       }
-
+      // token for testing
+     const t = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFjM2U4YzUyLTYyYTAtNDdjOC1iOTZhLTViNjczNjgxNGNjNSIsInJvbGUiOiIxODZiNDU0OC0xMTlkLTRlOTEtYjMzOS04NTM2NTMyZjVkOWMiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc2MTUxMjU2NywiZXhwIjoxNzYyMTE3MzY3LCJpc3MiOiJkaXJlY3R1cyJ9.rwTlvrSIg23gVWaHxBWMRrkiz9WpyD-IPij8633Xm38"
       // Update the item with translations included (Directus native approach)
       console.log("payload in products.js", payload)
       const itemRes = await axios.patch(
@@ -923,7 +927,8 @@ export const updateProduct = async (payload, files, itemId) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${t}`,
+            // Authorization: `Bearer ${token}`,
           },
         },
       )

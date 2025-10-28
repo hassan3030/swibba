@@ -37,6 +37,7 @@ import { LanguageToggle } from "@/components/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
 import { useTheme } from "@/lib/theme-provider"
 import { useToast } from "@/components/ui/use-toast"
+import { ItemAdd } from "@/components/prods-modification/item-add"
 import { z } from "zod"
 import { countriesList } from "@/lib/data"
 import { countriesListWithFlags, validatePhoneNumber } from "@/lib/countries-data"
@@ -736,7 +737,7 @@ Please return ONLY a JSON response in this format:
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Decorative background elements */}
-      <div className={`absolute inset-0 overflow-hidden pointer-events-none`}>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div className={`absolute top-20 ${getDirectionClass('right-10', 'left-10')} text-primary/5`} variants={floatingVariants} animate="float">
           <Settings className="h-32 w-32" />
         </motion.div>
@@ -780,9 +781,9 @@ Please return ONLY a JSON response in this format:
       
          <div className={`grid grid-cols-1 gap-8 md:grid-cols-4 rtl:grid-flow-col-dense `}  >
           {/* Sidebar */}
-           <motion.div className={`md:col-span-1 `} variants={itemVariants}>
+           <motion.div className={`md:col-span-1 ${isRTL ? 'md:col-start-4' : ''}`} variants={itemVariants}>
           <motion.h1
-          className={`mx-2 text-2xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent ${isRTL?'force-rtl':''}`}
+          className="mx-2 text-2xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
           initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -794,8 +795,8 @@ Please return ONLY a JSON response in this format:
                 {[
                   { value: "profile", icon: User, label: t("profile") || "Profile" },
                   { value: "preferences", icon: Globe, label: t("preferences") || "Preferences" },
-                  { value: "security", icon: Shield, label: t("security") || "Security" }
-                 
+                  { value: "security", icon: Shield, label: t("security") || "Security" },
+                  { value: "add", icon: CirclePlus, label: t("addItem") || "Add Item" },
                   // { value: "payment", icon: CreditCard, label: t("payment") || "Payment" },
                 ].map((tab, index) => (
                   <motion.div
@@ -806,7 +807,7 @@ Please return ONLY a JSON response in this format:
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full"
-                   >
+                  >
                     <TabsTrigger
                       value={tab.value}
                       className="w-full justify-start rtl:justify-end text-left rtl:text-right data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg"
@@ -821,36 +822,6 @@ Please return ONLY a JSON response in this format:
                     </TabsTrigger>
                   </motion.div>
                 ))}
-
-
-<Link href={`/profile/settings/editItem/new`}
- initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
- animate={{ opacity: 1, x: 0 }}
- transition={{ delay: 0.4 + 4 * 0.1 }}
- whileHover={{ scale: 1.02 }}
- whileTap={{ scale: 0.98 }}
- className="w-full"
->
-
-                   
-                    
-                   
-                    <TabsTrigger
-                      value={'add'}
-                      className="w-full justify-start rtl:justify-end text-left rtl:text-right data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg"
-                    >
-                      <motion.div
-                        animate={{ rotate: [0, 5, -5, 0] }}
-                        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 4 }}
-                      >
-                      </motion.div>
-                        <CirclePlus className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-                      {t("addItem") || "Add Item"}
-                    </TabsTrigger>
-                  
-</Link>
-
-
               </TabsList>
             </motion.div>
           </motion.div>
@@ -861,7 +832,7 @@ Please return ONLY a JSON response in this format:
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.div variants={cardVariants} whileHover="hover">
                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted overflow-hidden">
-                      <CardHeader className={`bg-gradient-to-r from-primary/10 to-secondary/10  ${isRTL?'force-rtl':''}`}>
+                      <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -929,21 +900,14 @@ Please return ONLY a JSON response in this format:
                           >
                             {/* Name Fields */}
                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rtl:grid-flow-col-dense">
-                              
-                              
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="first_name"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("firstName") || "First Name"}
                                 </Label>
-                            
-
-
-
                                 <motion.div whileFocus="focus">
-                                
                                   <Input
                                     id="first_name"
                                     name="first_name"
@@ -958,9 +922,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="last_name"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                 
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("LastName") || "Last Name"}
                                 </Label>
@@ -983,8 +945,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="country"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Country") || "Country"}
                                 </Label>
@@ -1023,8 +984,7 @@ Please return ONLY a JSON response in this format:
 
                               {/* City field */}
                               <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label htmlFor="city"   className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-                                >
+                                <Label htmlFor="city" className="text-sm font-medium text-foreground">
                                   {t("City") || "City"}
                                 </Label>
                                 <motion.div whileFocus="focus">
@@ -1049,8 +1009,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="street"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Street") || "Street"}
                                 </Label>
@@ -1076,8 +1035,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="post_code"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Postalcode") || "Postal Code"}
                                 </Label>
@@ -1206,10 +1164,7 @@ Please return ONLY a JSON response in this format:
                             {/* Contact and Personal Info */}
                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rtl:grid-flow-col-dense">
                               <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label htmlFor="email"
-                                
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-                                >
+                                <Label htmlFor="email" className="text-sm font-medium text-foreground">
                                   {t("email") || "Email"}
                                 </Label>
                                 <Input
@@ -1225,8 +1180,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="phone_number"
-
-                                   className={`text-sm font-medium text-foreground flex items-center gap-2 rtl:flex-row-reverse ${isRTL?'force-rtl':''}`}
+                                   className="text-sm font-medium text-foreground flex items-center gap-2 rtl:flex-row-reverse"
                                 >
                                   {t("phoneNumber") || "Phone Number"}
                                   {verified === 'true' && (
@@ -1292,9 +1246,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="avatar"
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                  
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Avatar") || "Avatar"}
                                 </Label>
@@ -1313,9 +1265,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="gender"
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                               
+                                  className="text-sm font-medium text-foreground"
                                 >
                                   {t("Gender") || "Gender"}
                                 </Label>
@@ -1335,9 +1285,7 @@ Please return ONLY a JSON response in this format:
                             <motion.div className="space-y-2" variants={inputVariants}>
                               <Label
                                 htmlFor="description"
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                               
+                                className="text-sm font-medium text-foreground"
                               >
                                 {t("descriptionProfile") || "Description"}
                               </Label>
@@ -1354,7 +1302,7 @@ Please return ONLY a JSON response in this format:
                                       }));
                                   }}
                                   rows={4}
-                                   className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-left ${isRTL?'force-rtl':''}`}
+                                   className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-left rtl:text-right"
                                    dir={currentLangCode === 'ar-SA' ? 'rtl' : 'ltr'}
                                    placeholder={currentLangCode === 'ar-SA' 
                                      ? "أخبر الآخرين عن نفسك..." 
@@ -1400,7 +1348,7 @@ Please return ONLY a JSON response in this format:
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="preferences">
                   <motion.div variants={cardVariants} whileHover="hover">
                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
-                      <CardHeader className={`bg-gradient-to-r from-primary/10 to-secondary/10 ${isRTL?'force-rtl':''}`}>
+                      <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10">
                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                           {t("preferences") || "Preferences"}
                         </CardTitle>
@@ -1421,7 +1369,7 @@ Please return ONLY a JSON response in this format:
                             whileHover={{ scale: 1.02 }}
                           >
                             <div>
-                              <h3 className={`font-medium text-lg ${isRTL?'force-rtl':''}`}>{t("DarkMode") || "Dark Mode"}</h3>
+                              <h3 className="font-medium text-lg">{t("DarkMode") || "Dark Mode"}</h3>
                               <p className="text-sm text-muted-foreground">
                                 {t("Customizeyourexperience") || "Toggle between light and dark themes"}
                               </p>
@@ -1444,7 +1392,7 @@ Please return ONLY a JSON response in this format:
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={(e)=>{handleSubmit(e)}}
-                            className="shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-background shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             {t("SaveChanges") || "Save Changes"}
                           </Button>
@@ -1459,7 +1407,7 @@ Please return ONLY a JSON response in this format:
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="security">
                   <motion.div variants={cardVariants} whileHover="hover">
                      <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
-                       <CardHeader className={`bg-gradient-to-r from-red-500/10 to-orange-500/10 ${isRTL?'force-rtl':''}`}>
+                       <CardHeader className="bg-gradient-to-r from-red-500/10 to-orange-500/10">
                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
                            <motion.div
                              animate={{ rotate: [0, -5, 5, 0] }}
@@ -1469,7 +1417,7 @@ Please return ONLY a JSON response in this format:
                            </motion.div>
                            {t("security") || "Security"}
                          </CardTitle>
-                         <CardDescription className={`text-base ${isRTL?'force-rtl':''}`}>
+                         <CardDescription className="text-base">
                            {t("Manageyouraccountsecurityprivacy") ||
                              "Manage your account security and privacy settings."}
                          </CardDescription>
@@ -1481,12 +1429,11 @@ Please return ONLY a JSON response in this format:
                           initial="hidden"
                           animate="visible"
                         >
-                          <motion.div className={`space-y-4 ${isRTL?'force-rtl':''}`} variants={itemVariants}>
+                          <motion.div className="space-y-4" variants={itemVariants}>
                              <h3 className="font-medium text-lg">{t("ChangePassword") || "Change Password"}</h3>
                              <div className="space-y-4">
                                <motion.div className="space-y-2" variants={inputVariants}>
-
-                                 <Label htmlFor="current-email" className={`text-sm font-medium ${isRTL?'force-rtl':''}`}>
+                                 <Label htmlFor="current-email" className="text-sm font-medium">
                                    {t("CurrentEmail") || "Current Email"}
                                  </Label>
                                 <motion.div whileFocus="focus">
@@ -1501,7 +1448,7 @@ Please return ONLY a JSON response in this format:
                               </motion.div>
 
                                <motion.div className="space-y-2" variants={inputVariants}>
-                                 <Label htmlFor="new-password" className={`text-sm font-medium ${isRTL?'force-rtl':''}`}>
+                                 <Label htmlFor="new-password" className="text-sm font-medium">
                                    {t("NewPassword") || "New Password"}
                                  </Label>
                                 <motion.div whileFocus="focus">
@@ -1516,7 +1463,7 @@ Please return ONLY a JSON response in this format:
                               </motion.div>
 
                                <motion.div className="space-y-2" variants={inputVariants}>
-                                 <Label htmlFor="confirm-password" className={`text-sm font-medium ${isRTL?'force-rtl':''}`}>
+                                 <Label htmlFor="confirm-password" className="text-sm font-medium">
                                    {t("ConfirmPassword") || "Confirm New Password"}
                                  </Label>
                                 <motion.div whileFocus="focus">
@@ -1542,7 +1489,7 @@ Please return ONLY a JSON response in this format:
                           </motion.div>
 
                           <motion.div
-                            className={`space-y-4 pt-8 border-t border-border ${isRTL?'force-rtl':''}`}
+                            className="space-y-4 pt-8 border-t border-border"
                             variants={itemVariants}
                           >
                              <h3 className="font-medium text-lg text-destructive">
@@ -1567,6 +1514,34 @@ Please return ONLY a JSON response in this format:
                 </motion.div>
               </TabsContent>
 
+              <TabsContent value="add">
+                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
+                  <motion.div variants={cardVariants} whileHover="hover">
+                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
+                       <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
+                           <motion.div
+                             animate={{ rotate: [0, 90, 0] }}
+                             transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3 }}
+                           >
+                             <CirclePlus className="h-6 w-6 text-green-500" />
+                           </motion.div>
+                           {t("addItem") || "Add Item"}
+                         </CardTitle>
+                         <CardDescription className="text-base">
+                           {t("Addyouritemstoswap") || "Add your items to swap"}
+                         </CardDescription>
+                       </CardHeader>
+                      <CardContent className="p-0 w-full">
+                        <motion.div
+                        >
+                          <ItemAdd className="w-full p-0"/>
+                        </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </motion.div>
+              </TabsContent>
               <TabsContent value="payment" key='payment'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="payment">
                   <motion.div variants={cardVariants} whileHover="hover">

@@ -569,7 +569,7 @@ SelectCountry: "Select a country",
     StartSwapping: "Start Swapping",
     HehasntmadeanyItemsyet: "He hasn't made any Items yet.",
     Swapwith: "Swap with:",
-    AllowTo: "Allow To:",
+    AllowTo: "Allow To",
 
 
 
@@ -736,6 +736,9 @@ SelectCountry: "Select a country",
     Selectaconversation: "Select a conversation",
     Chooseaswapoffertostartchatting: "Select a conversation",
     User: "User",
+    DeleteChat: "Delete Chat",
+    Chatdeletedsuccessfully: "Chat deleted successfully",
+    Failedtodeletechat: "Failed to delete chat",
 
     //profile
     faileChangePassword: "Please fill in all password fields",
@@ -1613,7 +1616,7 @@ SelectCountry: "اختر الدولة",
     StartSwapping: "ابدأ التبادل",
     HehasntmadeanyItemsyet: "لم يقم بإنشاء أي عناصر بعد.",
     Swapwith: "تبادل مع:",
-    AllowTo: "السماح بـ:",
+    AllowTo: "السماح بـ",
 
     // =========================================
 
@@ -1775,6 +1778,9 @@ SelectCountry: "اختر الدولة",
     Selectaconversation: " اختر محادثة",
     Chooseaswapoffertostartchatting: " اختر عرض لبدء المحادثة",
     User: " المستخدم",
+    DeleteChat: "حذف المحادثة",
+    Chatdeletedsuccessfully: "تم حذف المحادثة بنجاح",
+    Failedtodeletechat: "فشل في حذف المحادثة",
 
     //profile
 

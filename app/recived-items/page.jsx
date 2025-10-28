@@ -296,55 +296,67 @@ console.log(offersReceived.data)
     const item = swapItems.find((itm) => itm.id === itemId)
     if (!item) return
 
-    // use quantity when computing totals
-    const theirItems = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.offered_by === item.offered_by)
- 
-     // Calculate new cash adjustment after removing this item
-     const offer = offers.find((o) => o.id === item.offer_id)
-     let newCashAdjustment = 0
-     
-     if (offer) {
-      const offerItems = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.id !== itemId) // Exclude current item
-      const myItemsAfterDelete = offerItems.filter((itm) => itm.offered_by === offer.from_user_id)
-      const theirItemsAfterDelete = offerItems.filter((itm) => itm.offered_by !== offer.from_user_id)
+    // Get offer
+    const offer = offers.find((o) => o.id === item.offer_id)
+    if (!offer) return
 
-      const myTotal = myItemsAfterDelete.reduce((sum, itm) => {
-        const qty = _qty(itm)
-        return sum + (Number.parseFloat(itm.price || 0) || 0) * qty
-      }, 0)
+    // Items for this offer excluding the item to delete
+    const allOfferItemsAfterDelete = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.id !== itemId)
+    const senderId = offer.from_user_id
+    const senderCountAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by === senderId).length
+    const receiverCountAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by !== senderId).length
 
-      const theirTotal = theirItemsAfterDelete.reduce((sum, itm) => {
-        const qty = _qty(itm)
-        return sum + (Number.parseFloat(itm.price || 0) || 0) * qty
-      }, 0)
-
-      newCashAdjustment = myTotal - theirTotal
-    }
- 
-    if (theirItems.length > 1) {
+    // If either would be 0 after deletion, reject the entire offer
+    if (senderCountAfterDelete === 0 || receiverCountAfterDelete === 0) {
       try {
-        await deleteOfferItemsById(offerItemId, itemId, newCashAdjustment, item.offer_id)
+        await rejectOfferById(item.offer_id)
         toast({
           title: t("successfully") || "Successfully",
-          description: t("Itemdeletedfromswapsuccessfully") || "Item deleted from swap successfully",
+          description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
         })
         getNotifications()
+        router.refresh()
       } catch (err) {
         toast({
           title: t("error") || "Error",
-          description: t("Failedtodeleteitem") || "Failed to delete item",
+          description: t("Failedtodeleteswap") || "Failed to delete swap",
           variant: "destructive",
         })
       }
-    } else {
-      setPendingDelete({
-        idItem: offerItemId,
-        idOffer: item.offer_id,
-        owner: item.offered_by,
-        itemIdItslfe: itemId,
-        cashAdjustment: newCashAdjustment,
+      return
+    }
+
+    // Otherwise, delete the single offer item
+    // Calculate new cash adjustment after removing this item
+    let newCashAdjustment = 0
+    const myItemsAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by === senderId)
+    const theirItemsAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by !== senderId)
+
+    const myTotal = myItemsAfterDelete.reduce((sum, itm) => {
+      const qty = _qty(itm)
+      return sum + (Number.parseFloat(itm.price || 0) || 0) * qty
+    }, 0)
+
+    const theirTotal = theirItemsAfterDelete.reduce((sum, itm) => {
+      const qty = _qty(itm)
+      return sum + (Number.parseFloat(itm.price || 0) || 0) * qty
+    }, 0)
+
+    newCashAdjustment = myTotal - theirTotal
+
+    try {
+      await deleteOfferItemsById(offerItemId, itemId, newCashAdjustment, item.offer_id)
+      toast({
+        title: t("successfully") || "Successfully",
+        description: t("Itemdeletedfromswapsuccessfully") || "Item deleted from swap successfully",
       })
-      setShowDeleteDialog(true)
+      getNotifications()
+    } catch (err) {
+      toast({
+        title: t("error") || "Error",
+        description: t("Failedtodeleteitem") || "Failed to delete item",
+        variant: "destructive",
+      })
     }
   }
 
@@ -378,6 +390,8 @@ console.log(offersReceived.data)
         description: t("Failedtoacceptswap") || "Failed to accept swap",
         variant: "destructive",
       })
+      router.refresh()
+
     } else {
       toast({
         title: t("successfully") || "Successfully",
@@ -721,7 +735,8 @@ console.log(offersReceived.data)
                                       transition={{ delay: itemIndex * 0.1 }}
                                     >
                                       <CardItemRecived
-                                        {...item}
+                                        {...item    }
+                                        isAccepted = {offer.status_offer=="pending"?false:true}
                                         deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                       />
                                     </motion.div>
@@ -772,6 +787,7 @@ console.log(offersReceived.data)
                                     >
                                       <CardItemRecived
                                         {...item}
+                                        isAccepted = {offer.status_offer=="pending"?false:true}
                                         deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                       />
                                     </motion.div>

@@ -126,7 +126,7 @@ const messageVariants = {
   },
 }
 // CardItemRecived component
-const CardItemRecived = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity, available_quantity }) => {
+const CardItemRecived = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity, available_quantity , isAccepted=true}) => {
     const router = useRouter()
     const { isRTL } = useLanguage()
     const { t } = useTranslations()
@@ -222,17 +222,21 @@ const CardItemRecived = ({ id, name, description, price, status_item, images, de
                        {t("view") || "View"}
                      </Button>
                    </motion.div>
-                   <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                     <Button 
-                       variant="destructive" 
-                       size="sm" 
-                       className="w-full h-8 sm:h-7 text-xs gap-1.5" 
-                       onClick={deleteItem}
-                     >
-                       <Trash2 className="h-3 w-3" />
-                       {t("Remove") || "Remove"}
-                     </Button>
-                   </motion.div>
+
+                   {
+                    !isAccepted?( <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="w-full h-8 sm:h-7 text-xs gap-1.5" 
+                        onClick={deleteItem}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        {t("Remove") || "Remove"}
+                      </Button>
+                    </motion.div>):null
+                   }
+                  
                  </div>
                </div>
              </div>

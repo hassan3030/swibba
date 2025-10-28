@@ -442,13 +442,17 @@ export function Header() {
            
 
             {/* Search */}
-            <motion.div
+<Link href={'/products'} 
+              className="relative hidden flex-1 md:block"
+
+>
+<motion.div
               className="relative hidden flex-1 md:block"
               custom={1}
               variants={itemVariants}
               initial="hidden"
               animate="visible"
-            >
+             >
               <AnimatePresence>
                 {isSearchFocused && (
                   <motion.div
@@ -499,6 +503,9 @@ export function Header() {
                 </motion.div>
               )}
             </motion.div>
+</Link>
+
+           
 
             {/* Actions */}
             <motion.div

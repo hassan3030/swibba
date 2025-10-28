@@ -369,7 +369,7 @@ const SendItems = () => {
     }
   }
 
-  const getCompleteSwap = async (offerId) => {
+  const addCompletedSwap = async (offerId) => {
     const completeSwap = await completedOfferById(offerId)
     if (!completeSwap) {
       toast({
@@ -377,6 +377,8 @@ const SendItems = () => {
         description: t("Failedtocompleteswap") || "Failed to complete swap",
         variant: "destructive",
       })
+      // router.refresh()
+
     } else {
       toast({
         title: t("successfully") || "Successfully",
@@ -508,7 +510,7 @@ const SendItems = () => {
                 <Button
                   variant="secondary"
                   onClick={async () => {
-                    await getCompleteSwap(pendingCompleted.idOffer)
+                    await addCompletedSwap(pendingCompleted.idOffer)
                     setShowComleteDialog(false)
                     router.refresh()
                     getOffers()
@@ -798,6 +800,8 @@ const SendItems = () => {
                                       >
                                         <CardItemSend
                                           {...item}
+                                        isAccepted = {offer.status_offer=="pending"?false:true}
+
                                           deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                         />
                                       </motion.div>
@@ -848,6 +852,8 @@ const SendItems = () => {
                                       >
                                         <CardItemSend
                                           {...item}
+                                        isAccepted = {offer.status_offer=="pending"?false:true}
+
                                           deleteItem={() => handleDeleteItem(item.offer_item_id, item.id)}
                                         />
                                       </motion.div>

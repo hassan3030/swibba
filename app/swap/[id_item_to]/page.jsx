@@ -305,7 +305,7 @@ export default function SwapPage() {
         const item = myItems.find(p => p.id === itemId)
         if (item) {
           setItemQuantities(prev => ({ ...prev, [itemId]: 1 }))
-          setItemTotalPrices(prev => ({ ...prev, [itemId]: item.price }))
+          setItemTotalPrices(prev => ({ ...prev, [itemId]: Number.parseFloat(item.price || 0) }))
         }
       }
       return newSelection
@@ -336,7 +336,7 @@ export default function SwapPage() {
           // Initialize quantity when selected
           if (item) {
             setItemQuantities(prev => ({ ...prev, [itemId]: 1 }))
-            setItemTotalPrices(prev => ({ ...prev, [itemId]: item.price }))
+            setItemTotalPrices(prev => ({ ...prev, [itemId]: Number.parseFloat(item.price || 0) }))
           }
         }
         return newSelection
@@ -347,13 +347,15 @@ export default function SwapPage() {
   // Value calculation with quantity-based pricing
   const getTotalValue = (items, products) => {
     return items.reduce((total, itemId) => {
-      const totalPrice = itemTotalPrices[itemId]
-      if (totalPrice) {
-        return total + totalPrice
+      const stored = itemTotalPrices[itemId]
+      if (stored !== undefined) {
+        const num = Number.parseFloat(stored)
+        return total + (Number.isNaN(num) ? 0 : num)
       }
       // Fallback to original price if no quantity set
       const item = products.find((p) => p.id === itemId)
-      return total + Number.parseInt(item?.price || 0)
+      const base = Number.parseFloat(item?.price || 0)
+      return total + (Number.isNaN(base) ? 0 : base)
     }, 0)
   }
 

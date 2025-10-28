@@ -8,6 +8,16 @@
 @import 'leaflet/dist/leaflet.css';
 
 
+.force-rtl{
+  display: inherit !important;
+  text-align: right !important;
+}
+
+.force-ltr{
+  display: inherit !important;
+  text-align: left !important;
+}
+
 /* Emoji and Flag Support */
 .emoji-flag {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Twemoji Mozilla", "Android Emoji", "EmojiSymbols", sans-serif !important;

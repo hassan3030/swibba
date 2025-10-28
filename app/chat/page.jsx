@@ -10,7 +10,7 @@ import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, R
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { getOfferById, getOffeReceived, getMessage, addMessage, getOfferItemsByOfferId, deleteMessageByOfferId, getMessagesByOfferId } from "@/callAPI/swap"
+import { getOfferById, getOffeReceived, getMessage, addMessage, getOfferItemsByOfferId, deleteMessageByOfferId, getMessagesByOfferId , deleteChatsByOfferId} from "@/callAPI/swap"
 import { getProductById } from "@/callAPI/products"
 import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
@@ -162,7 +162,13 @@ const Messages = () => {
       //   offers: offersWithPartner
       // })
       
-      setOffers(offersWithPartner)
+      // Sort by most recent activity (prefer date_updated over date_created)
+      const sortedOffers = [...offersWithPartner].sort((a, b) => {
+        const aTime = new Date(a?.date_updated || a?.date_created || 0).getTime()
+        const bTime = new Date(b?.date_updated || b?.date_created || 0).getTime()
+        return bTime - aTime
+      })
+      setOffers(sortedOffers)
     } catch (error) {
       // console.error("🔍 DEBUG - Error fetching offers:", error)
     } finally {
@@ -725,6 +731,39 @@ const Messages = () => {
                 {/* Static message input at the end */}
                 <div className="w-full flex justify-center p-4 border-t bg-card/30">
                   <div className="flex space-x-2 max-w-3xl w-full">
+                    {selectedOffer?.status_offer === "completed" && (
+                      <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          try {
+                            const res = await deleteChatsByOfferId(selectedOffer.id)
+                            if (res?.success) {
+                              toast({
+                                title: t("successfully") || "Successfully",
+                                description: t("Chatdeletedsuccessfully") || "Chat deleted successfully",
+                              })
+                              setSelectedOffer(null)
+                              setMessages([])
+                              await fetchOffers(false)
+                            } else {
+                              toast({
+                                title: t("error") || "Error",
+                                description: t("Failedtodeletechat") || "Failed to delete chat",
+                                variant: "destructive",
+                              })
+                            }
+                          } catch (e) {
+                            toast({
+                              title: t("error") || "Error",
+                              description: t("Failedtodeletechat") || "Failed to delete chat",
+                              variant: "destructive",
+                            })
+                          }
+                        }}
+                      >
+                        {t("DeleteChat") || "Delete Chat"}
+                      </Button>
+                    )}
                     <Input
                       placeholder={t("Typeyourmessage") || "Type your message..."}
                       value={message}

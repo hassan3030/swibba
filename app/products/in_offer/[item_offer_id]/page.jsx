@@ -502,6 +502,20 @@ const getOfferQuantity = async () => {
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {new Date(product.date_created).toLocaleDateString('en-US')}
                     </div>
+
+                    <Separator />
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("AllowTo")}` : `${t("AllowTo")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
+                     {
+                      product.allowed_categories.map((cat, index) => (
+                        <div key={index} className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
+                         {cat=="all" ? t("allCategories") : t(cat)}
+                        </div>
+                      ))
+                     }
+                    </div>
+
+
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">

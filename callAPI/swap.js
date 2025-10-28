@@ -1,6 +1,7 @@
 import axios from "axios"
 import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest, decodedToken, getCookie } from "./utiles.js"
 import { getUserById, getUserByProductId } from "./users.js"
+import { deleteProduct } from "./products.js"
  
 
 // ========================= OFFERS MANAGEMENT =========================
@@ -178,8 +179,6 @@ export const getItemsByOfferId = async (id) => {
 }
 
 
-
-
 // Finally Delete offer by ID 
 export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
   try {
@@ -350,6 +349,10 @@ export const rejectOfferById = async (id) => {
   } catch (error) {
     return handleApiError(error, "Reject Offer By ID")
   }
+  finally{
+    deleteOfferItemsByOfferId(id)
+
+  }
 }
 
 
@@ -384,6 +387,8 @@ export const rejectOfferById = async (id) => {
 //   }
 // }
 // Accept offer by ID (keeping original function name)  without remove item
+
+
 export const acceptedOfferById = async (id_offer) => {
   try {
     const auth = await validateAuth()
@@ -523,9 +528,9 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
     const completedOfferToUserData = await getCompletedOfferToUserId(to_user_id)
     
     // if completed offer to user id exists, update the number of completed offers
-    if(completedOfferToUserData.length > 0){
+    if(completedOfferToUserData && completedOfferToUserData.length > 0){
       currentCompletedSwapsTo = Number(completedOfferToUserData[0].num_comp_offer) || 0
-      const responseTo = await axios.patch(`${baseItemsURL}completed_rate_offer/${completedOfferToUserData[0].id}`, {
+      responseTo = await axios.patch(`${baseItemsURL}completed_rate_offer/${completedOfferToUserData[0].id}`, {
         num_comp_offer: Number(currentCompletedSwapsTo) + 1,
       }, {
         headers: {
@@ -533,11 +538,6 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
           "Content-Type": "application/json",
           },
         })    
-        return {
-          success: true,
-          data: responseTo.data.data,
-          message: "Completed offer to user updated successfully",
-        }
     }else{
       responseTo = await axios.post(`${baseItemsURL}completed_rate_offer`, {
         owner_user: to_user_id,
@@ -576,9 +576,9 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
     const completedOfferFromUserData = await getCompletedOfferFromUserId(from_user_id)
     
     // if completed offer from user id exists, update the number of completed offers
-    if(completedOfferFromUserData.length > 0){
+    if(completedOfferFromUserData && completedOfferFromUserData.length > 0){
       currentCompletedSwapsFrom = Number(completedOfferFromUserData[0].num_comp_offer) || 0
-      const responseFrom = await axios.patch(`${baseItemsURL}completed_rate_offer/${completedOfferFromUserData[0].id}`, {
+      responseFrom = await axios.patch(`${baseItemsURL}completed_rate_offer/${completedOfferFromUserData[0].id}`, {
         num_comp_offer: Number(currentCompletedSwapsFrom) + 1,
       }, {
         headers: {
@@ -586,37 +586,30 @@ export const addCompletedOfferToUser = async (from_user_id , to_user_id) => {
           "Content-Type": "application/json",
           },
         })    
-    return {
-      success: true,
-      data: responseFrom.data.data,
-      message: "Completed offer from user updated successfully",
+    }else{
+      responseFrom = await axios.post(`${baseItemsURL}completed_rate_offer`, {
+        owner_user: from_user_id,
+        num_comp_offer: 1,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
     }
-}else{
-    responseFrom = await axios.post(`${baseItemsURL}completed_rate_offer`, {
-    owner_user: from_user_id,
-    num_comp_offer: 1,
-  }, {
-    headers: {
-        Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  })
-  
-  }
 console.log("responseFrom", responseFrom)
 console.log("responseTo", responseTo)
 
   return {
     success: true,
-    dataFrom: responseFrom.data.data,
-    dataTo: responseTo.data.data,
-    message: "Completed offer from user created successfully",
+    dataFrom: responseFrom?.data?.data,
+    dataTo: responseTo?.data?.data,
+    message: "Completed offers updated successfully",
     }
   } catch (error) {
     return handleApiError(error, "Add Completed Offer To User")
   }
 }
-
 
 // Get all offer items
 export const getOfferItems = async () => {
@@ -716,6 +709,71 @@ export const getOfferItemsByOfferId = async (offer_id) => {
   }
 }
 
+// Delete offer items by offer ID
+export const deleteOfferItemsByOfferId = async (offer_id) => {
+  try {
+    const auth = await validateAuth()
+    
+    return await makeAuthenticatedRequest(async () => {
+      if (!offer_id) {
+        throw new Error("Offer ID is required")
+      }
+
+      // First, get all offer items for this offer
+      const getResponse = await axios.get(`${baseItemsURL}Offer_Items?filter[offer_id][_eq]=${offer_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        })
+
+      const offerItems = getResponse.data.data || []
+      
+      if (offerItems.length === 0) {
+        return {
+          success: true,
+          data: [],
+          count: 0,
+          message: "No offer items found to delete",
+        }
+      }
+
+      // Delete each offer item
+      const deletePromises = offerItems.map(async (offerItem) => {
+        try {
+          await axios.delete(`${baseItemsURL}Offer_Items/${offerItem.id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+              },
+            })
+          return { id: offerItem.id, success: true }
+        } catch (error) {
+          console.warn(`Failed to delete offer item ${offerItem.id}:`, error.message)
+          return { id: offerItem.id, success: false, error: error.message }
+        }
+      })
+
+      const deleteResults = await Promise.allSettled(deletePromises)
+
+      const successful = deleteResults.filter(r => r.status === 'fulfilled' && r.value.success).length
+      const failed = deleteResults.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success)).length
+
+      return {
+        success: true,
+        data: deleteResults,
+        deleted_count: successful,
+        failed_count: failed,
+        total_count: offerItems.length,
+        message: `Successfully deleted ${successful} of ${offerItems.length} offer items`,
+      }
+    })
+  } catch (error) {
+    return handleApiError(error, "Delete Offer Items By Offer ID")
+  }
+}
+
 // Complete offer by ID
 export const completedOfferById = async (id_offer) => {
   try {
@@ -733,32 +791,53 @@ export const completedOfferById = async (id_offer) => {
 
       const items = itemsResult.data
 
-      // Delete the actual items (they've been traded)
+      // Delete the offer items and actual items if not existing in other offers (they've been traded)
       const deleteItems = items.map(async (item) => {
         if (item.item_id) {
           try {
-            // check if item is in ore  offer items
-            const offerItemResponse = getOfferItemsById(item.item_id)
-            if(offerItemResponse.count > 1){
-              await axios.delete(`${baseItemsURL}Offer_Items/${item.data.id}`,
+            // Check if item is in other offer items
+            const offerItemResponse = await axios.get(`${baseItemsURL}Offer_Items`,
+              {
+                params: {
+                  filter: {
+                    item_id: {
+                      _eq: item.item_id
+                    }
+                  }
+                }
+              }
+            )
+
+            // Count how many offer items contain this item_id
+            const count = offerItemResponse.data?.data?.length || 0
+
+            // If count > 1, item is used in multiple offers - only delete the offer_item record
+            // If count = 1, item is only in this offer - delete both offer_item and the actual item
+            if (count == 1) {
+              // Item exists in other offers, only delete this offer_item
+              const itemCheckQuantity = await axios.get(`${baseItemsURL}Items`,
                 {
+                  params: {
+                    filter: {
+                      id: {
+                        _eq: item.item_id
+                      }
+                    }
+                  }
+                }
+              )
+              const itemRecord = itemCheckQuantity?.data?.data?.[0]
+              const itemQuantity = typeof itemRecord?.quantity === "number" ? itemRecord.quantity : Number(itemRecord?.quantity ?? 0)
+              if (!Number.isNaN(itemQuantity) && itemQuantity <= 0) {
+                await axios.delete(`${baseItemsURL}Items/${item.item_id}`, {
                   headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${auth.token}`,
                   },
                 })
-            }else{
-              await axios.delete(`${baseItemsURL}Items/${item.item_id}`,
-                {
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${auth.token}`,
-                  },
-                })
-
-            }
-
+              }
           
+            } 
+
             return { item_id: item.item_id, success: true }
           } catch (error) {
             console.warn(`Failed to delete item ${item.item_id}:`, error.message)
@@ -801,7 +880,12 @@ export const completedOfferById = async (id_offer) => {
   } catch (error) {
     return handleApiError(error, "Complete Offer By ID")
   }
+  finally{
+    deleteOfferItemsByOfferId(id_offer)
+  }
 }
+
+
 
 // Add offer with transaction-like behavior and quantity support
 export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owner_prods, email_user_from, email_user_to) => {
@@ -1367,6 +1451,60 @@ export const deleteMessageByOfferId = async (offer_id) => {
     }
   } catch (error) {
     return handleApiError(error, "Delete Message By ID")
+  }
+}
+
+// Delete all chat messages by offer ID
+export const deleteChatsByOfferId = async (offer_id) => {
+  try {
+    const auth = await validateAuth()
+    return await makeAuthenticatedRequest(async () => {
+      if (!offer_id) {
+        throw new Error("Offer ID is required")
+      }
+
+      // Fetch all chats for this offer
+      const getRes = await axios.get(`${baseItemsURL}Chat?filter[offer_id][_eq]=${offer_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        })
+console.log("getRes", getRes)
+      const chats = getRes?.data?.data || []
+      if (chats.length === 0) {
+        return {
+          success: true,
+          data: [],
+          message: "No chat messages found for this offer",
+        }
+      }
+
+      // Delete each chat message
+      const deletes = await Promise.allSettled(
+        chats.map((chat) =>
+          chat?.id
+            ? axios.delete(`${baseItemsURL}Chat/${chat.id}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              })
+            : Promise.resolve()
+        )
+      )
+
+     
+      console.log("deletes chat", getRes)
+
+      return {
+        success: true,
+        data: deletes,
+        message: `Deleted of chat messages`,
+      }
+    })
+  } catch (error) {
+    return handleApiError(error, "Delete Chats By Offer ID")
   }
 }
 // ========================= WISHLIST MANAGEMENT =========================

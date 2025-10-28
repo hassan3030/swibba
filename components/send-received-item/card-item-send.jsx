@@ -115,7 +115,7 @@ const buttonVariants = {
   tap: { scale: 0.95 },
 }
 
-export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity, available_quantity }) => {
+export const CardItemSend = ({ id, name, description, price, status_item, images, deleteItem, translations, quantity, available_quantity , isAccepted=true }) => {
     const router = useRouter()
     const { isRTL } = useLanguage()
     const { t } = useTranslations() 
@@ -211,17 +211,28 @@ export const CardItemSend = ({ id, name, description, price, status_item, images
                        {t("view") || "View"}
                      </Button>
                    </motion.div>
-                   <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                     <Button 
-                       variant="destructive" 
-                       size="sm" 
-                       className="w-full h-8 sm:h-7 text-xs gap-1.5" 
-                       onClick={deleteItem}
-                     >
-                       <Trash2 className="h-3 w-3" />
-                       {t("delete") || "Delete"}
-                     </Button>
-                   </motion.div>
+
+
+
+
+                   {
+                    !isAccepted?( <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="w-full h-8 sm:h-7 text-xs gap-1.5" 
+                        onClick={deleteItem}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        {t("delete") || "Delete"}
+                      </Button>
+                    </motion.div>):null
+                   }
+
+
+
+
+                   
                  </div>
                </div>
              </div>

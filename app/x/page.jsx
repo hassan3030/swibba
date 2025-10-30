@@ -2,11 +2,13 @@
 import React from 'react'
 import { addCompletedOfferToUser } from '@/callAPI/swap'
 import { deleteProduct } from '@/callAPI/products'
+import { resetePassword } from '@/callAPI/users'
+import { getAllCategories } from '@/callAPI/static'
 
 const page = () => {
 
   const deleteProductById =  async () => {
-  const deletedProduct = await deleteProduct('d4594eed-5900-45b9-8ca0-7cc2a5bd40c0')
+  const deletedProduct = await resetePassword('hassan.hamdi.dev@gmail.com')
   console.log(deletedProduct)
   };
 

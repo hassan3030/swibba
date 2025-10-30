@@ -15,6 +15,7 @@ import { ItemsListSkeleton } from "@/components/loading/items-list-skeleton"
 import { categoriesName, itemsStatus, countriesList } from "@/lib/data"
 import { getProductsEnhanced } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
+import { getAllCategories } from "@/callAPI/static"
 import { useLanguage } from "@/lib/language-provider"
 import { useToast } from "@/hooks/use-toast"
 
@@ -136,6 +137,10 @@ export function ItemsList({
     name: "",
     categories: [],
     allowedCategories: [],
+    subLevels: {
+      level1: "",
+      level2: "",
+    },
     location: {
       country: "all",
       city: "",
@@ -158,6 +163,10 @@ export function ItemsList({
   // UI states for multi-select
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [allowedCategoriesOpen, setAllowedCategoriesOpen] = useState(false)
+  const [subLevel2Open, setSubLevel2Open] = useState(false)
+  const [subLevel2Options, setSubLevel2Options] = useState([])
+  const [catLevelsOpen, setCatLevelsOpen] = useState(false)
+  const [catLevelsTree, setCatLevelsTree] = useState([])
   const router = useRouter()
   const { t } = useTranslations()
   const itemsPerPage = 100
@@ -166,6 +175,48 @@ export function ItemsList({
   useEffect(() => {
     setCategory(defaultCategory)
   }, [defaultCategory])
+
+  // Load sub-level options from categories
+  useEffect(() => {
+    const load = async () => {
+      const res = await getAllCategories()
+      if (res?.success) {
+        const all = []
+        const tree = []
+        ;(res.data || []).forEach(cat => {
+          const catNameEn = cat?.translations?.[0]?.name || cat?.name || ""
+          const catNameAr = cat?.translations?.[1]?.name || cat?.name || ""
+          const l1 = cat?.cat_levels?.level_1 || []
+          const l1Nodes = l1.map(l => {
+            const l1_en = l?.name_en || ""
+            const l1_ar = l?.name_ar || ""
+            const l2 = l?.level_2 || []
+            const l2Nodes = l2.map(s => {
+              const label_en = s?.name_en || ""
+              const label_ar = s?.name_ar || ""
+              const key = label_en || label_ar
+              if (key) all.push({ key, label_en, label_ar })
+              return { key, label_en, label_ar }
+            })
+            return { key: l1_en || l1_ar, label_en: l1_en, label_ar: l1_ar, level_2: l2Nodes }
+          })
+          tree.push({
+            cat_key: catNameEn || catNameAr,
+            cat_en: catNameEn,
+            cat_ar: catNameAr,
+            level_1: l1Nodes,
+          })
+        })
+        // de-duplicate by key
+        const dedup = []
+        const seen = new Set()
+        all.forEach(o => { if (!seen.has(o.key)) { seen.add(o.key); dedup.push(o) } })
+        setSubLevel2Options(dedup)
+        setCatLevelsTree(tree)
+      }
+    }
+    load()
+  }, [])
   
   const fetchFilteredItems = async () => {
     setIsLoading(true)
@@ -174,6 +225,13 @@ export function ItemsList({
       const apiFilters = {
         page: page,
         limit: itemsPerPage,
+      }
+      // Subcategory filters (API-side if supported)
+      if (filters.subLevels.level1) {
+        apiFilters.sub_level1 = filters.subLevels.level1
+      }
+      if (filters.subLevels.level2) {
+        apiFilters.sub_level2 = filters.subLevels.level2
       }
 
       // Basic filters
@@ -300,6 +358,47 @@ export function ItemsList({
         filteredItems = filteredItems.filter(item => item.category === category)
       }
       
+      // Apply local subcategory filters
+      if (filters.subLevels.level1) {
+        const q = filters.subLevels.level1.toLowerCase()
+        filteredItems = filteredItems.filter(item => {
+          const l1 = item?.sub_cat?.level_1
+          const names = [
+            l1?.name,
+            l1?.name_en,
+            l1?.name_ar,
+            item?.level_1,
+            item?.sub_category, // legacy
+          ]
+          return names.some(v => typeof v === 'string' && v.toLowerCase().includes(q))
+        })
+      }
+      if (filters.subLevels.level2) {
+        const q = filters.subLevels.level2.toLowerCase()
+        filteredItems = filteredItems.filter(item => {
+          const l2 = item?.sub_cat?.level_2
+          const names = [l2?.name, l2?.name_en, l2?.name_ar]
+          return names.some(v => typeof v === 'string' && v.toLowerCase().includes(q))
+        })
+      }
+      if (filters.subLevels.level2List && filters.subLevels.level2List.length > 0) {
+        const listLC = filters.subLevels.level2List.map(x => x.toLowerCase())
+        filteredItems = filteredItems.filter(item => {
+          const l2 = item?.sub_cat?.level_2
+          const names = [l2?.name, l2?.name_en, l2?.name_ar].filter(Boolean).map(x => x.toLowerCase())
+          return names.some(n => listLC.includes(n))
+        })
+      }
+      if (filters.subLevels.level1List && filters.subLevels.level1List.length > 0) {
+        const listLC = filters.subLevels.level1List.map(x => x.toLowerCase())
+        filteredItems = filteredItems.filter(item => {
+          const l1 = item?.sub_cat?.level_1
+          const names = [l1?.name, l1?.name_en, l1?.name_ar, item?.level_1, item?.sub_category]
+            .filter(Boolean).map(x => x.toLowerCase())
+          return names.some(n => listLC.includes(n))
+        })
+      }
+
       // Apply local categories filter
       if (filters.categories.length > 0) {
         filteredItems = filteredItems.filter(item => 
@@ -471,6 +570,12 @@ export function ItemsList({
       name: "",
       categories: [],
       allowedCategories: [],
+      subLevels: {
+        level1: "",
+        level2: "",
+        level1List: [],
+        level2List: [],
+      },
       location: {
         country: "all",
         city: "",
@@ -561,6 +666,8 @@ export function ItemsList({
     let count = 0
     if (filters.name) count++
     if (filters.categories.length > 0) count++
+    if (filters.subLevels.level2List) count++
+    if (filters.subLevels.level1List) count++
     if (filters.allowedCategories.length > 0) count++
     if (filters.location.country && filters.location.country !== "all") count++
     if (filters.location.city) count++
@@ -777,8 +884,8 @@ export function ItemsList({
                   />
                 </motion.div>
 
-                {/* Categories Filter */}
-                <motion.div 
+                {/* Categories Filter
+                 <motion.div 
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -843,6 +950,118 @@ export function ItemsList({
                           </button>
                         </Badge>
                       ))}
+                    </div>
+                  )}
+                </motion.div> */}
+
+              
+                {/* Main categories with Level 1 and Level 2 as checkboxes */}
+                <motion.div 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.47 }}
+                >
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
+                    {t("categories") || "Categories"}
+                  </label>
+                  <Popover open={catLevelsOpen} onOpenChange={setCatLevelsOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={catLevelsOpen}
+                        className="w-full justify-between"
+                      >
+                        {((filters.subLevels.level1List || []).length + (filters.subLevels.level2List || []).length) > 0
+                          ? `${(filters.subLevels.level1List || []).length + (filters.subLevels.level2List || []).length} selected`
+                          : t("searchCategory") || "Search category ..."}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        {
+                          catLevelsTree?(  <CommandList className="max-h-72">
+                            {catLevelsTree.map((cat) => (
+                              <CommandGroup key={cat.cat_key} heading={(isRTL ? (cat.cat_ar || cat.cat_en) : (cat.cat_en || cat.cat_ar))}>
+                                {cat.level_1.map((l1) => {
+                                  const l1Label = isRTL ? (l1.label_ar || l1.label_en) : (l1.label_en || l1.label_ar)
+                                  const l1Checked = (filters.subLevels.level1List || []).includes(l1.key)
+                                  return (
+                                    <div key={`l1-${cat.cat_key}-${l1.key}`} className="px-2 py-1">
+                                      <div className="flex items-center space-x-2">
+                                        <input
+                                          type="checkbox"
+                                          checked={l1Checked}
+                                          onChange={() => {
+                                            const current = filters.subLevels.level1List || []
+                                            const next = l1Checked ? current.filter(x => x !== l1.key) : [...current, l1.key]
+                                            updateFilter("subLevels.level1List", next)
+                                          }}
+                                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                        <span className="capitalize">{l1Label}</span>
+                                      </div>
+                                      {(l1.level_2 || []).map((l2) => {
+                                        const l2Label = isRTL ? (l2.label_ar || l2.label_en) : (l2.label_en || l2.label_ar)
+                                        const l2Checked = (filters.subLevels.level2List || []).includes(l2.key)
+                                        return (
+                                          <div key={`l2-${cat.cat_key}-${l1.key}-${l2.key}`} className="pl-6 py-1 flex items-center space-x-2">
+                                            <input
+                                              type="checkbox"
+                                              checked={l2Checked}
+                                              onChange={() => {
+                                                const current = filters.subLevels.level2List || []
+                                                const next = l2Checked ? current.filter(x => x !== l2.key) : [...current, l2.key]
+                                                updateFilter("subLevels.level2List", next)
+                                              }}
+                                              className="rounded border-gray-300 text-primary focus:ring-primary"
+                                            />
+                                            <span className="capitalize">{l2Label}</span>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )
+                                })}
+                              </CommandGroup>
+                            ))}
+                          </CommandList>):(<CommandInput placeholder={t("searchCategory") || "Search category ..."} />)
+                        }
+                        
+                        
+                      
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {((filters.subLevels.level1List || []).length > 0 || (filters.subLevels.level2List || []).length > 0) && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {(filters.subLevels.level1List || []).map((key) => {
+                        const l1 = catLevelsTree.flatMap(c => c.level_1).find(x => x.key === key)
+                        const label = isRTL ? (l1?.label_ar || l1?.label_en || key) : (l1?.label_en || l1?.label_ar || key)
+                        return (
+                          <Badge key={`l1-${key}`} variant="secondary" className="text-xs">
+                            {label}
+                            <button onClick={() => updateFilter("subLevels.level1List", (filters.subLevels.level1List || []).filter(x => x !== key))} className="ml-1 hover:text-destructive">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        )
+                      })}
+                      {(filters.subLevels.level2List || []).map((key) => {
+                        const l2 = subLevel2Options.find(o => o.key === key)
+                        const label = isRTL ? (l2?.label_ar || l2?.label_en || key) : (l2?.label_en || l2?.label_ar || key)
+                        return (
+                          <Badge key={`l2-${key}`} variant="secondary" className="text-xs">
+                            {label}
+                            <button onClick={() => updateFilter("subLevels.level2List", (filters.subLevels.level2List || []).filter(x => x !== key))} className="ml-1 hover:text-destructive">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        )
+                      })}
                     </div>
                   )}
                 </motion.div>

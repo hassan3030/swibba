@@ -834,7 +834,7 @@ export function Header() {
                             <div className="relative">
                               <Avatar className="h-12 w-12">
                                 <AvatarImage
-                                src={user?.avatar || "/placeholder.svg"}
+                                src={user?.avatar || "placeholder.svg"}
                                 alt={user?.first_name || t("account")}
                                 />
                                 <AvatarFallback className="bg-primary text-black dark:bg-primary dark:text-black">

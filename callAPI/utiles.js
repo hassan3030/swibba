@@ -244,7 +244,15 @@ export const getOptionalAuth = async () => {
     return { token: null, userId: null, decoded: null }
   }
 }
-
+// taget form
+let TargetObject = {
+  swapId:"",
+  prodId:"",
+  profilId:"",
+  sendId:"",
+  recievedId:"",
+  magagmentIdemsId:""
+}
 
 
 // Set a Target 
@@ -253,7 +261,9 @@ export const setTarget = async (targetValue) => {
     if (!targetValue) {
       throw new Error("Invalid Target value provided")
     }
-  
+
+    
+    
     Cookies.set("Target", targetValue)
     // console.log("Target set successfully")
     return { success: true, message: "Target set successfully" }
@@ -262,6 +272,8 @@ export const setTarget = async (targetValue) => {
     return { success: false, message: `Failed to set Target: ${error.message}` }
   }
 }
+
+
 
 // Get a Target
 export const getTarget = async () => {

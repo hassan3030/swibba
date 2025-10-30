@@ -434,21 +434,21 @@ Please return ONLY a JSON response in this format:
       }));
 
       // Show success message with attempt info
-      if (aiResponse.attempt > 1) {
-        console.log(`Translation successful after ${aiResponse.attempt} attempts`);
-        toast({
-          title: t("success") || "Success",
-          description: `${t("AItranslationsuccessfulafter") || "AI translation successful after"} ${aiResponse.attempt} ${t("attempts") || "attempts"}!`,
-          variant: "default",
-        });
-      } else {
-        console.log("Translation successful on first attempt");
-        toast({
-          title: t("success") || "Success",
-          description: t("TranslationCompleted") || "Translation completed successfully!",
-          variant: "default",
-        });
-      }
+      // if (aiResponse.attempt > 1) {
+      //   console.log(`Translation successful after ${aiResponse.attempt} attempts`);
+      //   toast({
+      //     title: t("success") || "Success",
+      //     description: `${t("AItranslationsuccessfulafter") || "AI translation successful after"} ${aiResponse.attempt} ${t("attempts") || "attempts"}!`,
+      //     variant: "default",
+      //   });
+      // } else {
+      //   console.log("Translation successful on first attempt");
+      //   toast({
+      //     title: t("success") || "Success",
+      //     description: t("TranslationCompleted") || "Translation completed successfully!",
+      //     variant: "default",
+      //   });
+      // }
 
     } catch (error) {
       console.error("Error getting AI translation:", error);

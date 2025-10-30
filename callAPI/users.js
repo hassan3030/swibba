@@ -459,33 +459,33 @@ export const editeProfile = async (userData, authId, avatar = null , translation
 
 
 
-// Reset password with validation
-export const resetPassword = async (newPassword, email) => {
+// Change password with validation for authenticated users
+export const changePassword = async (newPassword, email) => {
   try {
     return await makeAuthenticatedRequest(async () => {
       if (!newPassword || !email) {
-        throw new Error("New password and email are required")
+        throw new Error("New password and email are required");
       }
 
       if (newPassword.length < 8) {
-        throw new Error("Password must be at least 8 characters long")
+        throw new Error("Password must be at least 8 characters long");
       }
 
-      const decoded = await decodedToken()
+      const decoded = await decodedToken();
       if (!decoded?.id) {
-        throw new Error("Authentication required")
+        throw new Error("Authentication required");
       }
 
-      const userResult = await getUserById(decoded.id)
+      const userResult = await getUserById(decoded.id);
       if (!userResult.success) {
-        throw new Error("Failed to verify user")
+        throw new Error("Failed to verify user");
       }
 
       if (userResult.data.email !== email.toLowerCase().trim()) {
-        throw new Error("Email verification failed")
+        throw new Error("Email verification failed");
       }
 
-      const token = await getCookie()
+      const token = await getCookie();
       const response = await axios.patch(
         `${baseURL}users/${decoded.id}`,
         {
@@ -497,19 +497,20 @@ export const resetPassword = async (newPassword, email) => {
             "Content-Type": "application/json",
           },
         },
-      )
+      );
 
-      // console.log("Password reset successful")
+      // console.log("Password change successful");
       return {
         success: true,
         data: response.data.data,
-        message: "Password reset successfully",
-      }
-    })
+        message: "Password changed successfully",
+      };
+    });
   } catch (error) {
-    return handleApiError(error, "Reset Password")
+    return handleApiError(error, "Change Password");
   }
-}
+};
+
 
 // Logout user
 export const logout = async () => {
@@ -611,5 +612,58 @@ export const addMessage = async (email, name, message, phone_number) => {
     };
   } catch (error) {
     return handleApiError(error, "Add Message");
+  }
+};
+
+// Request password reset
+export const forgotPassword = async (email) => {
+  try {
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
+    const response = await axios.post(`${baseURL}auth/password/request`, {
+      email: email.trim(),
+      // understand it 
+      reset_url: `${baseURL}auth/reset-password`
+    });
+
+    return {
+      success: true,
+      message: "Password reset link sent successfully. Please check your email.",
+    };
+  } catch (error) {
+    return handleApiError(error, "Forgot Password");
+  }
+};
+
+
+
+// Reset password with validation
+export const resetPassword = async (password, token) => {
+  try {
+    if (!password || !token) {
+      throw new Error("New password and token are required");
+    }
+
+    if (password.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    const response = await axios.post(
+      `${baseURL}auth/reset-password`,
+      {
+        password,
+        token,
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Password reset successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Reset Password");
   }
 };

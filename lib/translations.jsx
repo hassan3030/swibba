@@ -1,5 +1,16 @@
 export const translations = {
   en  :{
+    Selectatleastonecategory :"Select at least one category",
+   Pricecannotbenegative:"Price cannot be negative",
+    SelectCountry:"Select country",
+   Cityisrequired:"City is required",
+   Streetisrequired:"Street is required",
+   NoResults:"No results found.",
+   searchCategory: "Search category ...",
+
+   completeYourProfile: "Complete your profile",
+
+
     goToNotifications: "Go to Recived Offers",
     goToSendItems: "Go to Send Items",
     goToRecivedItems: "Go to Recived Items",
@@ -975,6 +986,7 @@ SelectCountry: "Select a country",
     account: "Account",
 
     // Categories
+   SelectCategory: "Select category",
     category: "Category",
     categories: "Categories",
     realestate: "Real Estate",
@@ -1177,6 +1189,16 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+   searchCategory: "فئة البحث ...",
+    Selectatleastonecategory :"اختر فئةً واحدةً على الأقل",
+    Pricecannotbenegative:"لا يمكن أن يكون السعر سالبًا",
+     SelectCountry:"اختر الدولة",
+    Cityisrequired:"المدينة مطلوبة",
+    Streetisrequired:"الشارع مطلوب",
+    NoResults:"لم يتم العثور على نتائج",
+
+
+   SelectCategory: "اختر الفئة",
     goToNotifications: "الانتقال إلى عروض المستلمة",
     goToSendItems: "الانتقال إلى العناصر المرسلة",
     goToRecivedItems: "الانتقال إلى العناصر المستلمة",

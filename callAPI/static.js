@@ -10,7 +10,8 @@ export const getAllCategories = async () => {
     const response = await axios.get(
       `${baseItemsURL}Categories`,
       {
-         params: { fields: "*,translations.*, main_image.*,*.*.*", sort: "name" } 
+         // Include parent_category relation so the UI can derive subcategories
+         params: { fields: "*,translations.*, main_image.*,parent_category.*,*.*.*", sort: "name" } 
     } 
     );
     console.log(`Retrieved All categories:`, response);
@@ -32,12 +33,10 @@ export const getLevelOneCategories = async () => {
    
    
     const response = await axios.get(
-      `${baseItemsURL}Cat_level_one`
-      , {
-        filter: { },
-        fields: "*",
-      },   
-      { }
+      `${baseItemsURL}Cat_level_one`,
+      {
+        params: { fields: "*,translations.*" }
+      }
     );
     console.log(`Retrieved All categories:`, response);
     return {
@@ -58,12 +57,10 @@ export const getLevelTwoCategories = async () => {
    
    
     const response = await axios.get(
-      `${baseItemsURL}Cat_level_two`
-      , {
-        filter: { },
-        fields: "*",
-      },   
-      { }
+      `${baseItemsURL}Cat_level_two`,
+      {
+        params: { fields: "*,translations.*,parent_category.*" }
+      }
     );
     console.log(`Retrieved All categories:`, response);
     return {

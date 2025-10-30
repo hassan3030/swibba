@@ -15,7 +15,15 @@ import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
 import { getKYC } from "@/callAPI/users"
 import { mediaURL } from "@/callAPI/utiles";
- 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -127,12 +135,15 @@ export function SwibbaProductCard({
   const [switchHeart, setSwitchHeart] = useState(false)
   const [loading, setLoading] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [showSwapDialog, setShowSwapDialog] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
 
   const { t } = useTranslations()
   const { toast } = useToast()
   const router = useRouter()
-  
+
+
+
 
   const makeSwap = async (e) => {
     e.preventDefault()
@@ -142,20 +153,16 @@ export function SwibbaProductCard({
     if (token) {
       const kyc = await getKYC(decoded.id) /// ------------- take id user
       if (kyc.data === false) {
-        toast({
-          title: t("faildSwap") || "Failed Swap",
-          description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your profile.",
-          variant: "default",
-        })
+        setShowSwapDialog(true)
       }
       else {
         router.push(`/swap/${id}`)
       }
     } else {
-    await setTarget(id)
+    await setTarget({})
       toast({
         title: t("faildSwap") || "Failed Swap",
-        description: t("DescFaildSwapLogin") ||   "Invalid swap without login. Please try to login.",
+        description: t("DescFaildSwapLogin") ||  "Invalid swap without login. Please try to login.",
         variant: "default",
       })
       router.push(`/auth/login`)
@@ -223,7 +230,9 @@ export function SwibbaProductCard({
   }, [switchHeart])
 
   return (
-    <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover" className="group">
+
+    <>
+     <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover" className="group">
     
       
       <Link href={`/products/out_offer/${id}`}>
@@ -442,5 +451,44 @@ export function SwibbaProductCard({
         </div>
       </Link>
     </motion.div>
+    
+{/* alert to complet your profile to make swap */}
+    
+  <Dialog open={showSwapDialog}>
+    <DialogContent>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        <DialogHeader>
+          <DialogTitle>{t("completeYourProfile") || "Complete your profile"}</DialogTitle>
+          <DialogDescription>
+            {t("DescFaildSwapKYC") || "Required information for swap. Please complete your profile."}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex flex-col gap-2 sm:flex-row">
+          <DialogClose asChild>
+            <Button
+              variant="secondary"
+              className="mx-2"
+              onClick={() => {router.push('/profile/settings/editProfile') ; setShowSwapDialog(true) }}
+            >
+              {t("Complete") || "Complete"}
+            </Button>
+          </DialogClose>
+          <DialogClose asChild>
+            <Button className="mx-2" variant="destructive" onClick={() => setShowSwapDialog(false)}>
+              {t("Cancel") || "Cancel"}
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </motion.div>
+    </DialogContent>
+  </Dialog>
+ 
+    </>
+   
   )
 }

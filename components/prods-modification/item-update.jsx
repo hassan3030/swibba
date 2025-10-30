@@ -14,6 +14,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { categoriesName, itemsStatus, allowedCategories, countriesList } from "@/lib/data"
@@ -22,6 +25,7 @@ import FlagIcon from "@/components/general/flag-icon"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import { updateProduct } from "@/callAPI/products"
+import { getAllCategories } from "@/callAPI/static"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
 import LocationMap from "@/components/general/location-map"
@@ -146,6 +150,11 @@ export function ItemUpdate(props) {
   )
   const [currentPosition, setCurrentPosition] = useState(null) 
   const [isMapRefreshing, setIsMapRefreshing] = useState(false)
+  const [categoriesAPI, setCategoriesAPI] = useState([])
+  const [parentCategories, setParentCategories] = useState([])
+  const [levelOneOptions, setLevelOneOptions] = useState([])
+  const [levelTwoOptions, setLevelTwoOptions] = useState([])
+  const [isCatPopoverOpen, setIsCatPopoverOpen] = useState(false)
 
 //AI chat
   const [aiResponse, setAiResponse] = useState(null)
@@ -181,6 +190,78 @@ export function ItemUpdate(props) {
   useEffect(() => {
     getUser()
   }, [isRTL])
+
+  // Load categories for sublevels
+  useEffect(() => {
+    const load = async () => {
+      const categories = await getAllCategories()
+      if (categories?.success) {
+        setCategoriesAPI(categories.data)
+        setParentCategories((categories.data || []).filter(cat => !cat.parent_category))
+        // If category already selected, prefill level_1/2 from its cat_levels
+        const selectedCategory = (categories.data || []).find(cat => cat.name === form.getValues("category"))
+        if (selectedCategory) {
+          const level1 = selectedCategory?.cat_levels?.level_1 || []
+          setLevelOneOptions(level1)
+          if (!form.getValues("level_1") && level1.length > 0) {
+            const firstL1 = level1[0]
+            const lbl1 = `${isRTL ? (firstL1?.name_ar || firstL1?.name_en) : (firstL1?.name_en || firstL1?.name_ar)}`
+            form.setValue("level_1", lbl1)
+            const level2 = firstL1?.level_2 || []
+            setLevelTwoOptions(level2)
+            if (!form.getValues("level_2") && level2.length > 0) {
+              const firstL2 = level2[0]
+              const lbl2 = `${isRTL ? (firstL2?.name_ar || firstL2?.name_en) : (firstL2?.name_en || firstL2?.name_ar)}`
+              form.setValue("level_2", lbl2)
+            }
+          }
+        }
+      }
+    }
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleCategoryChange = (value) => {
+    form.setValue("category", value)
+    const selectedCategory = categoriesAPI.find(cat => cat.name === value)
+    form.setValue("level_1", "")
+    form.setValue("level_2", "")
+    setLevelTwoOptions([])
+    if (selectedCategory) {
+      const level1 = selectedCategory?.cat_levels?.level_1 || []
+      setLevelOneOptions(level1)
+      if (level1.length > 0) {
+        const firstL1 = level1[0]
+        const lbl1 = `${isRTL ? (firstL1?.name_ar || firstL1?.name_en) : (firstL1?.name_en || firstL1?.name_ar)}`
+        form.setValue("level_1", lbl1)
+        const level2 = firstL1?.level_2 || []
+        setLevelTwoOptions(level2)
+        if (level2.length > 0) {
+          const firstL2 = level2[0]
+          const lbl2 = `${isRTL ? (firstL2?.name_ar || firstL2?.name_en) : (firstL2?.name_en || firstL2?.name_ar)}`
+          form.setValue("level_2", lbl2)
+        }
+      }
+    } else {
+      setLevelOneOptions([])
+      setLevelTwoOptions([])
+    }
+  }
+
+  const handleLevelOneChange = (value) => {
+    form.setValue("level_1", value)
+    const selected = levelOneOptions.find(l => l?.name_en === value || l?.name_ar === value)
+    const level2 = selected?.level_2 || []
+    setLevelTwoOptions(level2)
+    if (level2.length > 0) {
+      const firstL2 = level2[0]
+      const lbl2 = `${isRTL ? (firstL2?.name_ar || firstL2?.name_en) : (firstL2?.name_en || firstL2?.name_ar)}`
+      form.setValue("level_2", lbl2)
+    } else {
+      form.setValue("level_2", "")
+    }
+  }
 
 
   const MAX_FILE_SIZE = 100 * 1024 * 1024 // 5MB
@@ -228,7 +309,9 @@ export function ItemUpdate(props) {
       .string()
       .min(20, "Description must be at least 20 characters")
       .max(2000, "Description must be less than 2000 characters"),
-    category: z.enum(categories),
+    category: z.string(),
+    level_1: z.string().optional(),
+    level_2: z.string().optional(),
     status_item: z.string(),
     // value_estimate: z.coerce.number().positive("Value must be greater than 0"),
     allowedCategories: z.array(z.enum(allowedCat)).min(1, "Select at least one category"),
@@ -378,6 +461,8 @@ export function ItemUpdate(props) {
         name: translations ? (!isRTL ? translations[0]?.name : translations[1]?.name) || name : name,
         description: translations ? (!isRTL ? translations[0]?.description : translations[1]?.description) || description : description,
         category: category,
+        level_1: "",
+        level_2: "",
         status_item: status_item,
         value_estimate: value_estimate || 0,
         allowed_categories: allowed_categories,
@@ -581,13 +666,31 @@ export function ItemUpdate(props) {
       ]
     }
     
+    // Resolve selected level objects for translations
+    const selectedLevel1Label = form.getValues("level_1") || ""
+    const selectedLevel2Label = form.getValues("level_2") || ""
+    const selectedLevel1Obj = (levelOneOptions || []).find(l => l?.name_en === selectedLevel1Label || l?.name_ar === selectedLevel1Label) || null
+    const selectedLevel2Obj = (levelTwoOptions || []).find(l => l?.name_en === selectedLevel2Label || l?.name_ar === selectedLevel2Label) || null
+
     const payload = {  
       ...formValues, 
       geo_location: geoLocation, 
       value_estimate: aiPriceEstimation,
       translations: translationsToSend.length > 0 ? translationsToSend : undefined,
       retained_image_file_ids: retainedExistingFileIds,
-      deleted_image_file_ids: deletedImageIds
+      deleted_image_file_ids: deletedImageIds,
+      sub_cat: {
+        level_1: {
+          name: selectedLevel1Label,
+          name_en: selectedLevel1Obj?.name_en || (!isRTL ? selectedLevel1Label : ""),
+          name_ar: selectedLevel1Obj?.name_ar || (isRTL ? selectedLevel1Label : ""),
+        },
+        level_2: {
+          name: selectedLevel2Label,
+          name_en: selectedLevel2Obj?.name_en || (!isRTL ? selectedLevel2Label : ""),
+          name_ar: selectedLevel2Obj?.name_ar || (isRTL ? selectedLevel2Label : ""),
+        },
+      }
     }
 console.log("payload in update page", payload)
     if ((existingImages.length + files.length) === 0) {
@@ -890,7 +993,8 @@ else{
                                   {...field}
                                   type="number"
                                   className="transition-all duration-200 bg-background border-input focus:ring-2 focus:ring-ring/20 focus:border-ring"
-                                />
+                                  min={1}
+                               />
                               </motion.div>
                             </FormControl>
                             <FormMessage />
@@ -1040,30 +1144,82 @@ else{
                         )}
                       />
 
-                      {/* Category and Condition */}
+                      {/* Category and subcategory (like item-add) */}
                       <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                           control={form.control}
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t("category")||"Category"}</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <motion.div variants={inputVariants} whileFocus="focus">
-                                    <SelectTrigger className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
-                                      <SelectValue placeholder={t("SelectACategory")} />
-                                    </SelectTrigger>
-                                  </motion.div>
-                                </FormControl>
-                                <SelectContent className="z-[9999] h-40">
-                                  {categoriesName.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                      {t(category)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormLabel>{t("categories")||"Category and subcategory"}</FormLabel>
+                              <Popover open={isCatPopoverOpen} onOpenChange={setIsCatPopoverOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button type="button" variant="outline" className="w-full justify-between bg-background border-input text-foreground">
+                                    {form.getValues("category") && (form.getValues("level_1") || form.getValues("level_2"))
+                                      ? `${form.getValues("category")} › ${form.getValues("level_1")}${form.getValues("level_2") ? " › " + form.getValues("level_2") : ""}`
+                                      : (t("SelectCategory") || "Select category and subcategory")}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-[340px] bg-background border-input" align="start">
+                                  <div className="p-2">
+                                    <Select onValueChange={(val)=>{ field.onChange(val); handleCategoryChange(val)}} defaultValue={field.value || ""}>
+                                      <FormControl>
+                                        <SelectTrigger className="bg-background border-input text-foreground">
+                                          <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent className="bg-background border-input max-h-40">
+                                        {parentCategories.map((cat) => (
+                                          <SelectItem key={cat.id} value={cat.name}>
+                                            {cat.translations?.[!isRTL ? 0 : 1]?.name || cat.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <Command className="bg-background max-h-40">
+                                    <CommandInput placeholder={t("Search") || "Search"} />
+
+                                    {
+
+                                    
+                                     levelOneOptions?(  <CommandList>
+                                      {levelOneOptions.map((lvl, idx) => {
+                                        const lvl1Label = `${isRTL ? (lvl?.name_ar || lvl?.name_en) : (lvl?.name_en || lvl?.name_ar)}`
+                                        return (
+                                          <CommandGroup key={`lvl1-${idx}`} heading={lvl1Label} className="px-2">
+                                            <div className="flex items-center gap-2 py-1">
+                                              <RadioGroup value={form.getValues("level_1") || ""} onValueChange={(val)=>{ form.setValue("level_1", val); handleLevelOneChange(val)}}>
+                                                <div className="flex items-center gap-2">
+                                                  <RadioGroupItem value={lvl1Label} id={`lvl1-${idx}`} />
+                                                  <label htmlFor={`lvl1-${idx}`} className="text-sm cursor-pointer">{lvl1Label}</label>
+                                                </div>
+                                              </RadioGroup>
+                                            </div>
+                                            {form.getValues("level_1") === lvl1Label && (
+                                              <div className="pl-6 py-1">
+                                                <RadioGroup value={form.getValues("level_2") || ""} onValueChange={(val)=>{ form.setValue("level_2", val); setIsCatPopoverOpen(false) }}>
+                                                  {(levelTwoOptions || []).map((s, jdx) => {
+                                                    const lvl2Label = `${isRTL ? (s?.name_ar || s?.name_en) : (s?.name_en || s?.name_ar)}`
+                                                    return (
+                                                      <div key={`lvl2-${idx}-${jdx}`} className="flex items-center gap-2 py-1">
+                                                        <RadioGroupItem value={lvl2Label} id={`lvl2-${idx}-${jdx}`} />
+                                                        <label htmlFor={`lvl2-${idx}-${jdx}`} className="text-sm cursor-pointer">{lvl2Label}</label>
+                                                      </div>
+                                                    )
+                                                  })}
+                                                </RadioGroup>
+                                              </div>
+                                            )}
+                                          </CommandGroup>
+                                        )
+                                      })}
+                                    </CommandList>):(<CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>)
+                                    }
+                                  
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1250,22 +1406,7 @@ else{
                               </Button>
                             </motion.div>
                           </motion.div>
-
-                          {/* Map Info */}
-                          <motion.div
-                            className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg"
-                            variants={itemVariants}
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                              <RefreshCw className="h-4 w-4 text-primary" />
-                              <span className="font-medium text-primary dark:text-primary/40">
-                                {t("AutoRefresh") || "Auto Refresh"}
-                              </span>
-                            </div>
-                            <p className="text-sm text-primary dark:text-primary/40">
-                              {t("MapUpdatesEvery2Seconds") || "This map automatically updates every 2 seconds to show the latest location data."}
-                            </p>
-                          </motion.div>
+             
                         </CardContent>
                       </Card>
                     </motion.div>

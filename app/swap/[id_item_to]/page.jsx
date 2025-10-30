@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" 
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified, Search, Filter, X, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image" 
@@ -23,7 +25,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useRTL } from "@/hooks/use-rtl"
 import { getMediaType } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getHintByName } from "@/callAPI/static";
+import { getHintByName, getAllCategories } from "@/callAPI/static";
 import ItemCard from "@/components/swap/item-card"
 import { mediaURL } from "@/callAPI/utiles";
 // Animation variants
@@ -123,6 +125,9 @@ export default function SwapPage() {
   const [selectedCategory, setSelectedCategory] = useState("")
   const [priceRange, setPriceRange] = useState({ min: "", max: "" })
   const [showFilters, setShowFilters] = useState(false)
+  const [filtersSub, setFiltersSub] = useState({ level1List: [], level2List: [] })
+  const [catLevelsOpen, setCatLevelsOpen] = useState(false)
+  const [catLevelsTree, setCatLevelsTree] = useState([])
   
   // Scroll functionality
   const makeSwapRef = useRef(null)
@@ -162,6 +167,31 @@ export default function SwapPage() {
 
   useEffect(() => {
     getMyDataUser()
+  }, [])
+
+  // Load categories (L1/L2) once
+  useEffect(() => {
+    const load = async () => {
+      const res = await getAllCategories()
+      if (res?.success) {
+        const tree = []
+        ;(res.data || []).forEach(cat => {
+          const catNameEn = cat?.translations?.[0]?.name || cat?.name || ""
+          const catNameAr = cat?.translations?.[1]?.name || cat?.name || ""
+          const l1 = cat?.cat_levels?.level_1 || []
+          const l1Nodes = l1.map(l => {
+            const l1_en = l?.name_en || ""
+            const l1_ar = l?.name_ar || ""
+            const l2 = l?.level_2 || []
+            const l2Nodes = l2.map(s => ({ key: s?.name_en || s?.name_ar || "", label_en: s?.name_en || "", label_ar: s?.name_ar || "" }))
+            return { key: l1_en || l1_ar, label_en: l1_en, label_ar: l1_ar, level_2: l2Nodes }
+          })
+          tree.push({ cat_key: catNameEn || catNameAr, cat_en: catNameEn, cat_ar: catNameAr, level_1: l1Nodes })
+        })
+        setCatLevelsTree(tree)
+      }
+    }
+    load()
   }, [])
 
   // Fetch my items
@@ -402,6 +432,22 @@ export default function SwapPage() {
         const maxPrice = parseFloat(priceRange.max) || Infinity
         
         if (itemPrice < minPrice || itemPrice > maxPrice) return false
+      }
+      // Subcategory Level 1 selections
+      if ((filtersSub.level1List || []).length > 0) {
+        const listLC = filtersSub.level1List.map(x => String(x).toLowerCase())
+        const l1 = item?.sub_cat?.level_1
+        const names = [l1?.name, l1?.name_en, l1?.name_ar, item?.level_1, item?.sub_category]
+          .filter(Boolean).map(x => String(x).toLowerCase())
+        if (!names.some(n => listLC.includes(n))) return false
+      }
+      // Subcategory Level 2 selections
+      if ((filtersSub.level2List || []).length > 0) {
+        const listLC = filtersSub.level2List.map(x => String(x).toLowerCase())
+        const l2 = item?.sub_cat?.level_2
+        const names = [l2?.name, l2?.name_en, l2?.name_ar]
+          .filter(Boolean).map(x => String(x).toLowerCase())
+        if (!names.some(n => listLC.includes(n))) return false
       }
       
       return true
@@ -738,32 +784,8 @@ export default function SwapPage() {
 
                     {/* Other Users' Products */}
                     <motion.div variants={cardVariants}>
-                      {visibleOtherItems.length !== 0 ? (
-                        <div>
-                          <motion.div
-                            className="flex flex-row rtl:flex-row-reverse items-center gap-4 mb-6"
-                            style={{ alignItems: 'center' }}
-                            initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 }}
-                          >
-                            <div className="flex-shrink-0 w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                              <User className="h-6 w-6 text-accent" />
-                            </div>
-                            <div className="flex-1">
-                              <h2 className="text-2xl font-bold text-foreground text-start">{t("AvailableProducts") || "Available Products"}</h2>
-                              <p className="text-muted-foreground">{t("Choose items to receive") || "Choose items to receive"}</p>
-                            </div>
-                            <motion.div
-                              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
-                            >
-                              <Badge variant="secondary" className="text-sm px-3 py-1">
-                                {selectedOtherItems.reduce((sum, item) => sum + (item.quantity || 1), 0)} {t("selected") || "selected"}
-                              </Badge>
-                            </motion.div>
-                          </motion.div>
-
-                          {/* Filter Section */}
+                      {/* OUTER FILTERS: Render above all cards, outside Card components */}
+                      <div className="mb-6">
                           <motion.div 
                             className="bg-muted/30 rounded-lg p-4 space-y-4"
                             variants={cardVariants}
@@ -803,6 +825,7 @@ export default function SwapPage() {
                               </div>
                             </div>
 
+
                             {showFilters && (
                               <motion.div 
                                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -826,25 +849,165 @@ export default function SwapPage() {
                                     />
                                   </div>
                                 </div>
-
-                                {/* Category Filter */}
+                              {/* Category Levels (Main/Level 1 & 2) */}
                                 <div className="space-y-2">
                                   <label className="text-sm font-medium text-muted-foreground">
-                                    {t("Category") || "Category"}
+                                  {t("categories") || "Categories"}
                                   </label>
-                                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={t("All Categories") || "All Categories"} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="all">{t("All Categories") || "All Categories"}</SelectItem>
-                                      {getUniqueCategories().map((category) => (
-                                        <SelectItem key={category} value={category}>
-                                          {category}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                <Popover open={catLevelsOpen} onOpenChange={setCatLevelsOpen}>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full justify-between"
+                                    >
+                                      {((filtersSub.mainList || [])?.length + (filtersSub.level1List || [])?.length + (filtersSub.level2List || [])?.length) > 0
+                                        ? `${((filtersSub.mainList||[])?.length + (filtersSub.level1List||[])?.length + (filtersSub.level2List||[])?.length)} ${t("selected") || "selected"}`
+                                        : t("SelectCategory") || "Select Category"}
+                                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-full p-0 max-h-96 overflow-y-auto">
+                                    <Command>
+                                      <CommandInput placeholder={t("searchCategory") || "Search category ..."} />
+
+                                      {
+                                        catLevelsTree?(  
+                                           <CommandList>
+                                          {/* Select All Button */}
+                                          <div className="px-2 py-2 ">
+                                            <button
+                                              onClick={() => {
+                                                const allMain = catLevelsTree.map(cat => cat.cat_key)
+                                                const allL1 = catLevelsTree.flatMap(cat => cat.level_1.map(l1 => l1.key))
+                                                const allL2 = catLevelsTree.flatMap(cat=>cat.level_1.flatMap(l1=>l1.level_2.map(l2=>l2.key)))
+                                                setFiltersSub(f => (
+                                                  (f.mainList?.length===allMain.length&&f.level1List?.length===allL1.length&&f.level2List?.length===allL2.length)
+                                                    ? {mainList:[],level1List:[],level2List:[]}
+                                                    : {mainList:allMain,level1List:allL1,level2List:allL2}
+                                                ))
+                                              }}
+                                              className="text-xs bg-muted hover:bg-primary/10 px-2 py-1 rounded mb-2"
+                                            >
+                                              {t("SelectAll")||"Select All"}
+                                            </button>
+                                          </div>
+                                          {catLevelsTree.map((cat) => {
+                                            const catLabel = isRTL ? (cat.cat_ar || cat.cat_en) : (cat.cat_en || cat.cat_ar);
+                                            const checkedMain = (filtersSub.mainList||[]).includes(cat.cat_key);
+                                            // -- gather all l1/l2 under this main branch
+                                            const allL1 = (cat.level_1||[]).map(l1=>l1.key);
+                                            const allL2 = (cat.level_1||[]).flatMap(l1=>(l1.level_2||[]).map(s=>s.key));
+                                            return (
+                                              <div key={cat.cat_key} className="px-2 border-b pb-2 mb-2 last:border-b-0 last:pb-0 last:mb-0">
+                                                {/* Main Category Checkbox */}
+                                                <div className="flex items-center space-x-2">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={checkedMain}
+                                                    onChange={() => {
+                                                      setFiltersSub(prev => {
+                                                        let next = { ...prev };
+                                                        if (checkedMain) {
+                                                          // remove entire branch
+                                                          next.mainList = (next.mainList||[]).filter(x => x !== cat.cat_key);
+                                                          next.level1List = (next.level1List||[]).filter(x => !allL1.includes(x));
+                                                          next.level2List = (next.level2List||[]).filter(x => !allL2.includes(x));
+                                                        } else {
+                                                          next.mainList = [...new Set([...(next.mainList||[]),cat.cat_key])];
+                                                          next.level1List = [...new Set([...(next.level1List||[]),...allL1])];
+                                                          next.level2List = [...new Set([...(next.level2List||[]),...allL2])];
+                                                        }
+                                                        return next;
+                                                      });
+                                                    }}
+                                                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                  />
+                                                  <span className="font-bold capitalize">{catLabel}</span>
+                                                </div>
+                                                <div className="pl-4">
+                                                  {(cat.level_1||[]).map((l1) => {
+                                                    const l1Label = isRTL ? (l1.label_ar || l1.label_en) : (l1.label_en || l1.label_ar);
+                                                    const l1Checked = (filtersSub.level1List||[]).includes(l1.key);
+                                                    const l2Keys = (l1.level_2||[]).map(l2=>l2.key);
+                                                    return (
+                                                      <div key={l1.key} className="py-1">
+                                                        <div className="flex items-center space-x-2">
+                                                          <input
+                                                            type="checkbox"
+                                                            checked={l1Checked}
+                                                            onChange={() => {
+                                                              setFiltersSub(prev => {
+                                                                let next = { ...prev };
+                                                                if (l1Checked) {
+                                                                  // remove l1 and children
+                                                                  next.level1List = (next.level1List||[]).filter(x => x !== l1.key);
+                                                                  next.level2List = (next.level2List||[]).filter(x => !l2Keys.includes(x));
+                                                                  // uncheck main if all children unchecked
+                                                                  if ((next.level1List||[]).filter(x=>allL1.includes(x)).length===0) { next.mainList = (next.mainList||[]).filter(x=>x!==cat.cat_key); }
+                                                                } else {
+                                                                  next.level1List = [...new Set([...(next.level1List||[]),l1.key])];
+                                                                  next.level2List = [...new Set([...(next.level2List||[]),...l2Keys])];
+                                                                  // check main if all l1 checked
+                                                                  if ([...new Set([...(next.level1List||[]),l1.key])].length===allL1.length) { next.mainList = [...new Set([...(next.mainList||[]),cat.cat_key])]; }
+                                                                }
+                                                                return next;
+                                                              });
+                                                            }}
+                                                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                          />
+                                                          <span className="capitalize">{l1Label}</span>
+                                                        </div>
+                                                        <div className="pl-6">
+                                                          {(l1.level_2||[]).map(l2 => {
+                                                            const l2Label = isRTL ? (l2.label_ar || l2.label_en) : (l2.label_en || l2.label_ar);
+                                                            const l2Checked = (filtersSub.level2List||[]).includes(l2.key);
+                                                            return (
+                                                              <div className="flex items-center py-1 space-x-2" key={l2.key}>
+                                                                <input
+                                                                  type="checkbox"
+                                                                  checked={l2Checked}
+                                                                  onChange={() => {
+                                                                    setFiltersSub(prev => {
+                                                                      let next = {...prev};
+                                                                      if (l2Checked) {
+                                                                        next.level2List = (next.level2List||[]).filter(x => x !== l2.key);
+                                                                        // uncheck l1 if all children unchecked
+                                                                        if ((next.level2List||[]).filter(x=>l2Keys.includes(x)).length===0) { next.level1List = (next.level1List||[]).filter(x=>x!==l1.key); }
+                                                                        // uncheck main if no children checked at all
+                                                                        if ((next.level1List||[]).filter(x=>allL1.includes(x)).length===0) { next.mainList = (next.mainList||[]).filter(x=>x!==cat.cat_key); }
+                                                                      } else {
+                                                                        next.level2List = [...new Set([...(next.level2List||[]),l2.key])];
+                                                                        // check l1 if all l2 checked for l1
+                                                                        if ([...new Set([...(next.level2List||[]),l2.key])].filter(x=>l2Keys.includes(x)).length===l2Keys.length) { next.level1List = [...new Set([...(next.level1List||[]),l1.key])]; }
+                                                                        // check main if all l1 checked
+                                                                        if ([...new Set([...(next.level1List||[]),l1.key])].length===allL1.length) { next.mainList = [...new Set([...(next.mainList||[]),cat.cat_key])]; }
+                                                                      }
+                                                                      return next;
+                                                                    });
+                                                                  }}
+                                                                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                                />
+                                                                <span className="capitalize">{l2Label}</span>
+                                                              </div>
+                                                            );
+                                                          })}
+                                                        </div>
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </CommandList>):( <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>)
+                                      }
+                                     
+                                   
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                               
                                 </div>
 
                                 {/* Price Range */}
@@ -869,8 +1032,70 @@ export default function SwapPage() {
                                     />
                                   </div>
                                 </div>
+
+                              
                               </motion.div>
-                            )}
+
+                            
+                          )}
+ {(((filtersSub.mainList || []).length) > 0 || ((filtersSub.level1List || []).length) > 0 || ((filtersSub.level2List || []).length) > 0) && (
+                                  <div className="flex flex-wrap gap-1 mt-1 max-h-24 overflow-scroll">
+                                    {(filtersSub.mainList || []).map((key) => (
+                                      <Badge key={`main-${key}`} variant="secondary" className="text-xs">
+                                        {key}
+                                        <button className="ml-1" onClick={() => setFiltersSub(prev => ({...prev, mainList: (prev.mainList||[]).filter(x=>x!==key)}))}>
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                    {(filtersSub.level1List || []).map((key) => (
+                                      <Badge key={`l1-${key}`} variant="secondary" className="text-xs">
+                                        {key}
+                                        <button className="ml-1" onClick={() => setFiltersSub(prev => ({...prev, level1List: (prev.level1List||[]).filter(x=>x!==key)}))}>
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                    {(filtersSub.level2List || []).map((key) => (
+                                      <Badge key={`l2-${key}`} variant="secondary" className="text-xs">
+                                        {key}
+                                        <button className="ml-1" onClick={() => setFiltersSub(prev => ({...prev, level2List: (prev.level2List||[]).filter(x=>x!==key)}))}>
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                          
+                        </motion.div>
+
+                      
+                      </div>
+
+                      {/* End OUTER FILTERS */}
+                      {visibleOtherItems.length !== 0 ? (
+                        <div>
+                          <motion.div
+                            className="flex flex-row rtl:flex-row-reverse items-center gap-4 mb-6"
+                            style={{ alignItems: 'center' }}
+                            initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                          >
+                            <div className="flex-shrink-0 w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+                              <User className="h-6 w-6 text-accent" />
+                            </div>
+                            <div className="flex-1">
+                              <h2 className="text-2xl font-bold text-foreground text-start">{t("AvailableProducts") || "Available Products"}</h2>
+                              <p className="text-muted-foreground">{t("Choose items to receive") || "Choose items to receive"}</p>
+                            </div>
+                            <motion.div
+                              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+                            >
+                              <Badge variant="secondary" className="text-sm px-3 py-1">
+                                {selectedOtherItems.reduce((sum, item) => sum + (item.quantity || 1), 0)} {t("selected") || "selected"}
+                              </Badge>
+                            </motion.div>
                           </motion.div>
 
                           <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">

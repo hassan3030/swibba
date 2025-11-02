@@ -79,7 +79,7 @@ const imageUploadVariants = {
 const buttonVariants = {
   hover: {
     scale: 1.05,
-    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+    boxShadow: "0 5px 15px rgba(0, 167, 93, 0.2)",
     transition: {
       duration: 0.2,
       ease: "easeInOut",
@@ -1131,7 +1131,7 @@ else{
 
                 
     <motion.div variants={itemVariants}>
-                      <Card className="rounded-xl shadow-md bg-muted border-border">
+                      <Card className="rounded-xl shadow-md bg-card border-border">
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-primary">
                             <Navigation className="h-5 w-5 text-primary" />
@@ -1140,7 +1140,7 @@ else{
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <motion.div variants={buttonVariants}  whileTap="tap">
-                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-secondary/80 border border-primary text-secondary-foreground font-medium transition-all">
+                            <Button type="button" onClick={getCurrentPosition} disabled={isGettingLocation} className="w-full py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all shadow-md">
                               {isGettingLocation ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1173,13 +1173,13 @@ else{
                               </CardHeader>
                               <CardContent className="space-y-2">
                                 <div className="space-y-1">
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-sm text-foreground/70">
                                     <strong>{t("Name") || "Name"}:</strong> {selectedPosition.name}
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-sm text-foreground/70">
                                     <strong>{t("Latitude") || "Latitude"}:</strong> {selectedPosition.lat.toFixed(6)}
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-sm text-foreground/70">
                                     <strong>{t("Longitude") || "Longitude"}:</strong> {selectedPosition.lng.toFixed(6)}
                                   </p>
                                 </div>
@@ -1194,7 +1194,7 @@ else{
 
                   {/* Interactive Map Section */}
                   <motion.div variants={itemVariants}>
-                    <Card className="rounded-xl shadow-md bg-muted border-border">
+                    <Card className="rounded-xl shadow-md bg-card border-border">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-primary">
                           <motion.div
@@ -1209,7 +1209,7 @@ else{
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.8 }}
-                              className="flex items-center text-sm text-muted-foreground ml-auto z-10"
+                              className="flex items-center text-sm text-foreground ml-auto z-10"
                             >
                               <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
                               <span>Updating...</span>
@@ -1272,7 +1272,7 @@ else{
                                 setIsMapRefreshing(true)
                                 setTimeout(() => setIsMapRefreshing(false), 1000)
                               }}
-                              className="border-primary text-primary hover:bg-primary/90"
+                              className="border-primary text-primary hover:bg-primary/10"
                             >
                               <RefreshCw className="mr-2 h-4 w-4" />
                               {t("RefreshMap") || "Refresh Map"}
@@ -1301,7 +1301,7 @@ else{
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription className="text-muted-foreground">
+                        <FormDescription className="text-foreground/70">
                           {t("detailsprovidethemorelikelyfindgoodswap") ||
                             "The more details you provide, the more likely you are to find a good swap."}
                         </FormDescription>
@@ -1318,11 +1318,11 @@ else{
                   >
                     {t("continue") || "Continue"}
                   </Button>
-                  {!isStep1Valid && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {(t("Missing") || "Missing") + ": "}{getStep1Missing().join(", ")}
-                    </p>
-                  )}
+                    {!isStep1Valid && (
+                      <p className="mt-1 text-xs text-destructive">
+                        {(t("Missing") || "Missing") + ": "}{getStep1Missing().join(", ")}
+                      </p>
+                    )}
                 </motion.div>
               )}
               {step === 2 && (
@@ -1338,7 +1338,7 @@ else{
                             <FormLabel className="text-base font-semibold text-foreground">
                               {t("Whatwillyouacceptinreturn") || "What will you accept in return?"}
                             </FormLabel>
-                            <FormDescription className="text-muted-foreground">
+                            <FormDescription className="text-foreground/70">
                               {t("Selectthecategoriesofitemsyourewillingtoacceptinexchange") ||
                                 "Select the categories of items you're willing to accept in exchange"}
                             </FormDescription>
@@ -1357,7 +1357,7 @@ else{
                                   render={({ field }) => (
                                     <FormItem
                                       key={category}
-                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-border bg-muted p-4 shadow-sm hover:border-primary transition-all"
+                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-border bg-card p-4 shadow-sm hover:border-primary transition-all hover:shadow-md"
                                     >
                                       <FormControl>
                                         <Checkbox
@@ -1485,10 +1485,10 @@ else{
                       {images.length < MAX_IMAGES && (
                         <motion.div 
                         variants={imageUploadVariants} initial="hidden" animate="visible" whileHover="hover">
-                          <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/50 hover:border-primary hover:bg-muted transition-all shadow-sm">
+                          <Card className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-card/50 hover:border-primary hover:bg-primary/5 transition-all shadow-sm">
                             <CardContent className="flex h-full w-full flex-col items-center justify-center p-4">
                               <label htmlFor="image-upload" className="cursor-pointer text-center">
-                                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                                   <Upload className="h-6 w-6 text-primary" />
                                 </div>
                                 <p className="text-xs text-primary font-semibold">{t("Clicktoupload") || "Click to upload"}</p>
@@ -1506,7 +1506,7 @@ else{
                         </motion.div>
                       )}
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <p className="mt-2 text-xs text-foreground/70">
                       {t("Uploadupto") || "Upload up to"} <span className="font-bold text-primary">{MAX_IMAGES}</span> {t("images") || "images"} (JPEG, PNG, WebP, {t("max80MBEach")})
                     </p>
                   </div>
@@ -1535,7 +1535,7 @@ else{
                                       size="sm"
                                       onClick={() => {requestAiPriceEstimate() }}
                                       disabled={isEstimating}
-                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-muted hover:border-primary transition-all relative"
+                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-card hover:border-primary transition-all relative"
                                     >
                                       {isEstimating ? (
                                         <>
@@ -1551,7 +1551,7 @@ else{
                                       {/* AI Badge */}
                                       {!isEstimating && (
                                         <motion.div
-                                          className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg"
+                                          className="absolute -top-1 -right-1 bg-gradient-to-r from-primary to-secondary text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg"
                                           animate={{ 
                                             scale: [1, 1.1, 1],
                                             opacity: [0.8, 1, 0.8]
@@ -1573,7 +1573,7 @@ else{
                                     {t("GetAIpoweredpriceestimatebasedonyouritemdetails") ||
                                       "Get an AI-powered price estimate based on your item details"}
                                   </p>
-                                  <p className="text-xs text-muted-foreground mt-1">
+                                  <p className="text-xs text-foreground/70 mt-1">
                                     {t("Clicktoautomaticallyestimateyouritemprice") ||
                                       "Click to automatically estimate your item price"}
                                   </p>
@@ -1595,17 +1595,17 @@ else{
                               </motion.p>
                             )}
                           </AnimatePresence>
-                          <FormDescription className="text-muted-foreground">
+                          <FormDescription className="text-foreground/70">
                             {t("Setfairmarketvaluetohelpfacilitatebalancedswaps") ||
                               "Set a fair market value to help facilitate balanced swaps."}
                           </FormDescription>
                         {
                            aiPriceEstimationHint && 
                             ( <div className="mt-2">
-                            <div className="flex items-center gap-2 bg-white border border-primary text-destructive text-xs font-medium rounded px-3 py-2">
-                              <svg width="16" height="16" fill="none" viewBox="0 0 20 20" className="flex-shrink-0 text-blue-400">
-                                <circle cx="10" cy="10" r="10" fill="#3B82F6" fillOpacity="0.15"/>
-                                <path d="M10 6.667V10M10 13.333h.008" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <div className="flex items-center gap-2 bg-primary/10 border border-primary text-primary text-xs font-medium rounded px-3 py-2">
+                              <svg width="16" height="16" fill="none" viewBox="0 0 20 20" className="flex-shrink-0 text-primary">
+                                <circle cx="10" cy="10" r="10" fill="hsl(var(--primary))" fillOpacity="0.15"/>
+                                <path d="M10 6.667V10M10 13.333h.008" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                               <span>
                                 {t("hintfairmarketvalueAI") ||
@@ -1625,7 +1625,7 @@ else{
                         <Button
                           type="button"
                           onClick={() => setStep(1)}
-                          className="w-full py-2 rounded-xl bg-muted text-muted-foreground font-semibold shadow-md hover:bg-muted/80 transition-all"
+                          className="w-full py-2 rounded-xl bg-card border border-border text-foreground font-semibold shadow-md hover:bg-card/80 hover:border-primary transition-all"
                         >
                           {t("Back") || "Back"}
                         </Button>

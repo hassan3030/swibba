@@ -73,13 +73,13 @@ export const ImageUploadSection = ({
       }}
     >
       {/* Upload Area */}
-      <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors">
+      <Card className="rounded-xl border-2 border-dashed border-border hover:border-primary transition-all shadow-sm bg-card/50">
         <CardContent className="p-6">
           <div
-            className={`relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-colors ${
+            className={`relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-all ${
               dragActive 
                 ? "border-primary bg-primary/5" 
-                : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                : "border-border hover:border-primary hover:bg-primary/5"
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -94,11 +94,11 @@ export const ImageUploadSection = ({
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
             <div className="flex flex-col items-center justify-center text-center">
-              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
+              <Upload className="h-8 w-8 text-primary mb-2" />
+              <p className="text-sm text-foreground font-medium">
                 {t("Draganddropimageshereorclicktoupload") || "Drag and drop images here or click to upload"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-primary mt-1">
                 {t("SupportsJPGPNGWebPformats") || "Supports JPG, PNG, WebP formats"}
               </p>
             </div>
@@ -117,7 +117,7 @@ export const ImageUploadSection = ({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-xs text-orange-500 bg-orange-50 px-2 py-1 rounded"
+                className="text-xs text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20"
               >
                 {t("UnsavedChanges") || "Unsaved changes"}
               </motion.div>
@@ -135,8 +135,8 @@ export const ImageUploadSection = ({
                   exit="exit"
                   className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                     bigImage === image.url 
-                      ? "border-primary ring-2 ring-primary/20" 
-                      : "border-border hover:border-primary/50"
+                      ? "border-primary ring-2 ring-primary/20 shadow-md" 
+                      : "border-border hover:border-primary hover:shadow-md"
                   }`}
                   onClick={() => onSetBigImage(image.url)}
                 >
@@ -151,7 +151,7 @@ export const ImageUploadSection = ({
                     
                     {/* Remove Button */}
                     <motion.button
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                       onClick={(e) => {
                         e.stopPropagation()
                         onRemoveImage(image.index, image.isExisting)
@@ -164,7 +164,7 @@ export const ImageUploadSection = ({
                     
                     {/* Existing Image Badge */}
                     {image.isExisting && (
-                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                      <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded shadow-md">
                         {t("Existing") || "Existing"}
                       </div>
                     )}

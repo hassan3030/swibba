@@ -603,28 +603,28 @@ const SendItems = () => {
                   >
                     <Card
                       id={`offer-card-${offer.id}`}
-                      className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300"
+                      className="relative overflow-hidden border-2 hover:border-primary/50  transition-all duration-300"
                     >
                       {/* Top-left quick delete for rejected/completed swaps */}
                       {(offer.status_offer === "rejected" || offer.status_offer === "completed") && (
-                        <div className="absolute z-30 top-1 right-12">
+                        <div className="absolute z-30 top-1 right-12 bg-background rounded-full ">
                           <Button
                             size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
+                            // variant="ghost"
+                          className="h-8 w-8 p-1 !bg-background  rounded-full hover:!bg-primary/20"
                             onClick={() => {handleDeleteFinally(offer.id) }}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" /> 
+                            <Trash2 className="h-4 w-4 text-destructive bg-background hover:!bg-primary/20" /> 
                           </Button>
                         </div>
                       )}
                       
                       {/* Top-right screenshot button for all cards */}
-                      <div className="absolute z-30 mb-4 top-1 right-2 bg-white/80">
+                      <div className="absolute z-30 mb-4 top-1 right-2 bg-white/80 rounded-full ">
                         <Button
                           size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
+                          // variant="ghost"
+                        className="h-8 w-8 p-1 !bg-background  rounded-full hover:!bg-primary/20"
                           onClick={async () => {
                             try {
                               const html2canvas = (await import("html2canvas")).default
@@ -961,7 +961,7 @@ const SendItems = () => {
                                 className="flex items-center gap-1"
                               >
                                 <Trash2 className="h-4 w-4" />
-                                {t("DeleteSwap") || "Delete Swap"}
+                                {t("RejectSwap") || "Reject Swap"}
                               </Button>
                             </motion.div>
                           </motion.div>
@@ -1009,12 +1009,12 @@ const SendItems = () => {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
                 >
-                  <TbShoppingCartUp className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <TbShoppingCartUp className="h-16 w-16 mx-auto mb-4 text-primary/90" />
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2">{t("NoCart") || "No Cart"}</h3>
+                <h3 className="text-xl font-semibold mb-2">{t("NoCart") || "No Cart Items Offers"}</h3>
                 <p className="text-muted-foreground">
                   {t("YoureallcaughtupNewAddincartwillappearhere") ||
-                    "You're all caught up! New Add in cart will appear here."}
+                    "You're all caught up! New Add in cart items offers will appear here."}
                 </p>
                 <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                   <Button variant="outline" className="mt-4" onClick={() => router.push("/products")}>

@@ -29,10 +29,10 @@ export const LocationSection = ({
 
   return (
     <motion.div variants={cardVariants}>
-      <Card>
+      <Card className="rounded-xl shadow-md bg-card border-border">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <MapPin className="h-5 w-5 text-blue-500" />
+          <CardTitle className="flex items-center gap-2 text-lg text-primary">
+            <MapPin className="h-5 w-5 text-primary" />
             {t("Location") || "Location"}
           </CardTitle>
         </CardHeader>
@@ -42,8 +42,7 @@ export const LocationSection = ({
               type="button"
               onClick={onGetCurrentLocation}
               disabled={isGettingLocation}
-              className="flex-1"
-              variant="outline"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
             >
               {isGettingLocation ? (
                 <>
@@ -63,13 +62,14 @@ export const LocationSection = ({
               onClick={() => onSetIsMapRefreshing(!isMapRefreshing)}
               variant="outline"
               size="icon"
+              className="border-primary text-primary hover:bg-primary/10"
             >
               <RefreshCw className={`h-4 w-4 ${isMapRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
 
           {/* Location Map */}
-          <div className="h-64 rounded-lg overflow-hidden border">
+          <div className="h-64 rounded-lg overflow-hidden border border-border shadow-lg">
             <LocationMap
               selectedPosition={selectedPosition}
               onPositionSelect={onSetSelectedPosition}
@@ -80,7 +80,7 @@ export const LocationSection = ({
 
           {/* Location Info */}
           {(selectedPosition || geoLocation) && (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-foreground/70">
               <p>
                 <strong>{t("Latitude") || "Latitude"}:</strong> {(selectedPosition || geoLocation)?.latitude?.toFixed(6)}
               </p>

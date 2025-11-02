@@ -168,9 +168,9 @@ export function RegisterForm() {
               name="userName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
+                  <FormLabel className="flex items-center gap-2 text-primary/90">
                     <motion.div variants={iconVariants}>
-                      <UserPlus className="h-4 w-4 text-[#f2b230]" />
+                      <UserPlus className="h-4 w-4 " />
                     </motion.div>
                     {t("firstName") || "First Name"}
                   </FormLabel>
@@ -179,7 +179,7 @@ export function RegisterForm() {
                       <Input
                         placeholder="John Doe"
                         {...field}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/20 border-gray-200 focus:border-primary"
                       />
                     </motion.div>
                   </FormControl>
@@ -195,9 +195,9 @@ export function RegisterForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
+                  <FormLabel className="flex items-center gap-2 text-primary/90">
                     <motion.div variants={iconVariants}>
-                      <Mail className="h-4 w-4 text-[#f2b230]" />
+                      <Mail className="h-4 w-4 " />
                     </motion.div>
                     {t("email") || "Email"}
                   </FormLabel>
@@ -207,7 +207,7 @@ export function RegisterForm() {
                         type="email"
                         placeholder="you@example.com"
                         {...field}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/20 border-gray-200 focus:border-primary"
                       />
                     </motion.div>
                   </FormControl>
@@ -223,9 +223,9 @@ export function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
+                  <FormLabel className="flex items-center gap-2 text-primary/90">
                     <motion.div variants={iconVariants}>
-                      <Lock className="h-4 w-4 text-[#f2b230]" />
+                      <Lock className="h-4 w-4 " />
                     </motion.div>
                     {t("password") || "Password"}
                   </FormLabel>
@@ -235,48 +235,42 @@ export function RegisterForm() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
-                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
+                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 border-gray-200 focus:border-primary"
                       />
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="absolute right-0 top-0"
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-auto px-3 py-2 text-muted-foreground hover:text-white"
+                        onClick={() => setShowPassword(!showPassword)}
                       >
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-full px-3 py-2 text-muted-foreground hover:text-[#f2b230]"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          <AnimatePresence mode="wait">
-                            {showPassword ? (
-                              <motion.div
-                                key="hide"
-                                initial={{ opacity: 0, rotate: -90 }}
-                                animate={{ opacity: 1, rotate: 0 }}
-                                exit={{ opacity: 0, rotate: 90 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <EyeOff className="h-4 w-4" />
-                              </motion.div>
-                            ) : (
-                              <motion.div
-                                key="show"
-                                initial={{ opacity: 0, rotate: -90 }}
-                                animate={{ opacity: 1, rotate: 0 }}
-                                exit={{ opacity: 0, rotate: 90 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                          <span className="sr-only">
-                            {showPassword ? t("Hidepassword") || "Hide password" : t("Showpassword") || "Show password"}
-                          </span>
-                        </Button>
-                      </motion.div>
+                        <AnimatePresence mode="wait">
+                          {showPassword ? (
+                            <motion.div
+                              key="hide"
+                              initial={{ opacity: 0, rotate: -90 }}
+                              animate={{ opacity: 1, rotate: 0 }}
+                              exit={{ opacity: 0, rotate: 90 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <EyeOff className="h-4 w-4" />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="show"
+                              initial={{ opacity: 0, rotate: -90 }}
+                              animate={{ opacity: 1, rotate: 0 }}
+                              exit={{ opacity: 0, rotate: 90 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <span className="sr-only">
+                          {showPassword ? t("Hidepassword") || "Hide password" : t("Showpassword") || "Show password"}
+                        </span>
+                      </Button>
                     </motion.div>
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -295,9 +289,9 @@ export function RegisterForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
+                  <FormLabel className="flex items-center gap-2 text-primary/90">
                     <motion.div variants={iconVariants}>
-                      <CheckCircle className="h-4 w-4 text-[#f2b230]" />
+                      <CheckCircle className="h-4 w-4 " />
                     </motion.div>
                     {t("ConfirmPassword") || "Confirm Password"}
                   </FormLabel>
@@ -307,50 +301,44 @@ export function RegisterForm() {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
-                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#f2b230]/20 border-gray-200 focus:border-[#f2b230]"
+                        className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 border-gray-200 focus:border-primary"
                       />
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="absolute right-0 top-0"
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-auto px-3 py-2 text-muted-foreground hover:text-white"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-full px-3 py-2 text-muted-foreground hover:text-[#f2b230]"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          <AnimatePresence mode="wait">
-                            {showConfirmPassword ? (
-                              <motion.div
-                                key="hide"
-                                initial={{ opacity: 0, rotate: -90 }}
-                                animate={{ opacity: 1, rotate: 0 }}
-                                exit={{ opacity: 0, rotate: 90 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <EyeOff className="h-4 w-4" />
-                              </motion.div>
-                            ) : (
-                              <motion.div
-                                key="show"
-                                initial={{ opacity: 0, rotate: -90 }}
-                                animate={{ opacity: 1, rotate: 0 }}
-                                exit={{ opacity: 0, rotate: 90 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                          <span className="sr-only">
-                            {showConfirmPassword
-                              ? t("Hidepassword") || "Hide password"
-                              : t("Showpassword") || "Show password"}
-                          </span>
-                        </Button>
-                      </motion.div>
+                        <AnimatePresence mode="wait">
+                          {showConfirmPassword ? (
+                            <motion.div
+                              key="hide"
+                              initial={{ opacity: 0, rotate: -90 }}
+                              animate={{ opacity: 1, rotate: 0 }}
+                              exit={{ opacity: 0, rotate: 90 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <EyeOff className="h-4 w-4" />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="show"
+                              initial={{ opacity: 0, rotate: -90 }}
+                              animate={{ opacity: 1, rotate: 0 }}
+                              exit={{ opacity: 0, rotate: 90 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <span className="sr-only">
+                          {showConfirmPassword
+                            ? t("Hidepassword") || "Hide password"
+                            : t("Showpassword") || "Show password"}
+                        </span>
+                      </Button>
                     </motion.div>
                   </FormControl>
                   <FormMessage />
@@ -363,7 +351,7 @@ export function RegisterForm() {
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Button
                 type="submit"
-                className="w-full bg-[#f2b230] hover:bg-[#eeb74a] text-white font-semibold py-6 text-lg"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg"
                 onClick={onSubmit}
                 disabled={isLoading}
               >
@@ -409,7 +397,7 @@ export function RegisterForm() {
             >
               {t("Alreadyhaveanaccount") || "Already have an account?"}{" "}
               <motion.span whileHover={{ scale: 1.05 }} className="inline-block">
-                <Link href="/auth/login" className="font-medium text-[#f2b230] hover:underline transition-colors mx-1">
+                <Link href="/auth/login" className="font-medium text-primary hover:underline transition-colors mx-1">
                   {t("Signin") || "Sign in"}
                 </Link>
               </motion.span>

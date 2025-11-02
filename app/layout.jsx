@@ -7,6 +7,8 @@ import { MobileFooter } from "@/components/general/mobile-footer"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { LanguageProvider } from "@/lib/language-provider"
 import { headers } from "next/headers";
+import Image from "next/image";
+
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -19,10 +21,11 @@ const cairo = Cairo({
   display: "swap"
 })
 
+
 export const metadata = {
   metadataBase: new URL("https://swibba.com"),
   title: {
-    default: "Swibba",
+    default: "SWIBBA",
     template: "%s | Swibba",
   },
   description: "Swibba is a high-performance, SEO-optimized marketplace platform where users can swap items across various categories. Discover, trade, and connect with a vibrant community.",

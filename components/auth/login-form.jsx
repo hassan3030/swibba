@@ -170,8 +170,8 @@ export function LoginForm() {
     <motion.div className="w-full" variants={containerVariants} initial="hidden" animate="visible">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <motion.div className="space-y-2" variants={itemVariants}>
-          <label htmlFor="email" className="text-sm font-medium">
-           <Mail className="h-4 w-4 text-[#f2b230] inline-block mx-1" />
+          <label htmlFor="email" className="text-sm font-medium text-primary/90">
+           <Mail className="h-4 w-4  inline-block mx-1" />
             {t("email") || "Email"}
           </label>
           <motion.div variants={inputVariants} animate={isFocused.email ? "focus" : ""} transition={{ duration: 0.2 }}>
@@ -202,8 +202,8 @@ export function LoginForm() {
 
         <motion.div className="space-y-2" variants={itemVariants}>
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-sm font-medium">
-                <Lock className="h-4 w-4 text-[#f2b230] inline-block mx-1" />
+            <label htmlFor="password" className="text-sm font-medium text-primary/90">
+                <Lock className="h-4 w-4 inline-block mx-1" />
               {t("password") || "Password"}
             </label>
             <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">

@@ -105,7 +105,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
     <motion.div className="relative" variants={containerVariants} initial="hidden" animate="visible">
       <motion.div className="mb-4 flex items-center justify-between" variants={headerVariants}>
         <motion.h2
-          className="text-xl font-bold bg-gradient-to-r  from-gray-900 to-gray-600 text-secondary/90 bg-clip-text "
+          className="text-2xl font-bold  text-primary/90 bg-clip-text "
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -114,7 +114,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
         {viewAllHref && (
           <motion.a
             href={viewAllHref}
-            className="text-sm font-medium text-primary hover:scale-105 transition-all duration-200"
+            className="text-sm font-medium text-primary/90 hover:scale-105 transition-all duration-200"
             whileHover={{ scale: 1.05, x: 5 }}
             whileTap={{ scale: 0.95 }}
           >

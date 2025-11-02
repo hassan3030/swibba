@@ -617,19 +617,35 @@ export const addMessage = async (email, name, message, phone_number) => {
 
 // Request password reset
 export const forgotPassword = async (email) => {
+  console.log("forget Password email", email)
   try {
     if (!email) {
       throw new Error("Email is required");
     }
+    // const response = await axios.post(`${baseURL}auth/password/request`, {
+  //   const response = await axios.post("https://dev-dashboard.swibba.com/auth/password/request", {
+  //     "email":"hassan.hamdi.dev@gmail.com",
+  //     "reset_url": `http://localhost:3000/auth/reset-password`
+  //   },
+  //   {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   }
+  // );
 
-    const response = await axios.post(`${baseURL}auth/password/request`, {
-      email: email.trim(),
-      // understand it 
-      reset_url: `${baseURL}auth/reset-password`
-    });
+  const response = await fetch('https://dev-dashboard.swibba.com/auth/password/request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email,
+      reset_url: `http://localhost:3000/auth/reset-password`
+    }),
+  });
 
+  console.log("forgo tPassword response", response)
     return {
-      success: true,
+      success: response.ok,
       message: "Password reset link sent successfully. Please check your email.",
     };
   } catch (error) {
@@ -651,10 +667,16 @@ export const resetPassword = async (password, token) => {
     }
 
     const response = await axios.post(
-      `${baseURL}auth/reset-password`,
+      // `${baseURL}auth/reset-password`,
+      `${baseURL}auth/password/reset`,
       {
         password,
         token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 

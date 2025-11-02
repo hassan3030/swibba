@@ -32,7 +32,7 @@ import {
 } from "lucide-react"
 import { editeProfile, getUserById, resetPassword, updatePhoneVerification } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
-import { decodedToken, getCookie } from "@/callAPI/utiles"
+import { decodedToken, getCookie, getTarget, removeTarget } from "@/callAPI/utiles"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useTranslations } from "@/lib/use-translations"
 import { useTheme } from "@/lib/theme-provider"
@@ -567,6 +567,20 @@ Please return ONLY a JSON response in this format:
       await editeProfile(userCollectionData, user.id, avatar, finalTranslations);
       console.log("Profile saved successfully with translations");
       
+      // Check if there's a target to redirect to swap page
+      const target = await getTarget();
+      if (target) {
+        // Remove target and redirect to swap page
+        await removeTarget();
+        toast({
+          title: t("successfully") || "Success",
+          description: t("ProfileSavedRedirectingToSwap") || "Profile saved successfully! Redirecting to swap page...",
+          variant: "default",
+        });
+        router.push(`/swap/${target}`);
+        return;
+      }
+      
       router.refresh();
       // toast({
       //   title: t("successfully") || "Success",
@@ -750,31 +764,7 @@ Please return ONLY a JSON response in this format:
         </motion.div>
       </div>
 
-      {/* Header Section */}
-      {/* <motion.div className="inline mb-6 relative z-10" variants={headerVariants}>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
-          <Button
-            className="mb-2 shadow-lg hover:shadow-xl transition-all duration-300 bg-background/80 backdrop-blur-sm"
-            variant="outline"
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <Link href="/profile" className="flex items-center">
-              <motion.div animate={{ x: [-2, 0, -2] }} transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}>
-                <ChevronLeft className="mr-1 h-4 w-4" />
-              </motion.div>
-            </Link>
-          </Button>
-        </motion.div>
-        <motion.h1
-          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          {t("accountSettings") || "Account Settings"}
-        </motion.h1>
-      </motion.div> */}
+     
 
       <Tabs defaultValue="profile" className="w-full relative z-10">
       
@@ -782,7 +772,7 @@ Please return ONLY a JSON response in this format:
           {/* Sidebar */}
            <motion.div className={`md:col-span-1 `} variants={itemVariants}>
           <motion.h1
-          className={`mx-2 text-2xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent ${isRTL?'force-rtl':''}`}
+          className={`mx-2 text-2xl font-bold inline text-primary/90 mb-2 ${isRTL?'force-rtl':''}`}
           initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -790,7 +780,7 @@ Please return ONLY a JSON response in this format:
           {t("accountSettings") || "Account Settings"}
         </motion.h1>
             <motion.div variants={cardVariants} whileHover="hover" className="sticky top-8">
-              <TabsList className="flex h-auto w-full flex-col items-start rtl:items-end justify-start bg-gradient-to-br from-card to-muted shadow-lg border-0 p-2 rounded-xl">
+              <TabsList className="flex h-auto w-full flex-col items-start rtl:items-end justify-start shadow-lg border border-border/50 p-2 rounded-xl bg-background">
                 {[
                   { value: "profile", icon: User, label: t("profile") || "Profile" },
                   { value: "preferences", icon: Globe, label: t("preferences") || "Preferences" },
@@ -805,11 +795,11 @@ Please return ONLY a JSON response in this format:
                     transition={{ delay: 0.4 + index * 0.1 }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full"
+                    className="w-full hover:bg-primary/20 rounded-md mt-1"
                    >
                     <TabsTrigger
                       value={tab.value}
-                      className="w-full justify-start rtl:justify-end text-left rtl:text-right data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg"
+                      className="w-full justify-start rtl:justify-end text-left rtl:text-right data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg border border-transparent data-[state=active]:border-primary/30"
                     >
                       <motion.div
                         animate={{ rotate: [0, 5, -5, 0] }}
@@ -829,7 +819,7 @@ Please return ONLY a JSON response in this format:
  transition={{ delay: 0.4 + 4 * 0.1 }}
  whileHover={{ scale: 1.02 }}
  whileTap={{ scale: 0.98 }}
- className="w-full"
+ className="w-full hover:bg-primary/20 rounded-md mt-1"
 >
 
                    
@@ -860,14 +850,14 @@ Please return ONLY a JSON response in this format:
               <TabsContent value="profile">
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted overflow-hidden">
+                    <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background overflow-hidden">
                       <CardHeader className={`bg-gradient-to-r from-primary/10 to-secondary/10  ${isRTL?'force-rtl':''}`}>
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
                         >
-                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                             {t("profileInformation") || "Profile Information"}
                           </CardTitle>
                           <CardDescription className="text-base">
@@ -899,7 +889,7 @@ Please return ONLY a JSON response in this format:
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <div className="flex items-center justify-center h-full w-full bg-muted">
+                                <div className="flex items-center justify-center h-full w-full bg-background border border-border/50">
                                   <Image
                                     src="/placeholder-user.jpg"
                                     alt={t("NoAvatar") || "No Avatar"}
@@ -907,7 +897,7 @@ Please return ONLY a JSON response in this format:
                                     height={96}
                                     className="h-full w-full object-cover absolute inset-0"
                                   />
-                                  <span className="absolute inset-0 flex items-center justify-center text-muted-foreground font-semibold">
+                                  <span className="absolute inset-0 flex items-center justify-center text-foreground/70 font-semibold">
                                   {`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("NoAvatar") }` || "No Avatar"}
                                   </span>
                                 </div>
@@ -993,7 +983,7 @@ Please return ONLY a JSON response in this format:
                                     value={country}
                                     onValueChange={setCountry}
                                   >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="hover:bg-primary/20">
                                       <SelectValue placeholder={t("SelectCountry") || "Select country"}>
                                         {country && (
                                           <div className="flex items-center gap-2">
@@ -1009,7 +999,7 @@ Please return ONLY a JSON response in this format:
                                     </SelectTrigger>
                                     <SelectContent className="h-40">
                                       {countriesListWithFlags.map((c) => (
-                                        <SelectItem key={c.name} value={c.name} className="text-right">
+                                        <SelectItem key={c.name} value={c.name} className="text-right hover:!bg-primary/20">
                                           <div className="flex items-center gap-2">
                                             <FlagIcon flag={c.flag} countryCode={c.name} className="text-lg" />
                                             <span>{t(c.name) || c.name}</span>
@@ -1162,7 +1152,7 @@ Please return ONLY a JSON response in this format:
                                           <Card className="bg-background/50 backdrop-blur-sm">
                                             <CardHeader>
                                                <CardTitle className="flex items-center gap-2 text-base rtl:flex-row-reverse">
-                                                <MapPin className="h-4 w-4 text-green-600" />
+                                                <MapPin className="h-4 w-4 text-primary" />
                                                 {t("SelectedPosition") || "Selected Position"}
                                               </CardTitle>
                                             </CardHeader>
@@ -1218,7 +1208,7 @@ Please return ONLY a JSON response in this format:
                                   name="email"
                                   type="email"
                                   value={email || ""}
-                                  className="bg-muted cursor-not-allowed"
+                                  className="bg-background border border-border/50 cursor-not-allowed"
                                 />
                               </motion.div>
 
@@ -1233,7 +1223,7 @@ Please return ONLY a JSON response in this format:
                                     <motion.div
                                       initial={{ scale: 0 }}
                                       animate={{ scale: 1 }}
-                                       className="flex items-center gap-1 text-green-600 rtl:flex-row-reverse"
+                                       className="flex items-center gap-1 text-secondary2 rtl:flex-row-reverse"
                                     >
                                       <Shield className="h-4 w-4" />
                                       <span className="text-xs">{t("verified") || "Verified"}</span>
@@ -1248,14 +1238,14 @@ Please return ONLY a JSON response in this format:
                                       value={phone_number}
                                       type="tel"
                                       onChange={(e) => handlePhoneChange(e.target.value)}
-                                      className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${phoneValidationError ? 'border-red-500 focus:border-red-500' : ''}`}
+                                      className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${phoneValidationError ? 'border-destructive focus:border-destructive' : ''}`}
                                       placeholder={t("enterPhoneNumber") || "Enter phone number"}
                                     />
                                     {phoneValidationError && (
                                       <motion.div 
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                         className="flex items-center gap-2 rtl:flex-row-reverse text-red-600 text-sm mt-1"
+                                         className="flex items-center gap-2 rtl:flex-row-reverse text-destructive text-sm mt-1"
                                       >
                                         <Shield className="h-3 w-3" />
                                         <span>{phoneValidationError}</span>
@@ -1268,7 +1258,7 @@ Please return ONLY a JSON response in this format:
                                       variant={verified === 'true' ? "secondary" : "outline"}
                                       size="sm"
                                       onClick={() => setShowPhoneVerification(true)}
-                                      className={`${verified === 'true' ? 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200' : ''}`}
+                                      className={`${verified === 'true' ? 'bg-secondary2/10 text-secondary2 border-secondary2/30 hover:bg-secondary2/20' : ''}`}
                                     >
                                       {verified === 'true' ? (
                                         <>
@@ -1320,12 +1310,12 @@ Please return ONLY a JSON response in this format:
                                   {t("Gender") || "Gender"}
                                 </Label>
                                 <Select value={gender} onValueChange={(value) => setGender(value)}>
-                                  <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent">
+                                  <SelectTrigger className="transition-all  hover:bg-primary/20 duration-300 focus:ring-2  focus:ring-ring focus:border-transparent">
                                     <SelectValue placeholder={t("SelectGender") || "Select Gender"} />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="male">{t("Male") || "Male"}</SelectItem>
-                                    <SelectItem value="female">{t("Female") || "Female"}</SelectItem>
+                                    <SelectItem value="male" className="hover:!bg-primary/20">{t("Male") || "Male"}</SelectItem>
+                                    <SelectItem value="female" className="hover:!bg-primary/20">{t("Female") || "Female"}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </motion.div>
@@ -1367,12 +1357,12 @@ Please return ONLY a JSON response in this format:
                           </motion.div>
                         </form>
                       </CardContent>
-                      <CardFooter className="flex justify-end rtl:justify-start bg-muted/50">
+                      <CardFooter className="flex justify-end rtl:justify-start bg-background border-t border-border/50">
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={(e)=>{handleSubmit(e)}}
                             disabled={isLoading || isAiProcessing}
-                            className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-accent text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="bg-primary mt-1 hover:bg-primary/80 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             {isLoading || isAiProcessing ? (
                               <span className="flex items-center gap-2">
@@ -1399,9 +1389,9 @@ Please return ONLY a JSON response in this format:
               <TabsContent value="preferences" key='preferences'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="preferences">
                   <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
+                    <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background">
                       <CardHeader className={`bg-gradient-to-r from-primary/10 to-secondary/10 ${isRTL?'force-rtl':''}`}>
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                           {t("preferences") || "Preferences"}
                         </CardTitle>
                         <CardDescription className="text-base">
@@ -1416,13 +1406,13 @@ Please return ONLY a JSON response in this format:
                           animate="visible"
                         >
                           <motion.div
-                            className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-muted to-muted/80"
+                            className="flex items-center justify-between p-4 rounded-lg bg-background border border-border/50 hover:border-primary/30 transition-colors"
                             variants={itemVariants}
                             whileHover={{ scale: 1.02 }}
                           >
                             <div>
                               <h3 className={`font-medium text-lg ${isRTL?'force-rtl':''}`}>{t("DarkMode") || "Dark Mode"}</h3>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-foreground/70">
                                 {t("Customizeyourexperience") || "Toggle between light and dark themes"}
                               </p>
                             </div>
@@ -1440,7 +1430,7 @@ Please return ONLY a JSON response in this format:
                           </motion.div>
                         </motion.div>
                       </CardContent>
-                       <CardFooter className="flex justify-end rtl:justify-start bg-muted/50">
+                       <CardFooter className="flex justify-end rtl:justify-start bg-background border-t border-border/50">
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={(e)=>{handleSubmit(e)}}
@@ -1458,14 +1448,14 @@ Please return ONLY a JSON response in this format:
               <TabsContent value="security"  key='security'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="security">
                   <motion.div variants={cardVariants} whileHover="hover">
-                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
-                       <CardHeader className={`bg-gradient-to-r from-red-500/10 to-orange-500/10 ${isRTL?'force-rtl':''}`}>
-                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
+                     <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background">
+                       <CardHeader className={`bg-gradient-to-r from-destructive/10 to-destructive/5 ${isRTL?'force-rtl':''}`}>
+                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
                            <motion.div
                              animate={{ rotate: [0, -5, 5, 0] }}
                              transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3 }}
                            >
-                             <Lock className="h-6 w-6 text-red-500" />
+                             <Lock className="h-6 w-6 text-destructive" />
                            </motion.div>
                            {t("security") || "Security"}
                          </CardTitle>
@@ -1495,7 +1485,7 @@ Please return ONLY a JSON response in this format:
                                     type="email"
                                     value={currentEmail}
                                     onChange={(e) => setCurrentEmail(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-destructive focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -1510,7 +1500,7 @@ Please return ONLY a JSON response in this format:
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-destructive focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -1525,7 +1515,7 @@ Please return ONLY a JSON response in this format:
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    className="transition-all duration-300 focus:ring-2 focus:ring-destructive focus:border-transparent"
                                   />
                                 </motion.div>
                               </motion.div>
@@ -1533,7 +1523,7 @@ Please return ONLY a JSON response in this format:
                               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                                 <Button
                                   onClick={updatePassword}
-                                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-background shadow-lg hover:shadow-xl transition-all duration-300"
+                                  className="bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-destructive-foreground shadow-lg hover:shadow-xl transition-all duration-300"
                                 >
                                   {t("UpdatePassword") || "Update Password"}
                                 </Button>
@@ -1548,13 +1538,13 @@ Please return ONLY a JSON response in this format:
                              <h3 className="font-medium text-lg text-destructive">
                                {t("DeleteAccount") || "Delete Account"}
                              </h3>
-                             <p className="text-sm text-muted-foreground">
+                             <p className="text-sm text-foreground/70">
                                {t("Permanentlydeleteyouraccoun") || "Permanently delete your account and all your data."}
                              </p>
                             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                               <Button
                                 variant="destructive"
-                                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                                className="bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive shadow-lg hover:shadow-xl transition-all duration-300"
                               >
                                 {t("DeleteAccount") || "Delete Account"}
                               </Button>
@@ -1570,9 +1560,9 @@ Please return ONLY a JSON response in this format:
               <TabsContent value="payment" key='payment'>
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="payment">
                   <motion.div variants={cardVariants} whileHover="hover">
-                     <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted">
-                       <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
-                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
+                     <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background">
+                       <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
+                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
                            {t("payment") || "Payment"}
                          </CardTitle>
                          <CardDescription className="text-base">

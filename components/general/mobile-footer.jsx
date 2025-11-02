@@ -117,32 +117,32 @@ export function MobileFooter() {
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t"
     >
-      <div className="flex items-center justify-around px-2 py-2 safe-area-padding-bottom">
+      <div className="flex items-center justify-around px-2 py-2 safe-area-padding-bottom ">
         {navItems.map((item, index) => (
           <Link
             key={index}
             href={item.href}
-            className="flex flex-col items-center justify-center flex-1"
+            className="flex flex-col items-center justify-center flex-1 hover:text-primary"
           >
             <motion.div
               variants={tabVariants}
               animate={item.isActive ? "active" : "inactive"}
-              className={`relative flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+              className={`relative  flex flex-col items-center justify-center p-2 rounded-lg transition-colors  ${
                 item.isSpecial
                   ? "bg-primary text-white w-10 h-10 rounded-full  "
                   : item.isActive
-                  ? "text-primary"
+                  ? "text-primary "
                   : "text-muted-foreground hover:text-primary"
               }`}
             >
               <motion.div
                 variants={iconVariants}
                 animate={item.isActive ? "active" : "inactive"}
-                className="relative"
+                className="relative "
               >
                 <item.icon 
                   className={`h-5 w-5 ${
-                    item.isSpecial ? "text-white" : ""
+                    item.isSpecial ? "text-white " : ""
                   }`} 
                 />
                 {item.badge && item.badge > 0 ? (

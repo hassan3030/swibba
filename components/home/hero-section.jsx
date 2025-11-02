@@ -46,7 +46,7 @@ import Image from "next/image";
 
   return (
     <section className="relative overflow-hidden h-full pb-4 -mt-4 px-2">
-      <div className="absolute  inset-0 bg-gradient-to-br from-primary/10 via-background to-[hsl(14,100%,60%)]/20 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary/20" />
+      <div className="absolute  inset-0 hero-gradient" />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -68,7 +68,7 @@ import Image from "next/image";
                     <Image
                     dir="ltr"
                     lang="en"
-                   src="/hero-section-logo.png"
+                   src="/logo.png"
                    alt="Swibba Logo"
                    width={112}
                     height={256}
@@ -85,13 +85,13 @@ import Image from "next/image";
               </motion.h1>
               <motion.h2
                 variants={fadeIn("up", 0.4)}
-                className="text-6xl md:text-5xl font-bold text-foreground leading-tight"
+                className="text-6xl md:text-5xl font-bold text-secondary/90 leading-tight"
               >
              {t("deelDealSlogan")}
               </motion.h2>
               <motion.p
                 variants={fadeIn("up", 0.6)}
-                className="text-xl text-muted-foreground max-w-lg"
+                className="text-xl text-color-muted max-w-lg"
               >
                 {t("deelDealDescription")}
               </motion.p>
@@ -102,12 +102,12 @@ import Image from "next/image";
               className="flex flex-wrap gap-4"
             >
               <motion.div
-                variants={glowEffect}
+                // variants={glowEffect}
                 animate="animate"
               >
                 <Button
                   size="lg"
-                  className="gradient-primary text-primary-foreground px-8 py-4 text-lg font-medium group"
+                  className="btn-hero px-8 py-4 text-lg font-medium group"
                   onClick={() => scrollToSection("items")}
                 >
                   <span className="flex items-center gap-2">
@@ -177,8 +177,8 @@ import Image from "next/image";
                       alt={image.alt}
                       className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 rounded-2xl"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl transition-all duration-700 ease-out group-hover:scale-110" />
-                    <div className="absolute bottom-4 left-4 text-white">
+                    <div className="absolute inset-0 hero-image-gradient rounded-2xl transition-all duration-700 ease-out group-hover:scale-110" />
+                    <div className="absolute bottom-4 left-4 hero-image-text">
                       <motion.p
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}

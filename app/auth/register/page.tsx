@@ -10,7 +10,7 @@ export default function RegisterPage() {
   const { t } = useTranslations();
   return (
     <div className="container flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-10">
-      <Link href="/" className="mb-8 flex items-center text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/" className="mb-8 flex items-center text-sm text-primary/90 hover:text-primary hover:scale-105 transition-all duration-200">
         <ArrowLeft className="mr-2 h-4 w-4 mx-1 " />
               {t("back")||"Back to home"}
       </Link>

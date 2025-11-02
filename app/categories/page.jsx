@@ -107,7 +107,7 @@ const CategoriesPage = () => {
           animate="visible"
         >
           <motion.h2
-            className="text-xl font-bold"
+            className="text-xl font-bold text-primary/90"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -115,7 +115,7 @@ const CategoriesPage = () => {
             {t("categories")}
           </motion.h2>
           <motion.div whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-            <Link href="/" className="flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+            <Link href="/" className="flex items-center gap-1 text-sm font-medium text-primary hover:scale-105 no-underline">
               {t("back") || "Go Back"}
               <motion.div animate={{ x: [0, 3, 0] }} transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}>
                 <ChevronRight className="h-4 w-4" />

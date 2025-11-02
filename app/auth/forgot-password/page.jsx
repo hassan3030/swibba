@@ -75,10 +75,13 @@ const ForgotPasswordPage = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true)
-    setFeedback({ type: "", message: "" })
+    setFeedback({ type: "", message: "" }) 
+    console.log("on submit data", data.email)
 
     try {
-      const response = await forgotPassword(data.email)
+      const email = data.email.trim()
+      const response = await forgotPassword(email)
+      console.log("on submit response", response)
       if (response.success) {
         setFeedback({
           type: "success",

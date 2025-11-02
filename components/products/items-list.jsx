@@ -679,7 +679,7 @@ export function ItemsList({
   }
 
   return (
-    <motion.div className="space-y-6" initial="hidden" animate="visible" variants={containerVariants}>
+    <motion.div className="space-y-6 mt-5" initial="hidden" animate="visible" variants={containerVariants}>
       {showFilters && (
 
 
@@ -707,7 +707,7 @@ export function ItemsList({
                onClick={() => setShowFilterSidebar(true)}
                className="relative flex items-center gap-2 transition-all duration-300 hover:border-primary/50 w-full"
              >
-               <Filter className="h-4 w-4 text-primary" />
+               <Filter className="h-4 w-4" />
                {/* {t("advancedFilters") || "Advanced Filters"} */}
                {getActiveFiltersCount() > 0 && (
                  <motion.span
@@ -724,18 +724,18 @@ export function ItemsList({
            {showCategoriesFilter && (
              <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="w-full sm:w-1/2">
                <Select value={category} onValueChange={handleCategoryChange}>
-                 <SelectTrigger className="w-full transition-all duration-300 focus:ring-2 focus:ring-primary/20">
+                 <SelectTrigger className="w-full transition-all duration-300 focus:ring-2 focus:ring-primary/20 ">
                    <SelectValue placeholder={t("showAllCategories") || "Show All Categories"} />
                  </SelectTrigger>
-                 <SelectContent>
-                   <SelectItem key="all" value="all" className="capitalize">
-                     {t("allCategories") || "All Categories"}
-                   </SelectItem>
-                   {categoriesName.map((cat) => (
-                     <SelectItem key={cat} value={cat} className="capitalize">
-                       {t(cat) || cat}
-                     </SelectItem>
-                   ))}
+                <SelectContent className="max-h-40  ">
+                  <SelectItem key="all" value="all" className="capitalize hover:!bg-primary/40">
+                    {t("allCategories") || "All Categories"}
+                  </SelectItem>
+                  {categoriesName.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="capitalize hover:!bg-primary/40">
+                      {t(cat) || cat}
+                    </SelectItem>
+                  ))}
                  </SelectContent>
                </Select>
              </motion.div>
@@ -1082,7 +1082,7 @@ export function ItemsList({
                         variant="outline"
                         role="combobox"
                         aria-expanded={allowedCategoriesOpen}
-                        className="w-full justify-between"
+                        className="w-full justify-between "
                       >
                         {filters.allowedCategories.includes("all")
                           ? t("allCategories") || "All Categories"
@@ -1092,7 +1092,7 @@ export function ItemsList({
                         <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
+                    <PopoverContent className="w-full p-0 ">
                       <Command>
                         <CommandInput placeholder={t("searchCategories") || "Search categories..."} />
                         <CommandEmpty>{t("noCategoriesFound") || "No categories found."}</CommandEmpty>
@@ -1111,14 +1111,14 @@ export function ItemsList({
                                   onChange={() => toggleAllCategories("allowedCategories")}
                                   className="rounded border-gray-300 text-primary focus:ring-primary"
                                 />
-                                <span className="font-semibold">{t("allCategories") || "All Categories"}</span>
+                                <span className="font-semibold hover:!bg-primary/40">{t("allCategories") || "All Categories"}</span>
                               </div>
                             </CommandItem>
                             {categoriesName.map((cat) => (
                               <CommandItem
                                 key={cat}
                                 onSelect={() => toggleArrayFilter("allowedCategories", cat)}
-                                className="cursor-pointer"
+                                className="cursor-pointer hover:!bg-primary/40"
                               >
                                 <div className="flex items-center space-x-2 w-full">
                                   <input
@@ -1236,9 +1236,9 @@ export function ItemsList({
                           <SelectValue placeholder={t("selectCountry") || "Select Country"} />
                         </SelectTrigger>
                         <SelectContent className="max-h-40">
-                          <SelectItem value="all">{t("allCountries") || "All Countries"}</SelectItem>
+                          <SelectItem value="all" className="hover:!bg-primary/40">{t("allCountries") || "All Countries"}</SelectItem>
                           {countriesList.map((country) => (
-                            <SelectItem key={country} value={country}>
+                            <SelectItem key={country} value={country} className="hover:!bg-primary/40">
                               {country}
                             </SelectItem>
                           ))}
@@ -1298,9 +1298,9 @@ export function ItemsList({
                       <SelectValue placeholder={t("selectStatus") || "Select Status"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{t("allStatuses") || "All Conditions"}</SelectItem>
+                      <SelectItem value="all" className="hover:!bg-primary/20">{t("allStatuses") || "All Conditions"}</SelectItem>
                       {itemsStatus.map((status) => (
-                        <SelectItem key={status} value={status} className="capitalize">
+                        <SelectItem key={status} value={status} className="capitalize hover:!bg-primary/40">
                           {t(status) || status}
                         </SelectItem>
                       ))}

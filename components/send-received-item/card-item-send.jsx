@@ -218,7 +218,7 @@ export const CardItemSend = ({ id, name, description, price, status_item, images
                    {
                     !isAccepted?( <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
                       <Button 
-                        variant="destructive" 
+                        // variant="destructive" 
                         size="sm" 
                         className="w-full h-8 sm:h-7 text-xs gap-1.5" 
                         onClick={deleteItem}

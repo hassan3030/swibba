@@ -66,14 +66,7 @@ export function Footer() {
       <div className="container pt-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <motion.div variants={itemVariants}>
-            <motion.h3
-              className="text-4xl mb-2 font-bold text-primary"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              SWIBBA
-            </motion.h3>
+           <Image className="w-32  h-6 rounded-full mx-1 mt-1 mb-4" src="/logo.png" alt="swibba" width={100} height={100} />
             <motion.div className="mb-4 flex gap-4" variants={containerVariants} initial="hidden" animate="visible">
               {[
                 { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61579242208574", label: "Facebook" },
@@ -97,7 +90,7 @@ export function Footer() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <h3 className="mb-4 text-lg font-semibold">{t("categories")}</h3>
+            <h3 className="mb-4 text-lg text-primary/90 font-bold">{t("categories")}</h3>
             <ul className="space-y-2 text-sm">
               {[
                 { href: "/categories/electronics", label: t("electronics") },
@@ -112,7 +105,7 @@ export function Footer() {
                   transition={{ delay: index * 0.1, duration: 0.3 }}
                 >
                   <motion.div variants={linkVariants} whileHover="hover">
-                    <Link href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+                    <Link href={link.href} className="text-primary/70 hover:text-primary transition-colors">
                       {link.label}
                     </Link>
                   </motion.div>
@@ -122,7 +115,7 @@ export function Footer() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <h3 className="mb-4 text-lg font-semibold">{t("contactUs")}</h3>
+            <h3 className="mb-4 text-lg  text-primary/90 font-bold">{t("contactUs")}</h3>
             <ul className="space-y-2 text-sm">
               {[
                 { href: "/customerService", label: t("customerService") },
@@ -135,7 +128,7 @@ export function Footer() {
                   transition={{ delay: index * 0.1, duration: 0.3 }}
                 >
                   <motion.div variants={linkVariants} whileHover="hover">
-                    <Link href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+                    <Link href={link.href} className="text-primary/70 hover:text-primary transition-colors">
                       {link.label}
                     </Link>
                   </motion.div>
@@ -153,12 +146,12 @@ export function Footer() {
         >
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <motion.p
-              className="text-sm text-muted-foreground"
+              className="text-sm text-primary/90"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              &copy; {new Date().getFullYear()}<Image className="inline-block w-5 h-5 rounded-full mx-1 -mt-1" src="/logoheader.png" alt="swibba" width={100} height={100} /> <span className="text-primary">SWIBBA</span> {t("allRightsReserved")}
+             <span className="text-xl"> &copy;</span> {new Date().getFullYear()}<Image className="inline-block w-28 h-5 rounded-full mx-1 -mt-1" src="/logo.png" alt="swibba" width={100} height={100} />  {t("allRightsReserved")}
             </motion.p>
           </div>
         </motion.div>

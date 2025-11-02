@@ -546,8 +546,8 @@ console.log(offersReceived.data)
                       <div className="absolute z-30 top-1 right-12">
                         <Button
                           size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
+                          // variant="ghost"
+                          className="h-8 w-8 p-1 !bg-background  rounded-full hover:!bg-primary/20"
                           onClick={() => {handleDeleteFinally(offer.id) }}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" /> 
@@ -559,8 +559,8 @@ console.log(offersReceived.data)
                     <div className="absolute z-30 mb-4 top-1 right-2">
                       <Button
                         size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 p-1 bg-white/80 dark:bg-gray-800/80 rounded-full shadow"
+                        // variant="ghost"
+                        className="h-8 w-8 p-1 !bg-background  rounded-full hover:!bg-primary/20"
                         onClick={async () => {
                           try {
                             const html2canvas = (await import("html2canvas")).default
@@ -840,8 +840,8 @@ console.log(offersReceived.data)
                                               <motion.div
                                                 className={`max-w-xs rounded-lg p-3 ${
                                                   msg.from_user_id === myUserId
-                                                    ? "bg-primary text-primary-foreground ml-auto"
-                                                    : "bg-muted"
+                                                    ? "bg-primary/50 text-primary-foreground ml-auto mx-1"
+                                                    : "bg-primary/60"
                                                 }`}
                                                 whileHover={{ scale: 1.02 }}
                                                 transition={{ type: "spring", stiffness: 400 }}
@@ -986,7 +986,7 @@ console.log(offersReceived.data)
 
                           <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                             <Button
-                              variant="destructive"
+                              variant="secondary"
                               size="sm"
                               onClick={() => {
                                 setPendingDelete({
@@ -1046,7 +1046,7 @@ console.log(offersReceived.data)
                                   })
                                   setShowDeleteDialog(true)
                                 }}
-                                className="flex items-center gap-1"
+                                className="flex items-center gap-1 "
                               >
                                 <Trash2 className="h-4 w-4" />
                                 {t("RejectSwap") || "Reject Swap"}
@@ -1072,7 +1072,7 @@ console.log(offersReceived.data)
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
               >
-                <BiCartDownload className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <BiCartDownload className="h-16 w-16 mx-auto mb-4 text-primary/90" />
               </motion.div>
               <h3 className="text-xl font-semibold mb-2">
                 {t("no") || "No"} {t("notifications") || "notifications"}

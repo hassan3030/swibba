@@ -226,9 +226,8 @@ const CardItemRecived = ({ id, name, description, price, status_item, images, de
                    {
                     !isAccepted?( <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
                       <Button 
-                        variant="destructive" 
                         size="sm" 
-                        className="w-full h-8 sm:h-7 text-xs gap-1.5" 
+                        className="w-full h-8 sm:h-7 text-xs gap-1.5 " 
                         onClick={deleteItem}
                       >
                         <Trash2 className="h-3 w-3" />

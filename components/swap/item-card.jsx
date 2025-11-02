@@ -87,19 +87,19 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
         case "excellent":
           return "bg-secondary2/10 text-secondary2 border border-secondary2/20"
         case "good":
-          return "bg-blue-100 text-blue-800 border border-blue-200"
+          return "bg-primary/10 text-primary border border-primary/20"
         case "fair":
-          return "bg-yellow-100 text-yellow-800 border border-yellow-200"
+          return "bg-accent/10 text-accent border border-accent/20"
         case "old":
           return "bg-destructive/10 text-destructive border border-destructive/20"
         default:
-          return "bg-muted text-muted-foreground border border-muted"
+          return "bg-card/50 text-foreground/70 border border-border"
       }
     }
   
     return (
       <motion.div
-        className="flex flex-row rtl:flex-row-reverse items-start gap-4 w-full"
+        className="flex flex-row rtl:flex-row-reverse items-start gap-4 w-full p-3 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all bg-card/50"
         whileHover={{ x: isRTL ? -5 : 5 }}
         transition={{ type: "spring", stiffness: 400 }}
       >
@@ -108,8 +108,8 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
           if (!images || !Array.isArray(images) || images.length === 0 || !images[0]?.directus_files_id) {
             // console.log("No valid image data found:", { images, hasImages: !!images, isArray: Array.isArray(images), length: images?.length, firstImage: images?.[0] })
             return (
-              <div className="w-24 h-24 bg-muted rounded-xl flex-shrink-0 shadow-md flex items-center justify-center">
-                <span className="text-muted-foreground text-xs">No Image</span>
+              <div className="w-24 h-24 bg-card/50 rounded-xl flex-shrink-0 shadow-md flex items-center justify-center border border-border">
+                <span className="text-foreground/70 text-xs">No Image</span>
               </div>
             )
           }
@@ -177,8 +177,8 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
           } else {
             // Fallback for any other media type
             return (
-              <div className="w-24 h-24 bg-muted rounded-xl flex-shrink-0 shadow-md flex items-center justify-center">
-                <span className="text-muted-foreground text-xs">Unsupported Media</span>
+              <div className="w-24 h-24 bg-card/50 rounded-xl flex-shrink-0 shadow-md flex items-center justify-center border border-border">
+                <span className="text-foreground/70 text-xs">Unsupported Media</span>
               </div>
             )
           }
@@ -254,13 +254,13 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
           
           {/* Quantity Controls */}
           <motion.div
-            className="flex items-center justify-between mt-3 p-3 bg-muted/30 rounded-lg"
+            className="flex items-center justify-between mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10 shadow-sm"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">{t("quantity") || "Quantity"}</span>
+              <span className="text-xs text-foreground/70">{t("quantity") || "Quantity"}</span>
               <span className="text-sm font-medium">{maxQty} {t("items") || "items"}</span>
             </div>
   
@@ -269,16 +269,16 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-6 w-6 rounded-full"
+                  className="h-7 w-7 rounded-full border-primary/20 hover:border-primary hover:bg-primary/10 transition-all"
                   onClick={decreaseQuantity}
                   disabled={currentQuantity <= 1 || !hasOtherItemsSelected}
                 >
-                  <Minus className="h-3 w-3" />
+                  <Minus className="h-3 w-3 text-foreground" />
                 </Button>
               </motion.div>
   
               <motion.span
-                className="text-sm font-semibold min-w-[1.5rem] text-center"
+                className="text-sm font-bold min-w-[2rem] text-center text-primary px-2 py-1 rounded-md bg-primary/5 border border-primary/10"
                 key={currentQuantity}
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
@@ -291,11 +291,11 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-6 w-6 rounded-full"
+                  className="h-7 w-7 rounded-full border-primary/20 hover:border-primary hover:bg-primary/10 transition-all"
                   onClick={increaseQuantity}
                   disabled={currentQuantity >= maxQty || !hasOtherItemsSelected}
                 >
-                  <Plus className="h-3 w-3" />
+                  <Plus className="h-3 w-3 text-foreground" />
                 </Button>
               </motion.div>
             </div>
@@ -310,11 +310,11 @@ const ItemCard = ({ id, name, description, price, images, allowed_categories,tra
             transition={{ type: "spring", stiffness: 300 }}
           >
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">{t("unitPrice") || "Unit Price"}</span>
+              <span className="text-xs text-foreground/70">{t("unitPrice") || "Unit Price"}</span>
               <span className="text-sm font-medium">{Number(price).toLocaleString()} {t("LE")}</span>
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-xs text-muted-foreground">{t("totalPrice") || "Total Price"}</span>
+              <span className="text-xs text-foreground/70">{t("totalPrice") || "Total Price"}</span>
               <span className="text-lg font-bold text-secondary2">{Number(totalPrice).toLocaleString()} {t("LE")}</span>
             </div>
           </motion.div>

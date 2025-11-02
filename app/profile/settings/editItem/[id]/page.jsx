@@ -58,7 +58,7 @@ export default function EditItemPage({ params }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center dark:bg-[#121212] ">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -70,7 +70,7 @@ export default function EditItemPage({ params }) {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">{t("loading") || "Loading..."}</p>
+          <p className="text-foreground/70">{t("loading") || "Loading..."}</p>
         </motion.div>
       </div>
     )
@@ -78,7 +78,7 @@ export default function EditItemPage({ params }) {
 
   return (
     <motion.div
-      className="container py-2  dark:bg-[#121212] "
+      className="container py-2"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -94,7 +94,7 @@ export default function EditItemPage({ params }) {
 
       <motion.div className="mb-2 " variants={itemVariants} initial="hidden" animate="visible">
         <motion.h1
-          className="text-3xl font-bold "
+          className="text-3xl font-bold text-primary/90"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
@@ -102,7 +102,7 @@ export default function EditItemPage({ params }) {
           {t("Updateitem") || "Update Item"}
         </motion.h1>
         <motion.p
-          className="text-muted-foreground"
+          className="text-foreground/70"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}

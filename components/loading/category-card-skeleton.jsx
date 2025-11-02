@@ -38,7 +38,7 @@ const pulseVariants = {
 export function CategoryCardSkeleton() {
   return (
     <motion.div
-      className="flex flex-col items-center gap-3 pr-4 pl-2 rounded-xl bg-gradient-to-b from-background to-muted/30 shadow-sm"
+      className="flex flex-col items-center gap-3 pr-4 pl-2 rounded-xl bg-muted/10 shadow-sm"
       variants={skeletonVariants}
       initial="hidden"
       animate="visible"
@@ -54,11 +54,7 @@ export function CategoryCardSkeleton() {
       </motion.div>
 
       {/* Text skeleton */}
-      <motion.div variants={itemVariants}>
-        <motion.div variants={pulseVariants} animate="pulse">
-          <Skeleton className="h-4 w-16 md:w-20 rounded" />
-        </motion.div>
-      </motion.div>
+
     </motion.div>
   )
 }

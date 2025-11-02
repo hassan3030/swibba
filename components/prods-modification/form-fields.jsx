@@ -45,7 +45,7 @@ export const TextField = ({ control, name, label, placeholder, description, requ
             </motion.div>
           </FormControl>
           {description && (
-            <FormDescription className="text-muted-foreground">
+            <FormDescription className="text-foreground/70">
               {t(description)}
             </FormDescription>
           )}
@@ -80,7 +80,7 @@ export const TextAreaField = ({ control, name, label, placeholder, description, 
             </motion.div>
           </FormControl>
           {description && (
-            <FormDescription className="text-muted-foreground">
+            <FormDescription className="text-foreground/70">
               {t(description)}
             </FormDescription>
           )}
@@ -131,7 +131,7 @@ export const SelectField = ({
             </SelectContent>
           </Select>
           {description && (
-            <FormDescription className="text-muted-foreground">
+            <FormDescription className="text-foreground/70">
               {t(description)}
             </FormDescription>
           )}
@@ -154,7 +154,7 @@ export const CheckboxField = ({ control, name, label, description, options }) =>
           <div className="mb-4">
             <FormLabel className="text-base">{t(label)}</FormLabel>
             {description && (
-              <FormDescription className="text-muted-foreground">
+              <FormDescription className="text-foreground/70">
                 {t(description)}
               </FormDescription>
             )}

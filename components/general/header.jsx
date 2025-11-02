@@ -145,7 +145,6 @@ export function Header() {
   const [chatLength, setChatLength] = useState(0)
   const [hasSearched, setHasSearched] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const [showTopBar, setShowTopBar] = useState(true)
   const [showCategoriesBar, setShowCategoriesBar] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -161,11 +160,9 @@ export function Header() {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       if (scrollY >= 100) {
-        setShowTopBar(false);
         setShowCategoriesBar(false);
         setIsScrolled(true);
       } else {
-        setShowTopBar(true);
         setShowCategoriesBar(true);
         setIsScrolled(false);
       }
@@ -332,48 +329,27 @@ export function Header() {
     <>
 
       <motion.header
-        className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
+        className={`fixed top-0  w-full border-b transition-all duration-300 !opacity-100 z-[10000000]${
           isScrolled 
-            ? "bg-background/95 backdrop-blur-md shadow-lg dark:bg-[#121212]/95" 
-            : "bg-background shadow-sm dark:bg-[#121212]"
+            ? " !bg-white shadow-lg dark:!bg-[#121212]" 
+            : " !bg-white shadow-sm dark:!bg-[#121212]"
         } dark:border-[#2a2a2a]`}
+        style={{
+          backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
+          opacity: 1
+        }}
         variants={navVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Top bar */}
-        <AnimatePresence>
-          {showTopBar && (
-            <motion.div
-              className="hidden lg:block bg-primary text-primary-foreground px-4 py-1 dark:bg-[#1a1a1a]"
-              variants={navVariants}
-              initial="hidden"
-              animate="visible"
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <div className="container flex items-center justify-between">
-                <motion.div className="flex items-center gap-4" variants={navVariants}>
-                  <motion.div custom={0} variants={itemVariants}>
-                    <LanguageToggle />
-                  </motion.div>
-                  <motion.div custom={1} variants={itemVariants}>
-                    <ThemeToggle />
-                  </motion.div>
-                </motion.div>
-                <motion.div className="flex items-center gap-4" custom={2} variants={itemVariants}>
-                  <Link href="/customerService" className="text-xs hover:underline dark:text-white dark:hover:text-[#f2b230]">
-                    {t("customerService")}
-                  </Link>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+       
+ 
         {/* Main header */}
-        <div className={`container transition-all duration-300 ${
+        <div className={` top-0 container transition-all duration-300 z-[10000000] ${
           isScrolled ? "py-3" : "py-2"
-        }`}>
+        }`} style={{
+          backgroundColor: theme === 'dark' ? '#121212' : '#ffffff'
+        }}>
           <motion.div 
             className="flex items-center justify-between gap-4"
             animate={{
@@ -422,18 +398,19 @@ export function Header() {
               whileHover="hover"
               className={`transition-all duration-300 ${isScrolled ? "scale-95" : "scale-100"}`}
             >
-              <Link href="/" className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2 mx-2">
                 <div className={`flex items-center justify-center bg-transparent transition-all duration-300 ${
-                  isScrolled ? "h-8 w-14 -my-2" : "h-10 w-16 -my-3"
+                  isScrolled ? "max-h-5 w-28 -my-2" : "max-h-10 w-28 -my-3"
                 }`}>
                     <Image 
-                   src="/logoheader.png" 
+                   src="/logo.png" 
                    alt="Swibba Logo"
                    width={200} 
                     height={300}
                     className="h-full w-full font-bold"
                      priority
                     />
+                    {/* <h1 className="text-2xl font-bold italic text-primary/90  ">{t("swibba")}</h1> */}
                 </div>
               </Link>
             </motion.div>
@@ -516,20 +493,20 @@ export function Header() {
               animate="visible"
             >
               {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                <DropdownMenu >
+                  <DropdownMenuTrigger asChild className="z-[100000000]">
                     <motion.div variants={buttonVariants} whileHover="hover" >
-                      <Button variant="ghost" size="sm" className="gap-2 hover:text-primary dark:hover:text-primary border border-none">
+                    <Button variant="ghost" size="sm" className="gap-2  hover:text-popover/80   border border-none">
+                       
+                      
+
                         {user?.avatar ? (
-                          <Image
-                            width={100}
-                            height={100}
-                            src={
-                              `${mediaURL}${user.avatar || "/placeholder.svg"}` || "/placeholder.svg"
-                            }
-                            alt={user?.first_name || t("account")}
-                            className="h-6 w-6 rounded-full object-cover"
-                          />
+                          <Avatar className="h-6 w-6 rounded-full object-cover">
+                          <AvatarImage src={user?.avatar || "placeholder.svg"} alt={user?.first_name || t("account")} />
+                          <AvatarFallback className="bg-primary text-black dark:bg-primary/50 dark:text-black">
+                            {String(user?.first_name).charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
                         ) : (
                           <User className="h-4 w-4" />
                         )}
@@ -537,18 +514,18 @@ export function Header() {
                       </Button>
                     </motion.div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 dark:bg-[#1a1a1a] dark:border-[#2a2a2a]">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user?.email || ""}</p>
+                  <DropdownMenuContent align="end" className="w-56 dark:bg-[#1a1a1a] dark:border-[#2a2a2a] z-[100000000]">
+                    <DropdownMenuLabel className="font-normal  ">
+                      <div className="flex flex-col space-y-1  italic text-muted">
+                        <p className="text-lg font-medium leading-none capitalize dark:text-white">{(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</p>
+                        <p className="text-sm leading-none text-muted dark:text-white">{user?.email || ""}</p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="dark:bg-[#2a2a2a]" />
 
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href="/profile" className="dark:hover:bg-[#2a2a2a] dark:focus:bg-[#2a2a2a]">
+                        <Link href="/profile" className="hover:bg-primary/10 bg-background/50 hover:shadow-sm ">
                           <User className="mr-2 h-4 w-4" />
                           <span>{t("profile")}</span>
                         </Link>
@@ -558,7 +535,7 @@ export function Header() {
                       <DropdownMenuItem asChild>
                         <Link
                           href={`/profile/settings/editProfile/`}
-                          className="dark:hover:bg-[#2a2a2a] dark:focus:bg-[#2a2a2a]"
+                          className="hover:bg-primary/10 bg-background/50 hover:shadow-sm"
                         >
                           <Settings className="mr-2 h-4 w-4" />
                           <span>{t("settings")}</span>
@@ -566,18 +543,18 @@ export function Header() {
                       </DropdownMenuItem>
 
                       <DropdownMenuItem asChild>
-                        <Link href="/profile/items" className="dark:hover:bg-[#2a2a2a] dark:focus:bg-[#2a2a2a]">
+                        <Link href="/profile/items" className="hover:bg-primary/10 bg-background/50 hover:shadow-sm ">
                           <ListChecks className="mr-2 h-4 w-4" />
                           <span>{t("manageItems")}</span>
                         </Link>
                       </DropdownMenuItem>
                     </>
 
-                    <DropdownMenuSeparator className="dark:bg-[#2a2a2a]" />
+                    <DropdownMenuSeparator className="dark:bg-[#2a2a2a] text-primary" />
                     <Link href="/">
                       <DropdownMenuItem
                         onClick={() => logout()}
-                        className="dark:hover:bg-[#2a2a2a] dark:focus:bg-[#2a2a2a]"
+                        className="hover:bg-primary/10 bg-background/50 hover:shadow-sm "
                       >
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>{t("logout")}</span>
@@ -585,6 +562,9 @@ export function Header() {
                     </Link>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+
+
               ) : (
                 <>
                   <motion.div custom={3} variants={itemVariants}>
@@ -593,7 +573,7 @@ export function Header() {
                         variant="ghost"
                         size="sm"
                         asChild
-                        className="gap-1 text-sm hover:text-primary dark:hover:text-primary"
+                        className="gap-1 text-sm  hover:text-foreground dark:text-foreground dark:hover:text-foreground"
                       >
                         <Link href="/auth/login">{t("signIn")}</Link>
                       </Button>
@@ -614,6 +594,37 @@ export function Header() {
                     </motion.div>
                   </motion.div>
 
+{/* them and lang */}
+                  <motion.div custom={5} variants={itemVariants}>
+                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                    <LanguageToggle />
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div custom={6} variants={itemVariants}>
+                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                    <ThemeToggle />
+                    </motion.div>
+                  </motion.div>
+
+                    
+
+
+                    
+
+{/* 
+
+<motion.div className="flex items-center gap-4" variants={navVariants}>
+                  <motion.div custom={5} variants={itemVariants}>
+                    <LanguageToggle />
+                  </motion.div>
+                  <motion.div custom={1} variants={itemVariants}>
+                    <ThemeToggle />
+                  </motion.div>
+                </motion.div> */}
+
+
+
 
                 </>
               )}
@@ -627,7 +638,7 @@ export function Header() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative hover:text-primary dark:hover:text-primary"
+                          className="relative  hover:text-popover/80 "
                         >
                           <BiCartDownload  className="h-5 w-5" />
                           <AnimatePresence>
@@ -651,12 +662,12 @@ export function Header() {
 
                   {/* Cart */}
                   <motion.div custom={6} variants={itemVariants}>
-                    <Link href="/send-items" className="relative">
+                    <Link href="/send-items" className="relative ">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative hover:text-primary dark:hover:text-primary"
+                          className="relative  hover:text-popover/80 "
                         >
                         
                           <TbShoppingCartUp className="h-5 w-5" />
@@ -680,12 +691,12 @@ export function Header() {
                   </motion.div>
                   {/* Wishlist */}
                   <motion.div custom={7} variants={itemVariants}>
-                    <Link href="/wishList" className="relative">
+                      <Link href="/wishList" className="relative">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative hover:text-primary dark:hover:text-primary"
+                          className="relative  hover:text-popover/80 "
                         >
                           <Heart className="h-5 w-5" />
                           <AnimatePresence>
@@ -714,7 +725,7 @@ export function Header() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative hover:text-primary dark:hover:text-primary group"
+                          className="relative  hover:text-popover/80  group"
                         >
                           <MessageCircle className="h-5 w-5" />
                           <AnimatePresence>
@@ -745,7 +756,7 @@ export function Header() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative hover:text-primary dark:hover:text-primary group"
+                          className="relative  hover:text-popover/80  group"
                         >
                           <PlusCircle className="h-6 w-6" />
                           <span className="pointer-events-none absolute -bottom-8 right-0 z-[100000] hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
@@ -754,6 +765,36 @@ export function Header() {
                         </Button>
                       </motion.div>
                     </Link>
+                  </motion.div>
+
+                  {/* lang and theme */}
+                  <motion.div custom={10} variants={itemVariants}>
+                  
+                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative  hover:text-popover/80  group"
+                        >
+                          <LanguageToggle className="h-6 w-6" />
+                         
+                        </Button>
+                      </motion.div>
+                
+                  </motion.div>
+                  <motion.div custom={11} variants={itemVariants}>
+                   
+                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
+                        <Button 
+                          variant="ghost"
+                          size="icon"
+                          className="relative  hover:text-popover/80  group"
+                        >
+                          <ThemeToggle className="h-6 w-6" />
+                          
+                        </Button>
+                      </motion.div>
+               
                   </motion.div>
 
 
@@ -767,7 +808,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hover:text-primary dark:hover:text-primary"
+                  className="hover:text-popover/80 "
                   onClick={toggleMenu}
                 >
                   {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -843,11 +884,11 @@ export function Header() {
                               </Avatar>
                               {user?.verified && (
                                 <div className="absolute -top-1 -right-1">
-                                  <Verified className="h-4 w-4 text-[#49c5b6] bg-background rounded-full p-0.5" />
+                                  <Verified className="h-4 w-4 text-primary/90 bg-background rounded-full p-0.5" />
                                 </div>
                               )}
                             </div>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col italic">
                               <p className="text-sm font-medium"> {(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</p>
                               <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
                             </div>
@@ -868,7 +909,7 @@ export function Header() {
                         <span className="z-[100000]">{t("addanewitem") || "Add a new item"}</span>
                       </Link>
                       <Link
-                        href="/notifications"
+                        href="/recived-items"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10"
                         onClick={() => setIsMenuOpen(false)}
                       >
@@ -962,7 +1003,7 @@ export function Header() {
         <AnimatePresence>
           {showCategoriesBar && (
             <motion.div
-              className="border-t bg-gradient-to-r from-background via-muted/30 to-background dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
+              className="border-t dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
               initial={{ opacity: 0, height: 0, y: -10 }}
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
@@ -1021,7 +1062,10 @@ export function Header() {
         </AnimatePresence>
        
       </motion.header>
+{/* space for header */}
+      <div className="h-28 bg-transparent">
 
+      </div>
       {/* Section toggle controls */}
 
     </>

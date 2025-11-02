@@ -67,7 +67,7 @@ export default function Home() {
       {isInitialLoading && <LoadingSpinner branded fullPage={true} size="md" />}
       {showSwitchHeart && <FloatingActionButton/>}
 
-      <main className="min-h-screen dark:bg-[#121212] relative overflow-hidden">
+      <main className="min-h-screen dark:bg-background relative overflow-hidden">
         {/* Hero Section */}
         <HeroSection/>
 

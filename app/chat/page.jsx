@@ -304,7 +304,7 @@ const Messages = () => {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">Loading messages...</p>
+          <p className="text-primary/90">Loading messages...</p>
         </motion.div>
       </div>
     )
@@ -320,9 +320,9 @@ const Messages = () => {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <MessageCircle className="h-16 w-16 text-primary/90 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">{t("AuthenticationRequired") || "Authentication Required"}</h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-primary mb-4">
             {t("PleaseLoginToViewMessages") || "Please log in to view your messages"}
           </p>
           <Link href="/auth/login">
@@ -358,7 +358,7 @@ const Messages = () => {
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center">
-                <MessageCircle className="h-6 w-6 mr-3 text-primary" />
+                <MessageCircle className="h-6 w-6 mr-3 text-primary/90" />
                  <h2 className="text-xl font-bold">{t("Messages") || "Messages"}</h2>
               </div>
               {isRefreshing && (
@@ -400,7 +400,7 @@ const Messages = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                    <MessageCircle className="h-12 w-12 text-primary/90 mb-4" />
                     <h3 className="text-lg font-semibold mb-2">{t("NoConversations") || "No conversations yet"}</h3>
                     <p className="text-muted-foreground text-sm">
                       {t("StartSwappingToSeeMessages") || "Start swapping items to see your conversations here"}
@@ -418,11 +418,10 @@ const Messages = () => {
                       whileTap={{ scale: 0.98 }}
                     >
                        <Card
-                         className={`cursor-pointer transition-all duration-200 mt-1 mx-1 border border-none ${
-                           selectedOffer?.id === offer.id ? "ring-2 ring-primary bg-primary/5" : 
-                           offer.status_offer === "completed" ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" :
-                           "hover:bg-muted/50"
-                         }`}
+                         className={`cursor-pointer transition-all duration-200 mt-1 mx-1 border border-none rounded-full ${
+                           selectedOffer?.id === offer.id ? "ring-2 ring-primary/30 bg-primary/20" : 
+                                                                                 offer.status_offer === "completed" ? "bg-primary/70 dark:bg-green-900/20 border-primary/30 dark:border-primary/30" : 
+                                                                                 "hover:bg-primary/20"                         }`}
                          onClick={() => setSelectedOffer(offer)}
                        >
                         <CardContent className="p-0 mt-0">
@@ -540,7 +539,7 @@ const Messages = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="relative hover:text-primary group"
+                        className="relative  group"
                         onClick={() => {
                           router.push(`/send-items#${selectedOffer.id}`)
                         }}
@@ -556,13 +555,13 @@ const Messages = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="relative hover:text-primary group"
+                        className="relative group"
                         onClick={() => {
                           router.push(`/recived-items#${selectedOffer.id}`)
                         }}
                       >
                         <BiCartDownload className="h-8 w-8" />
-                        <span className="pointer-events-none absolute top-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100">
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                           {t("goToNotifications") || "Go to Recived Offers"}
                         </span>
                       </Button>
@@ -589,10 +588,9 @@ const Messages = () => {
                 <ScrollArea className="flex-1 p-4 overflow-y-auto [&_[data-radix-scroll-area-scrollbar]]:hidden">
                   <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
                     {/* Offer state hint for completed/rejected */}
-                    {selectedOffer && (selectedOffer.status_offer === "completed" || selectedOffer.status_offer === "rejected") && (
-                      <motion.div
-                        className={`${selectedOffer.status_offer === "completed" ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"} border rounded-lg p-3`}
-                        variants={chatMessageVariants}
+                                        {selectedOffer && (selectedOffer.status_offer === "completed" || selectedOffer.status_offer === "rejected") && (
+                                          <motion.div
+                                            className={`${selectedOffer.status_offer === "completed" ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"} border rounded-lg p-3`}                        variants={chatMessageVariants}
                         initial="hidden"
                         animate="visible"
                       >
@@ -612,7 +610,7 @@ const Messages = () => {
                     {/* Offer items summary (sender vs receiver) */}
                     {selectedOffer && offerItems.length > 0 && ["pending", "accepted"].includes(String(selectedOffer.status_offer)) && (
                       <motion.div
-                        className="bg-muted/30 border rounded-lg p-3"
+                        className="bg-background border rounded-lg p-3"
                         variants={chatMessageVariants}
                         initial="hidden"
                         animate="visible"
@@ -643,7 +641,7 @@ const Messages = () => {
                           </div>
 
                           <div className="hidden md:flex justify-center items-center">
-                            <ArrowLeft className="h-5 w-5 rotate-180 text-muted-foreground" />
+                            <ArrowLeft className="h-5 w-5 rotate-180 text-primary/50" />
                           </div>
 
                           <div>
@@ -681,7 +679,7 @@ const Messages = () => {
                         className="flex justify-start"
                       >
                         <motion.div
-                          className="max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 bg-muted"
+                          className="max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 bg-background"
                           whileHover={{ scale: 1.02 }}
                           transition={{ type: "spring", stiffness: 400 }}
                         >
@@ -715,7 +713,7 @@ const Messages = () => {
                         >
                           <motion.div
                             className={`max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 ${
-                              msg.from_user_id === myUserId ? "bg-primary text-primary-foreground" : "bg-muted"
+                              msg.from_user_id === myUserId ? "bg-primary/60 " : "bg-primary/50 "
                             }`}
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 400 }}
@@ -787,7 +785,7 @@ const Messages = () => {
             </>
           ) : (
             <motion.div
-              className="hidden lg:flex flex-1 items-center justify-center"
+              className="hidden lg:flex flex-1 items-center justify-center mt-4"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
@@ -804,7 +802,7 @@ const Messages = () => {
                     repeatType: "reverse",
                   }}
                 >
-                  <MessageCircle className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <MessageCircle className="h-16 w-16 mx-auto text-primary/90 mb-4" />
                 </motion.div>
                 <h3 className="text-lg font-semibold mb-2">{t("Selectaconversation") || "Select a conversation"}</h3>
                 <p className="text-muted-foreground">

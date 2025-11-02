@@ -240,14 +240,14 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
   return (
     <motion.div variants={cardVariants} initial="hidden" animate="visible" className="w-full max-w-md mx-auto">
       <Card className="shadow-xl border-0 overflow-hidden">
-        <CardHeader className="text-center bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950">
+        <CardHeader className="text-center bg-primary/20">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <CardTitle className="flex items-center justify-center gap-2">
               <motion.div
                 animate={{ rotate: [0, -10] }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
               >
-                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                <Star className="h-5 w-5 text-primary fill-primary" />
               </motion.div>
               {t("RateYourSwapPartner") || "Rate Your Swap Partner"}
             </CardTitle>
@@ -319,7 +319,7 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
                       >
                         <Star
                           className={`h-8 w-8 transition-colors duration-200 ${
-                            star <= (hoverRating || rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                            star <= (hoverRating || rating) ? "fill-primary text-primary/80" : "text-primary/80"
                           }`}
                         />
                       </motion.button>

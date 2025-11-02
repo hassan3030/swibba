@@ -68,22 +68,22 @@ export function CategoryCard({ name, imageSrc, translations, showCategoryLevels 
   return (
     <Link href={`categories/${name}`} className="group block">
       <motion.div
-        className="flex flex-col items-center gap-3 pr-4 pl-2  rounded-xl bg-gradient-to-b from-background to-muted/30 shadow-sm  hover:shadow-lg transition-all duration-300"
+        className="flex flex-col items-center gap-3 pr-4 pl-2   rounded-xl bg-primary-foreground shadow-sm  hover:shadow-lg transition-all duration-300"
         variants={cardVariants}
         initial="hidden"
         animate="visible"
         whileHover="hover"
       >
         <motion.div
-          className="relative aspect-square w-[70px] md:w-[80px] overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-primary/10 shadow-lg group-hover:shadow-xl transition-all duration-300"
+          className="relative mt-1 aspect-square w-[70px] md:w-[80px] overflow-hidden rounded-full bg-gradient-to-br from-primary/20 to-primary/10 shadow-lg group-hover:shadow-xl transition-all duration-300"
           variants={imageVariants}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full " />
           <Image
             src={src || "/placeholder.svg?height=200&width=200"}
             alt={name}
             fill
-            className="object-cover transition-transform duration-300 rounded-full p-2"
+            className="object-cover transition-transform duration-300 rounded-full p-2 "
             priority
             sizes="(max-width: 768px) 80px, 100px"
             onError={() => {

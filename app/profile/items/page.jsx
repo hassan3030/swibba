@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ItemCard from "./item-card"
-import { Plus, AlertCircle, ArrowLeft } from "lucide-react"
+import { Plus, AlertCircle } from "lucide-react"
 import { getProductByUserId } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
 import { useRouter } from "next/navigation"
@@ -100,7 +100,7 @@ export default function ManageItemsPage() {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">Loading items...</p>
+          <p className="text-primary/80">Loading items...</p>
         </motion.div>
       </div>
     )
@@ -113,27 +113,7 @@ export default function ManageItemsPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header */}
-      {/* <motion.div
-        className="inline mb-3"
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        <motion.div  whileHover="hover" whileTap="tap">
-          <Button className="mb-2 hover:scale-105" variant="outline" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-          </Button>
-        </motion.div>
-        <motion.h1
-          className="mx-2 mb-2 text-3xl font-bold inline"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {t("manageItems") || "Manage Items"}
-        </motion.h1>
-      </motion.div> */}
+     
 
       <motion.div className="grid grid-cols-1 gap-8 mt-2" variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={cardVariants}>
@@ -141,7 +121,7 @@ export default function ManageItemsPage() {
             <CardHeader>
               <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                  <CardTitle>{t("myItems") || "Your Items"}</CardTitle>
+                  <CardTitle className="text-secondary">{t("myItems") || "Your Items"}</CardTitle>
                   <CardDescription>
                     {t("manageEditandupdate") || "Manage, edit, and update your listed items."}
                   </CardDescription>
@@ -158,18 +138,7 @@ export default function ManageItemsPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
-                {/* <motion.div
-                  className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <TabsList>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <TabsTrigger value="active">{t("activeItems") || "Active Items"}</TabsTrigger>
-                    </motion.div>
-                  </TabsList>
-                </motion.div> */}
+              
 
                 <TabsContent value="active" className="mt-6">
                   <AnimatePresence mode="popLayout">
@@ -186,10 +155,10 @@ export default function ManageItemsPage() {
                           animate={{ scale: 1 }}
                           transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
                         >
-                          <AlertCircle className="mb-2 h-8 w-8 text-muted-foreground" />
+                          <AlertCircle className="mb-2 h-8 w-8 text-foreground/70" />
                         </motion.div>
                         <h3 className="text-lg font-medium">{t("noItemsFound") || "No items found"}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-foreground/70">
                           {searchTerm || category !== "all" || status !== "all"
                             ? "Try adjusting your search or filters"
                             : "You don't have any active items. Add a new item to get started!"}
@@ -228,12 +197,12 @@ export default function ManageItemsPage() {
                     initial="hidden"
                     animate="visible"
                   >
-                    <AlertCircle className="mb-2 h-8 w-8 text-muted-foreground" />
+                    <AlertCircle className="mb-2 h-8 w-8 text-foreground/70" />
                     <h3 className="text-lg font-medium">
                       {t("no") && t("activeItems")}
                       {"inactive items"}
                     </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{t() || "You don't have any inactive items."}</p>
+                    <p className="mt-1 text-sm text-foreground/70">{t() || "You don't have any inactive items."}</p>
                   </motion.div>
                 </TabsContent>
               </Tabs>

@@ -255,7 +255,7 @@ const ItemCard = ({ item }) => {
           >
             <div>
               <motion.h3
-                className="font-medium capitalize"
+                className="font-extralight text-xl capitalize italic "
                 whileHover={{ x: 5 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
@@ -308,11 +308,11 @@ const ItemCard = ({ item }) => {
                     {item.value_estimate} {t("currencyLE") || "LE"}
                   </span>
                 </motion.span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-foreground/70">
                   {t("listedOn")} {new Date(item.date_created).toISOString().split("T")[0]}
                 </span>
 
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-foreground/70">
                   {t("quantity")||"Quantity"}: {item.quantity}
                 </span>
               </div>
@@ -320,7 +320,7 @@ const ItemCard = ({ item }) => {
           </motion.div>
 
           <motion.p
-            className="text-sm text-muted-foreground line-clamp-1 overflow-hidden"
+            className="text-sm text-foreground/70 line-clamp-1 overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -343,21 +343,21 @@ const ItemCard = ({ item }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={item.quantity > 0 ? `/products/out_offer/${item.id}` :`/products/in_offer/${item.id}` } className="flex items-center w-full">
+                    <Link href={item.quantity > 0 ? `/products/out_offer/${item.id}` :`/products/in_offer/${item.id}` } className="flex items-center w-full hover:!bg-primary/20">
                       <Eye className="mr-2 h-4 w-4" />
                       {t("view")}
                     </Link>
                   </DropdownMenuItem>
                   {item.quantity > 0 && item.status_swap === "available" && (
-                    <DropdownMenuItem onClick={handleUpdate} disabled={isProcessing}>
+                    <DropdownMenuItem onClick={handleUpdate} disabled={isProcessing} className="hover:!bg-primary/20">
                       <Edit className="mr-2 h-4 w-4" />
                       {t("edit")}
                     </DropdownMenuItem>
                   )}
                   {item.quantity > 0 && item.status_swap === "available" && (
                     <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)} className="text-destructive">
+                      <DropdownMenuSeparator  />
+                      <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)} className="text-destructive hover:!bg-primary/20">
                         <Trash2 className="mr-2 h-4 w-4" />
                         {t("soldOut")||"Sold Out"}
                       </DropdownMenuItem>

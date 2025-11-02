@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 1️⃣ Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 /* Leaflet CSS */
 /* @import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; */
 @import 'flag-icon-css/css/flag-icons.min.css';
@@ -32,6 +35,13 @@
   vertical-align: middle;
 }
 
+*{
+  ::selection{
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+}
+
 /* Ensure emoji rendering works across browsers */
 .emoji-flag,
 .emoji-support {
@@ -51,36 +61,36 @@
     
     /* Light mode - Base colors */
     --background: 0 0% 100%;        /* #FFFFFF - Pure white background */
-    --foreground: 222.2 84% 4.9%;   /* #0F1729 - Dark text color */
+    --foreground: 0 0% 20%;         /* #333333 - Dark text color */
     --card: 0 0% 100%;              /* #FFFFFF - White card background */
-    --card-foreground: 222.2 84% 4.9%; /* #0F1729 - Dark text on cards */
+    --card-foreground: 0 0% 20%;    /* #333333 - Dark text on cards */
     --popover: 0 0% 100%;           /* #FFFFFF - White popover background */
-    --popover-foreground: 222.2 84% 4.9%; /* #0F1729 - Dark text on popovers */
-    /* Warm color palette - Orange/Yellow tones */
-    --primary: 40 89% 57%;          /* #F5A623 - Main orange/yellow */
-    --primary-foreground: 0 0% 0%;  /* #000000 - Black text on primary */
+    --popover-foreground: 0 0% 20%; /* #333333 - Dark text on popovers */
+    /* Sylndr color palette */
+    --primary: 152 100% 33%;        /* #00A75D - Main green */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF - White text on primary */
 
-    --secondary: 32 89% 57%;        /* #F58A23 - Darker orange */
-    --secondary-foreground: 0 0% 0%; /* #000000 - Black text on secondary */
+    --secondary: 212 100% 16.7%;    /* #002855 - Dark blue */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF - White text on secondary */
 
-    --accent: 27 89% 57%;           /* #F57323 - Deep orange accent */
-    --accent-foreground: 0 0% 0%;   /* #000000 - Black text on accent */
+    --accent: 152 100% 33%;         /* #00A75D - Green accent (using primary for now) */
+    --accent-foreground: 0 0% 100%; /* #FFFFFF - White text on accent */
 
     /* Success/Price */
-    --secondary2: 152 63% 42%;      /* #27AE60 - Green for success/price */
+    --secondary2: 152 63% 42%;      /* #27AE60 - Green for success/price (keeping original for now) */
     --secondary2-foreground: 0 0% 100%; /* #FFFFFF - Text on secondary2 */
 
     /* UI Elements */
-    --muted: 210 40% 96.1%;         /* #F1F5F9 - Subtle background */
-    --muted-foreground: 215.4 16.3% 46.9%; /* #64748B - Muted text */
+    --muted: 0 0% 35.3%;            /* #5A5A5A - Muted text */
+    --muted-foreground: 0 0% 35.3%; /* #5A5A5A - Muted text */
 
-    --destructive: 0 84.2% 60.2%;    /* #EF4444 - Error/warning red */
+    --destructive: 0 84.2% 60.2%;    /* #EF4444 - Error/warning red (keeping original) */
     --destructive-foreground: 210 40% 98%; /* #F8FAFC - Light text on destructive */
 
     /* Borders and Input elements */
-    --border: 214.3 31.8% 91.4%;    /* #E2E8F0 - Border color */
-    --input: 214.3 31.8% 91.4%;     /* #E2E8F0 - Input borders */
-    --ring: 40 89% 57%;             /* #F5A623 - Focus ring color */
+    --border: 0 0% 88%;             /* #E0E0E0 - Border color */
+    --input: 0 0% 88%;              /* #E0E0E0 - Input borders */
+    --ring: 152 100% 33%;           /* #00A75D - Focus ring color (using primary) */
 
     --radius: 0.5rem;               /* 8px border radius */
   }
@@ -107,7 +117,7 @@
   }
   
   .dark {
-    /* Dark mode - Base colors */
+    /* Dark mode - Base colors (adjusted for Sylndr palette) */
     --background: 0 0% 7%;          /* #121212 - Very dark background */
     --foreground: 0 0% 98%;         /* #FAFAFA - Light text */
 
@@ -117,14 +127,13 @@
     --popover: 0 0% 10%;            /* #1A1A1A - Popover background */
     --popover-foreground: 0 0% 98%; /* #FAFAFA - Light text on popovers */
 
-    /* Gold accent colors */
-    --primary: 45 93% 47%;          /* #F5B014 - Gold accent */
+    --primary: 152 100% 33%;        /* #00A75D - Green accent (same as light mode for consistency unless other dark mode assets are provided) */
     --primary-foreground: 0 0% 10%; /* #1A1A1A - Dark text on primary */
 
-    --secondary: 36 91% 43%;        /* #D99212 - Darker gold */
+    --secondary: 212 100% 16.7%;    /* #002855 - Dark blue (same as light mode) */
     --secondary-foreground: 0 0% 98%; /* #FAFAFA - Light text on secondary */
 
-    --accent: 45 100% 60%;          /* #FFCC33 - Bright gold */
+    --accent: 152 100% 33%;         /* #00A75D - Bright green (same as light mode) */
     --accent-foreground: 0 0% 10%;  /* #1A1A1A - Dark text on accent */
 
     /* Success/Price */
@@ -132,8 +141,8 @@
     --secondary2-foreground: 0 0% 100%; /* #FFFFFF - Text on secondary2 */
 
     /* UI Elements - Dark mode */
-    --muted: 0 0% 15%;              /* #262626 - Muted background */
-    --muted-foreground: 0 0% 65%;   /* #A6A6A6 - Muted text */
+    --muted: 0 0% 15%;              /* #262626 - Muted background (keeping original hsl values that match) */
+    --muted-foreground: 0 0% 65%;   /* #A6A6A6 - Muted text (keeping original hsl values that match) */
 
     --destructive: 0 84% 60%;       /* #E11D48 - Error red */
     --destructive-foreground: 0 0% 98%; /* #FAFAFA - Light text on destructive */
@@ -141,7 +150,7 @@
     /* Borders and Input elements - Dark mode */
     --border: 0 0% 18%;             /* #2E2E2E - Border color */
     --input: 0 0% 18%;              /* #2E2E2E - Input background */
-    --ring: 45 93% 47%;             /* #F5B014 - Focus ring color */
+    --ring: 152 100% 33%;           /* #00A75D - Focus ring color */
   }
 }
 
@@ -150,7 +159,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-cairo;
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', 'Cairo', sans-serif; /* Directly applied font-family */
   }
   
   /* Ensure proper font rendering for Arabic text */
@@ -159,8 +169,9 @@
   }
   
   /* Font fallbacks for better loading experience */
+  /* Updated font-cairo to also use Poppins as primary */
   .font-cairo {
-    font-family: var(--font-cairo), 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 }
 
@@ -384,7 +395,7 @@
 }
 
 .bg-deep-orange {
-  background-color: hsl(15 89% 57%);
+  background-color: hsl(var(--primary));
 }
 
 .text-primary-yellow {
@@ -404,16 +415,16 @@
 }
 
 .text-deep-orange {
-  color: hsl(15 89% 57%);
+  color: hsl(var(--primary));
 }
 
 /* Dark mode custom colors */
 .dark .bg-deep-orange {
-  background-color: hsl(45 93% 47%); /* Gold accent */
+  background-color: hsl(var(--primary)); /* Gold accent */
 }
 
 .dark .text-deep-orange {
-  color: hsl(45 93% 47%); /* Gold accent */
+  color: hsl(var(--primary)); /* Gold accent */
 }
 
 /* Additional dark mode custom classes */
@@ -426,7 +437,7 @@
 }
 
 .dark .bg-dark-accent {
-  background-color: #f5b014;
+  background-color: hsl(var(--accent));
 }
 
 .dark .bg-dark-text {
@@ -442,7 +453,7 @@
 }
 
 .dark .text-dark-accent {
-  color: #f5b014;
+  color: hsl(var(--accent));
 }
 
 .dark .text-dark-text {
@@ -451,11 +462,11 @@
 
 /* DeelDeal-specific styles */
 .dark .bg-deeldeal-gold {
-  background-color: #f5b014;
+  background-color: hsl(var(--accent));
 }
 
 .dark .text-deeldeal-gold {
-  color: #f5b014;
+  color: hsl(var(--accent));
 }
 
 .dark .bg-deeldeal-dark {
@@ -476,16 +487,16 @@
 
 /* Gold gradient */
 .gold-gradient {
-  @apply bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500;
+  @apply bg-gradient-to-r from-primary via-secondary to-accent;
 }
 
 .dark .gold-gradient {
-  @apply bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500;
+  @apply bg-gradient-to-r from-primary via-secondary to-accent;
 }
 
 /* Gold text gradient */
 .gold-text-gradient {
-  @apply bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
 }
 
 /* RTL Support */
@@ -642,4 +653,102 @@ input[type=number] {
 
 .dark .border-sidebar-border {
   border-color: hsl(var(--border)) !important;
+}
+
+.glowing-hover {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.glowing-hover:hover {
+  box-shadow: 0 0 15px 5px rgba(0, 167, 93, 0.7), /* Primary glow */
+              0 0 30px 10px rgba(0, 167, 93, 0.5), /* Secondary glow */
+              0 0 45px 15px rgba(0, 167, 93, 0.3); /* Tertiary glow */
+}
+
+.btn-default {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90;
+}
+
+.btn-destructive {
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+}
+
+.btn-outline {
+  @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+}
+
+.btn-ghost {
+  @apply hover:bg-accent hover:text-accent-foreground;
+}
+
+.btn-link {
+
+  @apply text-primary underline-offset-4 hover:underline;
+
+}
+
+
+
+.hero-gradient {
+
+  @apply bg-gradient-to-br from-primary/10 via-background to-primary/20;
+
+}
+
+
+
+.dark .hero-gradient {
+
+  @apply dark:from-neutral-900 dark:via-neutral-800 dark:to-primary/20;
+
+}
+
+
+
+.text-color-primary {
+
+  @apply text-foreground;
+
+}
+
+
+
+.text-color-muted {
+
+  @apply text-muted-foreground;
+
+}
+
+
+
+.btn-hero {
+
+  @apply gradient-primary text-primary-foreground;
+
+}
+
+
+
+.hero-image-gradient {
+
+  @apply bg-gradient-to-t from-black/50 to-transparent;
+
+}
+
+
+
+.hero-image-text {
+
+  @apply text-white;
+
+}
+
+
+
+.gradient-primary {
+  @apply bg-gradient-to-r from-primary to-primary/80;
 }

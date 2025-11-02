@@ -183,7 +183,7 @@ export function MobileHeader() {
                 <span className="text-white font-bold text-lg">S</span>
               </div>
               <span className="font-bold text-lg ml-2 text-primary">Swibba</span> */}
-              <Image src="/hero-section-logo.png" alt="Swibba" width={100} height={100} className="h-full" />
+              <Image src="/logo.png" alt="Swibba" width={100} height={100} className="h-full" />
             </div>
           </Link>
 
@@ -250,8 +250,10 @@ export function MobileHeader() {
                   <div className="flex items-center space-x-2">
                    
                       
-                    <p className="font-bold text-lg text-primary first-letter:inline-block  first-letter:rounded-lg first-letter:bg-primary  first-letter:text-white first-letter:font-bold first-letter:text-lg first-letter:text-center first-letter:mx-1 first-letter:px-2"> 
-                       SSwibba </p>
+                    <p className="font-bold text-lg text-primary first-letter:inline-block "> 
+              <Image src="/logo.png" alt="Swibba" width={100} height={100} className="h-full" />
+
+                        </p>
                   </div>
                   <Button
                     variant="ghost"
@@ -267,7 +269,8 @@ export function MobileHeader() {
                   <div className="p-4 border-b">
                     <Link
                       href="/profile"
-                      className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                      className="flex items-center space-x-3 p-2 rounded-lg bg-primary/10  hover:dark:bg-primary/15  hover:shadow-sm   text-primary hover:text-primary/80
+ transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <div className="relative">
@@ -312,7 +315,7 @@ export function MobileHeader() {
                 ) : (
                   <div className="p-4 border-b space-y-3">
                     <Button
-                      className="w-full bg-primary hover:bg-[#e09d0f] text-white"
+                      className="w-full bg-primary hover:bg-primary/80 text-white"
                       onClick={() => {
                         setIsMenuOpen(false)
                         router.push("/auth/login")
@@ -362,105 +365,105 @@ export function MobileHeader() {
                        
                         <Link
                           href="/"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3  rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <Home className="h-5 w-5 text-primary" />
+                          <Home className="h-5 w-5" />
                           <span className="font-medium">{t("Home") || "Home"}</span>
                         </Link>
 
                         <Link
                           href="/profile/settings/editItem/new"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <Plus className="h-5 w-5 text-primary" />
+                          <Plus className="h-5 w-5 " />
                           <span className="font-medium">{t("add") || "Add"}</span>
                         </Link>
 
                         <Link
                           href="/products"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <Search className="h-5 w-5 text-primary" />
+                          <Search className="h-5 w-5 " />
                           <span className="font-medium">{t("browse") || "Browse"}</span>
                         </Link>
 
                         <Link
                           href="/send-items"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <TbShoppingCartUp className="h-5 w-5 text-primary" />
+                          <TbShoppingCartUp className="h-5 w-5 " />
                           <span className="font-medium">{t("sendItems") || "Send Items"}</span>
                         </Link>
 
                         <Link
                           href="/recived-items"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <BiCartDownload className="h-5 w-5 text-primary" />
+                          <BiCartDownload className="h-5 w-5 " />
                           <span className="font-medium">{t("receivedItems") || "Received Items"}</span>
                         </Link>
 
                         <Link
                           href="/chat"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <MessageCircle className="h-5 w-5 text-primary" />
+                          <MessageCircle className="h-5 w-5 " />
                           <span className="font-medium">{t("messages") || "Messages"}</span>
                         </Link>
 
                         <Link
                           href="/profile/items"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <ListChecks className="h-5 w-5 text-primary" />
+                          <ListChecks className="h-5 w-5 " />
                           <span className="font-medium">{t("manageItems") || "Manage Items"}</span>
                         </Link>
 
                         <Link
                           href="/wishList"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                            className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <Heart className="h-5 w-5 text-primary" />
+                          <Heart className="h-5 w-5 " />
                           <span className="font-medium">{t("MyWishlist") || "My Wishlist"}</span>
                         </Link>
                         
                         <Link
                           href="/customerService"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <HandPlatter className="h-5 w-5 text-primary" />
+                          <HandPlatter className="h-5 w-5 " />
                           <span className="font-medium">{t("customerService") || "Customer Service"}</span>
                         </Link>
 
                         <Link
                           href="/about"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <Info className="h-5 w-5 text-primary" />
+                          <Info className="h-5 w-5 " />
                           <span className="font-medium">{t("about") || "About"}</span>
                         </Link>
 
 
                         <button 
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors w-full text-left"
                         >
                           <LogOut className="h-5 w-5 text-red-500" />
                           <span className="font-medium text-red-500">{t("logout") || "Logout"}</span>
                         </button>
 
 
-                        <button  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                        <button  className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors w-full text-left"
                         >
                         <LanguageToggle />
                         <ThemeToggle />
@@ -474,7 +477,7 @@ export function MobileHeader() {
 
                         <Link
                           href="/customerService"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-3 rounded-lg text-primary hover:text-primary/80 hover:dark:bg-primary/15  hover:bg-primary/10 bg-background/50 hover:shadow-sm transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           <HandPlatter className="h-5 w-5 text-primary" />
@@ -483,14 +486,14 @@ export function MobileHeader() {
 
                         <Link
                           href="/about"
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center space-x-3 p-3 rounded-lg text-primary hover:text-primary/80 hover:dark:bg-primary/15  hover:bg-primary/10 bg-background/50 hover:shadow-sm transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           <Info className="h-5 w-5 text-primary" />
                           <span className="font-medium">{t("about") || "About"}</span>
                         </Link>
 
-                        <button  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left"
+                        <button  className="flex items-center space-x-3 p-2 rounded-lg text-primary hover:text-primary/80 hover:dark:bg-primary/15  hover:bg-primary/10 bg-background/50 hover:shadow-sm transition-colors w-full text-left"
                         >
                         <LanguageToggle />
                         <ThemeToggle />

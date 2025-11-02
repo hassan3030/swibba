@@ -48,7 +48,7 @@ export default function ProductsPage() {
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-muted-foreground">Loading products...</p>
+          <p className="text-primary/90">Loading products...</p>
         </motion.div>
       </div>
     )

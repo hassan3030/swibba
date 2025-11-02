@@ -18,9 +18,9 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className={cn(
         "rounded-full",
-        "hover:bg-primary/10",
+        "hover:bg-primary/80",
         "transition-colors duration-200",
-        isDark ? "text-yellow-300" : "text-gray-700",
+        isDark ? "text-primary" : "text-gray-700",
       )}
       title={isDark ? t("lightMode") : t("darkMode")}
     >

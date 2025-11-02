@@ -1,5 +1,14 @@
 export const translations = {
   en  :{
+
+    NoSwapHistory: "No swap history found",
+NoConversations: "No conversations yet",
+  StartSwappingToSeeMessages: "Start swapping items to see your conversations here",
+
+
+
+    forgotPasswordDesc: "No worries! Enter your email and we'll send you a reset link.",
+
     swibba:"SWIBBA",
     passwordResetSuccess:"If an account with that email exists a password reset link has been sent.",
     checkYourEmail:"Check Your Email",
@@ -717,8 +726,8 @@ SelectCountry: "Select a country",
     Contactphone: "Contact phone",
     Nophoneavailable: "No phone available",
     Theswapwasrejectedbyyou: "The swap was rejected by you.",
-    NoCart: "No Cart",
-    YoureallcaughtupNewAddincartwillappearhere: "You re all caught up! New Add in cart will appear here.",
+    NoCart: "No Cart Items Offers",
+    YoureallcaughtupNewAddincartwillappearhere: "You re all caught up! New Add in cart items offers will appear here.",
     MakeSwap: "Make Swap",
 
 
@@ -1020,7 +1029,7 @@ SelectCountry: "Select a country",
     signUp: "Sign Up",
     cart: "Cart",
     notifications: "Recived Offers",
-    language: "العربية",
+    language: "عر",
     account: "Account",
 
     // Categories
@@ -1227,6 +1236,12 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    NoSwapHistory:"لم يتم العثور على تاريخ المبادلة",
+
+    NoConversations: "لا توجد محادثات حتى الآن",
+  StartSwappingToSeeMessages:"ابدأ بتبديل العناصر لرؤية محادثاتك هنا",
+    forgotPasswordDesc: "لا تقلق! أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور.",
+
 swibba:"سويبا",
 passwordResetSuccess: "في حال وجود حساب بهذا البريد الإلكتروني، فقد تم إرسال رابط إعادة تعيين كلمة المرور.",
 checkYourEmail: "تحقق من بريدك الإلكتروني",
@@ -1800,8 +1815,10 @@ SelectCountry: "اختر الدولة",
     Contactphone: " رقم الهاتف",
     Nophoneavailable: " لا يوجد رقم هاتف",
     Theswapwasrejectedbyyou: " تم رفض المبادلة من قبلك",
-    NoCart: " لا يوجد منتجات في السلة",
-    YoureallcaughtupNewAddincartwillappearhere: " كافة المنتجات في السلة",
+    NoCart: "  لا يوجد منتجات في السلة",
+    NoCartItemsOffers: " لا يوجد منتجات في السلة",
+    YoureallcaughtupNewAddincartitemsofferswillappearhere: " كافة المنتجات في السلة",
+
     MakeSwap: " تبديل",
 
 
@@ -2096,7 +2113,7 @@ SelectCountry: "اختر الدولة",
     signUp: "إنشاء حساب",
     cart: "عربة التسوق",
     notifications: "العروض المستلمة",
-    language: "English",
+    language: "En",
     account: "الحساب",
 
     // Categories

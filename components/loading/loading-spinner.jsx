@@ -55,7 +55,7 @@ const LoadingSpinner = ({
               }}
             >
               {/* <span className="text-white font-bold text-lg">SWIBBA</span> */}
-              <Image src="/hero-section-logo.png" alt="Swibba Logo" width={100} height={100} />
+              <Image src="/logo.png" alt="Swibba Logo" width={100} height={100} />
             </motion.div>
           </div>
           

@@ -332,41 +332,18 @@ export default function ProfilePage() {
   }, [user])
   // -------------------------------------
   return (
-    <motion.div className="container py-10" variants={containerVariants} initial="hidden" animate="visible">
+    <motion.div className="container py-5" variants={containerVariants} initial="hidden" animate="visible">
       {/* Go Back Link */}
-      <motion.div className="inline mb-3" variants={itemVariants}>
-        {/* <motion.div >
-          <Button
-            className="mb-2 shadow-lg hover:shadow-xl transition-all duration-300"
-            variant="outline"
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <motion.div animate={{ x: [-2, 0, -2] }} transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-            </motion.div>
-          </Button>
-        </motion.div> */}
-        <motion.h1
-          className="mx-2 text-3xl font-bold inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          {t("myProfile") || "My Profile"}
-        </motion.h1>
-      </motion.div>
-
-      <div className="grid gap-6 md:grid-cols-3 mt-4">
+      <div className="grid gap-6 md:grid-cols-3 mt-2">
         {/* Profile Card */}
         <motion.div variants={itemVariants}>
           <motion.div variants={cardVariants} whileHover="hover" className="h-full">
-            <Card className="h-full shadow-lg hover:shadow-2xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-muted">
+            <Card className="h-full shadow-lg hover:shadow-2xl transition-all duration-300 border border-border/50 ">
               <CardHeader className="flex flex-row items-center gap-4 pb-4">
                 <motion.div variants={avatarVariants} whileHover="hover" className="relative">
-                  <Avatar className="h-16 w-16 ring-4 ring-primary/20 shadow-lg">
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-primary/20 shadow-lg">
                     <AvatarImage src={avatarPath || "/placeholder.svg"} alt={full_name} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground font-bold text-lg sm:text-xl">
                       {full_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -376,9 +353,9 @@ export default function ProfilePage() {
                         <TooltipTrigger asChild>
                           <div>
                             {user?.verified == "true" || user?.verified == true ? (
-                              <Verified className="h-5 w-5 text-primary bg-background rounded-full p-1 shadow-md" />
+                              <Verified className="h-5 w-5 text-primary bg-background rounded-full p-1 shadow-md ring-2 ring-background" />
                             ) : (
-                              <BadgeX className="h-5 w-5 text-red-500 bg-background rounded-full p-1 shadow-md" />
+                              <BadgeX className="h-5 w-5 text-destructive bg-background rounded-full p-1 shadow-md ring-2 ring-background" />
                             )}
                           </div>
                         </TooltipTrigger>
@@ -398,12 +375,12 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
-                      <CardTitle className="capitalize text-lg font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                      <CardTitle className="capitalize italic text-lg font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                         {full_name || t("account") || "Account"}
                       </CardTitle>
                     </motion.div>
                   </div>
-                  <CardDescription className="mt-1 text-sm text-muted-foreground">
+                  <CardDescription className="mt-1 text-sm text-foreground/70">
                     {/* Additional description can go here */}
                   </CardDescription>
                 </div>
@@ -411,7 +388,7 @@ export default function ProfilePage() {
               <CardContent>
                 <div className="space-y-4">
                   <motion.div
-                    className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/50"
+                    className="flex items-center gap-2 text-sm p-3 rounded-lg  border border-border/50 hover:border-primary/30 transition-colors"
                     variants={statsVariants}
                     whileHover="hover"
                   >
@@ -421,7 +398,7 @@ export default function ProfilePage() {
                     >
                       <MapPin className="h-4 w-4 text-primary" />
                     </motion.div>
-                    <span className="font-medium">
+                    <span className="font-medium text-foreground">
                       {user?.country || user?.city || user?.street ? 
                         `${user?.country || ""} ${user?.city || ""} ${user?.street || ""}`.trim() :
                         (t("noAddress") || "No address provided")
@@ -430,7 +407,7 @@ export default function ProfilePage() {
                   </motion.div>
 
                   <motion.div
-                    className="flex items-center gap-2 text-sm p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20"
+                    className="flex items-center gap-2 text-sm p-3 rounded-lg bg-secondary2/10 border border-secondary2/20 hover:border-secondary2/40 transition-colors"
                     variants={statsVariants}
                     whileHover="hover"
                   >
@@ -438,15 +415,15 @@ export default function ProfilePage() {
                       animate={{ rotate: [0, 360] }}
                       transition={{ repeat: Number.POSITIVE_INFINITY, duration: 4, ease: "linear" }}
                     >
-                      <Star className="h-4 w-4 text-yellow-500" />
+                      <Star className="h-4 w-4 fill-secondary2 text-secondary2" />
                     </motion.div>
-                    <span className="font-medium">
+                    <span className="font-medium text-foreground">
                       {rate ? `${rate} / 5.0 ${t("Rating") || "Rating"}` : (t("noRate") || "No ratings yet")}
                     </span>
                   </motion.div>
 
                   <motion.div
-                    className="flex items-center gap-2 text-sm p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
+                    className="flex items-center gap-2 text-sm p-3 rounded-lg bg-primary/10 border border-primary/20 hover:border-primary/40 transition-colors"
                     variants={statsVariants}
                     whileHover="hover"
                   > 
@@ -456,7 +433,7 @@ export default function ProfilePage() {
                     >
                       <ArrowLeftRight className="h-4 w-4 text-primary" />
                     </motion.div>
-                    <span className="font-medium">
+                    <span className="font-medium text-foreground">
                       {!completedOffersCount || completedOffersCount === 0
                         ? (t("noCompletedSwaps") || "No completed swaps")
                         : completedOffersCount > 1000
@@ -467,8 +444,8 @@ export default function ProfilePage() {
 
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
-                      variant="outline"
-                      className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground border-0 hover:from-secondary hover:to-accent shadow-lg hover:shadow-xl transition-all duration-300"
+                      // variant="outline"
+                      className="w-full bg-primary hover:bg-primary/80 text-primary-foreground border-0   shadow-lg hover:shadow-xl transition-all duration-300"
                       asChild
                     >
                       <Link href={`profile/settings/editProfile`}>{t("editProfile") || "Edit Profile"}</Link>
@@ -491,8 +468,8 @@ export default function ProfilePage() {
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-              <div className="w-full bg-gradient-to-r p-2 from-muted to-muted/80 rounded-xl shadow-lg">
-                <TabsList className="grid w-full grid-cols-4 bg-transparent  rounded-xl overflow-hidden ">
+              <div className="w-full pb-1 rounded-xl shadow-lg border border-border/50">
+                <TabsList className="grid w-full grid-cols-4 bg-transparent rounded-md mb-1  gap-1">
                   {[
                     { value: "items", icon: Package, label: t("yourProducts"), count: myAvailableItems.length },
                     {
@@ -518,11 +495,11 @@ export default function ProfilePage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.6 + index * 0.1 }}
-                            className="w-full"
+                            className="w-full "
                           >
                             <TabsTrigger
                               value={tab.value}
-                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2 data-[state=active]:bg-background dark:data-[state=active]:bg-card data-[state=active]:shadow-md transition-all duration-300 w-full min-w-0 relative group bg-muted/50 hover:bg-muted/80"
+                              className="flex items-center justify-center gap-2 sm:gap-2 px-1 sm:px-2 md:px-3 py-2.5 data-[state=active]:bg-background dark:data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:border-primary/30 transition-all duration-300 w-full min-w-0 relative group bg-transparent hover:bg-background/50 border border-transparent data-[state=active]:border rounded-lg"
                             >
                               <tab.icon className="h-4 w-4 flex-shrink-0" />
                               <span className="hidden md:inline text-xs lg:text-sm font-medium truncate">
@@ -560,14 +537,14 @@ export default function ProfilePage() {
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <div className="flex items-center justify-between mb-4">
                     <motion.h2
-                      className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+                      className="text-xl font-bold text-primary bg-clip-text "
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                     >
                       {t("myItems") || "My Items"}
                     </motion.h2>
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button asChild size="sm" className="bg-primary hover:bg-secondary shadow-lg">
+                      <Button asChild size="sm" className="bg-primary hover:bg-primary/80 shadow-lg">
                         <Link href="/profile/items">
                           <Settings className="mr-2 h-4 w-4" />
                           {t("manageItems") || "Manage Items"}
@@ -593,9 +570,9 @@ export default function ProfilePage() {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.3 }}
                         >
-                          <div className="rounded-lg border-2 border-dashed border-border p-8 text-center bg-muted/50">
+                          <div className="rounded-lg border-2 border-dashed border-border p-8 text-center bg-background">
                             <motion.p
-                              className="text-center text-sm text-muted-foreground"
+                              className="text-center text-sm text-primary/90"
                               animate={{ opacity: [0.5, 1, 0.5] }}
                               transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
                             >
@@ -670,7 +647,7 @@ export default function ProfilePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-muted">
+                    <Card className="shadow-lg border border-border/50">
                       <CardContent className="p-6">
                         {myUnavailableItems.length > 0 ? (
                           <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} showbtn={false} LinkItemOffer={true} />
@@ -681,9 +658,9 @@ export default function ProfilePage() {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.3 }}
                           >
-                            <div className="rounded-lg border-2 border-dashed border-border p-8 text-center bg-muted/50">
+                            <div className="rounded-lg border-2 border-dashed border-border p-8 text-center  dark:text-white bg-background">
                               <motion.p
-                                className="text-center text-sm text-muted-foreground"
+                                className="text-center text-sm "
                                 animate={{ opacity: [0.5, 1, 0.5] }}
                                 transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
                               >

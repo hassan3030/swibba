@@ -376,7 +376,7 @@ export default function ProductPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20"
+                className="p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/5 rounded-lg border border-primary/20 shadow-sm"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-muted-foreground">
@@ -415,16 +415,20 @@ export default function ProductPage() {
 
           {/* Owner */}
           <motion.div
-            className="flex items-start gap-2 sm:gap-3"
+            className="flex items-start gap-3 sm:gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-              <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 400 }} className="flex-shrink-0 relative">
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+            <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+              <motion.div 
+                whileHover={{ scale: 1.05 }} 
+                transition={{ type: "spring", stiffness: 400 }} 
+                className="flex-shrink-0 relative"
+              >
+                <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-border">
                   <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"} />
-                  <AvatarFallback className="text-xs sm:text-sm">{name ? name.charAt(0) : "U"}</AvatarFallback>
+                  <AvatarFallback className="text-sm sm:text-base bg-muted">{name ? name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
                 {user?.Verified === "true" || user?.Verified === true ? (
                   <motion.div
@@ -433,7 +437,7 @@ export default function ProductPage() {
                     transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
                     className="absolute -top-1 -right-1"
                   >
-                    <Verified className="h-4 w-4 text-primary bg-background rounded-full p-0.5 shadow-sm" />
+                    <Verified className="h-5 w-5 text-primary bg-background rounded-full p-0.5 shadow-md ring-2 ring-background" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -442,30 +446,28 @@ export default function ProductPage() {
                     transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
                     className="absolute -top-1 -right-1"
                   >
-                    <BadgeX className="h-4 w-4 text-red-500 bg-background rounded-full p-0.5 shadow-sm" />
+                    <BadgeX className="h-5 w-5 text-destructive bg-background rounded-full p-0.5 shadow-md ring-2 ring-background" />
                   </motion.div>
                 )}
               </motion.div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold text-sm sm:text-base truncate" title={name || "Unknown"}>
+                  <span className="font-semibold text-base sm:text-lg truncate" title={name || "Unknown"}>
                     {name || "Unknown"}
                   </span>
-                
                 </div>
-                <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-1">
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{rate ? `${rate} / 5.0 ${t("Rating") || "Rating"}` : (t("noRate") || "No ratings yet")}</span>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-2">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-secondary2 text-secondary2" />
+                    <span className="font-medium">{rate ? `${rate} / 5.0 ${t("Rating") || "Rating"}` : (t("noRate") || "No ratings yet")}</span>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <ArrowLeftRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="px-1">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <ArrowLeftRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    <span className="font-medium">
                       {completedOffersCount > 1000 
                         ? (t("moreThan1000CompletedSwaps") || "More than 1000 completed swaps")
                         : `${completedOffersCount || 0} ${t("completedSwaps") || "Completed swaps"}`}
                     </span>
-                  
                   </div>
                 </div>
               </div>
@@ -503,16 +505,16 @@ export default function ProductPage() {
           {/* <Separator className="my-3 sm:my-4" /> */}
 
           {/* Product Details Tabs */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} >
             <Tabs defaultValue="features" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1">
-                <TabsTrigger value="features" className="text-xs  sm:text-sm px-2 py-2 h-auto">
+              <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-primary/30">
+                <TabsTrigger value="features" className="text-xs sm:text-sm px-3 py-2.5 h-auto data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                   {t("features")}
                 </TabsTrigger>
-                <TabsTrigger value="Category" className="text-xs sm:text-sm px-2 py-2 h-auto">
+                <TabsTrigger value="Category" className="text-xs sm:text-sm px-3 py-2.5 h-auto data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                   {t("category")}
                 </TabsTrigger>
-                <TabsTrigger value="swap_status" className="text-xs sm:text-sm px-2 py-2 h-auto">
+                <TabsTrigger value="swap_status" className="text-xs sm:text-sm px-3 py-2.5 h-auto data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                   {t("statusSwap")}
                 </TabsTrigger>
               </TabsList>
@@ -524,22 +526,22 @@ export default function ProductPage() {
                     transition={{ duration: 0.2 }}
                     className="text-sm sm:text-base w-full"
                   >
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("name")}` : `${t("name")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("name")}` : `${t("name")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("location")}` : `${t("location")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("location")}` : `${t("location")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {t(product.country)} - {(!isRTL ? product.translations[0]?.city: product.translations[1]?.city) || product.city} - {(!isRTL ? product.translations[0]?.street: product.translations[1]?.street) || product.street}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("listedOn") || "Listed on"}` : `${t("listedOn") || "Listed on"}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("listedOn") || "Listed on"}` : `${t("listedOn") || "Listed on"}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {new Date(product.date_created).toLocaleDateString('en-US')}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("AllowTo")}` : `${t("AllowTo")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("AllowTo")}` : `${t("AllowTo")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                      {
                       product.allowed_categories.map((cat, index) => (
@@ -550,22 +552,22 @@ export default function ProductPage() {
                      }
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {t(product.category)}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("price")}` : `${t("price")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("price")}` : `${t("price")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2 text-start">
                       {Number(product.price).toLocaleString('en-US')} {t("le")}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("quantity")}` : `${t("quantity")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("quantity")}` : `${t("quantity")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {Number(product.quantity).toLocaleString('en-US')}
                     </div>
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("status")}` : `${t("status")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("status")}` : `${t("status")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary text-start">
                       {t(product.status_item)}
                     </div>
@@ -573,7 +575,7 @@ export default function ProductPage() {
                     
                     <Separator />
 
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start">{isRTL ? `: ${t("description")}` : `${t("description")}:`}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("description")}` : `${t("description")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
                       {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
                     </div>

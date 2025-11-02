@@ -1,6 +1,6 @@
 import axios from "axios"
 import {
-  baseURL,
+  baseURL, 
   getCookie,
   setCookie,
   decodedToken,
@@ -9,7 +9,9 @@ import {
   handleApiError,
   makeAuthenticatedRequest,
   getTarget,
-  STANDARD_ROLE_ID
+  STANDARD_ROLE_ID,
+  resetPasswordURL,
+  swibbaURL
 } from "./utiles.js"
 
 // Authenticate user and get token
@@ -623,33 +625,37 @@ export const forgotPassword = async (email) => {
       throw new Error("Email is required");
     }
     // const response = await axios.post(`${baseURL}auth/password/request`, {
-  //   const response = await axios.post("https://dev-dashboard.swibba.com/auth/password/request", {
-  //     "email":"hassan.hamdi.dev@gmail.com",
-  //     "reset_url": `http://localhost:3000/auth/reset-password`
-  //   },
-  //   {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   }
-  // );
+    const response = await axios.post(`${baseURL}auth/password/request`, {
+      email:email,
+      reset_url: `${resetPasswordURL}`,
+      // PASSWORD_RESET_URL_ALLOW_LIST: "https://dev.swibba.com/auth/forgot-password",
+      // reset_url: "http://localhost:3000/auth/reset-password",
 
-  const response = await fetch('https://dev-dashboard.swibba.com/auth/password/request', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: email,
-      reset_url: `https://dev.swibba.com/auth/reset-password`
-    }),
-  });
+      // PASSWORD_RESET_URL_ALLOW_LIST: "http://localhost:3000/auth/reset-password",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
-  console.log("forgo tPassword response", response)
+  // const response = await fetch('https://dev-dashboard.swibba.com/auth/password/request', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({
+  //     email: email,
+  //     reset_url: `http://localhost:3000/auth/reset-password`
+  //   }),
+  // });
+
+  console.log("forget Password response", response)
     return {
-      success: response.ok,
+      success: response.status === 200 || response.status === 201 || response.status === 204,
       message: "Password reset link sent successfully. Please check your email.",
     };
   } catch (error) {
-    return handleApiError(error, "Forgot Password");
+    return handleApiError(error, "Forget Password");
   }
 };
 

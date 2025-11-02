@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react" 
+import { useState, useEffect } from "react" 
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -14,6 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import { register } from "@/callAPI/users"
+import { Progress } from "@/components/ui/progress"
 
 // Animation variants
 const containerVariants = {
@@ -74,6 +75,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [passwordStrength, setPasswordStrength] = useState(0)
   const router = useRouter()
   const { toast } = useToast()
   const { t } = useTranslations()
@@ -113,6 +115,41 @@ export function RegisterForm() {
       confirmPassword: "",
     },
   })
+
+  // Calculate password strength
+  const calculatePasswordStrength = (password) => {
+    if (!password) return 0
+    
+    let strength = 0
+    
+    // Length check
+    if (password.length >= 8) strength += 20
+    if (password.length >= 12) strength += 10
+    
+    // Character variety checks
+    if (/[A-Z]/.test(password)) strength += 20 // Has uppercase
+    if (/[a-z]/.test(password)) strength += 15 // Has lowercase
+    if (/[0-9]/.test(password)) strength += 15 // Has number
+    if (/[^A-Za-z0-9]/.test(password)) strength += 20 // Has special char
+    
+    return Math.min(100, strength)
+  }
+
+  // Get strength text and color
+  const getStrengthDetails = (strength) => {
+    if (strength === 0) return { text: t("passwordStrengthNone") || "None", color: "bg-gray-300" }
+    if (strength < 40) return { text: t("passwordStrengthWeak") || "Weak", color: "bg-red-500" }
+    if (strength < 70) return { text: t("passwordStrengthMedium") || "Medium", color: "bg-yellow-500" }
+    return { text: t("passwordStrengthStrong") || "Strong", color: "bg-green-500" }
+  }
+
+  // Watch password field for strength calculation
+  const watchPassword = form.watch("password", "")
+  
+  // Update password strength when password changes
+  useEffect(() => {
+    setPasswordStrength(calculatePasswordStrength(watchPassword))
+  }, [watchPassword])
 
   const onSubmit = async () => {
     setIsLoading(true)
@@ -273,6 +310,51 @@ export function RegisterForm() {
                       </Button>
                     </motion.div>
                   </FormControl>
+                  
+                  {/* Password strength meter */}
+                  {watchPassword && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-2 space-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          {t("passwordStrength") || "Password Strength"}:
+                        </span>
+                        <span className="text-xs font-medium">
+                          {getStrengthDetails(passwordStrength).text} ({passwordStrength}%)
+                        </span>
+                      </div>
+                      <Progress 
+                        value={passwordStrength} 
+                        className={`h-1 ${getStrengthDetails(passwordStrength).color}`} 
+                      />
+                      
+                      {/* Password requirements */}
+                      <div className="mt-2 space-y-1">
+                        <ul className="text-xs text-muted-foreground">
+                          <li className={watchPassword.length >= 8 ? "text-green-500" : ""}>
+                            • {t("passwordReqLength") || "Be at least 8 characters long"}
+                          </li>
+                          <li className={/[A-Z]/.test(watchPassword) ? "text-green-500" : ""}>
+                            • {t("passwordReqUppercase") || "Include at least one uppercase letter"}
+                          </li>
+                          <li className={/[a-z]/.test(watchPassword) ? "text-green-500" : ""}>
+                            • {t("passwordReqLowercase") || "Include at least one lowercase letter"}
+                          </li>
+                          <li className={/[0-9]/.test(watchPassword) ? "text-green-500" : ""}>
+                            • {t("passwordReqNumber") || "Include at least one number"}
+                          </li>
+                          <li className={/[^A-Za-z0-9]/.test(watchPassword) ? "text-green-500" : ""}>
+                            • {t("passwordReqSpecial") || "Include at least one special character"}
+                          </li>
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                  
                   <FormDescription className="text-xs">
                     {t("Passwordmustbeatleast8charactersandincludeuppercaselowercaseandnumbers") ||
                       "Password must be at least 8 characters and include uppercase, lowercase, and numbers."}

@@ -5,6 +5,9 @@ export const baseURL = process.env.BASE_URL || "https://dev-dashboard.swibba.com
 export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items/"
 export const mediaURL = process.env.MEDIA_URL || 'https://deel-deal-directus.csiwm3.easypanel.host/assets/' 
 export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
+export const resetPasswordURL = process.env.RESET_PASSWORD_URL || "https://dev.swibba.com/auth/reset-password"
+export const swibbaURL = process.env.SWIBBA_URL || "https://dev.swibba.com"
+
 
 
 // Enhanced error handling utility

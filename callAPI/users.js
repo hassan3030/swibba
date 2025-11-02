@@ -639,7 +639,7 @@ export const forgotPassword = async (email) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       email: email,
-      reset_url: `http://localhost:3000/auth/reset-password`
+      reset_url: `https://dev.swibba.com/auth/reset-password`
     }),
   });
 

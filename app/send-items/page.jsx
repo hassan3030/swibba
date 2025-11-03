@@ -1011,7 +1011,7 @@ const SendItems = () => {
                 >
                   <TbShoppingCartUp className="h-16 w-16 mx-auto mb-4 text-primary/90" />
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2">{t("NoCart") || "No Cart Items Offers"}</h3>
+                <h3 className="text-xl font-semibold mb-2">{t("NoCart") || "No offers up till now"}</h3>
                 <p className="text-muted-foreground">
                   {t("YoureallcaughtupNewAddincartwillappearhere") ||
                     "You're all caught up! New Add in cart items offers will appear here."}

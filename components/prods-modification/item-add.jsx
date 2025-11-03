@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, Navigation, MapPin, Map, RefreshCw } from "lucide-react"
+import { X, Upload, Info, Loader2, Navigation, MapPin, Map, RefreshCw, Search } from "lucide-react"
 import Image from "next/image"
 import { itemsStatus, categoriesName, allowedCategories } from "@/lib/data"
 import { getLevelOneCategories, getLevelTwoCategories, getAllCategories } from '@/callAPI/static'
@@ -1075,14 +1075,45 @@ else{
                                 </SelectValue>
                               </SelectTrigger>
                               <SelectContent className="bg-background border-input text-foreground h-40">
-                                {countriesListWithFlags.map((country) => (
-                                  <SelectItem key={country.name} value={country.name} className="text-right">
-                                    <div className="flex items-center gap-2">
-                                      <FlagIcon flag={country.flag} countryCode={country.name} className="text-lg" />
-                                      <span>{t(country.name) || country.name}</span>
-                                    </div>
-                                  </SelectItem>
-                                ))}
+                                <div className="flex  items-center px-2 pb-2 sticky top-0 bg-background z-10">
+                                  <Search className="h-4 w-4 opacity-50 mr-2 " />
+                                  <input
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder={t("SearchCountry") || "Search country..."}
+                                    onChange={(e) => {
+                                      const searchBox = e.currentTarget;
+                                      const value = searchBox.value.toLowerCase();
+                                      
+                                      document.querySelectorAll('[data-country-item]').forEach(item => {
+                                        const countryName = item.getAttribute('data-country-name').toLowerCase();
+                                        const translatedName = item.getAttribute('data-country-translated')?.toLowerCase() || '';
+                                        
+                                        if (countryName.includes(value) || translatedName.includes(value)) {
+                                          item.style.display = '';
+                                        } else {
+                                          item.style.display = 'none';
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </div>
+                                <div className="pt-1 max-h-[300px] overflow-auto">
+                                  {countriesListWithFlags.map((country) => (
+                                    <SelectItem 
+                                      key={country.name} 
+                                      value={country.name} 
+                                      className="text-right"
+                                      data-country-item
+                                      data-country-name={country.name.toLowerCase()}
+                                      data-country-translated={(t(country.name) || country.name).toLowerCase()}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <FlagIcon flag={country.flag} countryCode={country.name} className="text-lg" />
+                                        <span>{t(country.name) || country.name}</span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </div>
                               </SelectContent>
                             </Select>
                           </FormControl>

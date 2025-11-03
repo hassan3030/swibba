@@ -1075,7 +1075,7 @@ console.log(offersReceived.data)
                 <BiCartDownload className="h-16 w-16 mx-auto mb-4 text-primary/90" />
               </motion.div>
               <h3 className="text-xl font-semibold mb-2">
-                {t("no") || "No"} {t("notifications") || "notifications"}
+                {t("noRecivedOffers") || "No Recived Offers"}
               </h3>
               <p className="text-muted-foreground">
                 {t("YoureallcaughtupNewnotificationswillappearhere") ||

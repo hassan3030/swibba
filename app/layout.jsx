@@ -141,7 +141,7 @@ export default async function  RootLayout({ children }) {
                     <MobileFooter />
                   </div>
                 </div>
-                <Toaster />
+                <Toaster position="top-right "   />
           </LanguageProvider>
         </ThemeProvider>
 

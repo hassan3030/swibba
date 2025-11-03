@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, Map, RefreshCw } from "lucide-react"
+import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, Map, RefreshCw, Search } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { getImageProducts } from "@/callAPI/products"
@@ -1062,14 +1062,35 @@ else{
                                   </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent className="bg-background border-input h-40">
-                                  {countriesListWithFlags.map((country) => (
-                                    <SelectItem key={country.name} value={country.name} className="text-right">
-                                      <div className="flex items-center gap-2">
-                                        <FlagIcon flag={country.flag} countryCode={country.name} className="text-lg" />
-                                        <span>{t(country.name) || country.name}</span>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
+                                  <div className="flex items-center gap-2 px-3 py-2 sticky top-0 bg-background border-b">
+                                    <Search className="h-4 w-4 opacity-50" />
+                                    <input 
+                                      className="flex h-8 w-full rounded-md bg-background px-3 py-1 text-sm outline-none placeholder:text-muted-foreground"
+                                      placeholder={t("Search country...")}
+                                      onChange={(e) => {
+                                        const searchField = e.target;
+                                        const value = searchField.value.toLowerCase();
+                                        const items = searchField.closest('.select-content')?.querySelectorAll('.select-item') || [];
+                                        
+                                        items.forEach(item => {
+                                          const countryName = item.textContent.toLowerCase();
+                                          const translatedName = t(item.getAttribute('data-value'))?.toLowerCase() || '';
+                                          const shouldShow = countryName.includes(value) || translatedName.includes(value);
+                                          item.style.display = shouldShow ? '' : 'none';
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="overflow-y-auto max-h-[calc(10rem-40px)]">
+                                    {countriesListWithFlags.map((country) => (
+                                      <SelectItem key={country.name} value={country.name} className="text-right select-item" data-value={country.name}>
+                                        <div className="flex items-center gap-2">
+                                          <FlagIcon flag={country.flag} countryCode={country.name} className="text-lg" />
+                                          <span>{t(country.name) || country.name}</span>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </div>
                                 </SelectContent>
                               </Select>
                             </FormControl>

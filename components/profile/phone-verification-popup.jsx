@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Loader2, Phone, Shield, Check, X, AlertCircle } from "lucide-react"
+import { Loader2, Phone, Shield, Check, X, AlertCircle, Search } from "lucide-react"
 import { useTranslations } from "@/lib/use-translations"
 import { useToast } from "@/components/ui/use-toast"
 import { countriesWithFlags, validatePhoneNumber } from "@/lib/countries-data"
@@ -243,7 +243,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
     }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 mt-4">
             <Shield className="h-5 w-5 text-primary" />
             {t("verifyPhoneNumber") || "Verify Phone Number"}
           </DialogTitle>
@@ -278,15 +278,36 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    {countriesWithFlags.map((country) => (
-                      <SelectItem key={`${country.code}-${country.name}`} value={country.code}>
-                        <div className="flex items-center gap-2">
-                          <FlagIcon flag={country.flag} countryCode={country.iso} className="text-lg" />
-                          <span className="font-mono">{country.code}</span>
-                          <span className="text-sm">{country.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    <div className="flex items-center gap-2 px-3 py-2 sticky top-0 bg-background border-b">
+                      <Search className="h-4 w-4 opacity-50" />
+                      <input 
+                        className="flex h-8 w-full rounded-md bg-background px-3 py-1 text-sm outline-none placeholder:text-muted-foreground"
+                        placeholder={t("Search country...") || "Search country..."}
+                        onChange={(e) => {
+                          const searchField = e.target;
+                          const value = searchField.value.toLowerCase();
+                          const items = searchField.closest('.select-content')?.querySelectorAll('.country-item') || [];
+                          
+                          items.forEach(item => {
+                            const countryName = item.querySelector('.country-name')?.textContent.toLowerCase() || '';
+                            const countryCode = item.querySelector('.country-code')?.textContent.toLowerCase() || '';
+                            const shouldShow = countryName.includes(value) || countryCode.includes(value);
+                            item.style.display = shouldShow ? '' : 'none';
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="overflow-y-auto max-h-[calc(15rem-40px)]">
+                      {countriesWithFlags.map((country) => (
+                        <SelectItem key={`${country.code}-${country.name}`} value={country.code} className="country-item">
+                          <div className="flex items-center gap-2">
+                            <FlagIcon flag={country.flag} countryCode={country.iso} className="text-lg" />
+                            <span className="font-mono country-code">{country.code}</span>
+                            <span className="text-sm country-name">{country.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
@@ -295,10 +316,10 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
               <div className="space-y-2">
                 <Label>{t("phoneNumber") || "Phone Number"}</Label>
                 <div className="flex gap-2">
-                  <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted min-w-0">
+                  {/* <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted min-w-0">
                     <FlagIcon flag={selectedCountry.flag} countryCode={selectedCountry.iso} className="text-lg" />
                     <span className="font-mono text-sm">{selectedCountryCode}</span>
-                  </div>
+                  </div> */}
                   <Input
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}

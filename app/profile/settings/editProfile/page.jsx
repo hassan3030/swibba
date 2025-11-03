@@ -28,6 +28,7 @@ import {
   Phone,
   Info,
   Languages,
+  Search,
   RefreshCw,
 } from "lucide-react"
 import { editeProfile, getUserById, resetPassword, updatePhoneVerification } from "@/callAPI/users"
@@ -50,6 +51,7 @@ import { useLanguage } from "@/lib/language-provider"
 import { useRTL } from "@/hooks/use-rtl"
 import PaymentPage from "@/app/payment/page"
 import { mediaURL } from "@/callAPI/utiles";
+import { ThemeToggle } from "@/components/theme-toggle"
 
 // Animation variants
 const containerVariants = {
@@ -807,7 +809,9 @@ Please return ONLY a JSON response in this format:
                       >
                         <tab.icon className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
                       </motion.div>
+                       <span className="px-1">
                       {tab.label}
+                      </span>
                     </TabsTrigger>
                   </motion.div>
                 ))}
@@ -832,10 +836,13 @@ Please return ONLY a JSON response in this format:
                       <motion.div
                         animate={{ rotate: [0, 5, -5, 0] }}
                         transition={{ repeat: Number.POSITIVE_INFINITY, duration: 4 }}
+                        
                       >
                       </motion.div>
                         <CirclePlus className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
+                        <span className="px-1">
                       {t("addItem") || "Add Item"}
+                        </span>
                     </TabsTrigger>
                   
 </Link>
@@ -998,14 +1005,36 @@ Please return ONLY a JSON response in this format:
                                       </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent className="h-40">
-                                      {countriesListWithFlags.map((c) => (
-                                        <SelectItem key={c.name} value={c.name} className="text-right hover:!bg-primary/20">
-                                          <div className="flex items-center gap-2">
-                                            <FlagIcon flag={c.flag} countryCode={c.name} className="text-lg" />
-                                            <span>{t(c.name) || c.name}</span>
-                                          </div>
-                                        </SelectItem>
-                                      ))}
+                                      <div className="flex items-center gap-2 px-3 py-2 sticky top-0 bg-background border-b">
+                                        <Search className="h-4 w-4 opacity-50" />
+                                        <input 
+                                          className="flex h-8 w-full rounded-md bg-background px-3 py-1 text-sm outline-none placeholder:text-muted-foreground"
+                                          placeholder={t("Search country...")}
+                                          onChange={(e) => {
+                                            const searchField = e.target;
+                                            const value = searchField.value.toLowerCase();
+                                            const items = searchField.closest('.select-content')?.querySelectorAll('.select-item') || [];
+                                            
+                                            items.forEach(item => {
+                                              const countryName = item.textContent.toLowerCase();
+                                              const translatedName = t(item.getAttribute('data-value'))?.toLowerCase() || '';
+                                              const shouldShow = countryName.includes(value) || translatedName.includes(value);
+                                              item.style.display = shouldShow ? '' : 'none';
+                                            });
+                                          }}
+                                          dir={isRTL ? 'rtl' : 'ltr'}
+                                        />
+                                      </div>
+                                      <div className="overflow-y-auto max-h-[calc(10rem-40px)]">
+                                        {countriesListWithFlags.map((c) => (
+                                          <SelectItem key={c.name} value={c.name} className="text-right hover:!bg-primary/20 select-item" data-value={c.name}>
+                                            <div className="flex items-center gap-2">
+                                              <FlagIcon flag={c.flag} countryCode={c.name} className="text-lg" />
+                                              <span>{t(c.name) || c.name}</span>
+                                            </div>
+                                          </SelectItem>
+                                        ))}
+                                      </div>
                                     </SelectContent>
                                   </Select>
                                 </motion.div>
@@ -1417,24 +1446,47 @@ Please return ONLY a JSON response in this format:
                               </p>
                             </div>
                             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              <Switch
+                              {/* <Switch
                                 checked={theme === "dark"}
                                 onClick={() => toggleTheme()}
                                 onCheckedChange={(checked) => handleSwitchChange("darkMode", checked)}
-                              />
+                              /> */}
+                              <ThemeToggle/>
                             </motion.div>
                           </motion.div>
 
-                          <motion.div variants={itemVariants}>
-                            <LanguageToggle />
+
+
+ <motion.div
+                            className="flex items-center justify-between p-4 rounded-lg bg-background border border-border/50 hover:border-primary/30 transition-colors"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.02 }}
+                          >
+                            <div>
+                              <h3 className={`font-medium text-lg ${isRTL?'force-rtl':''}`}>{t("changeLanguage") || "Change Language"}</h3>
+                              <p className="text-sm text-foreground/70">
+                                {t("changeLanguageDescription") || "Change the language of the platform."}
+                              </p>
+                            </div>
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              {/* <Switch
+                                checked={theme === "dark"}
+                                onClick={() => toggleTheme()}
+                                onCheckedChange={(checked) => handleSwitchChange("darkMode", checked)}
+                              /> */}
+                              <LanguageToggle />
+                            </motion.div>
                           </motion.div>
+                          {/* <motion.div variants={itemVariants}>
+                            <LanguageToggle />
+                          </motion.div> */}
                         </motion.div>
                       </CardContent>
                        <CardFooter className="flex justify-end rtl:justify-start bg-background border-t border-border/50">
                         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                           <Button
                             onClick={(e)=>{handleSubmit(e)}}
-                            className="shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="shadow-lg hover:shadow-xl transition-all duration-300 mt-4"
                           >
                             {t("SaveChanges") || "Save Changes"}
                           </Button>

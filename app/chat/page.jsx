@@ -383,7 +383,7 @@ const Messages = () => {
             >
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search conversations..."
+                placeholder={t("Searchconversations") || "Search conversations ...."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -808,6 +808,12 @@ const Messages = () => {
                 <p className="text-muted-foreground">
                   {t("Chooseaswapoffertostartchatting") || "Choose a swap offer to start chatting"}
                 </p>
+                <Link href="/products" className=" text-2xl ">
+                 <Button variant="link"  className="mt-4 hover:no-underline text-primary/90 hover:text-primary/80 border border-primary/90 px-4 py-2 border-primary/90 hover:scale-105 transition-transform">
+                  {t("makeNewOfferToStartChatting") || "Make a new offer to start chatting"}
+                </Button>
+                </Link>
+               
               </div>
             </motion.div>
           )}

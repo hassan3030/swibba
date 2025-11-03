@@ -93,10 +93,10 @@ export function Footer() {
             <h3 className="mb-4 text-lg text-primary/90 font-bold">{t("categories")}</h3>
             <ul className="space-y-2 text-sm">
               {[
-                { href: "/categories/electronics", label: t("electronics") },
-                { href: "/categories/fashion", label: t("fashion") },
-                { href: "/categories/home", label: t("home") },
-                { href: "/categories/beauty", label: t("beauty") },
+                { href: "/categories/realEstate", label: t("realestate") },
+                { href: "/categories/books", label: t("books") },
+                { href: "/categories/software", label: t("software") },
+                { href: "/categories/jewelry", label: t("jewelry") },
               ].map((link, index) => (
                 <motion.li
                   key={link.href}
@@ -105,7 +105,7 @@ export function Footer() {
                   transition={{ delay: index * 0.1, duration: 0.3 }}
                 >
                   <motion.div variants={linkVariants} whileHover="hover">
-                    <Link href={link.href} className="text-primary/70 hover:text-primary transition-colors">
+                    <Link href={link.href} className="text-primary/70 hover:text-primary capitalize transition-colors">
                       {link.label}
                     </Link>
                   </motion.div>

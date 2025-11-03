@@ -497,19 +497,16 @@ export function Header() {
                   <DropdownMenuTrigger asChild className="z-[100000000]">
                     <motion.div variants={buttonVariants} whileHover="hover" >
                     <Button variant="ghost" size="sm" className="gap-2  hover:text-popover/80   border border-none">
-                       
                       
-
-                        {user?.avatar ? (
                           <Avatar className="h-6 w-6 rounded-full object-cover">
-                          <AvatarImage src={user?.avatar || "placeholder.svg"} alt={user?.first_name || t("account")} />
+                          <AvatarImage src={`${mediaURL}${user?.avatar}` || "placeholder.svg"} alt={user?.first_name || t("account")} />
                           <AvatarFallback className="bg-primary text-black dark:bg-primary/50 dark:text-black">
                             {String(user?.first_name).charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        ) : (
-                          <User className="h-4 w-4" />
-                        )}
+                       
+                          {/* <User className="h-4 w-4" /> */}
+                        
                         <span>{(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}</span>
                       </Button>
                     </motion.div>
@@ -633,18 +630,18 @@ export function Header() {
                 <>
                   {/* Notifications */}
                   <motion.div custom={5} variants={itemVariants}>
-                    <Link href="/recived-items" className="relative">
+                    <Link href="/recived-items" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80 "
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
                         >
-                          <BiCartDownload  className="h-5 w-5" />
+                          <BiCartDownload className="h-5 w-5" />
                           <AnimatePresence>
                             {notificationsLength > 0 && (
                               <motion.span
-                                className="absolute animate-bounce -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground dark:text-black"
+                                className="absolute animate-bounce -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary/90 text-xs text-primary-foreground dark:text-black"
                                 variants={badgeVariants}
                                 initial="initial"
                                 animate="animate"
@@ -655,6 +652,9 @@ export function Header() {
                             )}
                           </AnimatePresence>
                           <span className="sr-only">{t("notifications") || "Recived Offers"}</span>
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                            {t("notifications") || "Received Offers"}
+                          </span>
                         </Button>
                       </motion.div>
                     </Link>
@@ -662,19 +662,18 @@ export function Header() {
 
                   {/* Cart */}
                   <motion.div custom={6} variants={itemVariants}>
-                    <Link href="/send-items" className="relative ">
+                    <Link href="/send-items" className="relative z-[100000] ">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80 "
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
                         >
-                        
                           <TbShoppingCartUp className="h-5 w-5" />
                           <AnimatePresence>
                             {cartLength > 0 && (
                               <motion.span
-                                className="absolute  -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground dark:text-black"
+                                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground dark:text-black"
                                 variants={badgeVariants}
                                 initial="initial"
                                 animate="animate"
@@ -685,18 +684,22 @@ export function Header() {
                             )}
                           </AnimatePresence>
                           <span className="sr-only">{t("sendoffers") || "Send Offers"}</span>
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                            {t("sendoffers") || "Send Offers"}
+                          </span>
                         </Button>
                       </motion.div>
                     </Link>
                   </motion.div>
+                  
                   {/* Wishlist */}
                   <motion.div custom={7} variants={itemVariants}>
-                      <Link href="/wishList" className="relative">
+                      <Link href="/wishList" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80 "
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
                         >
                           <Heart className="h-5 w-5" />
                           <AnimatePresence>
@@ -713,6 +716,9 @@ export function Header() {
                             )}
                           </AnimatePresence>
                           <span className="sr-only">{t("wishlist") || "wishlist"}</span>
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                            {t("wishlist") || "Wishlist"}
+                          </span>
                         </Button>
                       </motion.div>
                     </Link>
@@ -725,7 +731,7 @@ export function Header() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80  group"
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
                         >
                           <MessageCircle className="h-5 w-5" />
                           <AnimatePresence>
@@ -741,7 +747,8 @@ export function Header() {
                               </motion.span>
                             )}
                           </AnimatePresence>
-                          <span className="pointer-events-none absolute -bottom-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                          <span className="sr-only">{t("messages") || "Messages"}</span>
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                             {t("messages") || "Messages"}
                           </span>
                         </Button>
@@ -756,11 +763,11 @@ export function Header() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80  group"
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
                         >
                           <PlusCircle className="h-6 w-6" />
-                          <span className="pointer-events-none absolute -bottom-8 right-0 z-[100000] hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
-                            {t("addanewitem") || "  Add a new item"}
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                            {t("addanewitem") || "Add a new item"}
                           </span>
                         </Button>
                       </motion.div>
@@ -769,34 +776,30 @@ export function Header() {
 
                   {/* lang and theme */}
                   <motion.div custom={10} variants={itemVariants}>
-                  
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80  group"
+                          className="relative hover:text-popover/80 group"
                         >
                           <LanguageToggle className="h-6 w-6" />
-                         
+                          
                         </Button>
                       </motion.div>
-                
                   </motion.div>
+                  
                   <motion.div custom={11} variants={itemVariants}>
-                   
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
                         <Button 
                           variant="ghost"
                           size="icon"
-                          className="relative  hover:text-popover/80  group"
+                          className="relative hover:text-popover/80 group"
                         >
                           <ThemeToggle className="h-6 w-6" />
-                          
+                         
                         </Button>
                       </motion.div>
-               
                   </motion.div>
-
 
                 </>
               ) : null}
@@ -875,7 +878,7 @@ export function Header() {
                             <div className="relative">
                               <Avatar className="h-12 w-12">
                                 <AvatarImage
-                                src={user?.avatar || "placeholder.svg"}
+                                src={`${mediaURL}${user?.avatar}` || "placeholder.svg"}
                                 alt={user?.first_name || t("account")}
                                 />
                                 <AvatarFallback className="bg-primary text-black dark:bg-primary dark:text-black">

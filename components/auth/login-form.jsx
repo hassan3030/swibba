@@ -289,7 +289,7 @@ export function LoginForm() {
             </Button>
 
 
-
+{/* 
             <Button
              whileHover="hover" whileTap="tap" 
               // type="submit"
@@ -304,7 +304,7 @@ export function LoginForm() {
               ) : (
                 <FaGoogle  className="w-5 h-5"/>
               )}
-            </Button>
+            </Button> */}
           </motion.div>
 
           <div className="relative flex items-center justify-center">

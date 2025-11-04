@@ -481,7 +481,7 @@ export function RegisterForm() {
               </Button>
 
 
-              <Button
+              {/* <Button
                 whileHover="hover" whileTap="tap"
                 className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg"
                 onClick={()=>{handleSignupByGoogle()}}
@@ -516,7 +516,7 @@ export function RegisterForm() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </Button>
+              </Button> */}
             </motion.div>
 
             <motion.div

@@ -1632,7 +1632,7 @@ else{
                                     name="allowed_categories"
                                     render={({ field }) => (
                                       <FormItem
-                                        className="flex flex-row items-start space-x-2 space-y-0 rounded-md border p-3 bg-card border-input hover:scale-105 hover:border-primary transition-all"
+                                        className="flex flex-row rtl:flex-row-reverse items-start space-x-2 space-y-0 rounded-md border p-3 bg-card border-input hover:scale-105 hover:border-primary transition-all"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -1692,7 +1692,7 @@ else{
                                         size="sm"
                                         onClick={() => {requestAiPriceEstimate() }}
                                         disabled={isEstimating}
-                                        className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-card hover:border-primary transition-all relative"
+                                        className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:text-foreground hover:bg-card hover:border-primary transition-all relative"
                                       >
                                         {isEstimating ? (
                                           <>
@@ -1765,7 +1765,8 @@ else{
                       <Button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="w-full py-3 rounded-xl bg-card border border-border text-foreground font-semibold shadow-md hover:bg-card/80 hover:border-primary transition-all"
+                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
+
                       >
                         {t("goBack")}
                       </Button>

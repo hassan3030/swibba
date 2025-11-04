@@ -16,8 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { cn } from "@/lib/utils"
-import { login } from "@/callAPI/users"
-
+import { login  , loginByGoogle} from "@/callAPI/users"
+import { FaGoogle } from "react-icons/fa6";
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -165,6 +165,11 @@ export function LoginForm() {
       setIsLoading(false)
     }
   }
+// login by google 
+  const handleLoginByGoogle = async ()=>{
+
+
+  }
 
   return (
     <motion.div className="w-full" variants={containerVariants} initial="hidden" animate="visible">
@@ -263,9 +268,12 @@ export function LoginForm() {
         </motion.div>
 
         <motion.div className="flex flex-col gap-4" variants={itemVariants}>
-          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+          <motion.div variants={buttonVariants} className="flex flex-row gap-4">
+         
+
             <Button
               type="submit"
+               whileHover="hover" whileTap="tap"
               className={cn("w-full bg-primary text-primary-foreground hover:bg-primary/90")}
               disabled={isLoading}
               onClick={onSubmit}
@@ -277,6 +285,24 @@ export function LoginForm() {
                 </>
               ) : (
                 t("signIn") || "Sign In"
+              )}
+            </Button>
+
+
+
+            <Button
+             whileHover="hover" whileTap="tap" 
+              // type="submit"
+              className={cn("w-full bg-primary text-primary-foreground hover:bg-primary/90")}
+              disabled={isLoading}
+              onClick={()=>{handleLoginByGoogle()}}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                </>
+              ) : (
+                <FaGoogle  className="w-5 h-5"/>
               )}
             </Button>
           </motion.div>

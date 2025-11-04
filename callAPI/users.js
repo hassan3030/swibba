@@ -695,3 +695,78 @@ export const resetPassword = async (password, token) => {
     return handleApiError(error, "Reset Password");
   }
 };
+
+
+
+
+// login By Google
+export const loginByGoogle = async () => {
+  try {
+    if (!password || !token) {
+      throw new Error("New password and token are required");
+    }
+
+    if (password.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    const response = await axios.post(
+      // `${baseURL}auth/reset-password`,
+      `${baseURL}auth/password/reset`,
+      {
+        password,
+        token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Password reset successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Reset Password");
+  }
+};
+
+
+// sign up  By Google
+export const signupByGoogle = async () => {
+  try {
+    if (!password || !token) {
+      throw new Error("New password and token are required");
+    }
+
+    if (password.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    const response = await axios.post(
+      // `${baseURL}auth/reset-password`,
+      `${baseURL}auth/password/reset`,
+      {
+        password,
+        token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Password reset successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Reset Password");
+  }
+};
+

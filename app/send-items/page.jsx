@@ -36,7 +36,8 @@ import {
   Play,
   Camera,
   MapPin,
-  ArrowRightLeft
+  ArrowRightLeft,
+  X,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -126,6 +127,7 @@ const SendItems = () => {
   const [showComleteDialog, setShowComleteDialog] = useState(false)
   const [myUserId, setMyUserId] = useState()
   const [isLoading, setIsLoading] = useState(true)
+  const [hiddenHints, setHiddenHints] = useState(new Set()) // Track hidden hints by offer ID
 
   const [pendingDelete, setPendingDelete] = useState({
     idItem: null,
@@ -620,7 +622,7 @@ const SendItems = () => {
                       )}
                       
                       {/* Top-right screenshot button for all cards */}
-                      <div className="absolute z-30 mb-4 top-1 right-2 bg-white/80 rounded-full ">
+                      <div className="absolute z-30 mb-4 top-1 right-2 bg-white/80 rounded-full" id={`screenshot-btn-${offer.id}`}>
                         <Button
                           size="icon"
                           // variant="ghost"
@@ -641,6 +643,8 @@ const SendItems = () => {
                                 link.href = canvas.toDataURL()
                                 link.click()
                                 toast.success(t("Screenshot saved") || "Screenshot saved successfully!")
+                                // Hide the hint when screenshot is taken
+                                setHiddenHints(prev => new Set([...prev, offer.id]))
                               }
                             } catch (error) {
                               toast.error(t("Failed to take screenshot") || "Failed to take screenshot")
@@ -650,6 +654,74 @@ const SendItems = () => {
                           <Camera className="h-4 w-4 text-primary" />
                         </Button>
                       </div>
+                      
+                      {/* Hint tooltip for accepted offers - pointing to screenshot icon */}
+                      {offer.status_offer === "accepted" && !hiddenHints.has(offer.id) && (
+                        <motion.div
+                          className="absolute z-40 top-12 right-2 w-64 p-3 bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-400 dark:border-yellow-600 rounded-lg shadow-lg"
+                          initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                        >
+                          {/* Close button */}
+                          <button
+                            onClick={() => {
+                              setHiddenHints(prev => new Set([...prev, offer.id]))
+                            }}
+                            className="absolute top-1 right-1 p-1 rounded-full hover:bg-yellow-100 dark:hover:bg-yellow-800/50 transition-colors"
+                            aria-label="Close hint"
+                          >
+                            <X className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                          </button>
+                          
+                          {/* Arrow pointing up to screenshot icon */}
+                          <motion.div 
+                            className="absolute -top-2 right-6"
+                            initial={{ y: -5 }}
+                            animate={{ y: 0 }}
+                            transition={{ 
+                              delay: 0.5,
+                              repeat: Infinity,
+                              repeatType: "reverse",
+                              duration: 1.5,
+                              ease: "easeInOut"
+                            }}
+                          >
+                            {/* Arrow shape pointing upward */}
+                            <svg 
+                              width="16" 
+                              height="16" 
+                              viewBox="0 0 16 16" 
+                              fill="none" 
+                              className="text-yellow-400 dark:text-yellow-600"
+                            >
+                              <path 
+                                d="M8 0L4 8H12L8 0Z" 
+                                fill="currentColor"
+                              />
+                              <path 
+                                d="M8 0L12 8H4L8 0Z" 
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="0.5"
+                              />
+                            </svg>
+                          </motion.div>
+                          
+                          <div className="flex items-start gap-2 pr-4">
+                            <Camera className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                                {t("TakeScreenshot") || "Take a Screenshot!"}
+                              </p>
+                              <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                                {t("IfCompletedSwapAllProductsHidden") || "If the swap is completed, all products will be hidden"}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
                       <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5 pb-4 pt-9">
                         {/* Top Section: User Info & Status Badge */}
                         <div className="flex items-center justify-between gap-4 mb-4">

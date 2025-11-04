@@ -1,7 +1,12 @@
 export const translations = {
   en  :{
+
+    allItemsInOffer:"All Items In Offer", 
 changeLanguage:"Change Language",
 changeLanguageDescription:"Change the language of the platform.",
+
+TakeScreenshot: "Take a Screenshot!",
+IfCompletedSwapAllProductsHidden: "If the swap is completed, all products will be hidden",
 
 
     makeNewOfferToStartChatting: "Make a new offer to start chatting",
@@ -1282,6 +1287,12 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+
+    allItemsInOffer:" جميع الكمية في العرض ", 
+    
+TakeScreenshot: "التقط لقطة شاشة!",
+IfCompletedSwapAllProductsHidden: "بعد اكتمال عملية التبديل، سيتم إخفاء جميع المنتجات",
+
     changeLanguage:"تغيير اللغة",
 changeLanguageDescription:"تغيير اللغة من الإنجليزية إلى العربية والعكس.",
 

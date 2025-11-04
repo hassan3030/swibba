@@ -13,7 +13,7 @@ import { Loader2, Filter, X, Calendar, MapPin, Banknote , Package, ShoppingBag, 
 import { ItemCardProfile } from "@/components/products/item-card-profile"
 import { ItemsListSkeleton } from "@/components/loading/items-list-skeleton"
 import { categoriesName, itemsStatus, countriesList } from "@/lib/data"
-import { getProductsEnhanced } from "@/callAPI/products"
+import { getProductsEnhanced, getProducts } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
 import { getAllCategories } from "@/callAPI/static"
 import { useLanguage } from "@/lib/language-provider"
@@ -122,13 +122,15 @@ export function ItemsList({
   showSwitchHeart = true,
   defaultCategory = "all",
   LinkItemOffer=false,
+  totalCount = null,
+  useApiPagination = false,
 }) {
   const [displayedItems, setDisplayedItems] = useState(items || [])
   const [isLoading, setIsLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [category, setCategory] = useState(defaultCategory)
   const [page, setPage] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
+  const [totalItems, setTotalItems] = useState(totalCount !== null ? totalCount : (items?.length || 0))
   const [showFilterSidebar, setShowFilterSidebar] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
   const { toast } = useToast()
@@ -169,12 +171,21 @@ export function ItemsList({
   const [catLevelsTree, setCatLevelsTree] = useState([])
   const router = useRouter()
   const { t } = useTranslations()
-  const itemsPerPage = 100
+  const itemsPerPage = 10
 
   // Sync defaultCategory with category state
   useEffect(() => {
     setCategory(defaultCategory)
   }, [defaultCategory])
+
+  // Initialize totalItems when items are passed as props or totalCount is provided
+  useEffect(() => {
+    if (totalCount !== null) {
+      setTotalItems(totalCount)
+    } else if (items && items.length > 0) {
+      setTotalItems(items.length)
+    }
+  }, [items, totalCount])
 
   // Load sub-level options from categories
   useEffect(() => {
@@ -301,7 +312,10 @@ export function ItemsList({
         //    console.log('Date to filter applied:', filters.dateRange.to)
       }
 
-      const response = await getProductsEnhanced(apiFilters)
+      // Use getProducts when useApiPagination is true, otherwise use getProductsEnhanced
+      const response = useApiPagination 
+        ? await getProducts({}, apiFilters) 
+        : await getProductsEnhanced(apiFilters)
       // console.log('Filter response:', { 
       //   success: response.success, 
       //   dataLength: response.data?.length, 
@@ -311,7 +325,11 @@ export function ItemsList({
       
       if (response.success) {
         setDisplayedItems(response.data || [])
-        setTotalItems(response.total || response.count || 0)
+        // Use totalCount prop if provided and response doesn't have total, otherwise use response total
+        const calculatedTotal = totalCount !== null && (!response.total || response.total === response.count) 
+          ? totalCount 
+          : (response.total || response.count || 0)
+        setTotalItems(calculatedTotal)
       } else {
         // console.error('Failed to fetch items:', response.error)
         setDisplayedItems([])
@@ -326,9 +344,9 @@ export function ItemsList({
     }
   }
 
-  // API-based filtering and pagination - only when no items are passed as props
+  // API-based filtering and pagination - when no items are passed, or useApiPagination is true, or totalCount is provided
   useEffect(() => {
-    if (!items || items.length === 0) {
+    if (!items || items.length === 0 || useApiPagination || totalCount !== null) {
       fetchFilteredItems()
     } else {
       // Use passed items directly and apply local filtering
@@ -465,7 +483,7 @@ export function ItemsList({
       setTotalItems(filteredItems.length)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, searchTerm, filters, page, items])
+  }, [category, searchTerm, filters, page, items, useApiPagination, totalCount])
 
  
 
@@ -474,8 +492,8 @@ export function ItemsList({
   
   // If items are passed as props, handle local pagination
   const paginatedItems = (() => {
-    if (!items || items.length === 0) {
-      // API mode - use all displayedItems
+    if (!items || items.length === 0 || useApiPagination || totalCount !== null) {
+      // API mode - use all displayedItems (API already handles pagination)
       return Array.isArray(displayedItems) ? displayedItems : []
     } else {
       // Local mode - apply pagination to displayedItems
@@ -807,6 +825,8 @@ export function ItemsList({
                 ))}
               </AnimatePresence>
             </motion.div>
+
+           
             <motion.div variants={paginationVariants} initial="hidden" animate="visible">
               <SimplePagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
             </motion.div>
@@ -1373,7 +1393,7 @@ export function ItemsList({
 function SimplePagination({ currentPage, totalPages, onPageChange }) {
   const { t } = useTranslations()
 
-  if (totalPages <= 1) return null
+  // if (totalPages <= 1) return null
 
   return (
     <motion.div

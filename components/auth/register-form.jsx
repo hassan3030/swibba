@@ -13,8 +13,10 @@ import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-import { register } from "@/callAPI/users"
+import { register , signupByGoogle } from "@/callAPI/users"
 import { Progress } from "@/components/ui/progress"
+import { FaGoogle } from "react-icons/fa6";
+
 
 // Animation variants
 const containerVariants = {
@@ -193,6 +195,13 @@ export function RegisterForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+
+  // login by google 
+  const handleSignupByGoogle = async ()=>{
+
+
   }
 
   return (
@@ -430,8 +439,9 @@ export function RegisterForm() {
           </motion.div>
 
           <motion.div className="flex flex-col gap-4" variants={itemVariants}>
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+            <motion.div variants={buttonVariants}  className="flex flex-row gap-4">
               <Button
+              whileHover="hover" whileTap="tap"
                 type="submit"
                 className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg"
                 onClick={onSubmit}
@@ -465,6 +475,44 @@ export function RegisterForm() {
                     >
                       <UserPlus className="mr-2 h-4 w-4 mx-1" />
                       {t("CreateAccount") || "Create Account"}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Button>
+
+
+              <Button
+                whileHover="hover" whileTap="tap"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg"
+                onClick={()=>{handleSignupByGoogle()}}
+                disabled={isLoading}
+              >
+                <AnimatePresence mode="wait">
+                  {isLoading ? (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center"
+                    >
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                        className="mr-2"
+                      >
+                        <Loader2 className="h-4 w-4" />
+                      </motion.div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="create"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center"
+                    >
+                <FaGoogle  className="w-5 h-5"/>
                     </motion.div>
                   )}
                 </AnimatePresence>

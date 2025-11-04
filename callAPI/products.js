@@ -44,7 +44,8 @@ export const getAvailableAndUnavailableProducts = async (user_id) => {
 };
 
 // Get all products with smart filtering based on authentication and filters
-export const getProducts = async (filters = {} , additionalParams = {}) => {
+export const getProducts = async (filters = {} , additionalParams = {} , limitFrom=0 , limitTo=0) => {
+ let limitProducts = limitTo - limitFrom
   // Get optional authentication - doesn't throw error if not authenticated
   const { token, userId } = await getOptionalAuth()
   
@@ -78,8 +79,27 @@ export const getProducts = async (filters = {} , additionalParams = {}) => {
     filter: finalFilter
   }
   
-  // Combine base params with additional params if they exist
-  const finalParams = hasAdditionalParams ? { ...baseParams, ...additionalParams } : baseParams
+  // Pagination support - check if page and limit are in filters or additionalParams
+  let page = filters.page || additionalParams.page
+  let limit = filters.limit || additionalParams.limit
+  
+  if (page && limit) {
+    baseParams.limit = parseInt(limit) || 10
+    baseParams.offset = ((parseInt(page) || 1) - 1) * baseParams.limit
+  } else if (limit) {
+    baseParams.limit = parseInt(limit)
+  } else if (limitTo > limitFrom) {
+    // Use legacy limitFrom/limitTo if provided
+    baseParams.limit = limitProducts
+    baseParams.offset = limitFrom
+  }
+  
+  // Combine base params with additional params if they exist (but exclude page/limit to avoid duplicates)
+  let finalParams = baseParams
+  if (hasAdditionalParams) {
+    const { page: _, limit: __, ...restAdditionalParams } = additionalParams
+    finalParams = { ...baseParams, ...restAdditionalParams }
+  }
   
   let response;
   try {
@@ -92,6 +112,9 @@ export const getProducts = async (filters = {} , additionalParams = {}) => {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
+      total: response.data.meta?.total_count || response.data.data?.length || 0,
+      page: page ? parseInt(page) : 1,
+      limit: baseParams.limit || response.data.data?.length || 0,
       message: "Products retrieved successfully",
     }
   } catch (error) {

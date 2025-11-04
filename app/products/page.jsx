@@ -18,14 +18,19 @@ const containerVariants = {
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
   const [showSwitchHeart, setShowSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true)
-      const productsData = await getProducts()
-      setProducts(productsData.data)
+      // Fetch first page with limit 10 to get total count
+      const productsData = await getProducts({}, { page: 1, limit: 10 })
+      if (productsData.success) {
+        setProducts(productsData.data)
+        setTotalCount(productsData.total || 0)
+      }
 
       const token = await getCookie()
       if (token) setShowSwitchHeart(true)
@@ -60,7 +65,13 @@ export default function ProductsPage() {
         {/* <HeaderComp /> */}
       </motion.div>
       <motion.div variants={containerVariants} initial="hidden" animate="visible" >
-        <ItemsList items={products} showbtn={true} showSwitchHeart={showSwitchHeart} />
+        <ItemsList 
+          items={products} 
+          showbtn={true} 
+          showSwitchHeart={showSwitchHeart} 
+          totalCount={totalCount}
+          useApiPagination={true}
+        />
       </motion.div>
     </motion.div>
   )

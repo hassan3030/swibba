@@ -998,7 +998,7 @@ else{
                                   <SelectContent className="bg-background border-input max-h-40">
                                     {parentCategories.map((category) => (
                                       <SelectItem key={category.id} value={category.name}>
-                                        {`${isRTL ? category.translations?.[1]?.name || category.name : category.translations?.[0]?.name || category.name}`}
+                                      {isRTL ? category.translations?.[1]?.name  : category.translations?.[0]?.name }
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -1382,14 +1382,15 @@ else{
 
                               return (
                                 <FormField
+                                className=""
                                   key={category}
                                   control={form.control}
                                   name="allowed_categories"
                                   render={({ field }) => (
                                     <FormItem
                                       key={category}
-                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-border bg-card p-4 shadow-sm hover:border-primary transition-all hover:shadow-md"
-                                    >
+                                      className="flex flex-row rtl:flex-row-reverse items-start space-x-3 space-y-0  rounded-xl border border-border bg-card p-4 shadow-sm hover:border-primary transition-all hover:shadow-md"
+                                      >
                                       <FormControl>
                                         <Checkbox
                                           checked={field.value?.includes(category)}
@@ -1409,7 +1410,7 @@ else{
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal capitalize text-foreground">
+                                      <FormLabel className="font-normal capitalize text-foreground ">
                                         {t(category) || category}
                                       </FormLabel>
                                     </FormItem>
@@ -1566,7 +1567,7 @@ else{
                                       size="sm"
                                       onClick={() => {requestAiPriceEstimate() }}
                                       disabled={isEstimating}
-                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:bg-card hover:border-primary transition-all relative"
+                                      className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background !text-foreground  hover:bg-background/80 hover:border-primary transition-all relative"
                                     >
                                       {isEstimating ? (
                                         <>
@@ -1656,9 +1657,10 @@ else{
                         <Button
                           type="button"
                           onClick={() => setStep(1)}
-                          className="w-full py-2 rounded-xl bg-card border border-border text-foreground font-semibold shadow-md hover:bg-card/80 hover:border-primary transition-all"
+                          className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
+
                         >
-                          {t("Back") || "Back"}
+                          {t("goBack") || "Back"}
                         </Button>
                         <Button
                           type="submit"

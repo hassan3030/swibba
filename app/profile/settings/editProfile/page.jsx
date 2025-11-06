@@ -41,7 +41,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { z } from "zod"
 import { countriesList } from "@/lib/data"
 import { countriesListWithFlags, validatePhoneNumber } from "@/lib/countries-data"
-import PhoneVerificationPopup from "@/components/profile/phone-verification-popup"
+import { PhoneVerificationModal } from "@/components/phone-verification"
 import LocationMap from "@/components/general/location-map"
 import FlagIcon from "@/components/general/flag-icon"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -1271,7 +1271,6 @@ onClick={()=>{ handleKYC() }}
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
                                   htmlFor="phone_number"
-
                                    className={`text-sm font-medium text-foreground flex items-center gap-2 rtl:flex-row-reverse ${isRTL?'force-rtl':''}`}
                                 >
                                   {t("phoneNumber") || "Phone Number"}
@@ -1279,10 +1278,9 @@ onClick={()=>{ handleKYC() }}
                                     <motion.div
                                       initial={{ scale: 0 }}
                                       animate={{ scale: 1 }}
-                                       className="flex items-center gap-1 text-secondary2 rtl:flex-row-reverse"
+                                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                                       className="flex items-center gap-1 text-green-600 dark:text-green-400 rtl:flex-row-reverse"
                                     >
-                                      <Shield className="h-4 w-4" />
-                                      <span className="text-xs">{t("verified") || "Verified"}</span>
                                     </motion.div>
                                   )}
                                 </Label>
@@ -1294,7 +1292,14 @@ onClick={()=>{ handleKYC() }}
                                       value={phone_number}
                                       type="tel"
                                       onChange={(e) => handlePhoneChange(e.target.value)}
-                                      className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${phoneValidationError ? 'border-destructive focus:border-destructive' : ''}`}
+                                      
+                                      className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${
+                                        phoneValidationError 
+                                          ? 'border-destructive focus:border-destructive' 
+                                          : verified === 'true' 
+                                            ? 'bg-green-50 dark:bg-green-950/20 border-green-300 dark:border-green-700 ' 
+                                            : ''
+                                      }`}
                                       placeholder={t("enterPhoneNumber") || "Enter phone number"}
                                     />
                                     {phoneValidationError && (
@@ -1307,19 +1312,34 @@ onClick={()=>{ handleKYC() }}
                                         <span>{phoneValidationError}</span>
                                       </motion.div>
                                     )}
+                                   
                                   </motion.div>
-                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                                  <motion.div 
+                                    variants={buttonVariants} 
+                                    whileHover={verified === 'true' ? {} : "hover"} 
+                                    whileTap={verified === 'true' ? {} : "tap"}
+                                  >
                                     <Button
                                       type="button"
                                       variant={verified === 'true' ? "secondary" : "outline"}
                                       size="sm"
-                                      onClick={() => setShowPhoneVerification(true)}
-                                      className={`${verified === 'true' ? 'bg-secondary2/10 text-secondary2 border-secondary2/30 hover:bg-secondary2/20' : ''}`}
+                                      onClick={() => verified !== 'true' && setShowPhoneVerification(true)}
+                                      disabled={verified === 'true'}
+                                      className={`${
+                                        verified === 'true' 
+                                          ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 cursor-not-allowed opacity-90' 
+                                          : 'hover:bg-primary/10'
+                                      }`}
                                     >
                                       {verified === 'true' ? (
                                         <>
-                                           <Shield className="h-4 w-4 mr-1 rtl:ml-1 rtl:mr-0" />
-                                          {t("reverify") || "Re-verify"}
+                                          <motion.div
+                                            animate={{ rotate: [0, 10, -10, 0] }}
+                                            transition={{ duration: 2, repeat: Infinity }}
+                                          >
+                                            <Shield className="h-4 w-4 mr-1 rtl:ml-1 rtl:mr-0" />
+                                          </motion.div>
+                                          {t("verified") || "Verified"}
                                         </>
                                       ) : (
                                         <>
@@ -1670,8 +1690,8 @@ onClick={()=>{ handleKYC() }}
         </div>
       </Tabs>
 
-      {/* Phone Verification Popup */}
-      <PhoneVerificationPopup
+      {/* Phone Verification Modal */}
+      <PhoneVerificationModal
         open={showPhoneVerification}
         onOpenChange={setShowPhoneVerification}
         currentPhone={phone_number}

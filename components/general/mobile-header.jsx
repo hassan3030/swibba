@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect,useRef } from "react"
+
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
@@ -29,8 +30,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTranslations } from "@/lib/use-translations"
 import { useRouter } from "next/navigation"
-import { getCookie, decodedToken, removeCookie } from "@/callAPI/utiles"
-import { getUserById } from "@/callAPI/users"
+import { getCookie, decodedToken, removeCookie, removeTarget } from "@/callAPI/utiles"
+import { getKYC, getUserById } from "@/callAPI/users"
 import { getOffeReceived, getMessagesByUserId } from "@/callAPI/swap"
 import Image from "next/image"
 import { BiCartDownload } from "react-icons/bi";
@@ -41,6 +42,26 @@ import { useTheme } from "@/lib/theme-provider"
 import { useLanguage } from "@/lib/language-provider"
 import { getProductSearchFilter } from "@/callAPI/products"
 import { mediaURL } from "@/callAPI/utiles"
+
+const navVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: -100,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut",
+    },
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut",
+    },
+  },
+}
+
 const slideVariants = {
   closed: {
     // x: "-100%",
@@ -83,7 +104,11 @@ export function MobileHeader() {
   const [messageCount, setMessageCount] = useState(0)
   const { t } = useTranslations()
   const { isRTL, toggleLanguage } = useLanguage()
-  const { theme, toggleTheme } = useTheme()
+
+  const [showHeader, setShowHeader] = useState(true)
+  const lastScrollY = useRef(0)
+
+
 
 
   const router = useRouter()
@@ -113,6 +138,35 @@ export function MobileHeader() {
     }
     
     fetchUserData()
+  }, [])
+
+
+  // Scroll handler for hide/show header
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      const scrollDirection = scrollY > lastScrollY.current ? 'down' : 'up'
+      
+      // Control showHeader: hide after 150px when scrolling down, show when scrolling up
+      if (scrollY <= 150) {
+        setShowHeader(true)
+      } else {
+        if (scrollDirection === 'up') {
+          setShowHeader(true)
+        } else {
+          // Hide header when scrolling down AND scrollY > 150px
+          if (scrollY > 150) {
+            setShowHeader(false)
+          }
+        }
+      }
+      
+      // Update last scroll position
+      lastScrollY.current = scrollY
+    }
+    
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   const handleSearch = (e) => {
@@ -148,22 +202,39 @@ export function MobileHeader() {
 
   const handleLogout = async () => {
     await removeCookie()
+    await removeTarget()
     setUser(null)
     setIsMenuOpen(false)
     router.push("/")
     router.refresh()
   }
 
- 
+  
+  const handleKYC= async()=>{
+    const decoded = await decodedToken()
+    const kyc = await getKYC(decoded.id) 
+    if (kyc.data === false) {
+      toast({
+        title: t("completeYourProfile"),
+        description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+        variant: "default",
+      })
+      router.push(`/profile/settings/editProfile`)
+
+    }
+    else {
+        router.push(`/profile/settings/editItem/new`)
+      }
+  }
 
   return (
     <>
       {/* Mobile Header */}
       <motion.header 
-        className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        className="fixed top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        variants={navVariants}
+        initial="visible"
+        animate={showHeader ? "visible" : "hidden"}
       >
         <div className="container flex h-14 items-center justify-between px-4">
           {/* Menu Button */}
@@ -372,14 +443,14 @@ export function MobileHeader() {
                           <span className="font-medium">{t("Home") || "Home"}</span>
                         </Link>
 
-                        <Link
-                          href="/profile/settings/editItem/new"
-                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
+                        <span
+                          // href="/profile/settings/editItem/new"
+                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors hover:cursor-pointer"
+                          onClick={() => {setIsMenuOpen(false) , handleKYC()}}
                         >
                           <Plus className="h-5 w-5 " />
                           <span className="font-medium">{t("add") || "Add"}</span>
-                        </Link>
+                        </span>
 
                         <Link
                           href="/products"

@@ -297,8 +297,23 @@ export const getTarget = async () => {
 // Remove a Target 
 export const removeTarget = async () => {
   try {
+    // Remove cookie - try multiple methods to ensure it's removed
+    // First try without any options (matches how it was set)
+    Cookies.remove("Target")
+    
+    // Then try with path
     Cookies.remove("Target", { path: "/" })
-    Cookies.remove("Target", { path: "/", domain: window.location.hostname })
+    
+    // If window is available, try with domain
+    if (typeof window !== "undefined" && window.location) {
+      Cookies.remove("Target", { path: "/", domain: window.location.hostname })
+      // Also try with dot prefix for subdomain support
+      const hostname = window.location.hostname
+      if (hostname && !hostname.startsWith(".")) {
+        Cookies.remove("Target", { path: "/", domain: `.${hostname}` })
+      }
+    }
+    
     // console.log("Target removed successfully")
     return { success: true, message: "Target removed" }
   } catch (error) {

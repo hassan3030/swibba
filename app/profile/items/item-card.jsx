@@ -89,19 +89,11 @@ const ItemCard = ({ item }) => {
       const deleteItem = await deleteProduct(item.id)
       if (deleteItem.success) {
         toast({
-          title: t("itemUpdated") || "Item Updated",
-          description: t("itemQuantitySetToZero") || "Item quantity has been set to 0 in all offers.",
-          variant: "default",
-        })
-      } else {
-        // Item doesn't exist in offers, delete it completely
-        await deleteProduct(item.id)
-        toast({
           title: t("itemDeleted") || "Item Deleted",
           description: t("itemDeletedDesc") || "The item has been successfully deleted.",
           variant: "default",
         })
-      }
+      } 
       router.refresh()
     } catch (error) {
       toast({

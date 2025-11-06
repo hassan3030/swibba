@@ -1,6 +1,6 @@
 "use client"
 import { List, ListChecks, MessageCircle, Verified } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BiCartDownload } from "react-icons/bi";
@@ -41,11 +41,11 @@ import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/lib/theme-provider"
-import { removeCookie, getCookie, decodedToken } from "@/callAPI/utiles"
+import { removeCookie, getCookie, decodedToken, removeTarget } from "@/callAPI/utiles"
 import { getOfferById, getOffeReceived, getWishList, getMessage, getMessagesByUserId } from "@/callAPI/swap"
 import { getProductSearchFilter } from "@/callAPI/products"
 import { categoriesName } from "@/lib/data"
-import { getUserById } from "@/callAPI/users"
+import { getKYC, getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
@@ -59,12 +59,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
 import { mediaURL } from "@/callAPI/utiles";
 const navVariants = {
-  hidden: { opacity: 0, y: -20 },
+  hidden: { 
+    opacity: 0, 
+    y: -100,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut",
+    },
+  },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.3,
       ease: "easeOut",
     },
   },
@@ -147,6 +154,8 @@ export function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [showCategoriesBar, setShowCategoriesBar] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [showHeader, setShowHeader] = useState(true)
+  const lastScrollY = useRef(0)
 
   const router = useRouter()
   const { isRTL, toggleLanguage } = useLanguage()
@@ -159,13 +168,34 @@ export function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
+      const scrollDirection = scrollY > lastScrollY.current ? 'down' : 'up';
+      
+      // Control showHeader: hide after 150px when scrolling down, show when scrolling up
+      if (scrollY <= 150) {
+        setShowHeader(true);
+      } else {
+        if (scrollDirection === 'up') {
+          setShowHeader(true);
+        } else {
+          // Hide header when scrolling down AND scrollY > 150px
+          if (scrollY > 150) {
+            setShowHeader(false);
+          }
+        }
+      }
+      
+      // Control showCategoriesBar: hide after 100px always
       if (scrollY >= 100) {
         setShowCategoriesBar(false);
-        setIsScrolled(true);
       } else {
         setShowCategoriesBar(true);
-        setIsScrolled(false);
       }
+      
+      // Update isScrolled state for styling
+      setIsScrolled(scrollY >= 100);
+      
+      // Update last scroll position
+      lastScrollY.current = scrollY;
     }
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -210,6 +240,25 @@ export function Header() {
       setUser(userData.data)
     }
   }
+
+  
+  const handleKYC= async()=>{
+    const decoded = await decodedToken()
+    const kyc = await getKYC(decoded.id) 
+    if (kyc.data === false) {
+      toast({
+        title: t("completeYourProfile"),
+        description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+        variant: "default",
+      })
+      router.push(`/profile/settings/editProfile`)
+
+    }
+    else {
+        router.push(`/profile/settings/editItem/new`)
+      }
+  }
+
 
   const getWishlist = async () => {
     const token = await getCookie()
@@ -277,6 +326,7 @@ export function Header() {
 
   const logout = async () => {
     await removeCookie()
+    await removeTarget()
     setUser(null)
     router.push("/auth/login")
     window.location.reload()
@@ -329,18 +379,17 @@ export function Header() {
     <>
 
       <motion.header
-        className={`fixed top-0  w-full border-b transition-all duration-300 !opacity-100 z-[10000000]${
+        className={`fixed top-0  w-full border-b transition-all duration-300 z-[10000000]${
           isScrolled 
             ? " !bg-white shadow-lg dark:!bg-[#121212]" 
             : " !bg-white shadow-sm dark:!bg-[#121212]"
         } dark:border-[#2a2a2a]`}
         style={{
           backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
-          opacity: 1
         }}
         variants={navVariants}
-        initial="hidden"
-        animate="visible"
+        initial="visible"
+        animate={showHeader ? "visible" : "hidden"}
       >
        
  
@@ -758,20 +807,22 @@ export function Header() {
 
                   {/* Add items */}
                   <motion.div custom={9} variants={itemVariants}>
-                    <Link href="/profile/settings/editItem/new" className="relative z-[100000]">
+                    <span className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
                           variant="ghost"
                           size="icon"
                           className="relative hover:bg-primary/80 hover:text-popover/80 group"
-                        >
+                       
+                       onClick={()=>{handleKYC()}}
+                       >
                           <PlusCircle className="h-6 w-6" />
                           <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                             {t("addanewitem") || "Add a new item"}
                           </span>
                         </Button>
                       </motion.div>
-                    </Link>
+                    </span>
                   </motion.div>
 
                   {/* lang and theme */}

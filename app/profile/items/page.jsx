@@ -121,7 +121,7 @@ export default function ManageItemsPage() {
             <CardHeader>
               <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                  <CardTitle className="text-secondary">{t("myItems") || "Your Items"}</CardTitle>
+                  <CardTitle className="text-secondary dark:text-white">{t("myItems") || "My Items"}</CardTitle>
                   <CardDescription>
                     {t("manageEditandupdate") || "Manage, edit, and update your listed items."}
                   </CardDescription>

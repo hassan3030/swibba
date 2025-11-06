@@ -16,6 +16,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { register , signupByGoogle } from "@/callAPI/users"
 import { Progress } from "@/components/ui/progress"
 import { FaGoogle } from "react-icons/fa6";
+import { decodedToken, getCookie } from "@/callAPI/utiles"
 
 
 // Animation variants
@@ -164,15 +165,18 @@ export function RegisterForm() {
           variant: "destructive",
         })
       } else {
-        const response = await register(form.getValues().email, form.getValues().password, form.getValues().userName)
 
+        const response = await register(form.getValues().email, form.getValues().password, form.getValues().userName)
         if (!response) {
           toast({
             title: t("successfully") || "Successfully",
             description:
               t("YouraccounthasbeencreatedWelcometoSwibba") || "Your account has been created. Welcome to Swibba!",
           })
-          router.push(`/profile/settings/editItem/new`)
+          router.push(`/profile/settings/editProfile`)    
+          router.refresh()
+
+          
         } else {
           toast({
             title: t("error") || "ERROR",

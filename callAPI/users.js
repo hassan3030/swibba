@@ -11,7 +11,8 @@ import {
   getTarget,
   STANDARD_ROLE_ID,
   resetPasswordURL,
-  swibbaURL
+  swibbaURL,
+  removeTarget
 } from "./utiles.js"
 
 // Authenticate user and get token
@@ -70,14 +71,7 @@ export const login = async (email, password) => {
     })
 
     // console.log("Login successful for user:", decoded.id)
-    if (getTargetId) {
-        window.location.reload()
-             window.location.replace(`/swap/${getTargetId}`);
-        } else {
-           window.location.reload()
-    window.location.replace(`/`);
-        }
-   
+    // Note: Redirect logic moved to login-form.jsx to handle product checks
 
     return {
       success: true,
@@ -517,7 +511,8 @@ export const changePassword = async (newPassword, email) => {
 // Logout user
 export const logout = async () => {
   try {
-    const result = await removeCookie()
+    await removeTarget()
+    await removeCookie()
     // console.log("User logged out successfully")
     return {
       success: true,
@@ -769,4 +764,54 @@ export const signupByGoogle = async () => {
     return handleApiError(error, "Reset Password");
   }
 };
+
+
+
+
+// Check User Has Product
+export const checkUserHasProducts = async (user_id) => {
+  try {
+    if (!user_id) {
+      throw new Error("User ID is required")
+    }
+    // const response = await axios.get(`${baseItemsURL}Items/${id}?fields=*,translations.*,images.*`)
+    const response = await axios.get(
+      `${baseItemsURL}Items`, {
+        params: {
+          fields: "*",
+          filter: {
+                  user_id: { _eq: user_id },
+                  status_swap: { _eq:  "available" },
+                },
+        }
+      })
+      
+   
+   console.log("checkUserHasProducts:",response.data.data)
+    // console.log("Product retrieved successfully, ID:", id)
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      message: "Product retrieved successfully",
+    }
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return {
+        success: true,
+        data: [],
+        count: 0,
+        message: "No products found",
+      }
+    }
+    // For other errors, still return success with count 0
+    return {
+      success: true,
+      data: [],
+      count: 0,
+      message: "No products found",
+    }
+  }
+}
+
 

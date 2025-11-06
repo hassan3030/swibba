@@ -12,12 +12,12 @@ import { useRouter } from "next/navigation"
 import { getMediaType } from "@/lib/utils"
 import { getImageProducts } from "@/callAPI/products"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
-import { decodedToken, getCookie, setTarget } from "@/callAPI/utiles"
+import { decodedToken, getCookie, removeTarget, setTarget } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 
 import { useLanguage } from "@/lib/language-provider"
-import { getKYC } from "@/callAPI/users"
+import { checkUserHasProducts, getKYC } from "@/callAPI/users"
 import { mediaURL } from "@/callAPI/utiles";
   
 
@@ -110,34 +110,84 @@ export function ItemCardProfile({
   //   }
   // }
 
+  // const makeSwap = async (e) => {
+  //   e.preventDefault()
+  //   e.stopPropagation()
+  //   const token = await getCookie()
+  //   const decoded = await decodedToken(token)
+  //   if (token) {
+  //     const kyc = await getKYC(decoded.id) /// ------------- take id user
+  //     if (kyc.data === false) {
+  //       toast({
+  //         title: t("faildSwap") || "Failed Swap",
+  //           description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+  //           variant: "destructive",
+  //       })
+  //     }
+  //     else {
+  //       router.push(`/swap/${id}`)
+  //     }
+  //   }
+  //   else {
+  //      await setTarget(id)
+  //     toast({
+  //       title: t("faildSwap") || "Failed Swap",
+  //       description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
+  //       variant: "destructive",
+  //     })
+  //     router.push(`/auth/login`)
+  //   }
+  // }
+
   const makeSwap = async (e) => {
     e.preventDefault()
     e.stopPropagation()
     const token = await getCookie()
-    const decoded = await decodedToken(token)
-    if (token) {
-      const kyc = await getKYC(decoded.id) /// ------------- take id user
-      if (kyc.data === false) {
+    const decoded = await decodedToken()
+    await setTarget(id)
+
+    try{
+      // check user exsit
+      if (token) {
+        const kyc = await getKYC(decoded.id) /// ------------- take id user
+        const makeCheckUserHasProducts = await checkUserHasProducts(decoded.id)
+        if (kyc.data === false) {
+          toast({
+            title: t("faildSwap") || "Failed Swap",
+            description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+            variant: "default",
+          })
+          router.push(`/profile/settings/editProfile`)
+        }
+        else {
+          if(makeCheckUserHasProducts.count > 0){
+            router.push(`/swap/${id}`)
+            await removeTarget()
+          }
+          else{
+            toast({
+              title: t("addItem") || "Add Item",
+              description: t("addItemToMakeSwapSesc") || "Please add new product to make swap with it",
+              variant: "default",
+            })
+            router.push(`/profile/settings/editItem/new`)
+          }
+        }
+      } else {
         toast({
           title: t("faildSwap") || "Failed Swap",
-            description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
-            variant: "destructive",
+          description: t("DescFaildSwapLogin") ||   "Invalid swap without login. Please try to login.",
+          variant: "default",
         })
+        router.push(`/auth/login`)
       }
-      else {
-        router.push(`/swap/${id}`)
-      }
+    }catch(error){
+console,log(error , "error in swap operation")
     }
-    else {
-       await setTarget(id)
-      toast({
-        title: t("faildSwap") || "Failed Swap",
-        description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
-        variant: "destructive",
-      })
-      router.push(`/auth/login`)
-    }
+   
   }
+
+
  const handleGetWishItem = async () => {
     try {
       const user = await decodedToken()

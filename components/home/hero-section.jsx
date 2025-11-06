@@ -57,7 +57,7 @@ import Image from "next/image";
             animate="visible"
             className="space-y-8"
           >
-            <div className="space-y-4 ">
+            <div className="space-y-4 mt-5  ">
               <motion.h1
                 variants={fadeIn("up", 0.2)}
                 className="text-6xl md:text-6xl font-bold leading-tight "
@@ -82,10 +82,10 @@ import Image from "next/image";
                 {/* </div> */}
               {/* </Link> */}
                 {/* <span className="gradient-text"> {t("deelDeal")}</span> */}
-              </motion.h1>
+              </motion.h1> 
               <motion.h2
                 variants={fadeIn("up", 0.4)}
-                className="text-6xl md:text-5xl font-bold text-secondary/90 leading-tight"
+                className="text-6xl md:text-5xl font-bold text-secondary/90  dark:text-white leading-tight"
               >
              {t("deelDealSlogan")}
               </motion.h2>

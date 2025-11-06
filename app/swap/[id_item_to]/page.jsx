@@ -9,17 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified, Search, Filter, X, ChevronDown } from "lucide-react"
+import { ArrowLeftRight, User, Info, AlertCircle, Plus, Minus, Verified, Search, Filter, X, ChevronDown, ArrowUp } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image" 
 import { getAvailableAndUnavailableProducts, getProductByUserId, getProductsOwnerById } from "@/callAPI/products"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { decodedToken, getCookie, validateAuth } from "@/callAPI/utiles"
+import { decodedToken, getCookie, validateAuth , removeTarget } from "@/callAPI/utiles"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "@/lib/use-translations"
-import { getUserById, getUserByProductId } from "@/callAPI/users"
-import { removeTarget } from "@/callAPI/utiles"
+import { getUserById, getUserByProductId , getKYC } from "@/callAPI/users"
 import { addOffer, getOfferById } from "@/callAPI/swap" 
 import { useParams, useRouter } from "next/navigation"
 import { useRTL } from "@/hooks/use-rtl"
@@ -28,6 +27,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getHintByName, getAllCategories } from "@/callAPI/static";
 import ItemCard from "@/components/swap/item-card"
 import { mediaURL } from "@/callAPI/utiles";
+import { TbShoppingCartUp } from "react-icons/tb";
+
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -119,6 +120,7 @@ export default function SwapPage() {
   const [otherEmail, setOtherEmail] = useState("")
   const [userData, setUserData] = useState(null)
   const [hintSwapRules, setHintSwapRules] = useState([]);
+  const [showSwapHint, setShowSwapHint] = useState(false);
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState("")
@@ -301,6 +303,13 @@ export default function SwapPage() {
     }
   }, [])
 
+  // Remove target when trying to swap with yourself
+  useEffect(() => {
+    if (currentUserId && otherUserId && currentUserId === otherUserId) {
+      removeTarget()
+    }
+  }, [currentUserId, otherUserId])
+
   // Quantity change handler
   const handleQuantityChange = useCallback((itemId, quantity, totalPrice) => {
     setItemQuantities(prev => ({
@@ -312,6 +321,25 @@ export default function SwapPage() {
       [itemId]: totalPrice
     }))
   }, [])
+
+
+  const handleKYC= async()=>{
+    const decoded = await decodedToken()
+    const kyc = await getKYC(decoded.id) 
+    if (kyc.data === false) {
+      toast({
+        title: t("completeYourProfile"),
+        description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+        variant: "default",
+      })
+      router.push(`/profile/settings/editProfile`)
+
+    }
+    else {
+        router.push(`/profile/settings/editItem/new`)
+      }
+  }
+
 
   // Selection handlers
   const handleMyItemSelect = (itemId) => {
@@ -517,8 +545,8 @@ export default function SwapPage() {
       setItemQuantities({})
       setItemTotalPrices({})
       setDisabledOffer(false)
+      setShowSwapHint(true)
       router.refresh()
-      window.location.reload()
     } catch (error) {
       toast({
         title: t("faildSwap") || "Failed Swap",
@@ -796,7 +824,7 @@ export default function SwapPage() {
                           <p className="text-foreground/70 text-lg mb-4">{t("NoProductsFound") || "You haven't any Items yet."}</p>
                           <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                             <Button
-                              onClick={() => router.push("/profile/settings/editItem/new")}
+                              onClick={() => {handleKYC()}}
                               className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3"
                             >
                               {t("AddNewItem") || "Add New Item"}
@@ -1474,6 +1502,111 @@ export default function SwapPage() {
                   >
                     <ChevronDown className="h-6 w-6" />
                   </Button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Full Screen Hint Popup */}
+          <AnimatePresence>
+            {showSwapHint && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="fixed mt-4 inset-0 z-[9999] bg-background/95 backdrop-blur-sm flex items-center justify-center"
+                onClick={() =>{ setShowSwapHint(false) , router.refresh()} }
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="relative w-full h-full flex flex-col items-center justify-center p-8"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 z-10"
+                    onClick={() =>{ setShowSwapHint(false) , router.refresh()} }
+
+                  >
+                    <X className="h-6 w-6" />
+                  </Button>
+
+                  {/* Main Content */}
+                  <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl mx-auto text-center">
+                    {/* Icon */}
+                    <motion.div
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-4"
+                    >
+                      <TbShoppingCartUp className="h-12 w-12 text-primary" />
+                    </motion.div>
+
+                    {/* Message */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="space-y-4"
+                    >
+                      <h2 className="text-4xl font-bold text-foreground">
+                        {t("checkSendOffers") || "Check Send Offers"}
+                      </h2>
+                      <p className="text-xl text-foreground/70">
+                        {t("checkSendOffersMessage") || "Your swap offer has been created successfully! Check your sent offers in the header."}
+                      </p>
+                    </motion.div>
+
+                    {/* Arrow pointing to header */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="absolute top-20 flex flex-col items-center"
+                    >
+                      <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                      >
+                        <ArrowUp className="h-12 w-12 text-primary" />
+                      </motion.div>
+                      <p className="text-sm text-foreground/60 mt-3">
+                        {/* {t("offersSend") || "Offers Send"} */}
+                      </p>
+                    </motion.div>
+
+                    {/* Action Buttons */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                      className="flex gap-4 mt-8"
+                    >
+                      <Button
+                        onClick={() => {
+                          setShowSwapHint(false)
+                          router.push("/send-items")
+                        }}
+                        className="bg-primary hover:bg-primary/80 text-white px-8 py-6 text-lg"
+                      >
+                        {t("ViewSendOffers") || "View Send Offers"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowSwapHint(false)}
+                        className="px-8 py-6 text-lg"
+                      >
+                        {t("Close") || "Close"}
+                      </Button>
+                    </motion.div>
+                  </div>
                 </motion.div>
               </motion.div>
             )}

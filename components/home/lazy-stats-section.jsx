@@ -168,11 +168,11 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               </motion.div>
             </motion.div>
             {isLoading || !hasLoaded ? (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent">
+              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent  dark:text-white">
                 ---
               </div>
             ) : (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent">
+              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent  dark:text-white">
                 {usersCountNumber}
               </div>
             )}
@@ -183,7 +183,7 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               {t('ActiveSwapers')|| 'Swapers'}
             </motion.div>
             <motion.div
-              className="w-12 h-1 bg-secondary rounded-full mt-2"
+              className="w-12 h-1 bg-secondary rounded-full mt-2  dark:bg-white"
               initial={{ width: 0 }}
               animate={{ width: 48 }}
               transition={{ delay: 1, duration: 0.8 }}
@@ -217,7 +217,7 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
                 <ShieldCheck className="h-8 w-8 md:h-12 md:w-12 text-white" />
               </motion.div>
             </motion.div>
-            <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent">
+            <div className="text-4xl md:text-6xl  dark:text-white font-bold bg-secondary bg-clip-text text-transparent">
               99.9%
             </div>
             <motion.div
@@ -227,7 +227,7 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               {t('SafeSwaps')||'Safe Swaps'}
             </motion.div>
             <motion.div
-              className="w-12 h-1 bg-secondary rounded-full mt-2"
+              className="w-12 h-1 bg-secondary rounded-full mt-2  dark:bg-white"
               initial={{ width: 0 }}
               animate={{ width: 48 }}
               transition={{ delay: 1.2, duration: 0.8 }}
@@ -262,11 +262,11 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               </motion.div>
             </motion.div>
             {isLoading || !hasLoaded ? (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent">
+              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text   dark:text-white text-transparent">
                 ---
               </div>
             ) : (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent">
+              <div className="text-4xl md:text-6xl font-bold  dark:text-white bg-secondary bg-clip-text text-transparent">
                 {itemsCountNumber}
               </div>
             )}
@@ -277,7 +277,7 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               {t('ItemsSwaps')||'Items Swaps'}
             </motion.div>
             <motion.div
-              className="w-12 h-1 bg-secondary rounded-full mt-2"
+              className="w-12 h-1 bg-secondary rounded-full mt-2  dark:bg-white"
               initial={{ width: 0 }}
               animate={{ width: 48 }}
               transition={{ delay: 1.4, duration: 0.8 }}

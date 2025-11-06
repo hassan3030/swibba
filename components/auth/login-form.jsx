@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
 
-import { Eye, EyeOff, Loader2 , Mail , Lock} from "lucide-react"
+import { Eye, EyeOff, Loader2 , Mail , Lock, Target} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,8 +16,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { cn } from "@/lib/utils"
-import { login  , loginByGoogle} from "@/callAPI/users"
+import { checkUserHasProducts, login, loginByGoogle } from "@/callAPI/users"
 import { FaGoogle } from "react-icons/fa6";
+import { getTarget, decodedToken, removeTarget } from "@/callAPI/utiles"
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -136,6 +137,7 @@ export function LoginForm() {
 
     if (!validateForm(data)) return
     setIsLoading(true)
+    const getTargetSwap = await getTarget()
 
     try {
       const response = await login(data.email, data.password)
@@ -145,14 +147,39 @@ export function LoginForm() {
           title: t("loginSuccessful") || "Login successful!",
           description: t("welcomeBack") || "Welcome back to Swibba!",
         })
-        router.push("/")
-      }
-      else{
-         toast({
-        title: t("loginFailed") || "Login failed",
-        description: t("invalidCredentials") || "Invalid email or password. Please try again.",
-        variant: "destructive",
-      })
+
+        // Check target if found
+        if (getTargetSwap) {
+          const decoded = await decodedToken()
+          if (!decoded?.id) {
+            router.push("/")
+            return
+          }
+
+          // Check if user has products
+          const productRes = await checkUserHasProducts(decoded.id)
+
+          // If no products, go to add item page
+          if (productRes.count === 0 || !productRes.data || productRes.data.length === 0) {
+            toast({
+              title: t("addItem") || "Add Item",
+              description: t("addItemToMakeSwapSesc") || "Please add new product to make swap with it",
+              variant: "default",
+            })
+            router.push(`/profile/settings/editItem/new`)
+            router.refresh()
+
+          } else {
+            // Has products: go to swap page
+            router.push(`/swap/${getTargetSwap}`)
+            await removeTarget()
+          router.refresh()
+          }
+        } else {
+          // No target: go to home
+          router.push("/")
+          router.refresh()
+        }
       }
     } catch (error) {
       toast({
@@ -163,6 +190,7 @@ export function LoginForm() {
       // console.error("Login error:", error)
     } finally {
       setIsLoading(false)
+
     }
   }
 // login by google 
@@ -276,7 +304,6 @@ export function LoginForm() {
                whileHover="hover" whileTap="tap"
               className={cn("w-full bg-primary text-primary-foreground hover:bg-primary/90")}
               disabled={isLoading}
-              onClick={onSubmit}
             >
               {isLoading ? (
                 <>

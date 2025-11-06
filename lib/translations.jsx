@@ -1,6 +1,15 @@
 export const translations = {
   en  :{
+    checkSendOffers:"Check Send Offers",
+    checkSendOffersMessage:"Your swap offer has been created successfully! Check your sent offers in the header.",
+    offersSend:"Offers Send",
+    ViewSendOffers:"View Send Offers",
 
+
+
+
+    cancelSwap: "Cancel Swap",
+    addItemToMakeSwapSesc:"Please add new product to make swap with it",
     allItemsInOffer:"All Items In Offer", 
 changeLanguage:"Change Language",
 changeLanguageDescription:"Change the language of the platform.",
@@ -1287,6 +1296,16 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+
+    checkSendOffers:"التحقق من إرسال العروض",
+    checkSendOffersMessage:"تم إنشاء عرض المبادلة الخاص بك بنجاح! تحقق من عروضك المرسلة في العنوان",
+    offersSend:"إرسال العروض",
+    ViewSendOffers:"عرض إرسال العروض",
+
+
+    cancelSwap: "إلغاء المبادلة",
+
+    addItemToMakeSwapSesc:"الرجاء إضافة منتج جديد لإجراء التبادل معه",
 
     allItemsInOffer:" جميع الكمية في العرض ", 
     

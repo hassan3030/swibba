@@ -105,7 +105,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
     <motion.div className="relative" variants={containerVariants} initial="hidden" animate="visible">
       <motion.div className="mb-4 flex items-center justify-between" variants={headerVariants}>
         <motion.h2
-          className="text-2xl font-bold  text-primary/90 bg-clip-text "
+          className="text-2xl font-bold   dark:text-white text-primary/90 bg-clip-text "
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >

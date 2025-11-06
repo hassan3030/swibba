@@ -31,7 +31,7 @@ import {
   Search,
   RefreshCw,
 } from "lucide-react"
-import { editeProfile, getUserById, resetPassword, updatePhoneVerification } from "@/callAPI/users"
+import { checkUserHasProducts, editeProfile, getKYC, getUserById, resetPassword, updatePhoneVerification } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
 import { decodedToken, getCookie, getTarget, removeTarget } from "@/callAPI/utiles"
 import { LanguageToggle } from "@/components/language-toggle"
@@ -488,6 +488,22 @@ Please return ONLY a JSON response in this format:
     }
   };
 
+  const handleKYC= async()=>{
+    const decoded = await decodedToken()
+    const kyc = await getKYC(decoded.id) 
+    if (kyc.data === false) {
+      toast({
+        title: t("completeYourProfile"),
+        description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+        variant: "default",
+      })
+      router.push(`/profile/settings/editProfile`)
+
+    }
+    else {
+        router.push(`/profile/settings/editItem/new`)
+      }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -565,29 +581,39 @@ Please return ONLY a JSON response in this format:
       ];
 
       console.log("Sending translations to server:", finalTranslations);
-     
-      await editeProfile(userCollectionData, user.id, avatar, finalTranslations);
+      const handleEditeProfile =  await editeProfile(userCollectionData, user.id, avatar, finalTranslations);
       console.log("Profile saved successfully with translations");
-      
       // Check if there's a target to redirect to swap page
-      const target = await getTarget();
-      if (target) {
-        // Remove target and redirect to swap page
-        await removeTarget();
+      const targetSwapId = await getTarget();
+      const decoded = await decodedToken()
+      const makeCheckUserHasProducts = await checkUserHasProducts(decoded.id)
+
+      if(handleEditeProfile.success){
         toast({
           title: t("successfully") || "Success",
-          description: t("ProfileSavedRedirectingToSwap") || "Profile saved successfully! Redirecting to swap page...",
-          variant: "default",
+          description: t("savedSuccessfullyWithTranslation") || "Settings saved successfully with automatic translation!",
         });
-        router.push(`/swap/${target}`);
-        return;
+        
+        if (makeCheckUserHasProducts.count>1) {
+            if(targetSwapId){
+              router.push(`/swap/${targetSwapId}`)
+              await removeTarget()
+            }else{
+              router.refresh()
+            }
+        }else{
+          router.push(`/profile/settings/editItem/new`)
+        }
+        
+      }else{
+        toast({
+          title: t("error") || "ERROR ",
+          description: error.message || "Failed to update profile",
+          variant: "destructive",
+        })
       }
       
-      router.refresh();
-      // toast({
-      //   title: t("successfully") || "Success",
-      //   description: t("savedSuccessfullyWithTranslation") || "Settings saved successfully with automatic translation!",
-      // });
+     
     } catch (error) {
       console.error("Error updating profile:", error)
       toast({
@@ -769,8 +795,8 @@ Please return ONLY a JSON response in this format:
      
 
       <Tabs defaultValue="profile" className="w-full relative z-10">
+      <div className={`grid grid-cols-1 gap-8 md:grid-cols-4 rtl:grid-flow-col-dense `}  >
       
-         <div className={`grid grid-cols-1 gap-8 md:grid-cols-4 rtl:grid-flow-col-dense `}  >
           {/* Sidebar */}
            <motion.div className={`md:col-span-1 `} variants={itemVariants}>
           <motion.h1
@@ -817,13 +843,14 @@ Please return ONLY a JSON response in this format:
                 ))}
 
 
-<Link href={`/profile/settings/editItem/new`}
+<span
  initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
  animate={{ opacity: 1, x: 0 }}
  transition={{ delay: 0.4 + 4 * 0.1 }}
  whileHover={{ scale: 1.02 }}
  whileTap={{ scale: 0.98 }}
- className="w-full hover:bg-primary/20 rounded-md mt-1"
+ className="w-full  rounded-md mt-1"
+onClick={()=>{ handleKYC() }}
 >
 
                    
@@ -845,7 +872,7 @@ Please return ONLY a JSON response in this format:
                         </span>
                     </TabsTrigger>
                   
-</Link>
+</span>
 
 
               </TabsList>

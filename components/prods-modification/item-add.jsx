@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { addProduct } from "@/callAPI/products"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
-import {  decodedToken } from "@/callAPI/utiles"
+import {  decodedToken, getTarget , removeTarget} from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
 import LocationMap from "@/components/general/location-map"
@@ -540,10 +540,14 @@ else{
 
     try {
       await handleSubmit();
-      // console.log("Form data:", data);
-      // console.log("Images:", images);
-      // After successful add, go back to step 1
-      router.push("/profile/items")
+      const targetSwapId = await getTarget()
+     if(targetSwapId){
+       router.push(`/swap/${targetSwapId}`)
+       await removeTarget()
+     }else{
+       router.push("/profile/items")
+     }
+
     } catch (error) {
       // console.error("Error creating item:", error);
       toast({
@@ -779,7 +783,16 @@ else{
       setSelectedPosition(null)
       setAiResponse(null)
       setAiPriceEstimation(null)
-      router.push("/profile/items")
+
+      const targetSwapId = await getTarget()
+      if(targetSwapId){
+        router.push(`/swap/${targetSwapId}`)
+        await removeTarget()
+      }else{
+        router.push("/profile/items")
+      }
+ 
+     
      }
      
     } catch (err) {

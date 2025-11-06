@@ -29,7 +29,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTranslations } from "@/lib/use-translations"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 import { getCookie, decodedToken, removeCookie, removeTarget } from "@/callAPI/utiles"
 import { getKYC, getUserById } from "@/callAPI/users"
 import { getOffeReceived, getMessagesByUserId } from "@/callAPI/swap"
@@ -104,6 +105,8 @@ export function MobileHeader() {
   const [messageCount, setMessageCount] = useState(0)
   const { t } = useTranslations()
   const { isRTL, toggleLanguage } = useLanguage()
+  const { toast } = useToast()
+  const pathname = usePathname()
 
   const [showHeader, setShowHeader] = useState(true)
   const lastScrollY = useRef(0)
@@ -131,14 +134,22 @@ export function MobileHeader() {
             const messages = await getMessagesByUserId(decoded.id)
             setMessageCount(messages?.partnerMessages?.length || 0)
           }
+        } else {
+          // Clear user data if no token
+          setUser(null)
+          setNotificationCount(0)
+          setMessageCount(0)
         }
       } catch (error) {
         // console.error("Error fetching user data:", error)
+        setUser(null)
+        setNotificationCount(0)
+        setMessageCount(0)
       }
     }
     
     fetchUserData()
-  }, [])
+  }, [pathname]) // Re-fetch when pathname changes (e.g., after login/signup)
 
 
   // Scroll handler for hide/show header

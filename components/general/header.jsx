@@ -235,9 +235,15 @@ export function Header() {
   const getUser = async () => {
     const token = await getCookie()
     if (token) {
-      const { id } = await decodedToken(token)
-      const userData = await getUserById(id)
-      setUser(userData.data)
+      try {
+        const { id } = await decodedToken(token)
+        const userData = await getUserById(id)
+        setUser(userData.data)
+      } catch (error) {
+        setUser(null)
+      }
+    } else {
+      setUser(null)
     }
   }
 
@@ -334,7 +340,7 @@ export function Header() {
 
   useEffect(() => {
     getUser()
-  }, [])
+  }, [pathname]) // Re-fetch when pathname changes (e.g., after login/signup)
 
   useEffect(() => {
     const dataFetch = () => {
@@ -343,14 +349,23 @@ export function Header() {
       getChat()
     }
 
-    dataFetch()
+    // Only fetch if user is logged in (not on auth pages)
+    if (!pathname?.startsWith('/auth/')) {
+      dataFetch()
+      
+      const interval = setInterval(dataFetch, 5000) // Poll every 5 seconds
 
-    const interval = setInterval(dataFetch, 5000) // Poll every 5 seconds
-
-    return () => {
-      clearInterval(interval)
+      return () => {
+        clearInterval(interval)
+      }
+    } else {
+      // Clear data when on auth pages
+      setCartLength(0)
+      setNotificationsLength(0)
+      setWishlistLength(0)
+      setChatLength(0)
     }
-  }, []) // Empty dependency array to run only once on mount
+  }, [pathname]) // Re-fetch when pathname changes (e.g., after login/signup)
 
   useEffect(() => {
     if (!hasSearched) return

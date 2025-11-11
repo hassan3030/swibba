@@ -210,7 +210,8 @@ const ResetPasswordPage = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder={t("newPasswordPlaceholder") || "********"}
-                className={cn(isRTL ? "text-right" : "", errors.password && "border-destructive")}
+                className={cn(isRTL ? "text-right" : "","pr-10", errors.confirmPassword && "border-destructive")}
+
                 {...register("password", {
                   required: t("passwordRequired") || "Password is required",
                   minLength: {
@@ -226,9 +227,9 @@ const ResetPasswordPage = () => {
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="h-4 w-4 mx-2" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-4 w-4 mx-2" />
                 )}
               </button>
             </div>
@@ -298,7 +299,8 @@ const ResetPasswordPage = () => {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder={t("confirmNewPasswordPlaceholder") || "********"}
-                className={cn(isRTL ? "text-right" : "", errors.confirmPassword && "border-destructive")}
+                // className={` ${isRTL ? "text-right" : ""}`}
+                className={cn(isRTL ? "text-right" : "","pr-10", errors.confirmPassword && "border-destructive")}
                 {...register("confirmPassword", {
                   required: t("confirmPasswordRequired") || "Please confirm your password",
                   validate: (value) =>
@@ -307,7 +309,7 @@ const ResetPasswordPage = () => {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground "
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? (

@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -68,6 +67,14 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     const verifyEmail = async () => {
+      // Safely get search params with validation
+      if (!searchParams || typeof searchParams.get !== 'function') {
+        setVerificationStatus("error")
+        setErrorMessage(t("InvalidVerificationLink") || "Invalid verification link. Please check your email and try again.")
+        setIsVerifying(false)
+        return
+      }
+      
       const token = searchParams.get("token")
       const email = searchParams.get("email")
       const password = searchParams.get("password")
@@ -119,18 +126,29 @@ export default function VerifyEmailPage() {
             // Ensure authToken is a string or null, not a number
             const authTokenString = authToken && typeof authToken === 'string' ? authToken : null
             
+            // Ensure STANDARD_ROLE_ID is valid (string or number, but not undefined/null)
+            const roleId = STANDARD_ROLE_ID != null ? STANDARD_ROLE_ID : null
+            if (!roleId) {
+              throw new Error("Standard role ID is not configured")
+            }
+            
+            // Build headers object safely
+            const headers = {
+              "Content-Type": "application/json",
+            }
+            if (authTokenString) {
+              headers.Authorization = `Bearer ${authTokenString}`
+            }
+            
             // Activate the user and set role
             const activateResponse = await axios.patch(
               `${baseURL}users/${userIdString}`,
               {
                 status: 'active',
-                role: STANDARD_ROLE_ID,
+                role: roleId,
               },
               {
-                headers: {
-                  ...(authTokenString ? { Authorization: `Bearer ${authTokenString}` } : {}),
-                  "Content-Type": "application/json",
-                },
+                headers,
               }
             )
 

@@ -7,11 +7,19 @@ import { verifyEmailURL } from '@/callAPI/utiles'
  */
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url)
+    const url = new URL(request.url)
+    const searchParams = url.searchParams
+    
+    if (!searchParams || typeof searchParams.get !== 'function') {
+      return NextResponse.redirect(
+        new URL(`${verifyEmailURL}?error=invalid_params`, request.url)
+      )
+    }
+    
     const token = searchParams.get('token')
     const redirect = searchParams.get('redirect') || searchParams.get('redirect_to')
 
-    if (!token) {
+    if (!token || typeof token !== 'string') {
       // If no token, redirect to verify-email page with error
       return NextResponse.redirect(
         new URL(`${verifyEmailURL}?error=missing_token`, request.url)
@@ -20,10 +28,10 @@ export async function GET(request) {
 
     // Build the redirect URL with token
     const redirectUrl = new URL(verifyEmailURL, request.url)
-    redirectUrl.searchParams.set('token', token)
+    redirectUrl.searchParams.set('token', String(token))
     
-    if (redirect) {
-      redirectUrl.searchParams.set('redirect', redirect)
+    if (redirect && typeof redirect === 'string') {
+      redirectUrl.searchParams.set('redirect', String(redirect))
     }
 
     // Redirect to our custom verify-email page

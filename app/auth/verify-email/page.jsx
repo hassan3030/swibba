@@ -54,6 +54,7 @@ const iconVariants = {
   },
 }
 
+
 export default function VerifyEmailPage() {
   const [isVerifying, setIsVerifying] = useState(true)
   const [isCompletingRegistration, setIsCompletingRegistration] = useState(false)
@@ -85,6 +86,11 @@ export default function VerifyEmailPage() {
         const verificationResult = await checkUeserEmailValid(token)
 
         if (verificationResult.success && verificationResult.verified) {
+          // Validate that verificationResult.data is an object
+          if (!verificationResult.data || typeof verificationResult.data !== 'object') {
+            throw new Error("Invalid user data received from verification")
+          }
+
           setUserData(verificationResult.data)
           setVerificationStatus("success")
 
@@ -93,7 +99,14 @@ export default function VerifyEmailPage() {
           setIsCompletingRegistration(true)
 
           try {
-            const userId = verificationResult.data.id
+            // Ensure userId is a valid string, not a number
+            const userId = verificationResult.data?.id
+            if (!userId) {
+              throw new Error("User ID not found in verification result")
+            }
+            
+            // Convert to string if it's a number
+            const userIdString = String(userId)
             const verificationToken = searchParams.get("token")
             
             // Activate the user and set role using the verification token
@@ -103,16 +116,19 @@ export default function VerifyEmailPage() {
               authToken = await getCookie()
             }
             
+            // Ensure authToken is a string or null, not a number
+            const authTokenString = authToken && typeof authToken === 'string' ? authToken : null
+            
             // Activate the user and set role
             const activateResponse = await axios.patch(
-              `${baseURL}users/${userId}`,
+              `${baseURL}users/${userIdString}`,
               {
                 status: 'active',
                 role: STANDARD_ROLE_ID,
               },
               {
                 headers: {
-                  ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+                  ...(authTokenString ? { Authorization: `Bearer ${authTokenString}` } : {}),
                   "Content-Type": "application/json",
                 },
               }
@@ -161,22 +177,25 @@ export default function VerifyEmailPage() {
           } catch (error) {
             console.error("Registration completion error:", error)
             setVerificationStatus("error")
+            const errorMsg = error?.message || error?.response?.data?.message || String(error || "")
             setErrorMessage(
-              error.message || t("FailedToCompleteRegistration") || "Failed to complete registration. Please try logging in."
+              typeof errorMsg === 'string' ? errorMsg : (t("FailedToCompleteRegistration") || "Failed to complete registration. Please try logging in.")
             )
             setIsCompletingRegistration(false)
           }
         } else {
           setVerificationStatus("error")
+          const errorMsg = verificationResult?.error || verificationResult?.message
           setErrorMessage(
-            verificationResult.error || t("EmailVerificationFailed") || "Email verification failed. Please try again."
+            typeof errorMsg === 'string' ? errorMsg : (t("EmailVerificationFailed") || "Email verification failed. Please try again.")
           )
         }
       } catch (error) {
         console.error("Verification error:", error)
         setVerificationStatus("error")
+        const errorMsg = error?.message || error?.response?.data?.message || String(error || "")
         setErrorMessage(
-          error.message || t("AnErrorOccurredDuringVerification") || "An error occurred during verification. Please try again."
+          typeof errorMsg === 'string' ? errorMsg : (t("AnErrorOccurredDuringVerification") || "An error occurred during verification. Please try again.")
         )
       } finally {
         setIsVerifying(false)

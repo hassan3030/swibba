@@ -204,7 +204,7 @@ const ResetPasswordPage = () => {
             >
               <Lock className="mr-2 inline-block h-4 w-4 text-primary" />
               {t("newPassword") || "New Password"}
-            </label>
+            </label>  
             <div className="relative">
               <Input
                 id="password"

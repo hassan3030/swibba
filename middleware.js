@@ -12,6 +12,21 @@ export async function middleware(req) {
   if (!token && req.nextUrl.pathname.startsWith('/chat')) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }
+
+
+ // Protect /offers
+ if (!token && req.nextUrl.pathname.startsWith('/offers')) {
+  return NextResponse.redirect(new URL('/auth/login', req.url));
+}
+ // Protect /offers-details
+ if (!token && req.nextUrl.pathname.startsWith('/offers-details')) {
+  return NextResponse.redirect(new URL('/auth/login', req.url));
+}
+// Protect /payment
+if (!token && req.nextUrl.pathname.startsWith('/payment')) {
+  return NextResponse.redirect(new URL('/auth/login', req.url));
+}
+
   // Protect /dashboard
   if (!token && req.nextUrl.pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
@@ -55,9 +70,13 @@ export async function middleware(req) {
 }
   return NextResponse.next();
 }
+ 
 
 export const config = {
   matcher: [
+             '/offers/:path*',
+             '/payment/:path*',
+             '/offers-details/:path*',
              '/chat/:path*',
              '/swap/:path*',
              '/wishList/:path*',

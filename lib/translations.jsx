@@ -1,5 +1,103 @@
 export const translations = {
   en  :{
+Successfullycreatedofferchecktheoffers:"Successfully created offer check the offers",
+InvalidswapornotloggedPleasetryagain:"Invalid swap or not logged in. Please try again.",
+InvalidswapornotloggedPleasetryagain:"Invalid swap or not logged in. Please try again.",
+
+
+
+
+
+    checkSwaps: "Check Swaps",
+    ViewSwaps: "View Send Swaps",
+
+
+    searchOffers:"User email, name",
+    egp:"LE",
+    EGP:"LE",
+
+    showFilter: "Show Filter",
+    Filter: "Filter",
+    Items: "Items",
+    Date: "Date",
+  noAddress: "No address",
+    "Type your message...": "Type your message...",
+
+
+    quantityAdded:"Quantity Added",
+    newQuantityAdded: "New quantity has been added to the item.",
+    quantityError: "Failed to add quantity. Please try again.",
+
+
+                    subCategories: "Sub Categories",
+                          selectSubCategories: "Select sub categories...",
+                        searchSubCategories: "Search sub categories...",
+                        noSubCategoriesFound: "No sub categories found.",
+                    brands: "Brands",
+                          selectBrands: "Select brands...",
+                        searchBrands: "Search brands...",
+                        noBrandsFound: "No brands found.",
+                    models: "Models",
+                          selectModels: "Select models...",
+                        searchModels: "Search models...",
+                        noModelsFound: "No models found.",
+
+
+
+
+
+    loadingDetails: "Loading details...",
+    errorLoadingDetails: "Could not load offer details.",
+      quantity: "Quantity",
+      myOffer  : "My Offer",
+      theirOffer: "Their Offer",
+              export: "Export",
+              addSwap: "Add Swap",
+              placeholder: "Search by user name, email, product name, or offer ID...",
+              statusPlaceholder: "Status",
+              newestFirst: "Newest First",
+              oldestFirst: "Oldest First",
+                  myValueDesc: "My Offer Value (High to Low)",
+                  myValueAsc: "My Offer Value (Low to High)",
+                  theirValueDesc: "Their Offer Value (High to Low)",
+                  theirValueAsc: "Their Offer Value (Low to High)",
+            loading: "Loading...",  
+                tryAdjustingFilters: "Try adjusting your filters",
+        offerWith: "Offer with",
+        youAreSender: "You are the sender",
+        isReceiver: "is the receiver",
+        myOffer: "My Offer",
+        theirOffer: "Their Offer",
+        cashAdjustment: "Cash Adjustment",
+        equalSwap: "Equal Swap",
+
+    offersDetails: "Offers Details",
+ youAreReceiver: "You are the receiver",
+
+     NoPhone: "No Phone",
+    AllOffers: "All Swaps",
+
+    SelectSubCategory: "Select Sub Category",
+    None: "None",
+    SearchSubCategories:"Search sub categories...",
+    Nosubcategoriesfound:"No sub categories found.",
+    SubCategories:"Sub Categories",
+   Brands: "Brands",
+  SelectBrand: "Select Brand",
+  SearchBrands: "Search brands...",
+   Nobrandsfound: "No brands found.",
+Models: "Models",
+SelectModel:"Select Model",
+SearchModels: "Search models...",
+ Nomodelsfound: "No models found.",
+
+
+
+
+
+
+
+
     checkSendOffers:"Check Send Offers",
     checkSendOffersMessage:"Your swap offer has been created successfully! Check your sent offers in the header.",
     offersSend:"Offers Send",
@@ -788,7 +886,8 @@ SelectCountry: "Select a country",
     Theswapwasrejectedbyyou: "The swap was rejected by you.",
     NoCart: "No offers up till now",
     YoureallcaughtupNewAddincartwillappearhere: "You re all caught up! New Add in cart items offers will appear here.",
-    MakeSwap: "Make Swap",
+    makeSwap: "Make Swap",
+    swapMaker: "Make Swap",
 
 
 
@@ -1078,8 +1177,9 @@ SelectCountry: "Select a country",
 
     // home banner
     Swibba: "Swibba",
-    deelDealSlogan: "Don't Shop. Trade Smarter.",
-    deelDealDescription:
+    // swibbaSlogan: "Don't Shop. Trade Smarter.",
+    swibbaSlogan: "Don't wait. Update everything you want.",
+    swibbaDescription:
       "Swibba lets you trade your items for things you want. List your items, find what you're looking for, and make an offer.",
     browseItems: "Browse Items",
     swapNow: "Swap NOW",
@@ -1296,6 +1396,96 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    Successfullycreatedofferchecktheoffers:"تم إنشاء العرض بنجاح. تحقق من العروض",
+InvalidswapornotloggedPleasetryagain:"تم إلغاء الاشتراك. أو لم يتم تسجيل الدخول. يرجى المحاولة مرة أخرى",
+InvalidswapornotloggedPleasetryagain:"تم إلغاء الاشتراك. أو لم يتم تسجيل الدخول. يرجى المحاولة مرة أخرى",
+
+    swapMaker: "بادل الان",
+
+    makeSwap:"اصنع مبادلة",
+
+    checkSwaps: "التحقق من عمليات المبادلة",
+    ViewSwaps: "عرض عمليات المبادلة المرسلة",
+
+    searchOffers:"بريد المستخدم الإلكتروني، الاسم",
+
+    egp:"ج م",
+    EGP:"ج م",
+    showFilter: "إظهار الفلتر",
+    Filter: "فلتر",
+    Items: "العناصر",
+    Date: "التاريخ",
+    noAddress: "لا يوجد عنوان",
+    "Type your message...": "اكتب رسالتك...",
+
+
+    quantityAdded:"تمت إضافة الكمية",
+    newQuantityAdded: "تمت إضافة كمية جديدة إلى المنتج",
+    quantityError: "فشلت إضافة الكمية. يُرجى المحاولة مرة أخرى",
+
+    
+  subCategories: "الفئات الفرعية",
+                          selectSubCategories: "اختر فئة فرعية...",
+                        searchSubCategories: "ابحث عن فئات فرعية...",
+                        noSubCategoriesFound: "لم يتم العثور على فئات فرعية.",
+                    brands: "العلامات التجارية",
+                          selectBrands: "اختر علامة تجارية...",
+                        searchBrands: "ابحث عن علامات تجارية...",
+                        noBrandsFound: "لم يتم العثور على علامات تجارية.",
+                    models: "النماذج",
+                          selectModels: "اختر نموذجًا...",
+                        searchModels: "ابحث عن نماذج...",
+                        noModelsFound: "لم يتم العثور على نماذج.",
+
+loadingDetails: "ىبعد تحميل تفاصيل العرض.",
+    errorLoadingDetails: " حدث خطأ أثناء تحميل تفاصيل العرض. يرجى المحاولة مرة أخرى.",
+      quantity: "الكمية",
+      myOffer  : "عرضي",
+      theirOffer: "العرض الاخر",
+              export: "تصدير",
+              addSwap: "إضافة مبادلة",
+              placeholder: "ابحث باسم المستخدم، البريد الإلكتروني، اسم المنتج، أو معرف العرض...",
+              statusPlaceholder: "الحالة",
+              newestFirst: "الأحدث أولاً",
+              oldestFirst: "الأقدم أولاً",
+                  myValueDesc: " عرضي من الأعلى إلى الأدنى",
+                  myValueAsc: " عرضي من الأدنى إلى الأعلى",
+                  theirValueDesc: " العرض من الأعلى إلى الأدنى",
+                  theirValueAsc: " العرض من الأدنى إلى الأعلى",
+            loading: "جارٍ التحميل...",  
+                tryAdjustingFilters: "حاول تعديل الفلاتر",
+        offerWith: "عرض مع",
+        youAreSender: "أنت المرسل",
+        isReceiver: "هو المستلم",
+        myOffer: "عرضي",
+        theirOffer : "العرض الاخر",
+        cashAdjustment: "تعديل نقدي",
+        equalSwap: "مبادلة متساوية",
+    offersDetails: "تفاصيل العروض",
+ youAreReceiver: "أنت المستلم",
+
+
+
+
+
+    // -----------------------
+    NoPhone: "لا يوجد هاتف",
+    AllOffers: "جميع المبادلات",
+
+    SelectSubCategory: "اختر فئة فرعية",
+    None: "لا شيء",
+    SearchSubCategories:"ابحث عن فئات فرعية...",
+    Nosubcategoriesfound:"لم يتم العثور على فئات فرعية",
+    SubCategories:"الفئات الفرعية",
+   Brands: "العلامات التجارية",
+  SelectBrand: "اختر علامة تجارية",
+  SearchBrands: "ابحث عن علامات تجارية...",
+   Nobrandsfound:"لم يتم العثور على علامات تجارية",
+Models: "الموديلات",
+SelectModel:"اختر طرازًا",
+SearchModels: "ابحث عن النماذج...",
+ Nomodelsfound: "لم يتم العثور على نماذج",
+
 
     checkSendOffers:"التحقق من إرسال العروض",
     checkSendOffersMessage:"تم إنشاء عرض المبادلة الخاص بك بنجاح! تحقق من عروضك المرسلة في العنوان",
@@ -2142,7 +2332,6 @@ SelectCountry: "اختر الدولة",
     NoCartItemsOffers: " لا يوجد منتجات في السلة",
     YoureallcaughtupNewAddincartitemsofferswillappearhere: " كافة المنتجات في السلة",
 
-    MakeSwap: "ابحث عن عروض",
 
 
 
@@ -2425,8 +2614,8 @@ SelectCountry: "اختر الدولة",
 
     // home banner
     Swibba: "Swibba",
-    deelDealSlogan: "لا تتسوق. تبادل كل ماتريد.",
-    deelDealDescription:
+    swibbaSlogan: "لا تنتظر. جدد كل ماتريد",
+    swibbaDescription:
       " Swibba يتيح لك تبادل العناصر الخاصة بك مقابل الأشياء التي تريدها. قم بإدراج عناصر، وابحث عن ما تبحث عنه، وقدم عرضًا.",
     browseItems: "تصفح المنتجات",
     swapNow: "إختر منتج للاستبدال",

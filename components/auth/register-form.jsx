@@ -135,7 +135,7 @@ export function RegisterForm() {
     if (/[0-9]/.test(password)) strength += 15 // Has number
     if (/[^A-Za-z0-9]/.test(password)) strength += 20 // Has special char
     
-    return Math.min(100, strength)
+    return Math.min(100, strength) 
   }
 
   // Get strength text and color
@@ -154,6 +154,8 @@ export function RegisterForm() {
     setPasswordStrength(calculatePasswordStrength(watchPassword))
   }, [watchPassword])
 
+
+  
   const onSubmit = async () => {
     setIsLoading(true)
 
@@ -167,21 +169,21 @@ export function RegisterForm() {
       } else {
 
         const response = await register(form.getValues().email, form.getValues().password, form.getValues().userName)
-        if (!response) {
+        if (response && response.success) {
           toast({
             title: t("successfully") || "Successfully",
             description:
-              t("YouraccounthasbeencreatedWelcometoSwibba") || "Your account has been created. Welcome to Swibba!",
+              t("RegistrationSuccessfulPleaseCheckYourEmail") || "Registration successful! Please check your email to verify your account.",
           })
-          router.push(`/profile/settings/editProfile`)    
+          // Redirect to a page that tells user to check email
+          // The email verification link will redirect to /auth/verify-email
+          router.push(`/auth/login?message=verify-email`)   
           router.refresh()
-
-          
         } else {
           toast({
             title: t("error") || "ERROR",
             description:
-              t("TherewasaproblemcreatingyouraccountPleasetryagain") ||
+              response?.error || t("TherewasaproblemcreatingyouraccountPleasetryagain") ||
               "There was a problem creating your account. Please try again.",
             variant: "destructive",
           })

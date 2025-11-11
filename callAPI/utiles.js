@@ -6,6 +6,7 @@ export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard
 export const mediaURL = process.env.MEDIA_URL || 'https://deel-deal-directus.csiwm3.easypanel.host/assets/' 
 export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
 export const resetPasswordURL = process.env.RESET_PASSWORD_URL || "https://dev.swibba.com/auth/reset-password"
+export const verifyEmailURL = process.env.VERIFY_EMAIL_URL || "https://dev.swibba.com/auth/verify-email"
 export const swibbaURL = process.env.SWIBBA_URL || "https://dev.swibba.com"
 
 

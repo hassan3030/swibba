@@ -58,7 +58,7 @@
 
 @layer base {
   :root {
-    
+    /* Sylndr Primary Green */
     /* Light mode - Base colors */
     --background: 0 0% 100%;        /* #FFFFFF - Pure white background */
     --foreground: 0 0% 20%;         /* #333333 - Dark text color */
@@ -706,6 +706,108 @@ input[type=number] {
  @apply bg-gradient-to-tl from-primary/80 via-background to-primary/80;
 
 }
+
+/* ----------------------------------------
+   Gradient presets: gradient-primary variants
+   Usage:
+     - Add one of these classes to any container background
+     - Base `.gradient-primary` maps to Variant 4 (current hero style)
+----------------------------------------- */
+
+/* Variant 1: Subtle start, strong end (bottom-left direction) */
+.gradient-primary-1 {
+  @apply bg-gradient-to-bl from-primary/10 via-background to-primary/90;
+}
+
+/* Variant 2: Subtle start, strong end (top-left direction) */
+.gradient-primary-2 {
+  @apply bg-gradient-to-tl from-primary/10 via-background to-primary/90;
+}
+
+/* Variant 3: Soft primary wash (top-left direction) */
+.gradient-primary-3 {
+  @apply bg-gradient-to-tl from-primary/10 via-background to-primary/20;
+}
+
+/* Variant 4: Strong primary rails (top-left direction) — current hero style */
+.gradient-primary-4 {
+  @apply bg-gradient-to-tl from-primary/80 via-background to-primary/80;
+}
+
+/* Base alias: keep existing usage working (maps to Variant 4) */
+.gradient-primary {
+  @apply gradient-primary-4;
+}
+
+/* Dark mode adjustments for primary gradients */
+.dark .gradient-primary-1 { @apply from-primary/20 via-neutral-900 to-primary/80; }
+.dark .gradient-primary-2 { @apply from-primary/20 via-neutral-900 to-primary/80; }
+.dark .gradient-primary-3 { @apply from-primary/10 via-neutral-900 to-primary/20; }
+.dark .gradient-primary-4 { @apply from-primary/60 via-neutral-900 to-primary/60; }
+
+/* ----------------------------------------
+   Additional primary variants
+----------------------------------------- */
+
+/* Variant 5: Left→Right sweep */
+.gradient-primary-5 {
+  @apply bg-gradient-to-r from-primary/20 via-background to-primary/60;
+}
+
+/* Variant 6: Top→Bottom subtle panel */
+.gradient-primary-6 {
+  @apply bg-gradient-to-b from-primary/10 via-background to-primary/40;
+}
+
+/* Variant 7: Bottom-right emphasis */
+.gradient-primary-7 {
+  @apply bg-gradient-to-br from-primary/30 via-background to-primary/70;
+}
+
+/* Variant 8: Crossfade band */
+.gradient-primary-8 {
+  @apply bg-gradient-to-tr from-primary/10 via-primary/30 to-background;
+}
+
+/* ----------------------------------------
+   Accent/brand gradients (using secondary)
+----------------------------------------- */
+.gradient-accent-1 { @apply bg-gradient-to-tr from-secondary/10 via-background to-secondary/70; }
+.gradient-accent-2 { @apply bg-gradient-to-bl from-secondary/20 via-background to-secondary/80; }
+.gradient-accent-3 { @apply bg-gradient-to-r  from-secondary/15 via-background to-secondary/60; }
+.gradient-accent    { @apply gradient-accent-2; }
+
+.dark .gradient-accent-1 { @apply from-secondary/20 via-neutral-900 to-secondary/70; }
+.dark .gradient-accent-2 { @apply from-secondary/30 via-neutral-900 to-secondary/80; }
+.dark .gradient-accent-3 { @apply from-secondary/20 via-neutral-900 to-secondary/60; }
+
+/* ----------------------------------------
+   Semantic gradients
+----------------------------------------- */
+/* Success */
+.gradient-success-1 { @apply bg-gradient-to-tr from-emerald-400/20 via-background to-emerald-500/70; }
+.gradient-success-2 { @apply bg-gradient-to-br from-emerald-500/30 via-background to-emerald-600/70; }
+.gradient-success    { @apply gradient-success-2; }
+
+/* Warning */
+.gradient-warning-1 { @apply bg-gradient-to-tr from-amber-400/20 via-background to-amber-500/70; }
+.gradient-warning-2 { @apply bg-gradient-to-br from-amber-500/30 via-background to-amber-600/70; }
+.gradient-warning    { @apply gradient-warning-2; }
+
+/* Danger */
+.gradient-danger-1 { @apply bg-gradient-to-tr from-rose-400/20 via-background to-rose-500/70; }
+.gradient-danger-2 { @apply bg-gradient-to-br from-rose-500/30 via-background to-rose-600/70; }
+.gradient-danger    { @apply gradient-danger-2; }
+
+/* Info */
+.gradient-info-1 { @apply bg-gradient-to-tr from-sky-400/20 via-background to-sky-500/70; }
+.gradient-info-2 { @apply bg-gradient-to-br from-sky-500/30 via-background to-sky-600/70; }
+.gradient-info    { @apply gradient-info-2; }
+
+/* Neutral */
+.gradient-neutral-1 { @apply bg-gradient-to-tr from-muted/30 via-background to-foreground/10; }
+.gradient-neutral-2 { @apply bg-gradient-to-br from-foreground/10 via-background to-muted/40; }
+.gradient-neutral    { @apply gradient-neutral-2; }
 
 
 

@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
 import { deleteProduct ,updateProductQuantity } from "@/callAPI/products"
-import { checkItemInOfferItems, deleteOfferItemsById, updateOfferItemsById } from "@/callAPI/swap"
+import { checkItemInOfferItems, deleteOfferItemsById, updateOfferItemsById, checkItemUpdate , checkItemIncludedInCompletedOffer } from "@/callAPI/swap"
 import { useTranslations } from "@/lib/use-translations"
 import { getMediaType } from "@/lib/utils"
 import { useLanguage } from "@/lib/language-provider"
@@ -52,14 +52,6 @@ const cardVariants = {
   },
 }
 
-const buttonVariants = {
-  hover: {
-    scale: 1.05,
-    transition: { type: "spring", stiffness: 400, damping: 10 },
-  },
-  tap: { scale: 0.95 },
-}
-
 const imageVariants = {
   hover: {
     scale: 1.05,
@@ -81,20 +73,75 @@ const ItemCard = ({ item }) => {
   const [imageLoaded, setImageLoaded] = useState(false)
 
   
+  const handleUpdateQuantityStatus = async ( quantity, status_swap , completed_offer ) => {
+    setIsProcessing(true)
+    try {
+      // Update item quantity
+      const updateProduc = await updateProductQuantity(item.id, quantity, status_swap , completed_offer) // This will be replaced with proper quantity update
+    console.log("updateProduc",updateProduc)
+      setShowQuantityDialog(false)
+      router.refresh()
+    } catch (error) {
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
+  // toast({
+  //   title: t("quantityAdded") || "Quantity Added",
+  //   description: t("newQuantityAdded") || "New quantity has been added to the item.",
+  //   variant: "default",
+  // })
+
+
+  // toast({
+  //   title: t("error") || "Error",
+  //   description: t("quantityError") || "Failed to add quantity. Please try again.",
+  //   variant: "destructive",
+  // })
 
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      const deleteItem = await deleteProduct(item.id)
-      if (deleteItem.success) {
-        toast({
-          title: t("itemDeleted") || "Item Deleted",
-          description: t("itemDeletedDesc") || "The item has been successfully deleted.",
-          variant: "default",
-        })
-      } 
-      router.refresh()
+ 
+ const offerCheck = await checkItemInOfferItems(item.id)
+ console.log("offerCheck",offerCheck)
+ if (offerCheck.exists) {
+  // check checkItemIncludedInCompletedOffer
+  const itemUpdatedCheck = await checkItemUpdate(item.id)
+  console.log("CompletedOfferCheck",itemUpdatedCheck)
+if(itemUpdatedCheck.data.updated){
+  toast({
+    title: t("itemDeleted") || "Item Deleted",
+    description: t("itemDeletedDesc") || "The item has been successfully deleted.",
+    variant: "default",
+  })
+  
+}else{
+  const updateQuantity = await handleUpdateQuantityStatus(0,"unavailable","false")
+  console.log("updateQuantity",updateQuantity)
+  toast({
+    title: t("itemDeleted") || "Item Deleted",
+    description: t("itemDeletedDesc") || "The item has been successfully deleted.",
+    variant: "default",
+  })
+  router.refresh()
+
+
+}
+
+ } else {
+  const deleteItem = await deleteProduct(item.id)
+  if (deleteItem.success) {
+    toast({
+      title: t("itemDeleted") || "Item Deleted",
+      description: t("itemDeletedDesc") || "The item has been successfully deleted.",
+      variant: "default",
+    })
+  } 
+  router.refresh()
+  
+ } 
     } catch (error) {
       toast({
         title: t("error") || "Error",
@@ -106,19 +153,24 @@ const ItemCard = ({ item }) => {
     }
   }
 
+
+
+
   const handleUpdate = async () => {
     setIsProcessing(true)
     try {
       // Check if item exists in Offer_Items
       const offerCheck = await checkItemInOfferItems(item.id)
-      
       if (offerCheck.success && offerCheck.exists) {
-        // Item doesn't exist in offers, show quantity dialog
-        setShowQuantityDialog(true)
-      } else {
-         // Item exists in offers, redirect to edit page
+       const checkUpdate =  await checkItemUpdate(item.id)
+       if(checkUpdate.success && checkUpdate.data.updated){
         router.push(`/profile/settings/editItem/${item.id}`)
-       
+       }else{
+         setShowQuantityDialog(true)
+       }
+        
+      } else {
+        router.push(`/profile/settings/editItem/${item.id}`)
       }
     } catch (error) {
       toast({
@@ -131,28 +183,6 @@ const ItemCard = ({ item }) => {
     }
   }
 
-  const handleAddQuantity = async ( quantity, status_swap) => {
-    setIsProcessing(true)
-    try {
-      // Update item quantity
-      await updateProductQuantity(item.id, quantity, status_swap) // This will be replaced with proper quantity update
-      toast({
-        title: t("quantityAdded") || "Quantity Added",
-        description: t("newQuantityAdded") || "New quantity has been added to the item.",
-        variant: "default",
-      })
-      setShowQuantityDialog(false)
-      router.refresh()
-    } catch (error) {
-      toast({
-        title: t("error") || "Error",
-        description: t("quantityError") || "Failed to add quantity. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
 
   // useEffect(() => {
   //   getDataImage()
@@ -338,6 +368,7 @@ const ItemCard = ({ item }) => {
                     <Link href={item.quantity > 0 ? `/products/out_offer/${item.id}` :`/products/in_offer/${item.id}` } className="flex items-center w-full hover:!bg-primary/20">
                       <Eye className="mr-2 h-4 w-4" />
                       {t("view")}
+                      
                     </Link>
                   </DropdownMenuItem>
                   {item.quantity > 0 && item.status_swap === "available" && (
@@ -346,7 +377,7 @@ const ItemCard = ({ item }) => {
                       {t("edit")}
                     </DropdownMenuItem>
                   )}
-                  {item.quantity > 0 && item.status_swap === "available" && (
+                  {item.quantity > 0 && item.status_swap === "available" && item.completed_offer == "false" &&(
                     <>
                       <DropdownMenuSeparator  />
                       <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)} className="text-destructive hover:!bg-primary/20">
@@ -433,7 +464,7 @@ const ItemCard = ({ item }) => {
                     <DialogClose asChild>
                       <Button variant="outline">{t("cancel") || "Cancel"}</Button>
                     </DialogClose>
-                    <Button onClick={() => handleAddQuantity(newQuantity, "available")} disabled={isProcessing}>
+                    <Button onClick={() => handleUpdateQuantityStatus(newQuantity, "available" , "false")} disabled={isProcessing}>
                       {isProcessing ? (
                         <>
                           <motion.div

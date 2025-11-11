@@ -95,7 +95,7 @@ export function MobileFooter() {
       isActive: pathname === "/profile/settings/editItem/new",
       isSpecial: true,
     },
-    {
+    { 
       href: user ? "/chat" : "/auth/login",
       icon: MessageCircle,
       label: t("messages") || "Messages",

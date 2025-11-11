@@ -10,12 +10,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Heart, Repeat, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getMediaType } from "@/lib/utils"
-import { getImageProducts } from "@/callAPI/products"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
 import { decodedToken, getCookie, removeTarget, setTarget } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-
 import { useLanguage } from "@/lib/language-provider"
 import { checkUserHasProducts, getKYC } from "@/callAPI/users"
 import { mediaURL } from "@/callAPI/utiles";

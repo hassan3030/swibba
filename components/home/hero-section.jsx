@@ -46,7 +46,8 @@ import Image from "next/image";
 
   return (
     <section className="relative overflow-hidden h-full pb-4 -mt-4 px-2">
-      <div className="absolute  inset-0 hero-gradient" />
+      {/* do not forget change the gradient */}
+      <div className="absolute  inset-0 gradient-primary-8" />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -83,17 +84,17 @@ import Image from "next/image";
               {/* </Link> */}
                 {/* <span className="gradient-text"> {t("deelDeal")}</span> */}
               </motion.h1> 
-              <motion.h2
+              <motion.h2 
                 variants={fadeIn("up", 0.4)}
                 className="text-6xl md:text-5xl font-bold text-secondary/90  dark:text-white leading-tight"
               >
-             {t("deelDealSlogan")}
+             {t("swibbaSlogan")}
               </motion.h2>
-              <motion.p
+              <motion.p 
                 variants={fadeIn("up", 0.6)}
                 className="text-xl text-color-muted max-w-lg"
               >
-                {t("deelDealDescription")}
+                {t("swibbaDescription")}
               </motion.p>
             </div>
 

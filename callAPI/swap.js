@@ -69,6 +69,9 @@ export const getAllOffers = async (filters = {}) => {
       queryParams.append("sort", "-date_created")
     }
 
+    // Add fields parameter to get all necessary data
+    queryParams.append("fields", "*,from_user_id.*,to_user_id.*")
+
     const url = `${baseItemsURL}Offers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
     const response = await axios.get(url)
 
@@ -226,7 +229,7 @@ export const deleteFinallyOfferById = async (offer_id , from_to_user) => {
 export const rejectOfferById = async (id) => {
    
   try {
-    const auth = await validateAuth()
+    const auth = await validateAuth() 
     return await makeAuthenticatedRequest(async () => {
       if (!id) {
         throw new Error("Offer ID is required")
@@ -255,6 +258,7 @@ export const rejectOfferById = async (id) => {
             await axios.patch(`${baseItemsURL}Items/${item.item_id}`, {
               quantity: restoredQuantity,
               status_swap: "available",
+              completed_offer:"false"
             }, {
               headers: {
                 "Content-Type": "application/json",
@@ -350,7 +354,7 @@ export const rejectOfferById = async (id) => {
     return handleApiError(error, "Reject Offer By ID")
   }
   finally{
-    deleteOfferItemsByOfferId(id)
+    await deleteOfferItemsByOfferId(id)
 
   }
 }
@@ -774,6 +778,210 @@ export const deleteOfferItemsByOfferId = async (offer_id) => {
   }
 }
 
+// check items inclede in offer based on offer status
+export const checkItemUpdate = async (id_item) => {
+  try {
+    if (!id_item) {
+      throw new Error("Item ID is required")
+    }
+
+    const auth = await validateAuth()
+    return await makeAuthenticatedRequest(async () => {
+      // 1) Get all offer_items that include this item
+      const offerItemsRes = await axios.get(`${baseItemsURL}Offer_Items`, {
+        params: {
+          filter: {
+            item_id: { _eq: id_item },
+          },
+          // quantity
+          fields: "id,offer_id,item_id,quantity",
+        },
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+
+      const offerItems = offerItemsRes?.data?.data || []
+      if (offerItems.length === 0) {
+        return {
+          success: true,
+          data: {
+            updated: true,
+            reason: "can updated",
+          },
+          message: "can updated",
+        }
+      }
+
+      // 2) Collect offer IDs and fetch their statuses
+      const offerIds = [...new Set(offerItems.map(oi => oi.offer_id).filter(Boolean))]
+      if (offerIds.length === 0) {
+        return {
+          success: true,
+          data: {
+            updated: true,
+            reason: "No related offer IDs found",
+          },
+          message: "No related offer IDs found",
+        }
+      }
+
+
+      const offersRes = await axios.get(`${baseItemsURL}Offers`, {
+        params: {
+          fields: "id,status_offer",
+          filter: {
+            id: { _in: offerIds },
+          },
+        },
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+
+      const offers = offersRes?.data?.data || []
+      // 3) Check if all related offers are completed
+      const allCompleted = offers.length > 0 && offers.every(o => String(o.status_offer).toLowerCase() == "completed")
+      if (allCompleted) {
+        return {
+          success: true,
+          data: {
+            updated: true,
+            reason: "Not all related offers are completed",
+          },
+          message: "Not all related offers are completed",
+        }
+      }else{
+        return {
+          success: true,
+          data: {
+            updated: false,
+            reason: "Not all related offers are completed",
+          },
+          message: "Not all related offers are completed",
+        }
+      }
+     
+    })
+  } catch (error) {
+    return handleApiError(error, "Check Item Included In Completed Offer")
+  }
+}
+
+// check items inclede in offer based on offer status
+export const checkItemIncludedInCompletedOffer = async (id_item) => {
+  try {
+    if (!id_item) {
+      throw new Error("Item ID is required")
+    }
+    const auth = await validateAuth()
+    return await makeAuthenticatedRequest(async () => {
+      // 1) Get all offer_items that include this item
+      const offerItemsRes = await axios.get(`${baseItemsURL}Offer_Items`, {
+        params: {
+          filter: {
+            item_id: { _eq: id_item },
+          },
+          // quantity
+          fields: "id,offer_id,item_id,quantity",
+        },
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+      const offerItems = offerItemsRes?.data?.data || []
+      if (offerItems.length === 0) {
+        return {
+          success: true,
+          data: {
+            updated: false,
+            reason: "No offers include this item",
+          },
+          message: "No offers include this item",
+        }
+      }
+      // 2) Collect offer IDs and fetch their statuses
+      const offerIds = [...new Set(offerItems.map(oi => oi.offer_id).filter(Boolean))]
+      if (offerIds.length === 0) {
+        return {
+          success: true,
+          data: {
+            updated: false,
+            reason: "No related offer IDs found",
+          },
+          message: "No related offer IDs found",
+        }
+      }
+      const offersRes = await axios.get(`${baseItemsURL}Offers`, {
+        params: {
+          fields: "id,status_offer",
+          filter: {
+            id: { _in: offerIds },
+          },
+        },
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+      const offers = offersRes?.data?.data || []
+      // 3) Check if all related offers are completed
+      const allCompleted = offers.length > 0 && offers.every(o => String(o.status_offer).toLowerCase() == "completed")
+      if (!allCompleted) {
+        return {
+          success: true,
+          data: {
+            updated: false,
+            reason: "Not all related offers are completed",
+          },
+          message: "Not all related offers are completed",
+        }
+      }
+      // 4) Fetch the item to check quantity
+      const itemRes = await axios.get(`${baseItemsURL}Items/${id_item}`, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      })
+      const item = itemRes?.data?.data
+      const qty = typeof item?.quantity === "number" ? item.quantity : Number(item?.quantity ?? 0)
+      if (!Number.isNaN(qty) && qty <= 0) {
+        // 5) Update completed_offer to "true"
+        const patchRes = await axios.patch(`${baseItemsURL}Items/${id_item}`, {
+          completed_offer: "true",
+          status_swap:"unavailable",
+          quantity:0
+        }, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${auth.token}`,
+          },
+        })
+        return {
+          success: true,
+          data: {
+            updated: true,
+            item_id: id_item,
+            item: patchRes?.data?.data,
+          },
+          message: "Item marked as completed_offer=true",
+        }
+      }
+      // Quantity > 0, do not update
+      return {
+        success: true,
+        data: {
+          updated: false,
+          reason: "Item quantity is greater than zero",
+          quantity: qty,
+        },
+        message: "Item not updated because quantity > 0",
+      }
+    })
+  } catch (error) {
+    return handleApiError(error, "Check Item Included In Completed Offer")
+  }
+}
+
 // Complete offer by ID
 export const completedOfferById = async (id_offer) => {
   try {
@@ -792,53 +1000,57 @@ export const completedOfferById = async (id_offer) => {
       const items = itemsResult.data
 
       // Delete the offer items and actual items if not existing in other offers (they've been traded)
-      const deleteItems = items.map(async (item) => {
+      const updateItems = items.map(async (item) => {
         if (item.item_id) {
           try {
+           const checkedItem =  await checkItemIncludedInCompletedOffer(item.item_id)
+           console.log("checkedItem : ", checkedItem)
             // Check if item is in other offer items
-            const offerItemResponse = await axios.get(`${baseItemsURL}Offer_Items`,
-              {
-                params: {
-                  filter: {
-                    item_id: {
-                      _eq: item.item_id
-                    }
-                  }
-                }
-              }
-            )
+            // const offerItemResponse = await axios.get(`${baseItemsURL}Offer_Items`,
+            //   {
+            //     params: {
+            //       filter: {
+            //         item_id: {
+            //           _eq: item.item_id
+            //         }
+            //       }
+            //     }
+            //   }
+            // )
 
             // Count how many offer items contain this item_id
-            const count = offerItemResponse.data?.data?.length || 0
+            // const count = offerItemResponse.data?.data?.length || 0
 
             // If count > 1, item is used in multiple offers - only delete the offer_item record
             // If count = 1, item is only in this offer - delete both offer_item and the actual item
-            if (count == 1) {
-              // Item exists in other offers, only delete this offer_item
-              const itemCheckQuantity = await axios.get(`${baseItemsURL}Items`,
-                {
-                  params: {
-                    filter: {
-                      id: {
-                        _eq: item.item_id
-                      }
-                    }
-                  }
-                }
-              )
-              const itemRecord = itemCheckQuantity?.data?.data?.[0]
-              const itemQuantity = typeof itemRecord?.quantity === "number" ? itemRecord.quantity : Number(itemRecord?.quantity ?? 0)
-              if (!Number.isNaN(itemQuantity) && itemQuantity <= 0) {
-                await axios.delete(`${baseItemsURL}Items/${item.item_id}`, {
-                  headers: {
-                    Authorization: `Bearer ${auth.token}`,
-                  },
-                })
-              }
+            // if (count == 1) {
+            //   // Item exists in other offers, only delete this offer_item
+            //   const itemCheckQuantity = await axios.get(`${baseItemsURL}Items`,
+            //     {
+            //       params: {
+            //         filter: {
+            //           id: {
+            //             _eq: item.item_id
+            //           }
+            //         }
+            //       }
+            //     }
+            //   )
+            //   const itemRecord = itemCheckQuantity?.data?.data?.[0]
+            //   const itemQuantity = typeof itemRecord?.quantity === "number" ? itemRecord.quantity : Number(itemRecord?.quantity ?? 0)
+            //   if (!Number.isNaN(itemQuantity) && itemQuantity <= 0) {
+            //     await axios.patch(`${baseItemsURL}Items/${item.item_id}`, {
+            //       completed_offer: "true",
+            //     }, {
+            //       headers: {
+            //         Authorization: `Bearer ${auth.token}`,
+            //       },
+            //     })
+            //   }
           
-            } 
+            // } 
 
-            return { item_id: item.item_id, success: true }
+            // return { item_id: item.item_id, success: true }
           } catch (error) {
             console.warn(`Failed to delete item ${item.item_id}:`, error.message)
             return { item_id: item.item_id, success: false, error: error.message }
@@ -846,7 +1058,7 @@ export const completedOfferById = async (id_offer) => {
         }
       })
 
-      const deleteResults = await Promise.allSettled(deleteItems)
+      // const deleteResults = await Promise.allSettled(deleteItems)
 
 
       // Update offer status to completed
@@ -869,8 +1081,8 @@ export const completedOfferById = async (id_offer) => {
         success: true,
         data: {
           ...response.data.data,
-          items_traded: items.length,
-          delete_results: deleteResults,
+          // items_traded: items.length,
+          // delete_results: deleteResults,
           response: response.data.data,
         },
         message: "Offer completed successfully",
@@ -880,9 +1092,9 @@ export const completedOfferById = async (id_offer) => {
   } catch (error) {
     return handleApiError(error, "Complete Offer By ID")
   }
-  finally{
-    deleteOfferItemsByOfferId(id_offer)
-  }
+  // finally{
+  //   deleteOfferItemsByOfferId(id_offer)
+  // }
 }
 
 
@@ -1163,6 +1375,7 @@ export const deleteOfferItemsById = async (id, idItemItself, cashAdjustment, off
       await axios.patch(`${baseItemsURL}Items/${idItemItself}`, {
         quantity: restoredQuantity,
         status_swap: "available",
+        completed_offer:"false"
       }, {
         headers: {
           "Content-Type": "application/json",
@@ -1735,5 +1948,28 @@ export const getReviewConditins = async (from_user_id, offer_id) => {
       error: "Failed to check review conditions",
       status: error.response?.status || 500,
     }
+  }
+}
+
+// Get reviews by offer ID
+export const getReviewsByOfferId = async (offer_id) => {
+  try {
+    if (!offer_id) {
+      throw new Error("Offer ID is required")
+    }
+
+    const response = await axios.get(`${baseItemsURL}Reviews?filter[offer_id][_eq]=${offer_id}`)
+
+    const reviews = response.data.data || []
+
+    return {
+      success: true,
+      data: reviews,
+      count: reviews.length,
+      offer_id: offer_id,
+      message: "Reviews retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Reviews By Offer ID")
   }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -13,9 +13,9 @@ import { Loader2, Filter, X, Calendar, MapPin, Banknote , Package, ShoppingBag, 
 import { ItemCardProfile } from "@/components/products/item-card-profile"
 import { ItemsListSkeleton } from "@/components/loading/items-list-skeleton"
 import { categoriesName, itemsStatus, countriesList } from "@/lib/data"
-import { getProductsEnhanced, getProducts } from "@/callAPI/products"
+import { getProductsEnhanced } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
-import { getAllCategories } from "@/callAPI/static"
+import { getAllCategories , getAllSubCategories , getAllBrands , getAllModels } from "@/callAPI/static"
 import { useLanguage } from "@/lib/language-provider"
 import { useToast } from "@/hooks/use-toast"
 
@@ -125,24 +125,33 @@ export function ItemsList({
   totalCount = null,
   useApiPagination = false,
 }) {
-  const [displayedItems, setDisplayedItems] = useState(items || [])
-  const [isLoading, setIsLoading] = useState(false)
+  // const [products, setProducts] = useState([])
+  const [allItems, setAllItems] = useState(items || []) // Store all items
+  const [displayedItems, setDisplayedItems] = useState([]) // Filtered items
+  const [isLoading, setIsLoading] = useState(!items || items.length === 0) // Load if no items provided
+  const [productsCount, setProductsCount] = useState(0)
   const [searchTerm, setSearchTerm] = useState("")
   const [category, setCategory] = useState(defaultCategory)
   const [page, setPage] = useState(1)
-  const [totalItems, setTotalItems] = useState(totalCount !== null ? totalCount : (items?.length || 0))
   const [showFilterSidebar, setShowFilterSidebar] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
   const { toast } = useToast()
-  const [isGettingLocation, setIsGettingLocation] = useState(false)  // Advanced filter states
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
+  
+  // Static data states
+  const [allCategoriesData, setAllCategoriesData] = useState([])
+  const [allSubCategoriesData, setAllSubCategoriesData] = useState([])
+  const [allBrandsData, setAllBrandsData] = useState([])
+  const [allModelsData, setAllModelsData] = useState([])
+  
+  // Advanced filter states
   const [filters, setFilters] = useState({
     name: "",
-    categories: [],
+    category: "all", // Single category filter
+    subCategories: [], // Multi-select subcategories
+    brands: [], // Multi-select brands
+    models: [], // Multi-select models
     allowedCategories: [],
-    subLevels: {
-      level1: "",
-      level2: "",
-    },
     location: {
       country: "all",
       city: "",
@@ -163,349 +172,264 @@ export function ItemsList({
   })
   
   // UI states for multi-select
-  const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [allowedCategoriesOpen, setAllowedCategoriesOpen] = useState(false)
-  const [subLevel2Open, setSubLevel2Open] = useState(false)
-  const [subLevel2Options, setSubLevel2Options] = useState([])
-  const [catLevelsOpen, setCatLevelsOpen] = useState(false)
-  const [catLevelsTree, setCatLevelsTree] = useState([])
+  const [subCategoriesOpen, setSubCategoriesOpen] = useState(false)
+  const [brandsOpen, setBrandsOpen] = useState(false)
+  const [modelsOpen, setModelsOpen] = useState(false)
   const router = useRouter()
   const { t } = useTranslations()
-  const itemsPerPage = 10
+  const itemsPerPage = 8
+
+  // Load all items on component mount
+  useEffect(() => {
+    const loadAllItems = async () => {
+      // If items are provided as props, use them
+      if (items && items.length > 0) {
+        setAllItems(items)
+        setIsLoading(false)
+        return
+      }
+      
+      // Otherwise, fetch all items from API
+      setIsLoading(true)
+      try {
+        const response = await getProductsEnhanced({ limit: -1 }) // Fetch all items
+        if (response.success) {
+          setAllItems(response.data || [])
+          setProductsCount(response.data?.length || 0)
+        } else {
+          setAllItems([])
+          setProductsCount(0)
+        }
+      } catch (error) {
+        console.error("Error loading items:", error)
+        setAllItems([])
+        setProductsCount(0)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    loadAllItems()
+  }, [items])
+
+  // Load static data (categories, subcategories, brands, models)
+  useEffect(() => {
+    const loadStaticData = async () => {
+      try {
+        const [catsRes, subCatsRes, brandsRes, modelsRes] = await Promise.all([
+          getAllCategories(),
+          getAllSubCategories(),
+          getAllBrands(),
+          getAllModels()
+        ])
+        
+        if (catsRes?.success) setAllCategoriesData(catsRes.data || [])
+        if (subCatsRes?.success) setAllSubCategoriesData(subCatsRes.data || [])
+        if (brandsRes?.success) setAllBrandsData(brandsRes.data || [])
+        if (modelsRes?.success) setAllModelsData(modelsRes.data || [])
+      } catch (error) {
+        console.error("Error loading static data:", error)
+      }
+    }
+    
+    loadStaticData()
+  }, [])
 
   // Sync defaultCategory with category state
   useEffect(() => {
     setCategory(defaultCategory)
+    setFilters(prev => ({ ...prev, category: defaultCategory }))
   }, [defaultCategory])
 
-  // Initialize totalItems when items are passed as props or totalCount is provided
-  useEffect(() => {
-    if (totalCount !== null) {
-      setTotalItems(totalCount)
-    } else if (items && items.length > 0) {
-      setTotalItems(items.length)
-    }
-  }, [items, totalCount])
-
-  // Load sub-level options from categories
-  useEffect(() => {
-    const load = async () => {
-      const res = await getAllCategories()
-      if (res?.success) {
-        const all = []
-        const tree = []
-        ;(res.data || []).forEach(cat => {
-          const catNameEn = cat?.translations?.[0]?.name || cat?.name || ""
-          const catNameAr = cat?.translations?.[1]?.name || cat?.name || ""
-          const l1 = cat?.cat_levels?.level_1 || []
-          const l1Nodes = l1.map(l => {
-            const l1_en = l?.name_en || ""
-            const l1_ar = l?.name_ar || ""
-            const l2 = l?.level_2 || []
-            const l2Nodes = l2.map(s => {
-              const label_en = s?.name_en || ""
-              const label_ar = s?.name_ar || ""
-              const key = label_en || label_ar
-              if (key) all.push({ key, label_en, label_ar })
-              return { key, label_en, label_ar }
-            })
-            return { key: l1_en || l1_ar, label_en: l1_en, label_ar: l1_ar, level_2: l2Nodes }
-          })
-          tree.push({
-            cat_key: catNameEn || catNameAr,
-            cat_en: catNameEn,
-            cat_ar: catNameAr,
-            level_1: l1Nodes,
-          })
-        })
-        // de-duplicate by key
-        const dedup = []
-        const seen = new Set()
-        all.forEach(o => { if (!seen.has(o.key)) { seen.add(o.key); dedup.push(o) } })
-        setSubLevel2Options(dedup)
-        setCatLevelsTree(tree)
-      }
-    }
-    load()
-  }, [])
+  // Memoized function to check if any filters are applied
+  const hasActiveFilters = useMemo(() => {
+    return (
+      category !== "all" ||
+      filters.category !== "all" ||
+      searchTerm !== "" ||
+      filters.name !== "" ||
+      filters.subCategories.length > 0 ||
+      filters.brands.length > 0 ||
+      filters.models.length > 0 ||
+      filters.allowedCategories.length > 0 ||
+      (filters.location.country && filters.location.country !== "all") ||
+      filters.location.city !== "" ||
+      filters.location.useCurrentLocation ||
+      filters.dateRange.from !== "" ||
+      filters.dateRange.to !== "" ||
+      filters.status !== "all" ||
+      filters.priceRange.min !== "" ||
+      filters.priceRange.max !== ""
+    )
+  }, [category, searchTerm, filters])
   
-  const fetchFilteredItems = async () => {
-    setIsLoading(true)
-    try {
-      // Build API filter parameters
-      const apiFilters = {
-        page: page,
-        limit: itemsPerPage,
-      }
-      // Subcategory filters (API-side if supported)
-      if (filters.subLevels.level1) {
-        apiFilters.sub_level1 = filters.subLevels.level1
-      }
-      if (filters.subLevels.level2) {
-        apiFilters.sub_level2 = filters.subLevels.level2
-      }
-
-      // Basic filters
-      if (category !== "all") {
-        apiFilters.category = category
-        // console.log('Category filter applied:', category)
-      }
-
-      // Search filter - prioritize searchTerm over filters.name
-      if (searchTerm) {
-        apiFilters.search = searchTerm
-        // console.log('Search filter applied:', searchTerm)
-      } else if (filters.name) {
-        apiFilters.search = filters.name
-        // console.log('Name filter applied:', filters.name)
-      }
-
-      if (filters.categories.length > 0) {
-        apiFilters.categories = filters.categories
-        // console.log('Categories filter applied:', filters.categories)
-      }
-
-      if (filters.allowedCategories.length > 0) {
-        apiFilters.allowed_categories = filters.allowedCategories
-        // console.log('Allowed categories filter applied:', filters.allowedCategories)
-      }
-
-      if (filters.location.country && filters.location.country !== "all") {
-        apiFilters.country = filters.location.country
-        // console.log('Country filter applied:', filters.location.country)
-      }
-
-      if (filters.location.city) {
-        apiFilters.city = filters.location.city
-        // console.log('City filter applied:', filters.location.city)
-      }
-
-      if (filters.location.useCurrentLocation && filters.location.latitude && filters.location.longitude) {
-        apiFilters.latitude = filters.location.latitude
-        apiFilters.longitude = filters.location.longitude
-        apiFilters.radius = filters.location.radius
-        // console.log('Radius filter applied:', filters.location.radius)
-      }
-
-      if (filters.status !== "all") {
-        apiFilters.status_item = filters.status
-        // console.log('Status filter applied:', filters.status)
-      }
-
-      if (filters.priceRange.min) {
-        apiFilters.min_price = filters.priceRange.min
-        // console.log('Min price filter applied:', filters.priceRange.min)
-      }
-
-      if (filters.priceRange.max) {
-        apiFilters.max_price = filters.priceRange.max
-        // console.log('Max price filter applied:', filters.priceRange.max)
-      }
-
-      if (filters.dateRange.from) {
-        apiFilters.date_from = filters.dateRange.from
-        // console.log('Date from filter applied:', filters.dateRange.from)
-      }
-
-      if (filters.dateRange.to) {
-        apiFilters.date_to = filters.dateRange.to
-        //    console.log('Date to filter applied:', filters.dateRange.to)
-      }
-
-      // Use getProducts when useApiPagination is true, otherwise use getProductsEnhanced
-      const response = useApiPagination 
-        ? await getProducts({}, apiFilters) 
-        : await getProductsEnhanced(apiFilters)
-      // console.log('Filter response:', { 
-      //   success: response.success, 
-      //   dataLength: response.data?.length, 
-      //   total: response.total || response.count,
-      //   appliedFilters: apiFilters 
-      // })
-      
-      if (response.success) {
-        setDisplayedItems(response.data || [])
-        // Use totalCount prop if provided and response doesn't have total, otherwise use response total
-        const calculatedTotal = totalCount !== null && (!response.total || response.total === response.count) 
-          ? totalCount 
-          : (response.total || response.count || 0)
-        setTotalItems(calculatedTotal)
-      } else {
-        // console.error('Failed to fetch items:', response.error)
-        setDisplayedItems([])
-        setTotalItems(0)
-      }
-    } catch (error) {
-      // console.error('Error fetching filtered items:', error)
-      setDisplayedItems([])
-      setTotalItems(0)
-    } finally {
-      setIsLoading(false)
+  // Local filtering and pagination - filter allItems locally
+  useEffect(() => {
+    let filteredItems = [...allItems]
+    
+    // Apply search filter with RTL support
+    if (searchTerm) {
+      filteredItems = filteredItems.filter(item => {
+        const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
+        const itemDescription = !isRTL ? item.translations?.[0]?.description : item.translations?.[1]?.description || item.description
+        return itemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               itemDescription?.toLowerCase().includes(searchTerm.toLowerCase())
+      })
     }
+    
+    // Apply name filter with RTL support
+    if (filters.name) {
+      filteredItems = filteredItems.filter(item => {
+        const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
+        return itemName?.toLowerCase().includes(filters.name.toLowerCase())
+      })
+    }
+    
+    // Apply category filter (from main filter dropdown)
+    const activeCategory = category !== "all" ? category : filters.category
+    if (activeCategory !== "all") {
+      filteredItems = filteredItems.filter(item => 
+        item.category?.toLowerCase() === activeCategory.toLowerCase()
+      )
+    }
+    
+    // Apply subCategories filter
+    if (filters.subCategories.length > 0) {
+      filteredItems = filteredItems.filter(item => {
+        if (!item.sub_category) return false
+        const itemSubCatId = typeof item.sub_category === 'object' ? item.sub_category?.id : item.sub_category
+        return filters.subCategories.some(subCatId => {
+          const filterSubCatId = typeof subCatId === 'object' ? subCatId?.id : subCatId
+          return String(itemSubCatId) === String(filterSubCatId)
+        })
+      })
+    }
+    
+    // Apply brands filter
+    if (filters.brands.length > 0) {
+      filteredItems = filteredItems.filter(item => {
+        if (!item.brand) return false
+        const itemBrandId = typeof item.brand === 'object' ? item.brand?.id : item.brand
+        return filters.brands.some(brandId => {
+          const filterBrandId = typeof brandId === 'object' ? brandId?.id : brandId
+          return String(itemBrandId) === String(filterBrandId)
+        })
+      })
+    }
+    
+    // Apply models filter
+    if (filters.models.length > 0) {
+      filteredItems = filteredItems.filter(item => {
+        if (!item.model) return false
+        const itemModelId = typeof item.model === 'object' ? item.model?.id : item.model
+        return filters.models.some(modelId => {
+          const filterModelId = typeof modelId === 'object' ? modelId?.id : modelId
+          return String(itemModelId) === String(filterModelId)
+        })
+      })
+    }
+    
+    // Apply status filter
+    if (filters.status !== "all") {
+      filteredItems = filteredItems.filter(item => item.status_item === filters.status)
+    }
+    
+    // Apply price range filters
+    if (filters.priceRange.min) {
+      filteredItems = filteredItems.filter(item => 
+        parseFloat(item.price) >= parseFloat(filters.priceRange.min)
+      )
+    }
+    if (filters.priceRange.max) {
+      filteredItems = filteredItems.filter(item => 
+        parseFloat(item.price) <= parseFloat(filters.priceRange.max)
+      )
+    }
+    
+    // Apply location filters
+    if (filters.location.country && filters.location.country !== "all") {
+      filteredItems = filteredItems.filter(item => 
+        item.country?.toLowerCase().includes(filters.location.country.toLowerCase())
+      )
+    }
+    if (filters.location.city) {
+      filteredItems = filteredItems.filter(item => 
+        item.city?.toLowerCase().includes(filters.location.city.toLowerCase())
+      )
+    }
+    
+    // Apply geolocation filter
+    if (filters.location.useCurrentLocation && filters.location.latitude && filters.location.longitude) {
+      filteredItems = filteredItems.filter(item => {
+        if (!item.latitude || !item.longitude) return false
+        const distance = calculateDistance(
+          filters.location.latitude, filters.location.longitude,
+          parseFloat(item.latitude), parseFloat(item.longitude)
+        )
+        return distance <= (parseFloat(filters.location.radius) || 10)
+      })
+    }
+    
+    // Apply allowed categories filter
+    if (filters.allowedCategories.length > 0) {
+      filteredItems = filteredItems.filter(item => {
+        if (!item.allowed_categories) return false
+        return filters.allowedCategories.some(cat => 
+          item.allowed_categories.includes(cat)
+        )
+      })
+    }
+    
+    // Apply date range filters
+    if (filters.dateRange.from) {
+      const fromDate = new Date(filters.dateRange.from)
+      filteredItems = filteredItems.filter(item => {
+        const itemDate = new Date(item.date_created)
+        return itemDate >= fromDate
+      })
+    }
+    if (filters.dateRange.to) {
+      const toDate = new Date(filters.dateRange.to)
+      filteredItems = filteredItems.filter(item => {
+        const itemDate = new Date(item.date_created)
+        return itemDate <= toDate
+      })
+    }
+    
+    // Update filtered items and count
+    setDisplayedItems(filteredItems)
+    setProductsCount(filteredItems.length)
+    
+    // Reset to page 1 if current page is beyond available pages
+    const maxPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage))
+    if (page > maxPages) {
+      setPage(1)
+    }
+  }, [allItems, category, searchTerm, filters, isRTL, page, itemsPerPage])
+
+  // Helper function to calculate distance between two coordinates
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371 // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
   }
 
-  // API-based filtering and pagination - when no items are passed, or useApiPagination is true, or totalCount is provided
-  useEffect(() => {
-    if (!items || items.length === 0 || useApiPagination || totalCount !== null) {
-      fetchFilteredItems()
-    } else {
-      // Use passed items directly and apply local filtering
-      let filteredItems = [...items]
-      
-      // Apply local search filter with RTL support
-      if (searchTerm) {
-        filteredItems = filteredItems.filter(item => {
-          const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
-          const itemDescription = !isRTL ? item.translations?.[0]?.description : item.translations?.[1]?.description || item.description
-          
-          return itemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                 itemDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-        })
-      }
-      
-      // Apply local name filter with RTL support
-      if (filters.name) {
-        filteredItems = filteredItems.filter(item => {
-          const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
-          return itemName?.toLowerCase().includes(filters.name.toLowerCase())
-        })
-      }
-      
-      // Apply local category filter
-      if (category !== "all") {
-        filteredItems = filteredItems.filter(item => item.category === category)
-      }
-      
-      // Apply local subcategory filters
-      if (filters.subLevels.level1) {
-        const q = filters.subLevels.level1.toLowerCase()
-        filteredItems = filteredItems.filter(item => {
-          const l1 = item?.sub_cat?.level_1
-          const names = [
-            l1?.name,
-            l1?.name_en,
-            l1?.name_ar,
-            item?.level_1,
-            item?.sub_category, // legacy
-          ]
-          return names.some(v => typeof v === 'string' && v.toLowerCase().includes(q))
-        })
-      }
-      if (filters.subLevels.level2) {
-        const q = filters.subLevels.level2.toLowerCase()
-        filteredItems = filteredItems.filter(item => {
-          const l2 = item?.sub_cat?.level_2
-          const names = [l2?.name, l2?.name_en, l2?.name_ar]
-          return names.some(v => typeof v === 'string' && v.toLowerCase().includes(q))
-        })
-      }
-      if (filters.subLevels.level2List && filters.subLevels.level2List.length > 0) {
-        const listLC = filters.subLevels.level2List.map(x => x.toLowerCase())
-        filteredItems = filteredItems.filter(item => {
-          const l2 = item?.sub_cat?.level_2
-          const names = [l2?.name, l2?.name_en, l2?.name_ar].filter(Boolean).map(x => x.toLowerCase())
-          return names.some(n => listLC.includes(n))
-        })
-      }
-      if (filters.subLevels.level1List && filters.subLevels.level1List.length > 0) {
-        const listLC = filters.subLevels.level1List.map(x => x.toLowerCase())
-        filteredItems = filteredItems.filter(item => {
-          const l1 = item?.sub_cat?.level_1
-          const names = [l1?.name, l1?.name_en, l1?.name_ar, item?.level_1, item?.sub_category]
-            .filter(Boolean).map(x => x.toLowerCase())
-          return names.some(n => listLC.includes(n))
-        })
-      }
-
-      // Apply local categories filter
-      if (filters.categories.length > 0) {
-        filteredItems = filteredItems.filter(item => 
-          filters.categories.includes(item.category)
-        )
-      }
-      
-      // Apply local status filter
-      if (filters.status !== "all") {
-        filteredItems = filteredItems.filter(item => item.status_item === filters.status)
-      }
-      
-      // Apply local price range filters
-      if (filters.priceRange.min) {
-        filteredItems = filteredItems.filter(item => 
-          parseFloat(item.price) >= parseFloat(filters.priceRange.min)
-        )
-      }
-      if (filters.priceRange.max) {
-        filteredItems = filteredItems.filter(item => 
-          parseFloat(item.price) <= parseFloat(filters.priceRange.max)
-        )
-      }
-      
-      // Apply local location filters
-      if (filters.location.country && filters.location.country !== "all") {
-        filteredItems = filteredItems.filter(item => 
-          item.country?.toLowerCase().includes(filters.location.country.toLowerCase())
-        )
-      }
-      if (filters.location.city) {
-        filteredItems = filteredItems.filter(item => 
-          item.city?.toLowerCase().includes(filters.location.city.toLowerCase())
-        )
-      }
-      
-      // Apply local allowed categories filter
-      if (filters.allowedCategories.length > 0) {
-        filteredItems = filteredItems.filter(item => {
-          if (!item.allowed_categories) return false
-          return filters.allowedCategories.some(cat => 
-            item.allowed_categories.includes(cat)
-          )
-        })
-      }
-      
-      // Apply local date range filters
-      if (filters.dateRange.from) {
-        const fromDate = new Date(filters.dateRange.from)
-        filteredItems = filteredItems.filter(item => {
-          const itemDate = new Date(item.date_created)
-          return itemDate >= fromDate
-        })
-      }
-      if (filters.dateRange.to) {
-        const toDate = new Date(filters.dateRange.to)
-        filteredItems = filteredItems.filter(item => {
-          const itemDate = new Date(item.date_created)
-          return itemDate <= toDate
-        })
-      }
-      
-      setDisplayedItems(filteredItems)
-      setTotalItems(filteredItems.length)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, searchTerm, filters, page, items, useApiPagination, totalCount])
-
- 
-
-  // Pagination logic - handle both API and local pagination
-  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage))
+  // Pagination logic - local pagination only
+  const totalPages = Math.max(1, Math.ceil(productsCount / itemsPerPage))
   
-  // If items are passed as props, handle local pagination
+  // Apply local pagination to displayedItems
   const paginatedItems = (() => {
-    if (!items || items.length === 0 || useApiPagination || totalCount !== null) {
-      // API mode - use all displayedItems (API already handles pagination)
-      return Array.isArray(displayedItems) ? displayedItems : []
-    } else {
-      // Local mode - apply pagination to displayedItems
-      const startIndex = (page - 1) * itemsPerPage
-      const endIndex = startIndex + itemsPerPage
-      return Array.isArray(displayedItems) ? displayedItems.slice(startIndex, endIndex) : []
-    }
+    const startIndex = (page - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return Array.isArray(displayedItems) ? displayedItems.slice(startIndex, endIndex) : []
   })()
-
-
-  // const totalPages = Math.max(1, Math.ceil(displayedItems.length / itemsPerPage))
-  // const paginatedItems =  displayedItems.slice((page - 1) * itemsPerPage, page * itemsPerPage)
 
   const handleSearch = () => {
     setPage(1)
@@ -549,7 +473,7 @@ export function ItemsList({
       const newFilters = { ...prev }
       let currentArray = newFilters[filterPath] || []
       
-      // If "all" is currently selected, clear it when selecting individual categories
+      // If "all" is currently selected, clear it when selecting individual items
       if (currentArray.includes("all")) {
         currentArray = []
       }
@@ -586,14 +510,11 @@ export function ItemsList({
     setPage(1) // Reset to first page
     setFilters({
       name: "",
-      categories: [],
+      category: "all",
+      subCategories: [],
+      brands: [],
+      models: [],
       allowedCategories: [],
-      subLevels: {
-        level1: "",
-        level2: "",
-        level1List: [],
-        level2List: [],
-      },
       location: {
         country: "all",
         city: "",
@@ -607,7 +528,6 @@ export function ItemsList({
         to: "",
       },
       status: "all",
-    
       priceRange: {
         min: "",
         max: "",
@@ -683,9 +603,10 @@ export function ItemsList({
   const getActiveFiltersCount = () => {
     let count = 0
     if (filters.name) count++
-    if (filters.categories.length > 0) count++
-    if (filters.subLevels.level2List) count++
-    if (filters.subLevels.level1List) count++
+    if (filters.category !== "all") count++
+    if (filters.subCategories.length > 0) count++
+    if (filters.brands.length > 0) count++
+    if (filters.models.length > 0) count++
     if (filters.allowedCategories.length > 0) count++
     if (filters.location.country && filters.location.country !== "all") count++
     if (filters.location.city) count++
@@ -840,7 +761,7 @@ export function ItemsList({
           <>
             {/* Overlay */}
             <motion.div
-              className="fixed -top-6 inset-0 bg-black/50 backdrop-blur-sm z-50 "
+              className="fixed -top-6 inset-0 bg-black/50 backdrop-blur-sm z-[10000000] "
               variants={overlayVariants}
               initial="hidden"
               animate="visible"
@@ -850,7 +771,7 @@ export function ItemsList({
             
             {/* Sidebar */}
             <motion.div
-              className={`fixed  -top-6 h-screen w-80 bg-background  border-border shadow-lg z-50 overflow-y-auto ${isRTL?'border-l right-0':'border-r left-0'} `}
+              className={`fixed  -top-6 h-screen w-80 bg-background  border-border shadow-lg z-[10000001] overflow-y-auto ${isRTL?'border-l right-0':'border-r left-0'} `}
               // className="fixed left-0 -top-6 h-screen w-80 bg-background border-r border-border shadow-lg z-50 overflow-y-auto"
               variants={sidebarVariants}
               initial="hidden"
@@ -974,109 +895,294 @@ export function ItemsList({
                   )}
                 </motion.div> */}
 
-              
-                {/* Main categories with Level 1 and Level 2 as checkboxes */}
+                {/* Category Filter */}
+                <motion.div 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
+                    {t("category") || "Category"}
+                  </label>
+                  <Select 
+                    value={filters.category} 
+                    onValueChange={(value) => updateFilter("category", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("selectCategory") || "Select Category"} />
+                    </SelectTrigger>
+                    <SelectContent className="z-[10000020]">
+                      <SelectItem value="all" className="hover:!bg-primary/40">{t("allCategories") || "All Categories"}</SelectItem>
+                      {categoriesName.map((cat) => (
+                        <SelectItem key={cat} value={cat} className="capitalize hover:!bg-primary/40">
+                          {t(cat) || cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+
+                {/* SubCategories Filter */}
+                <motion.div 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.45 }}
+                >
+                  
+
+                  <label className="text-sm font-medium flex items-center gap-2">
+                  <Package className="inline h-4 w-4 text-primary" />
+
+                    {t("subCategories") || "Sub Categories"}
+                  </label>
+                  <Popover open={subCategoriesOpen} onOpenChange={setSubCategoriesOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={subCategoriesOpen}
+                        className="w-full justify-between"
+                      >
+                        {filters.subCategories.length > 0
+                          ? `${filters.subCategories.length} selected`
+                          : t("selectSubCategories") || "Select sub categories..."}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 z-[10000020]" align="start">
+                      <Command className="max-h-[400px]">
+                        <CommandInput placeholder={t("searchSubCategories") || "Search sub categories..."} />
+                        <CommandEmpty>{t("noSubCategoriesFound") || "No sub categories found."}</CommandEmpty>
+                        <CommandList className="max-h-[350px] overflow-y-auto">
+                          <CommandGroup>
+                            {allSubCategoriesData.map((subCat) => {
+                              const subCatId = typeof subCat.id === 'object' ? subCat.id?.id : subCat.id
+                              const subCatName = !isRTL 
+                                ? (subCat.translations?.[0]?.name || subCat.name || "")
+                                : (subCat.translations?.[1]?.name || subCat.name || "")
+                              const isSelected = filters.subCategories.some(id => {
+                                const filterId = typeof id === 'object' ? id?.id : id
+                                return String(subCatId) === String(filterId)
+                              })
+                              return (
+                                <CommandItem
+                                  key={subCatId}
+                                  onSelect={() => toggleArrayFilter("subCategories", subCatId)}
+                                  className="cursor-pointer hover:!bg-primary/40"
+                                >
+                                  <div className="flex items-center space-x-2 w-full">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleArrayFilter("subCategories", subCatId)}
+                                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <span>{subCatName}</span>
+                                  </div>
+                                </CommandItem>
+                              )
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {filters.subCategories.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {filters.subCategories.map((subCatId) => {
+                        const subCat = allSubCategoriesData.find(sc => {
+                          const scId = typeof sc.id === 'object' ? sc.id?.id : sc.id
+                          return String(scId) === String(subCatId)
+                        })
+                        const label = subCat 
+                          ? (!isRTL ? (subCat.translations?.[0]?.name || subCat.name) : (subCat.translations?.[1]?.name || subCat.name))
+                          : subCatId
+                        return (
+                          <Badge key={subCatId} variant="secondary" className="text-xs">
+                            {label}
+                            <button
+                              onClick={() => toggleArrayFilter("subCategories", subCatId)}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Brands Filter */}
                 <motion.div 
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.47 }}
                 >
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Package className="h-4 w-4 text-primary" />
-                    {t("categories") || "Categories"}
+                 <label className="text-sm font-medium flex items-center gap-2">
+                    {t("brands") || "Brands"}
                   </label>
-                  <Popover open={catLevelsOpen} onOpenChange={setCatLevelsOpen}>
+                  <Popover open={brandsOpen} onOpenChange={setBrandsOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         role="combobox"
-                        aria-expanded={catLevelsOpen}
+                        aria-expanded={brandsOpen}
                         className="w-full justify-between"
                       >
-                        {((filters.subLevels.level1List || []).length + (filters.subLevels.level2List || []).length) > 0
-                          ? `${(filters.subLevels.level1List || []).length + (filters.subLevels.level2List || []).length} selected`
-                          : t("searchCategory") || "Search category ..."}
+                        {filters.brands.length > 0
+                          ? `${filters.brands.length} selected`
+                          : t("selectBrands") || "Select brands..."}
                         <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        {
-                          catLevelsTree?(  <CommandList className="max-h-72">
-                            {catLevelsTree.map((cat) => (
-                              <CommandGroup key={cat.cat_key} heading={(isRTL ? (cat.cat_ar || cat.cat_en) : (cat.cat_en || cat.cat_ar))}>
-                                {cat.level_1.map((l1) => {
-                                  const l1Label = isRTL ? (l1.label_ar || l1.label_en) : (l1.label_en || l1.label_ar)
-                                  const l1Checked = (filters.subLevels.level1List || []).includes(l1.key)
-                                  return (
-                                    <div key={`l1-${cat.cat_key}-${l1.key}`} className="px-2 py-1">
-                                      <div className="flex items-center space-x-2">
-                                        <input
-                                          type="checkbox"
-                                          checked={l1Checked}
-                                          onChange={() => {
-                                            const current = filters.subLevels.level1List || []
-                                            const next = l1Checked ? current.filter(x => x !== l1.key) : [...current, l1.key]
-                                            updateFilter("subLevels.level1List", next)
-                                          }}
-                                          className="rounded border-gray-300 text-primary focus:ring-primary"
-                                        />
-                                        <span className="capitalize">{l1Label}</span>
-                                      </div>
-                                      {(l1.level_2 || []).map((l2) => {
-                                        const l2Label = isRTL ? (l2.label_ar || l2.label_en) : (l2.label_en || l2.label_ar)
-                                        const l2Checked = (filters.subLevels.level2List || []).includes(l2.key)
-                                        return (
-                                          <div key={`l2-${cat.cat_key}-${l1.key}-${l2.key}`} className="pl-6 py-1 flex items-center space-x-2">
-                                            <input
-                                              type="checkbox"
-                                              checked={l2Checked}
-                                              onChange={() => {
-                                                const current = filters.subLevels.level2List || []
-                                                const next = l2Checked ? current.filter(x => x !== l2.key) : [...current, l2.key]
-                                                updateFilter("subLevels.level2List", next)
-                                              }}
-                                              className="rounded border-gray-300 text-primary focus:ring-primary"
-                                            />
-                                            <span className="capitalize">{l2Label}</span>
-                                          </div>
-                                        )
-                                      })}
-                                    </div>
-                                  )
-                                })}
-                              </CommandGroup>
-                            ))}
-                          </CommandList>):(<CommandInput placeholder={t("searchCategory") || "Search category ..."} />)
-                        }
-                        
-                        
-                      
+                    <PopoverContent className="w-full p-0 z-[10000020]" align="start">
+                      <Command className="max-h-[400px]">
+                        <CommandInput placeholder={t("searchBrands") || "Search brands..."} />
+                        <CommandEmpty>{t("noBrandsFound") || "No brands found."}</CommandEmpty>
+                        <CommandList className="max-h-[350px] overflow-y-auto">
+                          <CommandGroup>
+                            {allBrandsData.map((brand) => {
+                              const brandId = typeof brand.id === 'object' ? brand.id?.id : brand.id
+                              const brandName = !isRTL 
+                                ? (brand.translations?.[0]?.name || brand.name || "")
+                                : (brand.translations?.[1]?.name || brand.name || "")
+                              const isSelected = filters.brands.some(id => {
+                                const filterId = typeof id === 'object' ? id?.id : id
+                                return String(brandId) === String(filterId)
+                              })
+                              return (
+                                <CommandItem
+                                  key={brandId}
+                                  onSelect={() => toggleArrayFilter("brands", brandId)}
+                                  className="cursor-pointer hover:!bg-primary/40"
+                                >
+                                  <div className="flex items-center space-x-2 w-full">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleArrayFilter("brands", brandId)}
+                                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <span>{brandName}</span>
+                                  </div>
+                                </CommandItem>
+                              )
+                            })}
+                          </CommandGroup>
+                        </CommandList>
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  {((filters.subLevels.level1List || []).length > 0 || (filters.subLevels.level2List || []).length > 0) && (
+                  {filters.brands.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {(filters.subLevels.level1List || []).map((key) => {
-                        const l1 = catLevelsTree.flatMap(c => c.level_1).find(x => x.key === key)
-                        const label = isRTL ? (l1?.label_ar || l1?.label_en || key) : (l1?.label_en || l1?.label_ar || key)
+                      {filters.brands.map((brandId) => {
+                        const brand = allBrandsData.find(b => {
+                          const bId = typeof b.id === 'object' ? b.id?.id : b.id
+                          return String(bId) === String(brandId)
+                        })
+                        const label = brand 
+                          ? (!isRTL ? (brand.translations?.[0]?.name || brand.name) : (brand.translations?.[1]?.name || brand.name))
+                          : brandId
                         return (
-                          <Badge key={`l1-${key}`} variant="secondary" className="text-xs">
+                          <Badge key={brandId} variant="secondary" className="text-xs">
                             {label}
-                            <button onClick={() => updateFilter("subLevels.level1List", (filters.subLevels.level1List || []).filter(x => x !== key))} className="ml-1 hover:text-destructive">
+                            <button
+                              onClick={() => toggleArrayFilter("brands", brandId)}
+                              className="ml-1 hover:text-destructive"
+                            >
                               <X className="h-3 w-3" />
                             </button>
                           </Badge>
                         )
                       })}
-                      {(filters.subLevels.level2List || []).map((key) => {
-                        const l2 = subLevel2Options.find(o => o.key === key)
-                        const label = isRTL ? (l2?.label_ar || l2?.label_en || key) : (l2?.label_en || l2?.label_ar || key)
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Models Filter */}
+                <motion.div 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.49 }}
+                >
+                  <label className="text-sm font-medium">
+                    {t("models") || "Models"}
+                  </label>
+                  <Popover open={modelsOpen} onOpenChange={setModelsOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={modelsOpen}
+                        className="w-full justify-between"
+                      >
+                        {filters.models.length > 0
+                          ? `${filters.models.length} selected`
+                          : t("selectModels") || "Select models..."}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 z-[10000020]" align="start">
+                      <Command className="max-h-[400px]">
+                        <CommandInput placeholder={t("searchModels") || "Search models..."} />
+                        <CommandEmpty>{t("noModelsFound") || "No models found."}</CommandEmpty>
+                        <CommandList className="max-h-[350px] overflow-y-auto">
+                          <CommandGroup>
+                            {allModelsData.map((model) => {
+                              const modelId = typeof model.id === 'object' ? model.id?.id : model.id
+                              const modelName = !isRTL 
+                                ? (model.translations?.[0]?.name || model.name || "")
+                                : (model.translations?.[1]?.name || model.name || "")
+                              const isSelected = filters.models.some(id => {
+                                const filterId = typeof id === 'object' ? id?.id : id
+                                return String(modelId) === String(filterId)
+                              })
+                              return (
+                                <CommandItem
+                                  key={modelId}
+                                  onSelect={() => toggleArrayFilter("models", modelId)}
+                                  className="cursor-pointer hover:!bg-primary/40"
+                                >
+                                  <div className="flex items-center space-x-2 w-full">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleArrayFilter("models", modelId)}
+                                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <span>{modelName}</span>
+                                  </div>
+                                </CommandItem>
+                              )
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {filters.models.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {filters.models.map((modelId) => {
+                        const model = allModelsData.find(m => {
+                          const mId = typeof m.id === 'object' ? m.id?.id : m.id
+                          return String(mId) === String(modelId)
+                        })
+                        const label = model 
+                          ? (!isRTL ? (model.translations?.[0]?.name || model.name) : (model.translations?.[1]?.name || model.name))
+                          : modelId
                         return (
-                          <Badge key={`l2-${key}`} variant="secondary" className="text-xs">
+                          <Badge key={modelId} variant="secondary" className="text-xs">
                             {label}
-                            <button onClick={() => updateFilter("subLevels.level2List", (filters.subLevels.level2List || []).filter(x => x !== key))} className="ml-1 hover:text-destructive">
+                            <button
+                              onClick={() => toggleArrayFilter("models", modelId)}
+                              className="ml-1 hover:text-destructive"
+                            >
                               <X className="h-3 w-3" />
                             </button>
                           </Badge>
@@ -1091,7 +1197,7 @@ export function ItemsList({
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.51 }}
                 >
                   <label className="text-sm font-medium">
                     {t("allowedCategories") || "Allowed Categories for Exchange"}
@@ -1112,11 +1218,11 @@ export function ItemsList({
                         <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0 ">
-                      <Command>
+                    <PopoverContent className="w-full p-0 z-[10000020]" align="start">
+                      <Command className="max-h-[400px]">
                         <CommandInput placeholder={t("searchCategories") || "Search categories..."} />
                         <CommandEmpty>{t("noCategoriesFound") || "No categories found."}</CommandEmpty>
-                        <CommandList className="max-h-40">
+                        <CommandList className="max-h-[350px] overflow-y-auto">
                           <CommandGroup>
                             {/* All Categories Option */}
                             <CommandItem
@@ -1190,7 +1296,7 @@ export function ItemsList({
                   className="space-y-4"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
+                  transition={{ delay: 0.52 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary" />
@@ -1255,7 +1361,7 @@ export function ItemsList({
                         <SelectTrigger>
                           <SelectValue placeholder={t("selectCountry") || "Select Country"} />
                         </SelectTrigger>
-                        <SelectContent className="max-h-40">
+                        <SelectContent className="max-h-[300px] overflow-y-auto z-[10000020]">
                           <SelectItem value="all" className="hover:!bg-primary/40">{t("allCountries") || "All Countries"}</SelectItem>
                           {countriesList.map((country) => (
                             <SelectItem key={country} value={country} className="hover:!bg-primary/40">
@@ -1278,7 +1384,7 @@ export function ItemsList({
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 }}
+                  transition={{ delay: 0.53 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-primary" />
@@ -1305,7 +1411,7 @@ export function ItemsList({
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }}
+                  transition={{ delay: 0.54 }}
                 >
                   <label className="text-sm font-medium">
                     {t("itemStatus") || "Item Condition"}
@@ -1317,7 +1423,7 @@ export function ItemsList({
                     <SelectTrigger>
                       <SelectValue placeholder={t("selectStatus") || "Select Status"} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[10000020]">
                       <SelectItem value="all" className="hover:!bg-primary/20">{t("allStatuses") || "All Conditions"}</SelectItem>
                       {itemsStatus.map((status) => (
                         <SelectItem key={status} value={status} className="capitalize hover:!bg-primary/40">
@@ -1335,7 +1441,7 @@ export function ItemsList({
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.0 }}
+                  transition={{ delay: 0.55 }}
                 >
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Banknote  className="h-4 w-4 text-primary" />
@@ -1364,7 +1470,7 @@ export function ItemsList({
                   className="flex gap-2 pt-4 border-t border-border"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.1 }}
+                  transition={{ delay: 0.56 }}
                 >
                   <Button
                     variant="outline"

@@ -26,7 +26,7 @@ export default function ProductsPage() {
     async function fetchData() {
       setIsLoading(true)
       // Fetch first page with limit 10 to get total count
-      const productsData = await getProducts({}, { page: 1, limit: 10 })
+      const productsData = await getProducts({})
       if (productsData.success) {
         setProducts(productsData.data)
         setTotalCount(productsData.total || 0)

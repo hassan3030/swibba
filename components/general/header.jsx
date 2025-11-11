@@ -1,10 +1,11 @@
 "use client"
-import { List, ListChecks, MessageCircle, Verified } from "lucide-react"
+import { List, ListChecks, MessageCircle, PackageSearch, Verified } from "lucide-react"
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
+import { PiSwapBold } from "react-icons/pi";
 import {
   Heart,
   Search,
@@ -148,6 +149,7 @@ export function Header() {
   const [filter, serFilter] = useState("")
   const [cartLength, setCartLength] = useState(0)
   const [notificationsLength, setNotificationsLength] = useState(0)
+  const [offersLength, setOffersLength] = useState(0)
   const [wishlistLength, setWishlistLength] = useState(0)
   const [chatLength, setChatLength] = useState(0)
   const [hasSearched, setHasSearched] = useState(false)
@@ -313,20 +315,19 @@ export function Header() {
       const filteredOffers = Array.isArray(offers.data)
         ? offers.data.filter((offer) => offer.status_offer === "pending" || offer.status_offer === "accepted")
         : []
-
       const notifications = await getOffeReceived(id)
-
       const filteredNotifications = Array.isArray(notifications.data)
         ? notifications.data.filter(
             (notifications) => notifications.status_offer === "pending" || notifications.status_offer === "accepted",
           )
         : []
-
-      setCartLength(filteredOffers.length)
-      setNotificationsLength(filteredNotifications.length)
+let allOffersCount = filteredOffers.length + filteredNotifications.length
+        setOffersLength(allOffersCount)
+        
+      // setCartLength(filteredOffers.length)
+      // setNotificationsLength(filteredNotifications.length)
     } else {
-      setCartLength(0)
-      setNotificationsLength(0)
+      setOffersLength(0)
     }
   }
 
@@ -334,7 +335,7 @@ export function Header() {
     await removeCookie()
     await removeTarget()
     setUser(null)
-    router.push("/auth/login")
+    router.push("/auth/login") 
     window.location.reload()
   }
 
@@ -609,6 +610,13 @@ export function Header() {
                           <span>{t("manageItems")}</span>
                         </Link>
                       </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild>
+                        <Link href="/offers-details" className="hover:bg-primary/10 bg-background/50 hover:shadow-sm ">
+                          <PackageSearch  className="mr-2 h-4 w-4" />
+                          <span>{t("offersDetails")||"Offers Details"}</span>
+                        </Link>
+                      </DropdownMenuItem>
                     </>
 
                     <DropdownMenuSeparator className="dark:bg-[#2a2a2a] text-primary" />
@@ -693,7 +701,7 @@ export function Header() {
               {user ? (
                 <>
                   {/* Notifications */}
-                  <motion.div custom={5} variants={itemVariants}>
+                  {/* <motion.div custom={5} variants={itemVariants}>
                     <Link href="/recived-items" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -722,10 +730,42 @@ export function Header() {
                         </Button>
                       </motion.div>
                     </Link>
+                  </motion.div> */}
+
+
+                  <motion.div custom={5} variants={itemVariants}>
+                    <Link href="/offers" className="relative z-[100000]">
+                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
+                        >
+                          <PiSwapBold className="h-5 w-5" />
+                          <AnimatePresence>
+                            {offersLength > 0 && (
+                              <motion.span
+                                className="absolute animate-bounce -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary/90 text-xs text-primary-foreground dark:text-black"
+                                variants={badgeVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                              >
+                                {offersLength}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                          <span className="sr-only">{t("AllOffers") || "All  Offers"}</span>
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                            {t("AllOffers") || "All  Offers"}
+                          </span>
+                        </Button>
+                      </motion.div>
+                    </Link>
                   </motion.div>
 
                   {/* Cart */}
-                  <motion.div custom={6} variants={itemVariants}>
+                  {/* <motion.div custom={6} variants={itemVariants}>
                     <Link href="/send-items" className="relative z-[100000] ">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -754,10 +794,10 @@ export function Header() {
                         </Button>
                       </motion.div>
                     </Link>
-                  </motion.div>
+                  </motion.div> */}
                   
                   {/* Wishlist */}
-                  <motion.div custom={7} variants={itemVariants}>
+                  <motion.div custom={6} variants={itemVariants}>
                       <Link href="/wishList" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -789,7 +829,7 @@ export function Header() {
                   </motion.div>
 
                   {/* Messages */}
-                  <motion.div custom={8} variants={itemVariants}>
+                  <motion.div custom={7} variants={itemVariants}>
                     <Link href="/chat" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -821,7 +861,7 @@ export function Header() {
                   </motion.div>
 
                   {/* Add items */}
-                  <motion.div custom={9} variants={itemVariants}>
+                  <motion.div custom={8} variants={itemVariants}>
                     <span className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -841,7 +881,7 @@ export function Header() {
                   </motion.div>
 
                   {/* lang and theme */}
-                  <motion.div custom={10} variants={itemVariants}>
+                  <motion.div custom={9} variants={itemVariants}>
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
                         <Button
                           variant="ghost"
@@ -854,7 +894,7 @@ export function Header() {
                       </motion.div>
                   </motion.div>
                   
-                  <motion.div custom={11} variants={itemVariants}>
+                  <motion.div custom={10} variants={itemVariants}>
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
                         <Button 
                           variant="ghost"
@@ -872,7 +912,7 @@ export function Header() {
             </motion.div>
 
             {/* Mobile menu button */}
-            <motion.div custom={10} variants={itemVariants} initial="hidden" animate="visible" className="md:hidden">
+            <motion.div custom={11} variants={itemVariants} initial="hidden" animate="visible" className="md:hidden">
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                 <Button
                   variant="ghost"

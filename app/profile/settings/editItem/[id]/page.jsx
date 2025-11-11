@@ -49,7 +49,6 @@ export default function EditItemPage({ params }) {
     const fetchItem = async () => {
       const { id } = await params
       const itemData = await getProductById(id)
-     
       setItem(itemData.data)
       setIsLoading(false)
     }

@@ -10,6 +10,8 @@ import { useState, useEffect } from "react"
 import LoadingSpinner from "@/components/loading/loading-spinner"
 import { mediaURL } from "@/callAPI/utiles";
 
+
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {

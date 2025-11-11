@@ -216,25 +216,44 @@ export default function ProfilePage() {
   }
 
   const getUserProducts = async () => {
-    const userPruducts = await getProductByUserId("all")
-    const userPruductsAvailable = await getProductByUserId("available")
-    console.log("userPruductsAvailable", userPruductsAvailable)
-    const userPruductsUnavailable = await getProductByUserId("unavailable")
-    console.log("userPruductsUnavailable", userPruductsUnavailable)
-    // Check if the API call was successful and data exists
-    if (!userPruducts || !userPruducts.success || !userPruducts.data) {
-      // console.error("Failed to fetch user products:", userPruducts?.error || "Unknown error")
+    try {
+      const userPruducts = await getProductByUserId("all")
+      const userPruductsAvailable = await getProductByUserId("available")
+      console.log("userPruductsAvailable", userPruductsAvailable)
+      const userPruductsUnavailable = await getProductByUserId("unavailable")
+      console.log("userPruductsUnavailable", userPruductsUnavailable)
+      
+      // Check if the API call was successful and data exists
+      if (!userPruducts || !userPruducts.success || !userPruducts.data) {
+        // console.error("Failed to fetch user products:", userPruducts?.error || "Unknown error")
+        setmyUnavailableItems([])
+        setmyAvailableItems([])
+        return []
+      }
+
+      // Ensure data is an array before setting state
+      const productsData = Array.isArray(userPruducts.data) ? userPruducts.data : []
+      
+      // Safely set unavailable items - ensure it's always an array
+      const unavailableItems = userPruductsUnavailable?.success && Array.isArray(userPruductsUnavailable.data)
+        ? userPruductsUnavailable.data
+        : []
+      setmyUnavailableItems(unavailableItems)
+      
+      // Safely set available items - ensure it's always an array
+      const availableItems = userPruductsAvailable?.success && Array.isArray(userPruductsAvailable.data)
+        ? userPruductsAvailable.data
+        : []
+      setmyAvailableItems(availableItems)
+      
+      return productsData
+    } catch (error) {
+      console.error("Error fetching user products:", error)
+      // Ensure state is always set to an array, never undefined
       setmyUnavailableItems([])
       setmyAvailableItems([])
       return []
     }
-
-    // Ensure data is an array before filtering
-    const productsData = Array.isArray(userPruducts.data) ? userPruducts.data : []
-    
-    setmyUnavailableItems(userPruductsUnavailable.data)
-    setmyAvailableItems(userPruductsAvailable.data)
-    return productsData
   }
 
   const getrecievedOffers = async () => {
@@ -471,12 +490,12 @@ export default function ProfilePage() {
               <div className="w-full pb-1 rounded-xl shadow-lg border border-border/50">
                 <TabsList className="grid w-full grid-cols-4 bg-transparent rounded-md mb-1  gap-1">
                   {[
-                    { value: "items", icon: Package, label: t("yourProducts"), count: myAvailableItems.length },
+                    { value: "items", icon: Package, label: t("yourProducts"), count: Array.isArray(myAvailableItems) ? myAvailableItems.length : 0 },
                     {
                       value: "unavailableItems",
                       icon: Star,
                       label: t("itemsInOffers") || "Items In Offers",
-                      count: myUnavailableItems.length,
+                      count: Array.isArray(myUnavailableItems) ? myUnavailableItems.length : 0,
                     }, 
                     { value: "offers", icon: TbShoppingCartUp, label: t("sendoffers") || "Send Offers", count: sentOffersCount },
                     {
@@ -555,8 +574,8 @@ export default function ProfilePage() {
 
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                    {
-                    myAvailableItems.length > 0 ? (
-                      <ItemsList
+                    Array.isArray(myAvailableItems) && myAvailableItems.length > 0 ? (
+                        <ItemsList
                         items={myAvailableItems}
                         showFilters={false}
                         showbtn={false}
@@ -649,7 +668,7 @@ export default function ProfilePage() {
                   >
                     <Card className="shadow-lg border border-border/50">
                       <CardContent className="p-6">
-                        {myUnavailableItems.length > 0 ? (
+                        {Array.isArray(myUnavailableItems) && myUnavailableItems.length > 0 ? (
                           <ItemsList items={myUnavailableItems} showFilters={false} showSwitchHeart={false} showbtn={false} LinkItemOffer={true} />
                         ) : (
                           <motion.div

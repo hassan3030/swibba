@@ -128,3 +128,85 @@ export const getHintByName = async (name) => {
     return handleApiError(error, "Get Hint by name");
   }
 };
+
+
+
+// Get getAllSubCategories
+export const getAllSubCategories = async () => {
+  try {
+   
+    const response = await axios.get(
+      `${baseItemsURL}sub_categories`,
+      {
+         // Include parent_category relation so the UI can derive subcategories
+         params: { fields: "*,translations.*, parent_category.*,*.*.*", sort: "name" } 
+    } 
+    );
+    console.log(`Retrieved All sub_categories:`, response);
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      // names: response.data.data.map(category => category.name) || [],
+      message: `All sub_categories retrieved successfully`,
+    };
+  } catch (error) {
+    return handleApiError(error, "Get All sub_categories");
+  }
+}
+
+
+
+// Get Brands
+export const getAllBrands = async () => {
+  try {
+   
+    const response = await axios.get(
+      `${baseItemsURL}Brands`,
+      {
+         // Include parent_category relation so the UI can derive subcategories
+         params: {  limit: -1 , fields: "*,translations.*, parent_category.*, sub_category.*, *.*.*", sort: "name"} 
+    } 
+    );
+    console.log(`Retrieved All Brands:`, response);
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      // names: response.data.data.map(category => category.name) || [],
+      message: `All Brands retrieved successfully`,
+    };
+  } catch (error) {
+    return handleApiError(error, "Get All Brands");
+  }
+}
+
+// Get Models
+export const getAllModels = async () => {
+  try {
+   
+    const response = await axios.get(
+      `${baseItemsURL}models`,
+      {
+         // Include parent_category relation so the UI can derive subcategories
+         params: {  limit: -1 ,  fields: "*,translations.*, parent_brand.*, sub_category.*, *.*.*", sort: "name" } 
+    } 
+    );
+    console.log(`Retrieved All models:`, response);
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      // names: response.data.data.map(category => category.name) || [],
+      message: `All models retrieved successfully`,
+    };
+  } catch (error) {
+    return handleApiError(error, "Get All models ");
+  }
+};
+
+
+
+
+
+

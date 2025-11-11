@@ -63,6 +63,7 @@ const textVariants = {
 export function CategoryCard({ name, imageSrc, translations, showCategoryLevels = false, catLevels }) {
   const { t } = useTranslations()
   const [src, setSrc] = useState(imageSrc)
+  const [imageLoaded, setImageLoaded] = useState(false)
   const { isRTL } = useLanguage()
 
   return (
@@ -79,12 +80,19 @@ export function CategoryCard({ name, imageSrc, translations, showCategoryLevels 
           variants={imageVariants}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full " />
+          {/* Placeholder while image loads */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            </div>
+          )}
           <Image
             src={src || "/placeholder.svg?height=200&width=200"}
             alt={name}
             fill
-            className="object-cover transition-transform duration-300 rounded-full p-2 "
-            priority
+            loading="lazy"
+            onLoadingComplete={() => setImageLoaded(true)}
+            className={`object-cover transition-opacity duration-300 rounded-full p-2 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
             sizes="(max-width: 768px) 80px, 100px"
             onError={() => {
               // Fallback to JPG copy if WEBP is unavailable or 404 in production

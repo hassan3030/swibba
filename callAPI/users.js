@@ -11,6 +11,7 @@ import {
   getTarget,
   STANDARD_ROLE_ID,
   resetPasswordURL,
+  verifyEmailURL,
   swibbaURL,
   removeTarget
 } from "./utiles.js"
@@ -114,49 +115,55 @@ export const register = async (email, password, first_name, additional_data = {}
    
 
    try {
-  
+    // Register user - this will send email verification
+    // Configure the verification redirect URL (similar to reset_url for password reset)
+    const verificationRedirectUrl = `${verifyEmailURL}?redirect=${encodeURIComponent("/profile/settings/editProfile")}`
+    
+    // Directus allows setting custom verification URL
+    // Try to pass it similar to how reset_url works for password reset
     const response = await axios.post(`${baseURL}users/register`, {
       email: cleanEmail,
       password: password,
       first_name: cleanFirstName,
+      verification_url: verificationRedirectUrl, // Try verify_url parameter
+      // verify_url: verificationRedirectUrl, // Try verify_url parameter
+      // Note: Directus verification URL may also need to be configured in Directus settings
+      // Set PUBLIC_URL environment variable in Directus to your frontend URL
+      // Or configure VERIFY_EMAIL_URL in Directus environment variables
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
 
-    }
-      );
-      
-
-      const getRes = await axios.get(`${baseURL}users`, {
+    // Get the created user
+    const getRes = await axios.get(`${baseURL}users`, {
       params: {
         filter: { email: { _eq: cleanEmail } },
       },
-    });
-    // console.log('i am in regisration getRes  ',getRes )
+    })
 
-    const user = getRes.data.data[0];
+    const user = getRes.data.data[0]
     if (!user) {
-      // console.log('User not found.');
-      return;
+      throw new Error("User not found after registration")
     }
-    // console.log('i am in regisration user ',user )
 
-    const userId = user.id;
-    // console.log('i am in regisration userId ',userId )
+    // Don't activate user yet - wait for email verification
+    // Email verification link will be sent automatically by Directus
+    // User needs to verify email before account is activated
 
-    // Step 2: Update (PATCH) the user status to active
-    const patchRes = await axios.patch(`${baseURL}users/${userId}`,
-      { status: 'active' ,
-        role:STANDARD_ROLE_ID
-      },
-    );
-
-    // console.log('User activated:', patchRes.data.data);
-
-// console.log('User registered:', response.data.data);
-
-const logining  =  await login(email , password)
-    // console.log('i am in regisration function2 ',logining )
-
+    return {
+      success: true,
+      data: user,
+      message: "Registration successful. Please check your email to verify your account.",
+    }
   } catch (error) {
-    // console.error('Registration error:', error.response?.data || error.message);
+    console.error('Registration error:', error.response?.data || error.message)
+    return {
+      success: false,
+      error: error.response?.data?.errors?.[0]?.message || error.message || "Registration failed",
+      message: "Registration failed",
+    }
   }
 }
 
@@ -513,6 +520,7 @@ export const logout = async () => {
   try {
     await removeTarget()
     await removeCookie()
+     window.location.href = "/"
     // console.log("User logged out successfully")
     return {
       success: true,
@@ -815,3 +823,57 @@ export const checkUserHasProducts = async (user_id) => {
 }
 
 
+// Check if user email is verified
+export const checkUeserEmailValid = async (token) => {
+  try {
+    if (!token) {
+      throw new Error("Verification token is required")
+    }
+
+    // Verify the email using the token
+    const response = await axios.post(
+      `${baseURL}auth/verify-email`,
+      {
+        token: token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+
+    // If verification is successful, get the user data
+    if (response.data?.data?.user) {
+      const userId = response.data.data.user.id || response.data.data.user
+      
+      // Get user details
+      const userResult = await getUserById(userId)
+      
+      if (!userResult.success) {
+        throw new Error("Failed to get user data after verification")
+      }
+
+      return {
+        success: true,
+        data: userResult.data,
+        verified: true,
+        message: "Email verified successfully",
+      }
+    }
+
+    return {
+      success: false,
+      verified: false,
+      message: "Email verification failed",
+    }
+  } catch (error) {
+    console.error("Email verification error:", error.response?.data || error.message)
+    return {
+      success: false,
+      verified: false,
+      error: error.response?.data?.errors?.[0]?.message || error.message || "Email verification failed",
+      message: "Email verification failed",
+    }
+  }
+}

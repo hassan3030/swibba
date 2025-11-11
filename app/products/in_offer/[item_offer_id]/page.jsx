@@ -266,7 +266,8 @@ const getOfferQuantity = async () => {
                   {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1 truncate text-start">
-                  {t(product.category)}
+                {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
+
                 </p>
               </div>
               <motion.div
@@ -445,8 +446,13 @@ const getOfferQuantity = async () => {
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {t(product.category)}
+                    {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
+                      {product.sub_category?(isRTL ? product.translations[0]?.sub_category: product.translations[1]?.sub_category || product.sub_category):'' }{' '}
+                      {product.brand? (isRTL ? product.translations[0]?.brand: product.translations[1]?.brand || product.brand):'' }{' '}
+                      {product.model?(isRTL ? product.translations[0]?.model: product.translations[1]?.model || product.model):'' }{' '}
                     </div>
+
+                    
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("price")}` : `${t("price")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2 text-start">
@@ -481,7 +487,11 @@ const getOfferQuantity = async () => {
                     transition={{ duration: 0.2 }}
                     className="grid gap-2 text-primary text-sm sm:text-base"
                   >
-                    {t(product.category)}
+                      {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
+                      {product.sub_category?( !isRTL? product.translations[0]?.sub_category: product.translations[1]?.sub_category || product.sub_category):'' }{' '}
+                      {product.brand? (!isRTL ? product.translations[0]?.brand: product.translations[1]?.brand || product.brand):'' }{' '}
+                      {product.model?(!isRTL ? product.translations[0]?.model: product.translations[1]?.model || product.model):'' }{' '}
+                   
                   </motion.div>
                 </TabsContent>
                 <TabsContent value="swap_status" className="mt-3 sm:mt-4">

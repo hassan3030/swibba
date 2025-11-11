@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, Upload, Info, Loader2, Navigation, MapPin, Map, RefreshCw, Search } from "lucide-react"
 import Image from "next/image"
 import { itemsStatus, categoriesName, allowedCategories } from "@/lib/data"
-import { getLevelOneCategories, getLevelTwoCategories, getAllCategories } from '@/callAPI/static'
+import {  getAllCategories , getAllSubCategories , getAllBrands , getAllModels } from '@/callAPI/static'
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
 import {countriesList} from "@/lib/data";
@@ -33,6 +33,7 @@ import { getUserById } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
 import LocationMap from "@/components/general/location-map"
 import { set } from "date-fns"
+import { Separator } from "@radix-ui/react-select"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -123,6 +124,22 @@ export function ItemAdd() {
   const [isCatPopoverOpen, setIsCatPopoverOpen] = useState(false)
   const router = useRouter()
   
+  // New states for chained selects
+  const [allCategories, setAllCategories] = useState([])
+  const [allSubCategories, setAllSubCategories] = useState([])
+  const [allBrands, setAllBrands] = useState([])
+  const [allModels, setAllModels] = useState([])
+  const [filteredSubCategories, setFilteredSubCategories] = useState([])
+  const [filteredBrands, setFilteredBrands] = useState([])
+  const [filteredModels, setFilteredModels] = useState([])
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null)
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState(null)
+  const [selectedBrandId, setSelectedBrandId] = useState(null)
+  const [isCategoryPopoverOpen, setIsCategoryPopoverOpen] = useState(false)
+  const [isSubCategoryPopoverOpen, setIsSubCategoryPopoverOpen] = useState(false)
+  const [isBrandPopoverOpen, setIsBrandPopoverOpen] = useState(false)
+  const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false)
+  
 
 const getCategories = async () => {
     const categories = await getAllCategories();
@@ -138,53 +155,14 @@ const getCategories = async () => {
     console.log("Selected category name:", value);
     const selectedCategory = categoriesAPI.find(cat => cat.name == value);
     console.log("Selected category object:", selectedCategory);
-    // Reset level selections
-    form.setValue("level_1", "")
-    form.setValue("level_2", "")
-    setLevelTwoOptions([])
 
+    // Also trigger chained selects if category is selected (by name)
     if (selectedCategory) {
-      // Populate level 1 options from embedded cat_levels structure
-      const level1 = selectedCategory?.cat_levels?.level_1 || []
-      console.log("Level 1 options:", level1)
-      setLevelOneOptions(level1)
-      // Auto-select first level_1 and its first level_2 if exist
-      if (level1.length > 0) {
-        const firstLevel1 = level1[0]
-        const firstLevel1Label = `${isRTL ? (firstLevel1?.name_ar || firstLevel1?.name_en) : (firstLevel1?.name_en || firstLevel1?.name_ar)}`
-        form.setValue("level_1", firstLevel1Label)
-        const level2 = firstLevel1?.level_2 || []
-        setLevelTwoOptions(level2)
-        if (level2.length > 0) {
-          const firstLevel2 = level2[0]
-          const firstLevel2Label = `${isRTL ? (firstLevel2?.name_ar || firstLevel2?.name_en) : (firstLevel2?.name_en || firstLevel2?.name_ar)}`
-          form.setValue("level_2", firstLevel2Label)
-        } else {
-          form.setValue("level_2", "")
-        }
-      }
+      handleCategorySelectForChain(selectedCategory.name)
     } else {
-      setLevelOneOptions([])
-      setLevelTwoOptions([])
+      handleCategorySelectForChain("none")
     }
   };
-
-  const handleLevelOneChange = (value) => {
-    form.setValue("level_1", value)
-    // find selected level 1 object by matching either name_en or name_ar
-    const selected = levelOneOptions.find(l => l?.name_en === value || l?.name_ar === value)
-    const level2 = selected?.level_2 || []
-    console.log("Level 2 options:", level2)
-    setLevelTwoOptions(level2)
-    // reset level_2 when level_1 changes
-    if (level2.length > 0) {
-      const firstLevel2 = level2[0]
-      const firstLevel2Label = `${isRTL ? (firstLevel2?.name_ar || firstLevel2?.name_en) : (firstLevel2?.name_en || firstLevel2?.name_ar)}`
-      form.setValue("level_2", firstLevel2Label)
-    } else {
-      form.setValue("level_2", "")
-    }
-  }
   // Helper function to get media type
   const getMediaType = (mimeType) => {
     if (!mimeType) return 'image'
@@ -247,6 +225,8 @@ const getCategories = async () => {
       .max(2000, t("Descriptionmustbelessthan2000characters") || "Description must be less than 2000 characters"),
     category: z.string().min(1, t("categoryIsRequired") || "Category is required"),
     sub_category: z.string().optional(),
+    brand: z.string().optional(),
+    model: z.string().optional(),
     level_1: z.string().optional(),
     level_2: z.string().optional(),
     condition: z.enum(itemsStatus),
@@ -273,7 +253,9 @@ const getCategories = async () => {
       name: "",
       description: "",
       category: "",
-      sub_category: "",
+      sub_category: "none",
+      brand: "none",
+      model: "none",
       level_1: "",
       level_2: "",
       status_item: "excellent",
@@ -306,6 +288,122 @@ const getUser = async () => {
     // console.error("isRTL", isRTL)
     // console.error("toggleLanguage", toggleLanguage)
   }, [isRTL])
+
+  // Fetch all data for chained selects
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        const [categoriesRes, subCategoriesRes, brandsRes, modelsRes] = await Promise.all([
+          getAllCategories(),
+          getAllSubCategories(),
+          getAllBrands(),
+          getAllModels()
+        ])
+        
+        if (categoriesRes.success) {
+          setAllCategories(categoriesRes.data || [])
+        }
+        if (subCategoriesRes.success) {
+          setAllSubCategories(subCategoriesRes.data || [])
+        }
+        if (brandsRes.success) {
+          setAllBrands(brandsRes.data || [])
+        }
+        if (modelsRes.success) {
+          setAllModels(modelsRes.data || [])
+        }
+      } catch (error) {
+        console.error('Error fetching data for chained selects:', error)
+      }
+    }
+    
+    fetchAllData()
+  }, [])
+
+  // Handler for category selection (for chained selects) - filters subcategories by category
+  const handleCategorySelectForChain = (categoryName) => {
+    setSelectedCategoryId(categoryName)
+    setSelectedSubCategoryId(null)
+    setSelectedBrandId(null)
+    form.setValue("sub_category", "none")
+    form.setValue("brand", "none")
+    form.setValue("model", "none")
+    
+    if (categoryName && categoryName !== "none") {
+      // Find the category by name to get its ID
+      const category = allCategories.find(cat => cat.name === categoryName)
+      if (category) {
+        const categoryId = typeof category.id === 'string' ? category.id : category.id?.id || category.id
+        
+        // Filter subcategories by parent_category
+        const filtered = allSubCategories.filter(
+          subCat => {
+            const subCatParentId = typeof subCat.parent_category === 'object' 
+              ? subCat.parent_category?.id 
+              : subCat.parent_category
+            return subCatParentId === categoryId
+          }
+        )
+        setFilteredSubCategories(filtered)
+      } else {
+        setFilteredSubCategories([])
+      }
+    } else {
+      setFilteredSubCategories([])
+      setFilteredBrands([])
+      setFilteredModels([])
+    }
+  }
+
+  // Handler for subcategory selection
+  const handleSubCategorySelect = (subCategoryId) => {
+    setSelectedSubCategoryId(subCategoryId)
+    setSelectedBrandId(null)
+    form.setValue("brand", "none")
+    form.setValue("model", "none")
+    
+    if (subCategoryId && subCategoryId !== "none" && selectedCategoryId) {
+      // Find category by name to get ID
+      const category = allCategories.find(cat => cat.name === selectedCategoryId)
+      if (category) {
+        const categoryId = typeof category.id === 'string' ? category.id : category.id?.id || category.id
+        
+        // Filter brands by parent_category (from category) and sub_category
+        const filtered = allBrands.filter(
+          brand => {
+            const brandParentCategory = typeof brand.parent_category === 'object' ? brand.parent_category?.id : brand.parent_category
+            const brandSubCategory = typeof brand.sub_category === 'object' ? brand.sub_category?.id : brand.sub_category
+            return brandParentCategory === categoryId && brandSubCategory === subCategoryId
+          }
+        )
+        setFilteredBrands(filtered)
+      } else {
+        setFilteredBrands([])
+      }
+    } else {
+      setFilteredBrands([])
+      setFilteredModels([])
+    }
+  }
+
+  // Handler for brand selection
+  const handleBrandSelect = (brandId) => {
+    setSelectedBrandId(brandId)
+    form.setValue("model", "none")
+    
+    if (brandId && brandId !== "none" && selectedSubCategoryId) {
+      const filtered = allModels.filter(
+        model => {
+          const modelParentBrand = typeof model.parent_brand === 'object' ? model.parent_brand?.id : model.parent_brand
+          const modelSubCategory = typeof model.sub_category === 'object' ? model.sub_category?.id : model.sub_category
+          return modelParentBrand === brandId && modelSubCategory === selectedSubCategoryId
+        }
+      )
+      setFilteredModels(filtered)
+    } else {
+      setFilteredModels([])
+    }
+  }
 
   // Auto-refresh map every 2 seconds
   useEffect(() => {
@@ -720,6 +818,32 @@ else{
 
     try {
     getUser()
+      // Get selected sub_category, brand, and model objects for translations
+      const selectedSubCategoryId = form.getValues("sub_category")
+      const selectedBrandId = form.getValues("brand")
+      const selectedModelId = form.getValues("model")
+      
+      const selectedSubCategory = selectedSubCategoryId && selectedSubCategoryId !== "none" 
+        ? filteredSubCategories.find(subCat => {
+            const subCatId = typeof subCat.id === 'string' ? subCat.id : subCat.id?.id || subCat.id
+            return subCatId === selectedSubCategoryId
+          })
+        : null
+      
+      const selectedBrand = selectedBrandId && selectedBrandId !== "none"
+        ? filteredBrands.find(brand => {
+            const brandId = typeof brand.id === 'string' ? brand.id : brand.id?.id || brand.id
+            return brandId === selectedBrandId
+          })
+        : null
+      
+      const selectedModel = selectedModelId && selectedModelId !== "none"
+        ? filteredModels.find(model => {
+            const modelId = typeof model.id === 'string' ? model.id : model.id?.id || model.id
+            return modelId === selectedModelId
+          })
+        : null
+
       // Create translations with fallbacks
       const translations = [
         {
@@ -728,6 +852,9 @@ else{
           description: aiResponse?.description_translations?.en || form.getValues('description'),
           city: aiResponse?.city_translations?.en || form.getValues('city'),
           street: aiResponse?.street_translations?.en || form.getValues('street'),
+          sub_category: selectedSubCategory?.translations?.[0]?.name || selectedSubCategory?.name || "",
+          brand: selectedBrand?.translations?.[0]?.name || selectedBrand?.name || "",
+          model: selectedModel?.translations?.[0]?.name || selectedModel?.name || "",
         },
         {
           languages_code: "ar-SA",
@@ -735,15 +862,14 @@ else{
           description: aiResponse?.description_translations?.ar || form.getValues('description'),
           city: aiResponse?.city_translations?.ar || form.getValues('city'),
           street: aiResponse?.street_translations?.ar || form.getValues('street'),
+          sub_category: selectedSubCategory?.translations?.[1]?.name || selectedSubCategory?.name || "",
+          brand: selectedBrand?.translations?.[1]?.name || selectedBrand?.name || "",
+          model: selectedModel?.translations?.[1]?.name || selectedModel?.name || "",
         },
       ];
 
       // Resolve selected level objects to include translations
-      const selectedLevel1Label = form.getValues("level_1") || ""
-      const selectedLevel2Label = form.getValues("level_2") || ""
-      const selectedLevel1Obj = (levelOneOptions || []).find(l => l?.name_en === selectedLevel1Label || l?.name_ar === selectedLevel1Label) || null
-      const selectedLevel2Obj = (levelTwoOptions || []).find(l => l?.name_en === selectedLevel2Label || l?.name_ar === selectedLevel2Label) || null
-
+    
       const payload = { 
         ...form.getValues(), 
         user_email: user.email,
@@ -751,19 +877,9 @@ else{
         value_estimate: aiPriceEstimation,
         translations,
         category: form.getValues("category"),
-        // sub_category: form.getValues("level_2") || form.getValues("level_1") || form.getValues("sub_category"),
-        sub_cat: {
-          level_1: {
-            name: selectedLevel1Label,
-            name_en: selectedLevel1Obj?.name_en || (selectedLevel1Label && !isRTL ? selectedLevel1Label : ""),
-            name_ar: selectedLevel1Obj?.name_ar || (selectedLevel1Label && isRTL ? selectedLevel1Label : ""),
-          },
-          level_2: {
-            name: selectedLevel2Label,
-            name_en: selectedLevel2Obj?.name_en || (selectedLevel2Label && !isRTL ? selectedLevel2Label : ""),
-            name_ar: selectedLevel2Obj?.name_ar || (selectedLevel2Label && isRTL ? selectedLevel2Label : ""),
-          },
-        },
+        sub_category: selectedSubCategoryId && selectedSubCategoryId !== "none" ? selectedSubCategoryId : null,
+        brand: selectedBrandId && selectedBrandId !== "none" ? selectedBrandId : null,
+        model: selectedModelId && selectedModelId !== "none" ? selectedModelId : null,
       }
       // console.log("Payload:", payload)
       // console.log("geo_location:", geo_location)
@@ -982,79 +1098,52 @@ else{
                    
                   </div>
 
-                 
-
-
                   <div className="grid gap-2 sm:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="category"
                       render={({ field }) => (
-                        <FormItem className="">
-                          <FormLabel className="text-foreground">{t("categories") || "Category and subcategory"}</FormLabel>
-                          <Popover open={isCatPopoverOpen} onOpenChange={setIsCatPopoverOpen}>
+                        <FormItem>
+                          <FormLabel className="text-foreground">{t("categories") || "Category"}</FormLabel>
+                          <Popover open={isCategoryPopoverOpen} onOpenChange={setIsCategoryPopoverOpen}>
                             <PopoverTrigger asChild>
-                              <Button type="button" variant="outline" className="w-full justify-between bg-background border-input text-foreground">
-                                {form.getValues("category") && (form.getValues("level_1") || form.getValues("level_2"))
-                                  ? `${form.getValues("category")} › ${form.getValues("level_1")}${form.getValues("level_2") ? " › " + form.getValues("level_2") : ""}`
-                                  : (t("SelectCategory") || "Select category and subcategory")}
-                              </Button>
+                              <FormControl>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  role="combobox"
+                                  className="w-full justify-between bg-background border-input text-foreground"
+                                >
+                                  {field.value
+                                    ? (parentCategories.find(
+                                        (category) => category.name === field.value
+                                      )?.translations?.[isRTL ? 1 : 0]?.name || field.value)
+                                    : t("SelectCategory") || "Select category"}
+                                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="p-0 w-[340px] bg-background border-input" align="start">
-                              <div className="p-2">
-                                <Select onValueChange={(val)=>{ field.onChange(val); handleCategoryChange(val)}} defaultValue={field.value || ""}>
-                                  <FormControl>
-                                    <SelectTrigger className="bg-background border-input text-foreground">
-                                      <SelectValue placeholder={t("Selectacategory") || "Select a category"} />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent className="bg-background border-input max-h-40">
+                            <PopoverContent className="w-[300px] p-0 bg-background border-input">
+                              <Command>
+                                <CommandInput placeholder={t("Search Categories") || "Search categories..."} />
+                                <CommandList>
+                                  <CommandEmpty>{t("No categories found") || "No categories found."}</CommandEmpty>
+                                  <CommandGroup>
                                     {parentCategories.map((category) => (
-                                      <SelectItem key={category.id} value={category.name}>
-                                      {isRTL ? category.translations?.[1]?.name  : category.translations?.[0]?.name }
-                                      </SelectItem>
+                                      <CommandItem
+                                        key={category.id}
+                                        value={category.name}
+                                        onSelect={() => {
+                                          field.onChange(category.name)
+                                          handleCategoryChange(category.name)
+                                          setIsCategoryPopoverOpen(false)
+                                        }}
+                                      >
+                                        {isRTL ? category.translations?.[1]?.name : category.translations?.[0]?.name}
+                                      </CommandItem>
                                     ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <Command className="bg-background max-h-40">
-                                <CommandInput placeholder={t("Search") || "Search"} />
-                                {
-                                  levelOneOptions? ( <CommandList>
-                                    {levelOneOptions.map((lvl, idx) => {
-                                      const lvl1Label = `${isRTL ? (lvl?.name_ar || lvl?.name_en) : (lvl?.name_en || lvl?.name_ar)}`
-                                      return (
-                                        <CommandGroup key={`lvl1-${idx}`} heading={lvl1Label} className="px-2">
-                                          <div className="flex items-center gap-2 py-1">
-                                            <RadioGroup value={form.getValues("level_1") || ""} onValueChange={(val)=>{ form.setValue("level_1", val); handleLevelOneChange(val)}}>
-                                              <div className="flex items-center gap-2">
-                                                <RadioGroupItem value={lvl1Label} id={`lvl1-${idx}`} />
-                                                <label htmlFor={`lvl1-${idx}`} className="text-sm cursor-pointer">{lvl1Label}</label>
-                                              </div>
-                                            </RadioGroup>
-                                          </div>
-                                          {form.getValues("level_1") === lvl1Label && (
-                                            <div className="pl-6 py-1">
-                                              <RadioGroup value={form.getValues("level_2") || ""} onValueChange={(val)=>{ form.setValue("level_2", val); setIsCatPopoverOpen(false) }}>
-                                                {(levelTwoOptions || []).map((s, jdx) => {
-                                                  const lvl2Label = `${isRTL ? (s?.name_ar || s?.name_en) : (s?.name_en || s?.name_ar)}`
-                                                  return (
-                                                    <div key={`lvl2-${idx}-${jdx}`} className="flex items-center gap-2 py-1">
-                                                      <RadioGroupItem value={lvl2Label} id={`lvl2-${idx}-${jdx}`} />
-                                                      <label htmlFor={`lvl2-${idx}-${jdx}`} className="text-sm cursor-pointer">{lvl2Label}</label>
-                                                    </div>
-                                                  )
-                                                })}
-                                              </RadioGroup>
-                                            </div>
-                                          )}
-                                        </CommandGroup>
-                                      )
-                                    })}
-                                  </CommandList>) : (  <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>)
-                                }
-                              
-                               
+                                  </CommandGroup>
+                                </CommandList>
                               </Command>
                             </PopoverContent>
                           </Popover>
@@ -1062,6 +1151,223 @@ else{
                         </FormItem>
                       )}
                     />
+  <FormField
+                        control={form.control}
+                        name="sub_category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">{t("SubCategories") || "Sub Categories"}</FormLabel>
+                            <Popover open={isSubCategoryPopoverOpen} onOpenChange={setIsSubCategoryPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    role="combobox"
+                                    className="w-full justify-between bg-background border-input text-foreground"
+                                    disabled={!selectedCategoryId || selectedCategoryId === "none"}
+                                  >
+                                    {field.value && field.value !== "none"
+                                      ? (filteredSubCategories.find(
+                                          (subCat) => {
+                                            const subCatId = typeof subCat.id === 'string' ? subCat.id : subCat.id?.id || subCat.id
+                                            return subCatId === field.value
+                                          }
+                                        )?.name || field.value)
+                                      : t("SelectSubCategory") || "Select Sub Category"}
+                                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0 bg-background border-input">
+                                <Command>
+                                  <CommandInput placeholder={t("SearchSubCategories") || "Search sub categories..."} />
+                                  <CommandList>
+                                    <CommandEmpty>{t("Nosubcategoriesfound") || "No sub categories found."}</CommandEmpty>
+                                    <CommandGroup>
+                                      <CommandItem
+                                        value="none"
+                                        onSelect={() => {
+                                          field.onChange("none")
+                                          handleSubCategorySelect("none")
+                                          setIsSubCategoryPopoverOpen(false)
+                                        }}
+                                      >
+                                        {t("None") || "None"}
+                                      </CommandItem>
+                                      {filteredSubCategories.map((subCat) => {
+                                        const subCatId = typeof subCat.id === 'string' ? subCat.id : subCat.id?.id || subCat.id
+                                        return (
+                                          <CommandItem
+                                            key={subCatId}
+                                            value={subCatId}
+                                            onSelect={() => {
+                                              field.onChange(subCatId)
+                                              handleSubCategorySelect(subCatId)
+                                              setIsSubCategoryPopoverOpen(false)
+                                            }}
+                                          >
+                            {!isRTL ? subCat.translations[0]?.name: subCat.translations[1]?.name || subCat.name}
+
+                                          
+                                          </CommandItem>
+                                        )
+                                      })}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    {/* Chained Select Fields: Sub Categories, Brands, Models */}
+                    <div className="grid gap-2 sm:grid-cols-2">
+                    
+
+                      <FormField
+                        control={form.control}
+                        name="brand"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">{t("Brands") || "Brands"}</FormLabel>
+                            <Popover open={isBrandPopoverOpen} onOpenChange={setIsBrandPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    role="combobox"
+                                    className="w-full justify-between bg-background border-input text-foreground"
+                                    disabled={!selectedSubCategoryId || selectedSubCategoryId === "none"}
+                                  >
+                                    {field.value && field.value !== "none"
+                                      ? (filteredBrands.find(
+                                          (brand) => {
+                                            const brandId = typeof brand.id === 'string' ? brand.id : brand.id?.id || brand.id
+                                            return brandId === field.value
+                                          }
+                                        )?.name || field.value)
+                                      : t("SelectBrand") || "Select Brand"}
+                                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0 bg-background border-input">
+                                <Command>
+                                  <CommandInput placeholder={t("SearchBrands") || "Search brands..."} />
+                                  <CommandList>
+                                    <CommandEmpty>{t("Nobrandsfound") || "No brands found."}</CommandEmpty>
+                                    <CommandGroup>
+                                      <CommandItem
+                                        value="none"
+                                        onSelect={() => {
+                                          field.onChange("none")
+                                          handleBrandSelect("none")
+                                          setIsBrandPopoverOpen(false)
+                                        }}
+                                      >
+                                        {t("None") || "None"}
+                                      </CommandItem>
+                                      {filteredBrands.map((brand) => {
+                                        const brandId = typeof brand.id === 'string' ? brand.id : brand.id?.id || brand.id
+                                        return (
+                                          <CommandItem
+                                            key={brandId}
+                                            value={brandId}
+                                            onSelect={() => {
+                                              field.onChange(brandId)
+                                              handleBrandSelect(brandId)
+                                              setIsBrandPopoverOpen(false)
+                                            }}
+                                          >
+                            {!isRTL ? brand.translations[0]?.name: brand.translations[1]?.name || brand.name}
+
+                                          
+                                          </CommandItem>
+                                        )
+                                      })}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="model"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">{t("Models") || "Models"}</FormLabel>
+                            <Popover open={isModelPopoverOpen} onOpenChange={setIsModelPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    role="combobox"
+                                    className="w-full justify-between bg-background border-input text-foreground"
+                                    disabled={!selectedBrandId || selectedBrandId === "none"}
+                                  >
+                                    {field.value && field.value !== "none"
+                                      ? (filteredModels.find(
+                                          (model) => {
+                                            const modelId = typeof model.id === 'string' ? model.id : model.id?.id || model.id
+                                            return modelId === field.value
+                                          }
+                                        )?.name || field.value)
+                                      : t("SelectModel") || "Select Model"}
+                                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0 bg-background border-input">
+                                <Command>
+                                  <CommandInput placeholder={t("SearchModels") || "Search models..."} />
+                                  <CommandList>
+                                    <CommandEmpty>{t("Nomodelsfound") || "No models found."}</CommandEmpty>
+                                    <CommandGroup>
+                                      <CommandItem
+                                        value="none"
+                                        onSelect={() => {
+                                          field.onChange("none")
+                                          setIsModelPopoverOpen(false)
+                                        }}
+                                      >
+                                        {t("None") || "None"}
+                                      </CommandItem>
+                                      {filteredModels.map((model) => {
+                                        const modelId = typeof model.id === 'string' ? model.id : model.id?.id || model.id
+                                        return (
+                                          <CommandItem
+                                            key={modelId}
+                                            value={modelId}
+                                            onSelect={() => {
+                                              field.onChange(modelId)
+                                              setIsModelPopoverOpen(false)
+                                            }}
+                                          >
+                            {!isRTL ? model.translations[0]?.name: model.translations[1]?.name || model.name}
+
+    
+                                          </CommandItem>
+                                        )
+                                      })}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={form.control}
                       name="country"

@@ -1,7 +1,7 @@
 export const translations = {
   en  :{
-    // title: t("fillData") || "Fill Data",
-    // description: t("fillDataLogin") || "Please enter your email address and password to login",
+    fillData: "Fill Data",
+    fillDataLogin:"Please enter your email address and password to login",
 
 
 
@@ -1422,6 +1422,10 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+    fillData: "يرجى ملء البيانات",
+    fillDataLogin:" يرجى ملء بيانات تسجيل الدخول",
+
+
 'Verification token is required':  'رمز التحقق مطلوب',
     'Email verified successfully! You can now sign in to your account.': 'تم التحقق من البريد الإلكتروني بنجاح! يمكنك الآن تسجيل الدخول إلى حسابك.',
     'Invalid or expired verification token. Please request a new verification email.': 'رمز التحقق غير صالح أو منتهي الصلاحية. يرجى طلب بريد إلكتروني جديد للتحقق.',

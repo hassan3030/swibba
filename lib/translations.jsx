@@ -1,18 +1,13 @@
 export const translations = {
   en  :{
+    // title: t("fillData") || "Fill Data",
+    // description: t("fillDataLogin") || "Please enter your email address and password to login",
+
+
+
+
     RegistrationSuccessfulPleaseCheckYourEmail: "Registration successful! Please check your email to verify your account.",
     pleaseVerifyEmail: "Please verify your email address before logging in. Check your inbox for the verification link.",
-
-
-
-
-
-
-
-
-
-
-
    'Verification token is required':  'Verification token is required',
     'Email verified successfully! You can now sign in to your account.': 'Email verified successfully! You can now sign in to your account.',
     'Invalid or expired verification token. Please request a new verification email.': 'Invalid or expired verification token. Please request a new verification email.',

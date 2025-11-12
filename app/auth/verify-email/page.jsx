@@ -11,6 +11,7 @@ export default function VerifyEmailPage() {
   // make it verified to check
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
+  const [tokenURL, setTokenURL] = useState('');
   const router = useRouter();
   const { t } = useTranslations()
 
@@ -32,6 +33,7 @@ export default function VerifyEmailPage() {
       }
 
       try {
+        setTokenURL(token)
         // change url --------------
         const response = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
           method: 'GET',
@@ -53,7 +55,7 @@ export default function VerifyEmailPage() {
           setMessage(t(data.message)|| 'Email verified successfully! You can now sign in to your account.');
           // Redirect to sign in page after 3 seconds
           setTimeout(() => {
-            router.push('/auth/login');
+            router.push(`/auth/login?token=${tokenURL}`);
           }, 3000);
         } else {
           setStatus('error');
@@ -71,7 +73,7 @@ export default function VerifyEmailPage() {
 
   const handleGoToSignIn = () => {
     // handle change --------------
-    router.push('/auth/login');
+    router.push(`/auth/login?token=${tokenURL}`);
   };
 
   return (

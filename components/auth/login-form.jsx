@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils"
 import { checkUserHasProducts, login, loginByGoogle } from "@/callAPI/users"
 import { FaGoogle } from "react-icons/fa6";
 import { getTarget, decodedToken, removeTarget } from "@/callAPI/utiles"
+import { jwtDecode } from "jwt-decode"
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -93,11 +94,13 @@ export function LoginForm() {
   const { toast } = useToast()
   const { t } = useTranslations()
   const { isRTL } = useLanguage()
-
+  
+  
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -131,6 +134,43 @@ export function LoginForm() {
     setFormError(newErrors)
     return isValid
   }
+
+  useEffect(() => {
+    if (!searchParams) {
+      return
+    }
+
+    const token = searchParams.get("token")
+    if (token) {
+      try {
+        const decoded = jwtDecode(token)
+        const tokenEmail =
+          decoded?.email ||
+          decoded?.Email ||
+          decoded?.user?.email ||
+          decoded?.data?.email
+
+        if (typeof tokenEmail === "string" && tokenEmail.includes("@")) {
+          setValue("email", tokenEmail, { shouldValidate: true, shouldDirty: false })
+        }
+
+        if (!token && !tokenEmail) {
+          toast({
+            title: t("fillData") || "Fill Data",
+            description: t("fillDataLogin") || "Please enter your email address and password to login",
+            variant: "default",
+          })
+        }
+        
+      } catch (error) {
+        console.error("Failed to decode login token:", error)
+      }
+    }
+
+
+   
+  }, [searchParams])
+
 
   const onSubmit = async (data) => {
     // console.log("data on submit in login ", data)

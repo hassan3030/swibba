@@ -4,10 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useTranslations } from "@/lib/use-translations";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect , useState} from "react"
+import { useToast } from "@/components/ui/use-toast"
 
 
 export default function LoginPage() {
   const { t } = useTranslations();
+  const { toast } = useToast()
+
+ 
+
+
   return (
     <div className="container flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-10">
 

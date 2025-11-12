@@ -29,14 +29,14 @@ import {
   Download,
   Plus,
   Home,
-  ShoppingBag,
+  ShoppingBag, 
   MessageCircle,
   Settings,
   HelpCircle,
   ArrowBigDown,
   ArrowBigUp,
 } from "lucide-react"
-import { getAllOffers, getOfferItemsByOfferId, getReviewsByOfferId } from "@/callAPI/swap"
+import { getAllOffers, getOfferItemsByOfferId, getReviewsByOfferId, getOfferById, getOffeReceived } from "@/callAPI/swap"
 import { getProductById } from "@/callAPI/products"
 import { getUserById } from "@/callAPI/users"
 import { decodedToken, getCookie, mediaURL } from "@/callAPI/utiles"
@@ -315,11 +315,37 @@ export default function OffersDetailsPage() {
     
     setIsLoading(true)
     try {
-      const response = await getAllOffers({})
-      if (response.success && response.data) {
+      // Fetch offers where user is sender (from_user_id)
+      const sentOffersRes = await getOfferById(currentUserId)
+      // Fetch offers where user is receiver (to_user_id)
+      const receivedOffersRes = await getOffeReceived(currentUserId)
+      
+      // Combine both arrays and remove duplicates based on offer ID
+      const allUserOffers = []
+      const offerIds = new Set()
+      
+      if (sentOffersRes.success && sentOffersRes.data) {
+        sentOffersRes.data.forEach(offer => {
+          if (!offerIds.has(offer.id)) {
+            offerIds.add(offer.id)
+            allUserOffers.push(offer)
+          }
+        })
+      }
+      
+      if (receivedOffersRes.success && receivedOffersRes.data) {
+        receivedOffersRes.data.forEach(offer => {
+          if (!offerIds.has(offer.id)) {
+            offerIds.add(offer.id)
+            allUserOffers.push(offer)
+          }
+        })
+      }
+      
+      if (allUserOffers.length > 0) {
         // Process each offer to add otherUser, myItems, and theirItems
         const processedOffers = await Promise.all(
-          response.data.map(async (offer) => {
+          allUserOffers.map(async (offer) => {
             // Extract user IDs - handle both object (expanded) and string ID formats
             const getUserId = (userField) => {
               if (!userField) return null;

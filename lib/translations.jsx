@@ -1,5 +1,18 @@
 export const translations = {
   en  :{
+    RegistrationSuccessfulPleaseCheckYourEmail: "Registration successful! Please check your email to verify your account.",
+    pleaseVerifyEmail: "Please verify your email address before logging in. Check your inbox for the verification link.",
+
+
+
+
+
+
+
+
+
+
+
    'Verification token is required':  'Verification token is required',
     'Email verified successfully! You can now sign in to your account.': 'Email verified successfully! You can now sign in to your account.',
     'Invalid or expired verification token. Please request a new verification email.': 'Invalid or expired verification token. Please request a new verification email.',
@@ -1429,7 +1442,8 @@ SelectCountry: "Select a country",
 "Having trouble? Contact support for assistance.":"هل تواجه مشكلة؟ اتصل بالدعم للمساعدة.",
 "Please wait while we verify your email address...":"يرجى الانتظار أثناء التحقق من عنوان بريدك الإلكتروني...",
 
-
+RegistrationSuccessfulPleaseCheckYourEmail: "يرجى التحقق من بريدك الإلكتروني لتفعيل حسابك.",
+pleaseVerifyEmail: "يرجى التحقق من عنوان بريدك الإلكتروني قبل تسجيل الدخول. تحقق من صندوق الوارد الخاص بك للحصول على رابط التحقق.",
 
 
     Successfullycreatedofferchecktheoffers:"تم إنشاء العرض بنجاح. تحقق من العروض",

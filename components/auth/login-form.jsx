@@ -203,7 +203,7 @@ export function LoginForm() {
         } else {
           toast({
             title: t("loginFailed") || "Login failed",
-            description: errorMessage || t("invalidCredentials") || "Invalid email or password. Please try again.",
+            description: t(errorMessage) || t("invalidCredentials") || "Invalid email or password. Please try again.",
             variant: "destructive",
           })
         }

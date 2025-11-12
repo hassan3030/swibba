@@ -120,7 +120,7 @@ export const register = async (email, password, first_name, additional_data = {}
     // Configure the verification redirect URL to point directly to the verify-email page
     // The page handles all verification logic directly without needing an API route
     // const verificationRedirectUrl = `${registerEmailURL}?redirect=${encodeURIComponent("/profile/settings/editProfile")}`
-    const verificationRedirectUrl = `${registerEmailURL}`
+    const verificationRedirectUrl = `${verifyEmailURL}`
     // Directus allows setting custom verification URL
     // The verification URL points directly to /auth/verify-email page which handles everything
     const response = await axios.post(`${baseURL}users/register`, {

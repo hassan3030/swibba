@@ -1,5 +1,23 @@
 export const translations = {
   en  :{
+   'Verification token is required':  'Verification token is required',
+    'Email verified successfully! You can now sign in to your account.': 'Email verified successfully! You can now sign in to your account.',
+    'Invalid or expired verification token. Please request a new verification email.': 'Invalid or expired verification token. Please request a new verification email.',
+     'Failed to verify email':'Failed to verify email',
+"Failed to verify email. Please check your internet connection and try again.":"Failed to verify email. Please check your internet connection and try again.",
+'No verification token found in the URL. Please check your email for the correct verification link.':'No verification token found in the URL. Please check your email for the correct verification link.',
+"Email Verification":"Email Verification",
+"Verifying your email address...":"Verifying your email address...",
+"Email Verified Successfully!":"Email Verified Successfully!",
+"Redirecting to sign in page in 3 seconds...":"Redirecting to sign in page in 3 seconds...",
+"Verification Failed":"Verification Failed",
+"Go to Sign In":"Go to Sign In",
+"Having trouble? Contact support for assistance.":"Having trouble? Contact support for assistance.",
+"Please wait while we verify your email address...":"Please wait while we verify your email address...",
+
+
+
+
 Successfullycreatedofferchecktheoffers:"Successfully created offer check the offers",
 InvalidswapornotloggedPleasetryagain:"Invalid swap or not logged in. Please try again.",
 InvalidswapornotloggedPleasetryagain:"Invalid swap or not logged in. Please try again.",
@@ -1396,6 +1414,24 @@ SelectCountry: "Select a country",
     developerAPIs: "Developer APIs",
   },
   ar: {
+'Verification token is required':  'رمز التحقق مطلوب',
+    'Email verified successfully! You can now sign in to your account.': 'تم التحقق من البريد الإلكتروني بنجاح! يمكنك الآن تسجيل الدخول إلى حسابك.',
+    'Invalid or expired verification token. Please request a new verification email.': 'رمز التحقق غير صالح أو منتهي الصلاحية. يرجى طلب بريد إلكتروني جديد للتحقق.',
+     'Failed to verify email':'فشل في التحقق من البريد الإلكتروني',
+"Failed to verify email. Please check your internet connection and try again.":"فشل في التحقق من البريد الإلكتروني. يرجى التحقق من اتصال الإنترنت الخاص بك وحاول مرة أخرى.",
+'No verification token found in the URL. Please check your email for the correct verification link.':'لم يتم العثور على رمز تحقق في الرابط. يرجى التحقق من بريدك الإلكتروني للحصول على الرابط الصحيح للتحقق.',
+"Email Verification":"التحقق من البريد الإلكتروني",
+"Verifying your email address...":"جارٍ التحقق من عنوان بريدك الإلكتروني...",
+"Email Verified Successfully!":"تم التحقق من البريد الإلكتروني بنجاح!",
+"Redirecting to sign in page in 3 seconds...":"إعادة التوجيه إلى صفحة تسجيل الدخول خلال 3 ثوانٍ...",
+"Verification Failed":"فشل التحقق",
+"Go to Sign In":"الذهاب إلى تسجيل الدخول",
+"Having trouble? Contact support for assistance.":"هل تواجه مشكلة؟ اتصل بالدعم للمساعدة.",
+"Please wait while we verify your email address...":"يرجى الانتظار أثناء التحقق من عنوان بريدك الإلكتروني...",
+
+
+
+
     Successfullycreatedofferchecktheoffers:"تم إنشاء العرض بنجاح. تحقق من العروض",
 InvalidswapornotloggedPleasetryagain:"تم إلغاء الاشتراك. أو لم يتم تسجيل الدخول. يرجى المحاولة مرة أخرى",
 InvalidswapornotloggedPleasetryagain:"تم إلغاء الاشتراك. أو لم يتم تسجيل الدخول. يرجى المحاولة مرة أخرى",

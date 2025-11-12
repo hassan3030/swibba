@@ -12,6 +12,7 @@ import {
   STANDARD_ROLE_ID,
   resetPasswordURL,
   verifyEmailURL,
+  registerEmailURL,
   swibbaURL,
   removeTarget
 } from "./utiles.js"
@@ -116,18 +117,18 @@ export const register = async (email, password, first_name, additional_data = {}
 
    try {
     // Register user - this will send email verification
-    // Configure the verification redirect URL (similar to reset_url for password reset)
-    const verificationRedirectUrl = `${verifyEmailURL}?redirect=${encodeURIComponent("/profile/settings/editProfile")}`
-    
+    // Configure the verification redirect URL to point directly to the verify-email page
+    // The page handles all verification logic directly without needing an API route
+    // const verificationRedirectUrl = `${registerEmailURL}?redirect=${encodeURIComponent("/profile/settings/editProfile")}`
+    const verificationRedirectUrl = `${registerEmailURL}`
     // Directus allows setting custom verification URL
-    // Try to pass it similar to how reset_url works for password reset
+    // The verification URL points directly to /auth/verify-email page which handles everything
     const response = await axios.post(`${baseURL}users/register`, {
       email: cleanEmail,
       password: password,
       first_name: cleanFirstName,
-      verification_url: verificationRedirectUrl, // Try verify_url parameter
-      // verify_url: verificationRedirectUrl, // Try verify_url parameter
-      // Note: Directus verification URL may also need to be configured in Directus settings
+      verification_url: verificationRedirectUrl,
+      // Note: Directus verification URL should be configured to point to your frontend URL
       // Set PUBLIC_URL environment variable in Directus to your frontend URL
       // Or configure VERIFY_EMAIL_URL in Directus environment variables
     }, {

@@ -44,7 +44,7 @@ import Image from "next/image";
     },
   ];
 
-  return (
+  return ( 
     <section className="relative overflow-hidden h-full pb-4 -mt-4 px-2">
       {/* do not forget change the gradient */}
       <div className="absolute  inset-0 gradient-primary-8" />

@@ -180,13 +180,60 @@ export function LoginForm() {
           router.push("/")
           router.refresh()
         }
+      } else {
+        // Login failed - check for email verification error
+        const errorMessage = response.error || response.message || ""
+        const lowerErrorMessage = errorMessage.toLowerCase()
+        
+        // Check if error is related to email verification
+        const isEmailUnverified = 
+          lowerErrorMessage.includes("email not verified") ||
+          lowerErrorMessage.includes("unverified") ||
+          lowerErrorMessage.includes("verify your email") ||
+          lowerErrorMessage.includes("email verification") ||
+          lowerErrorMessage.includes("verification required") ||
+          lowerErrorMessage.includes("please verify")
+
+        if (isEmailUnverified) {
+          toast({
+            title: t("emailUnverified") || "Email not verified",
+            description: t("pleaseVerifyEmail") || "Please verify your email address before logging in. Check your inbox for the verification link.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: t("loginFailed") || "Login failed",
+            description: errorMessage || t("invalidCredentials") || "Invalid email or password. Please try again.",
+            variant: "destructive",
+          })
+        }
       }
     } catch (error) {
-      toast({
-        title: t("loginFailed") || "Login failed",
-        description: t("invalidCredentials") || "Invalid email or password. Please try again.",
-        variant: "destructive",
-      })
+      const errorMessage = error?.response?.data?.message || error?.message || ""
+      const lowerErrorMessage = errorMessage.toLowerCase()
+      
+      // Check if error is related to email verification
+      const isEmailUnverified = 
+        lowerErrorMessage.includes("email not verified") ||
+        lowerErrorMessage.includes("unverified") ||
+        lowerErrorMessage.includes("verify your email") ||
+        lowerErrorMessage.includes("email verification") ||
+        lowerErrorMessage.includes("verification required") ||
+        lowerErrorMessage.includes("please verify")
+
+      if (isEmailUnverified) {
+        toast({
+          title: t("emailUnverified") || "Email not verified",
+          description: t("pleaseVerifyEmail") || "Please verify your email address before logging in. Check your inbox for the verification link.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: t("loginFailed") || "Login failed",
+          description: errorMessage || t("invalidCredentials") || "Invalid email or password. Please try again.",
+          variant: "destructive",
+        })
+      }
       // console.error("Login error:", error)
     } finally {
       setIsLoading(false)

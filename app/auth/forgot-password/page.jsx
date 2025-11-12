@@ -177,7 +177,7 @@ const ForgotPasswordPage = () => {
                 ) : (
                   <AlertTriangle className="h-5 w-5" />
                 )}
-                <p>{feedback.message}</p>
+                <p>{t(feedback.message)}</p>
               </motion.div>
             )}
           </AnimatePresence>

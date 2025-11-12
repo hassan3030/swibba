@@ -59,6 +59,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
 import { mediaURL } from "@/callAPI/utiles";
+import { useToast } from "@/components/ui/use-toast"
+
 const navVariants = {
   hidden: { 
     opacity: 0, 
@@ -160,6 +162,8 @@ export function Header() {
   const lastScrollY = useRef(0)
 
   const router = useRouter()
+  const { toast } = useToast()
+
   const { isRTL, toggleLanguage } = useLanguage()
   const { theme, toggleTheme } = useTheme()
   const { t } = useTranslations()

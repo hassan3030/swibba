@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import  FloatingActionButton  from "@/components/general/floating-action-button"
+// import  FloatingActionButton  from "@/components/general/floating-action-button"
 import { useTranslations } from "@/lib/use-translations"
 import { getCookie } from "@/callAPI/utiles"
 import { getProducts } from "@/callAPI/products"
@@ -65,7 +65,7 @@ export default function Home() {
   return (
     <>
       {isInitialLoading && <LoadingSpinner branded fullPage={true} size="md" />}
-      {showSwitchHeart && <FloatingActionButton/>}
+      {/* {showSwitchHeart && <FloatingActionButton/>} */}
 
       <main className="min-h-screen dark:bg-background relative overflow-hidden">
         {/* Hero Section */}

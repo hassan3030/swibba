@@ -4,8 +4,6 @@ export const translations = {
     fillDataLogin:"Please enter your email address and password to login",
 
 
-
-
     RegistrationSuccessfulPleaseCheckYourEmail: "Registration successful! Please check your email to verify your account.",
     pleaseVerifyEmail: "Please verify your email address before logging in. Check your inbox for the verification link.",
    'Verification token is required':  'Verification token is required',

@@ -3,26 +3,26 @@ import { jwtDecode } from "jwt-decode"
 
 // development localhost 3000
 
-// export const swibbaURL = process.env.SWIBBA_URL || "https://dev.swibba.com"
-// export const baseURL = process.env.BASE_URL || "https://dev-dashboard.swibba.com/"
-// export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items/"
-// export const mediaURL = process.env.MEDIA_URL || 'https://deel-deal-directus.csiwm3.easypanel.host/assets/' 
-// export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
-// export const resetPasswordURL = process.env.RESET_PASSWORD_URL || "https://dev.swibba.com/auth/reset-password"
-// export const verifyEmailURL = process.env.VERIFY_EMAIL_URL ||  "http://localhost:3000/auth/verify-email"
-// export const registerEmailURL = process.env.USER_REGISTER_URL_ALLOW_LIST || "http://localhost:3000/auth/verify-email"
+export const swibbaURL = process.env.SWIBBA_URL || "https://dev.swibba.com"
+export const baseURL = process.env.BASE_URL || "https://dev-dashboard.swibba.com/"
+export const baseItemsURL = process.env.BASE_ITEMS_URL || "https://dev-dashboard.swibba.com/items/"
+export const mediaURL = process.env.MEDIA_URL || 'https://deel-deal-directus.csiwm3.easypanel.host/assets/' 
+export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
+export const resetPasswordURL = process.env.RESET_PASSWORD_URL || "https://dev.swibba.com/auth/reset-password"
+export const verifyEmailURL = process.env.VERIFY_EMAIL_URL ||  "http://localhost:3000/auth/verify-email"
+export const registerEmailURL = process.env.USER_REGISTER_URL_ALLOW_LIST || "http://localhost:3000/auth/verify-email"
 
 
 // development swibba-dev
 
-export const swibbaURL = process.env.SWIBBA_URL || 'https://www.swibba.com/' 
-export const baseURL = process.env.BASE_URL || 'https://dashboard.swibba.com/'
-export const baseItemsURL = process.env.BASE_ITEMS_URL || 'https://dashboard.swibba.com/items/'
-export const mediaURL = process.env.MEDIA_URL || 'https://dashboard.swibba.com/assets/' 
-export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
-export const resetPasswordURL = process.env.RESET_PASSWORD_URL || "https://www.swibba.com/auth/reset-password"
-export const verifyEmailURL = process.env.VERIFY_EMAIL_URL ||  "https://www.swibba.com/auth/verify-email"
-export const registerEmailURL = process.env.USER_REGISTER_URL_ALLOW_LIST || "https://www.swibba.com/auth/verify-email"
+// export const swibbaURL = process.env.SWIBBA_URL || 'https://www.swibba.com/' 
+// export const baseURL = process.env.BASE_URL || 'https://dashboard.swibba.com/'
+// export const baseItemsURL = process.env.BASE_ITEMS_URL || 'https://dashboard.swibba.com/items/'
+// export const mediaURL = process.env.MEDIA_URL || 'https://dashboard.swibba.com/assets/' 
+// export const STANDARD_ROLE_ID = process.env.STANDARD_ROLE_ID 
+// export const resetPasswordURL = process.env.RESET_PASSWORD_URL || "https://www.swibba.com/auth/reset-password"
+// export const verifyEmailURL = process.env.VERIFY_EMAIL_URL ||  "https://www.swibba.com/auth/verify-email"
+// export const registerEmailURL = process.env.USER_REGISTER_URL_ALLOW_LIST || "https://www.swibba.com/auth/verify-email"
 
 
 

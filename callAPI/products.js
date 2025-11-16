@@ -352,6 +352,12 @@ export const getProductsEnhanced = async (filters = {}) => {
       additionalFilters.push({ _or: allowedCatFilters })
     }
 
+    // Brand filter
+    if (filters.brand) {
+      additionalFilters.push({ brand: { _eq: filters.brand } })
+    }
+
+
     // Sub-level 1 filter (single value)
     // Note: Directus JSON field filtering - try multiple approaches for compatibility
   

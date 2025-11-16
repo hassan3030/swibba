@@ -252,6 +252,91 @@ export function ItemUpdate(props) {
     fetchAllData()
   }, [])
 
+  // Initialize chained selects from existing item data
+  useEffect(() => {
+    // Only initialize if we have all the data and category exists
+    if (allCategories.length === 0 || allSubCategories.length === 0 || allBrands.length === 0 || allModels.length === 0) {
+      return
+    }
+
+    // Initialize if category is set and we haven't initialized yet, or if filtered lists are empty but we have values
+    const needsInitialization = category && (
+      !selectedCategoryId || 
+      (filteredSubCategories.length === 0 && sub_category && sub_category !== "none") ||
+      (filteredBrands.length === 0 && brand && brand !== "none") ||
+      (filteredModels.length === 0 && model && model !== "none")
+    )
+
+    if (needsInitialization) {
+      // Set category
+      if (!selectedCategoryId) {
+        setSelectedCategoryId(category)
+      }
+      
+      // Find the category by name to get its ID
+      const categoryObj = allCategories.find(cat => cat.name === category)
+      if (categoryObj) {
+        const categoryId = typeof categoryObj.id === 'string' ? categoryObj.id : categoryObj.id?.id || categoryObj.id
+        
+        // Filter subcategories by parent_category (always filter if list is empty or category not set)
+        if (filteredSubCategories.length === 0 || !selectedCategoryId) {
+          const filteredSubs = allSubCategories.filter(
+            subCat => {
+              const subCatParentId = typeof subCat.parent_category === 'object' 
+                ? subCat.parent_category?.id 
+                : subCat.parent_category
+              return subCatParentId === categoryId
+            }
+          )
+          setFilteredSubCategories(filteredSubs)
+        }
+        
+        // If sub_category exists, set it and filter brands
+        if (sub_category && sub_category !== "none") {
+          // Set selected subcategory if not already set or different
+          const currentSubCatId = selectedSubCategoryId
+          if (!currentSubCatId || currentSubCatId !== sub_category) {
+            setSelectedSubCategoryId(sub_category)
+          }
+          
+          // Filter brands by parent_category and sub_category (always filter if list is empty or subcategory changed)
+          if (filteredBrands.length === 0 || !currentSubCatId || currentSubCatId !== sub_category) {
+            const filteredBrandsList = allBrands.filter(
+              brandItem => {
+                const brandParentCategory = typeof brandItem.parent_category === 'object' ? brandItem.parent_category?.id : brandItem.parent_category
+                const brandSubCategory = typeof brandItem.sub_category === 'object' ? brandItem.sub_category?.id : brandItem.sub_category
+                return brandParentCategory === categoryId && brandSubCategory === sub_category
+              }
+            )
+            setFilteredBrands(filteredBrandsList)
+          }
+          
+          // If brand exists, set it and filter models
+          if (brand && brand !== "none") {
+            // Set selected brand if not already set or different
+            const currentBrandId = selectedBrandId
+            if (!currentBrandId || currentBrandId !== brand) {
+              setSelectedBrandId(brand)
+            }
+            
+            // Filter models by parent_brand and sub_category (always filter if list is empty or brand changed)
+            if (filteredModels.length === 0 || !currentBrandId || currentBrandId !== brand) {
+              const filteredModelsList = allModels.filter(
+                modelItem => {
+                  const modelParentBrand = typeof modelItem.parent_brand === 'object' ? modelItem.parent_brand?.id : modelItem.parent_brand
+                  const modelSubCategory = typeof modelItem.sub_category === 'object' ? modelItem.sub_category?.id : modelItem.sub_category
+                  return modelParentBrand === brand && modelSubCategory === sub_category
+                }
+              )
+              setFilteredModels(filteredModelsList)
+            }
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allCategories, allSubCategories, allBrands, allModels, category, sub_category, brand])
+
   const handleCategoryChange = (value) => {
     form.setValue("category", value)
     
@@ -330,25 +415,41 @@ export function ItemUpdate(props) {
   }
 
   // Ensure "none" when filtered lists are empty (no options found)
+  // Only reset if category is selected (to avoid interfering with initial load)
   useEffect(() => {
-    if ((filteredSubCategories || []).length === 0) {
-      form.setValue("sub_category", "none")
-      setSelectedSubCategoryId("none")
+    if (selectedCategoryId && (filteredSubCategories || []).length === 0) {
+      const currentValue = form.getValues("sub_category")
+      // Only reset if current value is not "none" and not the initial value from props
+      if (currentValue && currentValue !== "none" && currentValue !== sub_category) {
+        form.setValue("sub_category", "none")
+        setSelectedSubCategoryId("none")
+      }
     }
-  }, [filteredSubCategories])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredSubCategories, selectedCategoryId])
 
   useEffect(() => {
-    if ((filteredBrands || []).length === 0) {
-      form.setValue("brand", "none")
-      setSelectedBrandId("none")
+    if (selectedSubCategoryId && (filteredBrands || []).length === 0) {
+      const currentValue = form.getValues("brand")
+      // Only reset if current value is not "none" and not the initial value from props
+      if (currentValue && currentValue !== "none" && currentValue !== brand) {
+        form.setValue("brand", "none")
+        setSelectedBrandId("none")
+      }
     }
-  }, [filteredBrands])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredBrands, selectedSubCategoryId])
 
   useEffect(() => {
-    if ((filteredModels || []).length === 0) {
-      form.setValue("model", "none")
+    if (selectedBrandId && (filteredModels || []).length === 0) {
+      const currentValue = form.getValues("model")
+      // Only reset if current value is not "none" and not the initial value from props
+      if (currentValue && currentValue !== "none" && currentValue !== model) {
+        form.setValue("model", "none")
+      }
     }
-  }, [filteredModels])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredModels, selectedBrandId])
 
   // Handler for brand selection
   const handleBrandSelect = (brandId) => {

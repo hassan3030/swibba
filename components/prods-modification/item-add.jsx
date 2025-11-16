@@ -119,8 +119,6 @@ export function ItemAdd() {
   const [categoriesAPI, setCategoriesAPI] = useState([])
   const [subCategoriesAPI, setSubCategoriesAPI] = useState([])
   const [parentCategories, setParentCategories] = useState([])
-  const [levelOneOptions, setLevelOneOptions] = useState([])
-  const [levelTwoOptions, setLevelTwoOptions] = useState([])
   const [isCatPopoverOpen, setIsCatPopoverOpen] = useState(false)
   const router = useRouter()
   
@@ -788,7 +786,7 @@ else{
     setSelectedPosition(updatedLocation)
     
     toast({
-      title: t("locationSelected") || "Location Selected",
+      title: t("locationSelected") || "Location",
       description: `${locationName} - ${t("Latitude")}: ${location.lat.toFixed(6)}, ${t("Longitude")}: ${location.lng.toFixed(6)}`,
     })
   }
@@ -930,8 +928,6 @@ else{
     form.watch("name")?.length >= 3 &&
     form.watch("description")?.length >= 20 &&
     !!form.watch("category") &&
-    (levelOneOptions.length > 0 ? !!form.watch("level_1") : true) &&
-    (levelTwoOptions.length > 0 ? !!form.watch("level_2") : true) &&
     !!form.watch("status_item") &&
     !!form.watch("price") && 
     !!form.watch("quantity") &&
@@ -945,8 +941,6 @@ else{
     if (!(form.watch("name")?.length >= 3)) missing.push(t("Name") || "Name")
     if (!(form.watch("description")?.length >= 20)) missing.push(t("description") || "Description")
     if (!form.watch("category")) missing.push(t("category") || "Category")
-    if (levelOneOptions.length > 0 && !form.watch("level_1")) missing.push(t("level_1") || "Menu")
-    if (levelTwoOptions.length > 0 && !form.watch("level_2")) missing.push(t("level_2") || "Sub Menu")
     if (!form.watch("status_item")) missing.push(t("Condition") || "Condition")
     if (!form.watch("price")) missing.push(t("price") || "Price")
     if (!form.watch("quantity")) missing.push(t("quantity") || "Quantity")
@@ -1670,7 +1664,7 @@ else{
                   </Button>
                     {!isStep1Valid && (
                       <p className="mt-1 text-xs text-destructive">
-                        {(t("Missing") || "Missing") + ": "}{getStep1Missing().join(", ")}
+                        {(t("missing") || "Missing") + ": "}{getStep1Missing().join(", ")}
                       </p>
                     )}
                 </motion.div>

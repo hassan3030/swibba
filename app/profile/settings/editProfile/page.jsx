@@ -190,14 +190,14 @@ export default function ProfileSettingsPage() {
   const updatePassword = async () => {
     if (!newPassword || !confirmPassword) {
       toast({
-        title: t("error") || "Error",
-        description: t("faileChangePassword") || "Please fill in all password fields",
+        title: t("error"),
+        description: t("faileChangePassword"),
         variant: "destructive",
       })
     } else if (newPassword !== confirmPassword) {
       toast({
-        title: t("error") || "Error",
-        description: t("notMach") || "New passwords do not match.",
+        title: t("error"),
+        description: t("notMach"),
         variant: "destructive",
       })
     } else if (newPassword === confirmPassword) {
@@ -205,8 +205,8 @@ export default function ProfileSettingsPage() {
         const Password = await resetPassword(newPassword, currentEmail)
         if (Password) {
           toast({
-            title: t("successfully") || "Success",
-            description: t("successChangePassword") || "Your password has been updated successfully.",
+            title: t("success"),
+            description: t("successChangePassword"),
             variant: "success",
           })
           setCurrentEmail("")
@@ -215,21 +215,21 @@ export default function ProfileSettingsPage() {
         }
       } catch (error) {
         toast({
-          title: t("error") || "Error",
-          description: t("faildChangePassword") || "Error updating password..",
+          title: t("error"),
+          description: t("faildChangePassword"),
           variant: "destructive",
         })
       }
     } else {
       toast({
-        title: t("error") || "Error",
-        description: t("faildChangePassword") || "Something went wrong when updating password..",
+        title: t("error"),
+        description: t("faildChangePassword2"),
         variant: "destructive",
       })
     }
   }
 
-  const { theme, toggleTheme } = useTheme()
+  
   const { t } = useTranslations()
   const router = useRouter()
   const [user, setUser] = useState({})
@@ -241,6 +241,9 @@ export default function ProfileSettingsPage() {
   const [gender, setGender] = useState("")
   const [phone_number, setPhone] = useState("")
   const [country, setCountry] = useState("")
+  const [city, setCity] = useState("")
+  const [street, setStreet] = useState("")
+  const [description, setDescription] = useState("")
   const [post_code, setPostCode] = useState("")
   const [geo_location, set_geo_location] = useState({})
   const [isGettingLocation, setIsGettingLocation] = useState(false)
@@ -261,24 +264,46 @@ export default function ProfileSettingsPage() {
       setVerified(userData.data.verified)
     }
   }
-
+// add all data in schema 
   const profileSchema = z.object({
     phone_number: z
       .string()
-      .min(8, t("PhoneIsShort") || "Phone number is too short")
-      .max(20, t("PhoneIsLong") || "Phone number is too long")
-      .regex(/^\+?\d{8,20}$/, t("invalidNumber") || "Invalid phone number"),
-      first_name: z
+      .min(8, t("PhoneIsShort"))
+      .max(20, t("PhoneIsLong"))
+      .regex(/^\+?\d{8,20}$/, t("invalidNumber")),
+    first_name: z
       .string()
-      .min(1, t("firstname") || "First name is required")
-      .max(20, t("firstnameIsLong") || "First name is too long"),
-      last_name: z
+      .min(1, t("firstname"))
+      .max(20, t("firstnameIsLong")),
+    last_name: z
       .string()
-      .min(1, t("lastname") || "Last name is required")
-      .max(20, t("lastnameIsLong") || "Last name is too long"),
+      .min(1, t("lastname"))
+      .max(20, t("lastnameIsLong")),
+    country: z
+      .string()
+      .min(1, t("countryIsRequired")),
+    city: z
+      .string()
+      .min(1, t("cityIsRequired")),
+    street: z
+      .string()
+      .min(1, t("streetIsRequired")),
+    description: z
+      .string()
+      .min(4, t("descriptionMustBeAtLeast10"))
+      .max(1000, t("descriptionMustBeLessThan1000")),
+    gender: z
+      .string()
+      .min(1, t("genderIsRequired")),
+    geo_location: z
+      .object({
+        lat: z.number(),
+        lng: z.number(),
+      })
+      .refine((data) => data.lat && data.lng, {
+        message: t("locationIsRequired"),
+      }),
   })
-
-  const result = profileSchema.safeParse({ phone_number ,first_name,last_name})
 
   useEffect(() => {
     getUser()
@@ -286,20 +311,38 @@ export default function ProfileSettingsPage() {
 
 
   useEffect(() => {
+    if (!user || Object.keys(user).length === 0) return;
+    
     setAvatarPath(`${mediaURL}${user?.avatar}` || "/placeholder-user.jpg")
     setFirstName(user?.first_name || "")
     setLasttName(user?.last_name || "")
     setGender(user?.gender || "")
     setPhone(user?.phone_number || "")
     setCountry(user?.country || "")
+    
+    setStreet(user?.street || "")
+    setCity(user?.city || "")
+    setDescription(user?.description || "")
+
+
+
     setPostCode(user?.post_code || "")
     set_geo_location(user?.geo_location || {})
     setEmail(user?.email || "")
     set_completed_data(user?.completed_data || 'false')
     setVerified(user?.verified || 'false')
 
-    const en = user.translations?.find(t => t.languages_code === 'en-US') || {};
-    const ar = user.translations?.find(t => t.languages_code === 'ar-SA') || {};
+    // Set selected position if geo_location exists
+    if (user?.geo_location && user.geo_location.lat && user.geo_location.lng) {
+      setSelectedPosition({
+        lat: user.geo_location.lat,
+        lng: user.geo_location.lng,
+        name: user.geo_location.name || "Selected Location"
+      })
+    }
+
+    let en = user.translations?.find(t => t.languages_code === 'en-US') || {};
+    let ar = user.translations?.find(t => t.languages_code === 'ar-SA') || {};
 
     setEditedTranslations({
         "en-US": {
@@ -336,6 +379,9 @@ export default function ProfileSettingsPage() {
     last_name,
     phone_number,
     country,
+    city,
+    street,
+    description,
     post_code,
     gender,
     geo_location,
@@ -359,6 +405,7 @@ export default function ProfileSettingsPage() {
 
   const currentLangCode = isRTL ? 'ar-SA' : 'en-US';
 
+
   const handleAiTranslate = async () => {
     setIsAiProcessing(true);
     try {
@@ -367,9 +414,7 @@ export default function ProfileSettingsPage() {
       const targetLang = isRTL ? "en-US" : "ar-SA";
       const sourceLangName = isRTL ? "Arabic" : "English";
       const targetLangName = isRTL ? "English" : "Arabic";
-      
       const { description, city, street } = editedTranslations[sourceLang];
-
       console.log("Translation attempt:", { sourceLang, targetLang, description, city, street });
 
       // Always attempt translation, even if some fields are empty
@@ -401,7 +446,7 @@ Please return ONLY a JSON response in this format:
       
       // Check if AI request was successful
       if (!aiResponse.success) {
-        throw new Error(aiResponse.error || t("AIrequestfailedafterallretryattempts") || "AI request failed after all retry attempts");
+        throw new Error(aiResponse.error || t("aiRequestFailed"));
       }
       
       let jsonString = aiResponse.text;
@@ -439,15 +484,15 @@ Please return ONLY a JSON response in this format:
       // if (aiResponse.attempt > 1) {
       //   console.log(`Translation successful after ${aiResponse.attempt} attempts`);
       //   toast({
-      //     title: t("success") || "Success",
-      //     description: `${t("AItranslationsuccessfulafter") || "AI translation successful after"} ${aiResponse.attempt} ${t("attempts") || "attempts"}!`,
+      //     title: t("success"),
+      //     description: `${t("aiTranslationSuccessful")} ${aiResponse.attempt} ${t("attempts")}!`,
       //     variant: "default",
       //   });
       // } else {
       //   console.log("Translation successful on first attempt");
       //   toast({
-      //     title: t("success") || "Success",
-      //     description: t("TranslationCompleted") || "Translation completed successfully!",
+      //     title: t("success"),
+      //     description: t("translationCompleted"),
       //     variant: "default",
       //   });
       // }
@@ -469,18 +514,17 @@ Please return ONLY a JSON response in this format:
         }
       }));
       
-      let errorMessage = t("FailedtogetAItranslationUsingFallback") ||
-        "AI translation failed, using fallback. Content will be saved in both languages.";
+      let errorMessage = t("aiTranslationFailedFallback");
       
       if (error instanceof SyntaxError && error.message.includes("JSON")) {
-        errorMessage = "AI response format error. Using fallback translation.";
+        errorMessage = t("aiResponseFormatError");
       } else if (error.message.includes("retry attempts")) {
-        errorMessage = "AI service unavailable. Using fallback translation.";
+        errorMessage = t("aiServiceUnavailable");
       }
       
       toast({
-        title: t("warning") || "Warning",
-        description: t(errorMessage) || errorMessage,
+        title: t("warning"),
+        description: errorMessage,
         variant: "default",
       });
     } finally {
@@ -494,7 +538,7 @@ Please return ONLY a JSON response in this format:
     if (kyc.data === false) {
       toast({
         title: t("completeYourProfile"),
-        description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+        description: t("requiredInfoForSwap"),
         variant: "default",
       })
       router.push(`/profile/settings/editProfile`)
@@ -505,27 +549,114 @@ Please return ONLY a JSON response in this format:
       }
   }
 
+  // Validate all form data
+  const validateFormData = () => {
+    const description = editedTranslations['en-US'].description || editedTranslations['ar-SA'].description || "";
+    const city = editedTranslations['en-US'].city || editedTranslations['ar-SA'].city || "";
+    const street = editedTranslations['en-US'].street || editedTranslations['ar-SA'].street || "";
+
+    const formDataToValidate = {
+      phone_number,
+      first_name,
+      last_name,
+      country,
+      city,
+      street,
+      description,
+      gender,
+      geo_location: geo_location && geo_location.lat && geo_location.lng ? geo_location : { lat: 0, lng: 0 },
+    };
+
+    const result = profileSchema.safeParse(formDataToValidate);
+    return result;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Always perform automatic translation first
+      // Check ALL required fields and show specific toast errors for missing ones
+      const descriptionValue = editedTranslations['en-US'].description || editedTranslations['ar-SA'].description || "";
+      const cityValue = editedTranslations['en-US'].city || editedTranslations['ar-SA'].city || "";
+      const streetValue = editedTranslations['en-US'].street || editedTranslations['ar-SA'].street || "";
+
+      const errorMessages = [];
+      
+      // Check all required fields and create descriptive error messages
+      if (!first_name || first_name.trim() === "") {
+        errorMessages.push(`${t("firstName")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!last_name || last_name.trim() === "") {
+        errorMessages.push(`${t("lastName")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!phone_number || phone_number.trim() === "") {
+        errorMessages.push(`${t("phoneNumber")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!country || country.trim() === "") {
+        errorMessages.push(`${t("country")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!cityValue || cityValue.trim() === "") {
+        errorMessages.push(`${t("city")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!streetValue || streetValue.trim() === "") {
+        errorMessages.push(`${t("street")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!descriptionValue || descriptionValue.trim() === "") {
+        errorMessages.push(`${t("description")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!gender || gender.trim() === "") {
+        errorMessages.push(`${t("gender")} ${t("notSubmittedWithoutFill")}`);
+      }
+      if (!geo_location || !geo_location.lat || !geo_location.lng) {
+        errorMessages.push(`${t("currentPosition")} ${t("notSubmittedWithoutFill")}`);
+      }
+
+      // If any field is missing, show error and don't save or translate
+      if (errorMessages.length > 0) {
+        toast({
+          title: t("validationError"),
+          description: errorMessages.join(". "),
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return; // Exit early - no translation or save if fields are missing
+      }
+
+      // Validate all required fields with schema validation
+      const validationResult = validateFormData();
+      
+      if (!validationResult.success) {
+        // Collect all validation errors
+        const allErrors = validationResult.error.errors.map(err => err.message);
+        toast({
+          title: t("validationError"),
+          description: allErrors.length > 0 
+            ? allErrors.join(". ") 
+            : t("pleaseFillAllRequiredFields"),
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return; // Exit early - no translation or save if validation fails
+      }
+
+      // Only perform translation if all fields are valid and complete
       console.log("Starting automatic translation...");
       await handleAiTranslate();
       console.log("Translation completed successfully");
       
-    const { first_name, last_name, phone_number, country, post_code, gender, geo_location } = formData;
-    const description = editedTranslations['en-US'].description;
-    const city = editedTranslations['en-US'].city;
-    const street = editedTranslations['en-US'].street;
+      // Get final values after translation
+      const updatedDescription = editedTranslations['en-US'].description || editedTranslations['ar-SA'].description || descriptionValue;
+      const updatedCity = editedTranslations['en-US'].city || editedTranslations['ar-SA'].city || cityValue;
+      const updatedStreet = editedTranslations['en-US'].street || editedTranslations['ar-SA'].street || streetValue;
 
-    if(first_name || last_name || phone_number || description || city || country || street || post_code || gender || geo_location) {
-      set_completed_data('true')
-    }
-    else {
-      set_completed_data('false')
-    }
+      // Check if all required data is completed
+      if(first_name && last_name && phone_number && updatedDescription && updatedCity && country && updatedStreet && gender && geo_location && geo_location.lat && geo_location.lng) {
+        set_completed_data('true')
+      }
+      else {
+        set_completed_data('false')
+      }
 
       // Check if there are any changes to save (including translations)
       const hasTranslationChanges = editedTranslations["en-US"].description || 
@@ -535,10 +666,10 @@ Please return ONLY a JSON response in this format:
                                    editedTranslations["en-US"].street || 
                                    editedTranslations["ar-SA"].street;
 
-      if (!isDataChanged && !avatar && !completed_data && !hasTranslationChanges) {
+      if (!isDataChanged && !avatar && !hasTranslationChanges) {
         toast({
-          title: t("noChangeSaved") || "No changes to save",
-          description: t("Youhavenotupdatedanyfield") || "You have not updated any field.",
+          title: t("noChangesToSave"),
+          description: t("youHaveNotUpdatedAnyField"),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -547,18 +678,8 @@ Please return ONLY a JSON response in this format:
 
       if (!userCollectionData || Object.keys(userCollectionData).length === 0) {
         toast({
-          title: "Warning",
-          description: t("noChangeSaved") || "No changes to save",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (!result.success) {
-        toast({
-          title: "Warning",
-          description: t(result.error.errors[0].message) || "Phone number not valid",
+          title: t("warning"),
+          description: t("noChangesToSave"),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -590,8 +711,8 @@ Please return ONLY a JSON response in this format:
 
       if(handleEditeProfile.success){
         toast({
-          title: t("successfully") || "Success",
-          description: t("savedSuccessfullyWithTranslation") || "Settings saved successfully with automatic translation!",
+          title: t("successfully"),
+          description: t("savedSuccessfullyWithTranslation"),
         });
         
         if (makeCheckUserHasProducts.count>1) {
@@ -607,8 +728,8 @@ Please return ONLY a JSON response in this format:
         
       }else{
         toast({
-          title: t("error") || "ERROR ",
-          description: error.message || "Failed to update profile",
+          title: t("errorPrefix"),
+          description: error.message || t("failedToUpdateProfile"),
           variant: "destructive",
         })
       }
@@ -617,8 +738,8 @@ Please return ONLY a JSON response in this format:
     } catch (error) {
       console.error("Error updating profile:", error)
       toast({
-        title: t("error") || "ERROR ",
-        description: error.message || "Failed to update profile",
+        title: t("errorPrefix"),
+        description: error.message || t("failedToUpdateProfile"),
         variant: "destructive",
       })
     } finally {
@@ -645,14 +766,14 @@ Please return ONLY a JSON response in this format:
       }
       
       toast({
-        title: t("success") || "Success",
-        description: t("phoneNumberVerified") || "Phone number has been verified successfully!",
+        title: t("success"),
+        description: t("phoneNumberVerified"),
       })
     } catch (error) {
       console.error('Error updating phone verification:', error)
       toast({
-        title: t("error") || "Error",
-        description: t("failedToUpdateVerification") || "Phone verified but failed to update status",
+        title: t("error"),
+        description: t("phoneVerifiedFailedUpdate"),
         variant: "destructive",
       })
     }
@@ -668,8 +789,8 @@ Please return ONLY a JSON response in this format:
     setSelectedPosition(location)
     
     toast({
-      title: t("locationSelected") || "Location Selected",
-      description: `${t("selectedLocation") || "Selected location"}: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+      title: t("locationSelected"),
+      description: `${t("selectedLocation")}: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
     })
   }
 
@@ -687,7 +808,7 @@ Please return ONLY a JSON response in this format:
       if (match) {
         const [, countryCode, phoneOnly] = match
         const validation = validatePhoneNumber(countryCode, phoneOnly)
-        setPhoneValidationError(validation.isValid ? "" : validation.error)
+        setPhoneValidationError(validation.isValid ? "" : t("invalidNumber"))
       }
     } else {
       setPhoneValidationError("")
@@ -699,8 +820,8 @@ Please return ONLY a JSON response in this format:
 
     if (!navigator.geolocation) {
       toast({
-        title: t("error") || "Error",
-        description: t("geolocationNotSupported") || "Geolocation is not supported by this browser",
+        title: t("error"),
+        description: t("geolocationNotSupported"),
         variant: "destructive",
       })
       setIsGettingLocation(false)
@@ -737,25 +858,25 @@ Please return ONLY a JSON response in this format:
         setIsGettingLocation(false)
 
         toast({
-          title: t("CurrentLocationFound") || "Current location found",
-          description: `${t("Latitude")}: ${pos.lat.toFixed(6)}, ${t("Longitude")}: ${pos.lng.toFixed(6)}`,
+          title: t("currentLocationFound"),
+          description: `${t("latitude")}: ${pos.lat.toFixed(6)}, ${t("longitude")}: ${pos.lng.toFixed(6)}`,
         })
       },
       (error) => {
-        let message = t("Unabletoretrieveyourlocation") || "Unable to retrieve your location"
+        let message = t("unableToRetrieveLocation")
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            message = t("Locationaccessdeniedbyuser") || "Location access denied by user"
+            message = t("locationAccessDenied")
             break
           case error.POSITION_UNAVAILABLE:
-            message = t("Locationinformationisunavailable") || "Location information is unavailable"
+            message = t("locationInfoUnavailable")
             break
           case error.TIMEOUT:
-            message = t("Locationrequesttimedout") || "Location request timed out"
+            message = t("locationRequestTimeout")
             break
         }
         toast({
-          title: t("LocationError") || "Location Error",
+          title: t("locationError"),
           description: message,
           variant: "destructive",
         })
@@ -805,16 +926,16 @@ Please return ONLY a JSON response in this format:
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          {t("accountSettings") || "Account Settings"}
+          {t("accountSettings")}
         </motion.h1>
             <motion.div variants={cardVariants} whileHover="hover" className="sticky top-8">
               <TabsList className="flex h-auto w-full flex-col items-start rtl:items-end justify-start shadow-lg border border-border/50 p-2 rounded-xl bg-background">
                 {[
-                  { value: "profile", icon: User, label: t("profile") || "Profile" },
-                  { value: "preferences", icon: Globe, label: t("preferences") || "Preferences" },
-                  { value: "security", icon: Shield, label: t("security") || "Security" }
+                  { value: "profile", icon: User, label: t("profile") },
+                  { value: "preferences", icon: Globe, label: t("preferences") },
+                  { value: "security", icon: Shield, label: t("security") }
                  
-                  // { value: "payment", icon: CreditCard, label: t("payment") || "Payment" },
+                  // { value: "payment", icon: CreditCard, label: t("payment") },
                 ].map((tab, index) => (
                   <motion.div
                     key={tab.value}
@@ -868,7 +989,7 @@ onClick={()=>{ handleKYC() }}
                       </motion.div>
                         <CirclePlus className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
                         <span className="px-1">
-                      {t("addItem") || "Add Item"}
+                      {t("addItem")}
                         </span>
                     </TabsTrigger>
                   
@@ -892,16 +1013,15 @@ onClick={()=>{ handleKYC() }}
                           transition={{ delay: 0.2 }}
                         >
                           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                            {t("profileInformation") || "Profile Information"}
+                            {t("profileInformation")}
                           </CardTitle>
                           <CardDescription className="text-base">
-                            {t("UpdateProfileInformation") ||
-                              "Update your profile information and how others see you on the platform."}
+                            {t("updateProfileInformation")}
                           </CardDescription>
                         </motion.div>
                       </CardHeader>
                       <CardContent className="p-8">
-                        <form onSubmit={handleSubmit}>
+                        <form >
                           {/* Avatar Section */}
                           <motion.div
                             className="mb-8 flex flex-col items-center space-y-4"
@@ -926,13 +1046,13 @@ onClick={()=>{ handleKYC() }}
                                 <div className="flex items-center justify-center h-full w-full bg-background border border-border/50">
                                   <Image
                                     src="/placeholder-user.jpg"
-                                    alt={t("NoAvatar") || "No Avatar"}
+                                    alt={t("noAvatar")}
                                     width={96}
                                     height={96}
                                     className="h-full w-full object-cover absolute inset-0"
                                   />
                                   <span className="absolute inset-0 flex items-center justify-center text-foreground/70 font-semibold">
-                                  {`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("NoAvatar") }` || "No Avatar"}
+                                  {`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("noAvatar") }`}
                                   </span>
                                 </div>
                               )}
@@ -960,7 +1080,7 @@ onClick={()=>{ handleKYC() }}
                                   htmlFor="first_name"
                                   className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
                                 >
-                                  {t("firstName") || "First Name"}
+                                  {t("firstName")}
                                 </Label>
                             
 
@@ -1031,11 +1151,11 @@ onClick={()=>{ handleKYC() }}
                                         )}
                                       </SelectValue>
                                     </SelectTrigger>
-                                    <SelectContent className="h-40">
+                                    <SelectContent className="h-40 no-scroll-arrows">
                                       <div className="flex items-center gap-2 px-3 py-2 sticky top-0 bg-background border-b">
                                         <Search className="h-4 w-4 opacity-50" />
                                         <input 
-                                          className="flex h-8 w-full rounded-md bg-background px-3 py-1 text-sm outline-none placeholder:text-muted-foreground"
+                                          className="flex h-8 w-full rounded-md bg-background top-0 px-3 py-1 text-sm outline-none placeholder:text-muted-foreground"
                                           placeholder={t("Search country...")}
                                           onChange={(e) => {
                                             const searchField = e.target;

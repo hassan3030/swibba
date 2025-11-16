@@ -151,7 +151,7 @@ export function MobileFooter() {
       onClick: handleAddClick,
     },
     { 
-      href: user ? "/chat" : "/auth/login",
+      href: user ? "/chat" : "/chat",
       icon: MessageCircle,
       label: t("messages") || "Messages",
       isActive: pathname === "/chat" || pathname.startsWith("/chat"),
@@ -160,7 +160,7 @@ export function MobileFooter() {
     {
       href: user ? "/profile" : "/auth/login",
       icon: User,
-      label: t("profile") || "Profile",
+      label: t("profileFooter") || "Profile",
       isActive: pathname === "/profile" || pathname.startsWith("/profile"),
     },
   ]

@@ -116,3 +116,13 @@ body {
     -ms-hyphens: auto;
   }
 }
+
+.brand-card-gradient {
+  background: linear-gradient(to right, #f8d096, #f8a846); /* Example gradient, adjust colors as needed */
+}
+
+
+.brand-card-gradient {
+  background: linear-gradient(to right, #f8d096, #f8a846); /* Example gradient, adjust colors as needed */
+}
+

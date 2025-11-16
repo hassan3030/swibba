@@ -141,18 +141,18 @@ export function ItemAdd() {
 
 const getCategories = async () => {
     const categories = await getAllCategories();
-    console.log("All categories response:", categories);
+    // console.log("All categories response:", categories);
     setCategoriesAPI(categories.data);
     const parentCategories = categories.data.filter(cat => !cat.parent_category);
-    console.log("Parent categories:", parentCategories);
+    // console.log("Parent categories:", parentCategories);
     setParentCategories(parentCategories);
   };
 
   const handleCategoryChange = (value) => {
     form.setValue("category", value);
-    console.log("Selected category name:", value);
+    // console.log("Selected category name:", value);
     const selectedCategory = categoriesAPI.find(cat => cat.name == value);
-    console.log("Selected category object:", selectedCategory);
+    // console.log("Selected category object:", selectedCategory);
 
     // Also trigger chained selects if category is selected (by name)
     if (selectedCategory) {
@@ -311,7 +311,7 @@ const getUser = async () => {
           setAllModels(modelsRes.data || [])
         }
       } catch (error) {
-        console.error('Error fetching data for chained selects:', error)
+        // console.error('Error fetching data for chained selects:', error)
       }
     }
     
@@ -694,7 +694,7 @@ else{
             }
           }
         } catch (error) {
-          console.log('Reverse geocoding failed, using coordinates only');
+          // console.log('Reverse geocoding failed, using coordinates only');
         }
         
         const pos = {
@@ -769,7 +769,7 @@ else{
         }
       }
     } catch (error) {
-      console.log('Reverse geocoding failed for selected location');
+      // console.log('Reverse geocoding failed for selected location');
     }
     
     const updatedLocation = {
@@ -882,7 +882,7 @@ else{
       // console.log("Payload:", payload)
       // console.log("geo_location:", geo_location)
       // console.log("aiPriceEstimation:", aiPriceEstimation)
-      console.log("payload",payload);
+      // console.log("payload",payload);
       const addNewProduct = await addProduct(payload, files)
      if(addNewProduct.success){
       toast({
@@ -1043,11 +1043,11 @@ else{
                               className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
                               onChange={(e) => {
                                 const value = e.target.value
-                                console.log("Quantity changed to:", value)
+                                // console.log("Quantity changed to:", value)
                                 field.onChange(value)
                                 // Trigger validation
                                 form.trigger("quantity").then((isValid) => {
-                                  console.log("Quantity validation result:", isValid)
+                                  // console.log("Quantity validation result:", isValid)
                                 })
                               }}
                             />
@@ -1746,7 +1746,7 @@ else{
                         {imageUrls.map((url, index) => {
                           const file = images[index]
                           const mediaType = getMediaType(file?.type)
-                          console.log('Media type:', { index, fileType: file?.type, mediaType, url: url.substring(0, 50) + '...' })
+                          // console.log('Media type:', { index, fileType: file?.type, mediaType, url: url.substring(0, 50) + '...' })
                           
                           return (
                             <motion.div
@@ -1769,13 +1769,13 @@ else{
                                       playsInline
                                       preload="metadata"
                                       onError={(e) => {
-                                        console.error('Video load error:', e, 'URL:', url)
+                                        // console.error('Video load error:', e, 'URL:', url)
                                         // Show fallback if video fails to load
                                         e.target.style.display = 'none'
                                         e.target.nextElementSibling.style.display = 'flex'
                                       }}
-                                      onLoadStart={() => console.log('Video loading started:', url)}
-                                      onCanPlay={() => console.log('Video can play:', url)}
+                                      // onLoadStart={() => console.log('Video loading started:', url)}
+                                      // onCanPlay={() => console.log('Video can play:', url)}
                                     />
                                   ) : mediaType === 'audio' ? (
                                     <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center rounded-xl">

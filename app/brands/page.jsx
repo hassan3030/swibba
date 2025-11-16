@@ -9,6 +9,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 
 const BrandCard = ({ brand }) => {  
+  const { isRTL, toggleLanguage } = useLanguage()
   return (
     <Link href={`/brands/${brand.name}`} className="transform transition-transform duration-300 hover:scale-105">
       <div
@@ -19,7 +20,7 @@ const BrandCard = ({ brand }) => {
         }}
       >
         <h3 className="text-xl font-semibold">
-          {brand.name}
+          {isRTL ? (brand.translations?.[1]?.name || brand.name) : (brand.translations?.[0]?.name || brand.name)}
         </h3>
       </div>
     </Link>
@@ -63,7 +64,7 @@ const BrandsPage = () => {
           }
         } catch (err) {
           setError(t('unexpectedError'));
-          console.error(err);
+          // console.error(err);
         } finally {
           setLoading(false);
         }
@@ -125,7 +126,7 @@ const BrandsPage = () => {
 
         {filteredBrands.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 place-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 place-items-center">
               {displayedBrands.map((brand) => (
                 <BrandCard key={brand.id} brand={brand} />
               ))}
@@ -138,7 +139,7 @@ const BrandsPage = () => {
                   className="btn-default px-8 py-3 rounded-lg text-lg font-semibold flex items-center justify-center text-white"
                   disabled={isLoadMoreLoading}
                 >
-                  {isLoadMoreLoading ? <LoadingSpinner size="sm" /> : t('loadMore')}
+                  {isLoadMoreLoading ? <LoadingSpinner size="sm" /> : t('more')}
                 </button>
               </div>
             )}

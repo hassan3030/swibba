@@ -180,7 +180,7 @@ const ExpandedOfferView = ({ offer, currentUserId, t, isRTL }) => {
 
         setDetails({ myItems, theirItems, reviews });
       } catch (error) {
-        console.error("Error fetching offer details:", error);
+        // console.error("Error fetching offer details:", error);
       } finally {
         setIsLoading(false);
       }
@@ -304,7 +304,7 @@ export default function OffersDetailsPage() {
           setCurrentUserId(decoded.id);
         }
       } catch (error) {
-        console.error("Error fetching user ID:", error);
+        // console.error("Error fetching user ID:", error);
       }
     };
     fetchUserId();
@@ -376,7 +376,7 @@ export default function OffersDetailsPage() {
                     fromUser = userRes.data;
                   }
                 } catch (error) {
-                  console.error("Error fetching from user:", error);
+                  // console.error("Error fetching from user:", error);
                 }
               }
             }
@@ -392,7 +392,7 @@ export default function OffersDetailsPage() {
                     toUser = userRes.data;
                   }
                 } catch (error) {
-                  console.error("Error fetching to user:", error);
+                  // console.error("Error fetching to user:", error);
                 }
               }
             }
@@ -425,7 +425,7 @@ export default function OffersDetailsPage() {
                       return { ...item, product: productRes.data };
                     }
                   } catch (error) {
-                    console.error("Error fetching product:", error);
+                    // console.error("Error fetching product:", error);
                   }
                   return null;
                 });
@@ -481,7 +481,7 @@ export default function OffersDetailsPage() {
                 }
               }
             } catch (error) {
-              console.error("Error fetching offer items:", error);
+              // console.error("Error fetching offer items:", error);
             }
 
             return {
@@ -503,7 +503,7 @@ export default function OffersDetailsPage() {
         setFilteredOffers([]);
       }
     } catch (error) {
-      console.error("Error fetching offers:", error)
+      // console.error("Error fetching offers:", error)
       setOffers([]);
       setFilteredOffers([]);
     } finally {

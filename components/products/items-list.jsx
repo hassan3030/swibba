@@ -202,7 +202,7 @@ export function ItemsList({
           setProductsCount(0)
         }
       } catch (error) {
-        console.error("Error loading items:", error)
+        // console.error("Error loading items:", error)
         setAllItems([])
         setProductsCount(0)
       } finally {
@@ -229,7 +229,7 @@ export function ItemsList({
         if (brandsRes?.success) setAllBrandsData(brandsRes.data || [])
         if (modelsRes?.success) setAllModelsData(modelsRes.data || [])
       } catch (error) {
-        console.error("Error loading static data:", error)
+        // console.error("Error loading static data:", error)
       }
     }
     

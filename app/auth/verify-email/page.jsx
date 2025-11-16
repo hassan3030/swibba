@@ -21,10 +21,10 @@ export default function VerifyEmailPage() {
     const verifyEmail = async () => {
       const token = searchParams.get('token');
       
-      console.log('Verify page - token from URL:', {
-        token: token ? token.substring(0, 50) + '...' : '[MISSING]',
-        fullURL: window.location.href
-      });
+      // console.log('Verify page - token from URL:', {
+      //   token: token ? token.substring(0, 50) + '...' : '[MISSING]',
+      //   fullURL: window.location.href
+      // });
 
       if (!token) {
         setStatus('error');
@@ -44,11 +44,11 @@ export default function VerifyEmailPage() {
 
         const data = await response.json();
         
-        console.log('Verification API response:', {
-          status: response.status,
-          data,
-          success: response.ok
-        });
+        // console.log('Verification API response:', {
+        //   status: response.status,
+        //   data,
+        //   success: response.ok
+        // });
 
         if (response.ok && data.success) {
           setStatus('success');
@@ -62,7 +62,7 @@ export default function VerifyEmailPage() {
           setMessage(t(data.error) || 'Email verification failed. Please try again later.');
         }
       } catch (error) {
-        console.error('Verification request failed:', error);
+        // console.error('Verification request failed:', error);
         setStatus('error');
         setMessage(t("Failed to verify email. Please check your internet connection and try again."));
       }

@@ -79,12 +79,12 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
             const itemsCount = itemsResponse.count || 0
             const usersCount = usersResponse.count || 0
             
-            console.log("Direct API Stats loaded:", { 
-              itemsCount, 
-              usersCount, 
-              itemsData: itemsResponse.data, 
-              usersData: usersResponse.data 
-            })
+            // console.log("Direct API Stats loaded:", { 
+            //   itemsCount, 
+            //   usersCount, 
+            //   itemsData: itemsResponse.data, 
+            //   usersData: usersResponse.data 
+            // })
             
             // Set fallback values if counts are 0 (for testing)
             const finalItemsCount = itemsCount > 0 ? itemsCount : 150 // Fallback for testing
@@ -95,7 +95,7 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
             setHasLoaded(true)
             controls.start("visible")
           } catch (error) {
-            console.error("Error loading stats:", error)
+            // console.error("Error loading stats:", error)
             // Set fallback values if API fails
             setItemsCountNumber(150) // Fallback for testing
             setUsersCountNumber(50) // Fallback for testing

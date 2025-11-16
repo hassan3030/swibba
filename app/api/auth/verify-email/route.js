@@ -14,7 +14,7 @@ export async function GET(request) {
       );
     }
 
-    console.log('Verifying email with token:', token.substring(0, 20) + '...');
+    // console.log('Verifying email with token:', token.substring(0, 20) + '...');
 
  
     // const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
@@ -26,7 +26,7 @@ export async function GET(request) {
       },
     });
 
-    console.log('Directus verification response status:', verifyResponse.status);
+    // console.log('Directus verification response status:', verifyResponse.status);
 
     if (verifyResponse.status === 204 || verifyResponse.ok) {
       console.log('Email verification successful');
@@ -41,12 +41,12 @@ export async function GET(request) {
     
     try {
       const errorData = await verifyResponse.json();
-      console.error('Directus verification failed:', errorData);
+      // console.error('Directus verification failed:', errorData);
       if (errorData.errors?.[0]?.message) {
         errorMessage = errorData.errors[0].message;
       }
     } catch {
-      console.error('Directus verification failed with status:', verifyResponse.status);
+      // console.error('Directus verification failed with status:', verifyResponse.status);
     }
     
     return NextResponse.json(
@@ -58,7 +58,7 @@ export async function GET(request) {
     );
 
   } catch (error) {
-    console.error('Verification error:', error);
+    // console.error('Verification error:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Failed to verify email';
     

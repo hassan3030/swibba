@@ -163,7 +163,7 @@ export function LoginForm() {
         }
         
       } catch (error) {
-        console.error("Failed to decode login token:", error)
+        // console.error("Failed to decode login token:", error)
       }
     }
 

@@ -159,7 +159,7 @@ export const register = async (email, password, first_name, additional_data = {}
       message: "Registration successful. Please check your email to verify your account.",
     }
   } catch (error) {
-    console.error('Registration error:', error.response?.data || error.message)
+    // console.error('Registration error:', error.response?.data || error.message)
     return {
       success: false,
       error: error.response?.data?.errors?.[0]?.message || error.message || "Registration failed",
@@ -202,7 +202,7 @@ export const getUserById = async (id) => {
     };
   } catch (error) {
     // Improved error logging
-    console.error(`Failed to get user by ID ${id}:`, error.response?.data || error.message);
+    // console.error(`Failed to get user by ID ${id}:`, error.response?.data || error.message);
     return handleApiError(error, "Get User By ID");
   }
 };
@@ -283,7 +283,7 @@ export const getUserByProductId = async (productId) => {
 
     return userResult;
   } catch (error) {
-    console.error(`Failed to get user by product ID ${productId}:`, error.response?.data || error.message);
+    // console.error(`Failed to get user by product ID ${productId}:`, error.response?.data || error.message);
     return handleApiError(error, "Get User By Product ID");
   }
 };
@@ -397,7 +397,7 @@ export const getUserByProductId = async (productId) => {
 // // ----------------------------------
 // Edit profile with enhanced validation and authentication
 export const editeProfile = async (userData, authId, avatar = null , translations) => {
-  console.log("translations call api :  " , translations)
+  // console.log("translations call api :  " , translations)
   try {
     return await makeAuthenticatedRequest(async () => {
       const decoded = await decodedToken()
@@ -623,7 +623,7 @@ export const addMessage = async (email, name, message, phone_number) => {
 
 // Request password reset
 export const forgotPassword = async (email) => {
-  console.log("forget Password email", email)
+  // console.log("forget Password email", email)
   try {
     if (!email) {
       throw new Error("Email is required");
@@ -653,7 +653,7 @@ export const forgotPassword = async (email) => {
   //   }),
   // });
 
-  console.log("forget Password response", response)
+  // console.log("forget Password response", response)
     return {
       success: response.status === 200 || response.status === 201 || response.status === 204,
       message: "Password reset link sent successfully. Please check your email.",
@@ -796,7 +796,7 @@ export const checkUserHasProducts = async (user_id) => {
       })
       
    
-   console.log("checkUserHasProducts:",response.data.data)
+  //  console.log("checkUserHasProducts:",response.data.data)
     // console.log("Product retrieved successfully, ID:", id)
     return {
       success: true,
@@ -869,7 +869,7 @@ export const checkUeserEmailValid = async (token) => {
       message: "Email verification failed",
     }
   } catch (error) {
-    console.error("Email verification error:", error.response?.data || error.message)
+    // console.error("Email verification error:", error.response?.data || error.message)
     return {
       success: false,
       verified: false,

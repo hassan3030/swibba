@@ -171,6 +171,9 @@ const buttonVariants = {
   },
 }
 
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
 export default function ProfileSettingsPage() {
   // -----------------------------------------
   const { toast } = useToast()
@@ -186,6 +189,33 @@ export default function ProfileSettingsPage() {
     "ar-SA": { description: "", city: "", street: "" }
     });
 
+
+
+  
+  const { t } = useTranslations()
+  const router = useRouter()
+  const [user, setUser] = useState({})
+  const [avatar, setAvatar] = useState(null)
+  const [avatarPath, setAvatarPath] = useState("")
+  const [first_name, setFirstName] = useState("")
+  const [email, setEmail] = useState("")
+  const [last_name, setLasttName] = useState("")
+  const [gender, setGender] = useState("")
+  const [phone_number, setPhone] = useState("")
+  const [country, setCountry] = useState("")
+  const [city, setCity] = useState("")
+  const [street, setStreet] = useState("")
+  const [description, setDescription] = useState("")
+  const [post_code, setPostCode] = useState("")
+  const [geo_location, set_geo_location] = useState({})
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [currentPosition, setCurrentPosition] = useState(null)
+  const [selectedPosition, setSelectedPosition] = useState(null)
+  const [translations, setTranslations] = useState([])
+  const [completed_data,set_completed_data] = useState('false')
+  const [verified,setVerified] = useState('false')
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false)
+  const [phoneValidationError, setPhoneValidationError] = useState("")
 
   const updatePassword = async () => {
     if (!newPassword || !confirmPassword) {
@@ -229,79 +259,68 @@ export default function ProfileSettingsPage() {
     }
   }
 
-  
-  const { t } = useTranslations()
-  const router = useRouter()
-  const [user, setUser] = useState({})
-  const [avatar, setAvatar] = useState(null)
-  const [avatarPath, setAvatarPath] = useState("")
-  const [first_name, setFirstName] = useState("")
-  const [email, setEmail] = useState("")
-  const [last_name, setLasttName] = useState("")
-  const [gender, setGender] = useState("")
-  const [phone_number, setPhone] = useState("")
-  const [country, setCountry] = useState("")
-  const [city, setCity] = useState("")
-  const [street, setStreet] = useState("")
-  const [description, setDescription] = useState("")
-  const [post_code, setPostCode] = useState("")
-  const [geo_location, set_geo_location] = useState({})
-  const [isGettingLocation, setIsGettingLocation] = useState(false)
-  const [currentPosition, setCurrentPosition] = useState(null)
-  const [selectedPosition, setSelectedPosition] = useState(null)
-  const [translations, setTranslations] = useState([])
-  const [completed_data,set_completed_data] = useState('false')
-  const [verified,setVerified] = useState('false')
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false)
-  const [phoneValidationError, setPhoneValidationError] = useState("")
-
   const getUser = async () => {
     const token = await getCookie()
     if (token) {
       const { id } = await decodedToken(token)
       const userData = await getUserById(id)
-      setUser(userData.data)  
+      // console.log("userData profile:",userData) 
+      setUser(userData.data)
       setVerified(userData.data.verified)
     }
   }
-// add all data in schema 
   const profileSchema = z.object({
     phone_number: z
       .string()
+      .min(1, `${t("phoneNumber")} ${t("notSubmittedWithoutFill")}`)
       .min(8, t("PhoneIsShort"))
       .max(20, t("PhoneIsLong"))
       .regex(/^\+?\d{8,20}$/, t("invalidNumber")),
     first_name: z
       .string()
-      .min(1, t("firstname"))
+      .min(1, `${t("firstName")} ${t("notSubmittedWithoutFill")}`)
       .max(20, t("firstnameIsLong")),
     last_name: z
       .string()
-      .min(1, t("lastname"))
+      .min(1, `${t("lastName")} ${t("notSubmittedWithoutFill")}`)
       .max(20, t("lastnameIsLong")),
     country: z
       .string()
-      .min(1, t("countryIsRequired")),
+      .min(1, `${t("country")} ${t("notSubmittedWithoutFill")}`),
     city: z
       .string()
-      .min(1, t("cityIsRequired")),
+      .min(1, `${t("city")} ${t("notSubmittedWithoutFill")}`),
     street: z
       .string()
-      .min(1, t("streetIsRequired")),
+      .min(1, `${t("street")} ${t("notSubmittedWithoutFill")}`),
     description: z
       .string()
+      .min(1, `${t("description")} ${t("notSubmittedWithoutFill")}`)
       .min(4, t("descriptionMustBeAtLeast10"))
       .max(1000, t("descriptionMustBeLessThan1000")),
     gender: z
       .string()
-      .min(1, t("genderIsRequired")),
+      .min(1, `${t("gender")} ${t("notSubmittedWithoutFill")}`),
+    post_code: z
+      .string()
+      .min(1, `${t("Postalcode")} ${t("notSubmittedWithoutFill")}`),
+    avatar: z
+      .instanceof(File)
+      .nullable()
+      .optional()
+      .refine(file => !file || file.size <= MAX_AVATAR_SIZE, { 
+          message: t("imageTooLarge") || "Max image size is 5MB.",
+      })
+      .refine(file => !file || ACCEPTED_AVATAR_TYPES.includes(file.type), {
+          message: t("unsupportedImageType") || "Only .jpg, .png, and .webp formats are supported.",
+      }),
     geo_location: z
       .object({
         lat: z.number(),
         lng: z.number(),
       })
       .refine((data) => data.lat && data.lng, {
-        message: t("locationIsRequired"),
+        message: `${t("currentPosition")} ${t("notSubmittedWithoutFill")}`,
       }),
   })
 
@@ -360,19 +379,20 @@ export default function ProfileSettingsPage() {
 
 
 
-  const userCollectionData = {}
-  if (first_name) userCollectionData.first_name = first_name
-  if (last_name) userCollectionData.last_name = last_name
-  if (editedTranslations["en-US"].description) userCollectionData.description = editedTranslations["en-US"].description
+  const userCollectionData = {
+    first_name: first_name || "",
+    last_name: last_name || "",
+    description: editedTranslations["en-US"].description || "",
+    city: editedTranslations["en-US"].city || "",
+    country: country || "",
+    street: editedTranslations["en-US"].street || "",
+    post_code: post_code || "",
+    gender: gender || "",
+    phone_number: phone_number || "",
+    geo_location: geo_location || {},
+    completed_data: completed_data || "false",
+  }
   if (avatar) userCollectionData.avatar = avatar
-  if (editedTranslations["en-US"].city) userCollectionData.city = editedTranslations["en-US"].city
-  if (country) userCollectionData.country = country
-  if (editedTranslations["en-US"].street) userCollectionData.street = editedTranslations["en-US"].street
-  if (post_code) userCollectionData.post_code = post_code
-  if (gender) userCollectionData.gender = gender
-  if (phone_number) userCollectionData.phone_number = phone_number
-  if (geo_location) userCollectionData.geo_location = geo_location
-  if (completed_data) userCollectionData.completed_data = completed_data
   
   const [formData, setFormData] = useState({
     first_name,
@@ -406,7 +426,7 @@ export default function ProfileSettingsPage() {
   const currentLangCode = isRTL ? 'ar-SA' : 'en-US';
 
 
-  const handleAiTranslate = async () => {
+  const handleAiTranslate = async (currentFormData = null) => {
     setIsAiProcessing(true);
     try {
       // Determine source and target languages based on current language
@@ -414,13 +434,28 @@ export default function ProfileSettingsPage() {
       const targetLang = isRTL ? "en-US" : "ar-SA";
       const sourceLangName = isRTL ? "Arabic" : "English";
       const targetLangName = isRTL ? "English" : "Arabic";
-      const { description, city, street } = editedTranslations[sourceLang];
-      console.log("Translation attempt:", { sourceLang, targetLang, description, city, street });
+      
+      // Use provided form data or get from state - always use the ACTUAL current form data
+      let sourceData;
+      if (currentFormData) {
+        // Use the provided current form data (most up-to-date)
+        sourceData = {
+          description: currentFormData.description || "",
+          city: currentFormData.city || "",
+          street: currentFormData.street || ""
+        };
+      } else {
+        // Fallback to state (shouldn't happen in normal flow)
+        sourceData = editedTranslations[sourceLang];
+      }
+      
+      const { description, city, street } = sourceData;
+      // console.log("Translation attempt with ACTUAL form data:", { sourceLang, targetLang, description, city, street, sourceData, currentFormData });
 
       // Always attempt translation, even if some fields are empty
       // This ensures we get translations for any available content
       if (!description && !city && !street) {
-        console.log("No content to translate, skipping AI call");
+        // console.log("No content to translate, skipping AI call");
         setIsAiProcessing(false);
         return;
       }
@@ -467,18 +502,41 @@ Please return ONLY a JSON response in this format:
       const cityKey = `city_${targetLangName.toLowerCase()}`;
       const streetKey = `street_${targetLangName.toLowerCase()}`;
 
-      const newTranslations = {
-        description: jsonObject[descriptionKey] || prev[targetLang].description,
-        city: jsonObject[cityKey] || prev[targetLang].city,
-        street: jsonObject[streetKey] || prev[targetLang].street,
+      // console.log("Translation result:", { targetLang, jsonObject, descriptionKey, cityKey, streetKey });
+
+      // Prepare new translations object
+      let newTranslations = {
+        description: jsonObject[descriptionKey] || "",
+        city: jsonObject[cityKey] || "",
+        street: jsonObject[streetKey] || "",
       };
 
-      console.log("Translation result:", { targetLang, newTranslations });
+      // Update state and return the updated translations object
+      let updatedTranslations;
+      setEditedTranslations(prev => {
+        // If AI didn't return a translation, don't overwrite with empty - keep existing or use source as last resort
+        // Use sourceData from closure (the actual current form data)
+        if (!newTranslations.description && !jsonObject[descriptionKey]) {
+          newTranslations.description = prev[targetLang]?.description || sourceData.description || "";
+        }
+        if (!newTranslations.city && !jsonObject[cityKey]) {
+          newTranslations.city = prev[targetLang]?.city || sourceData.city || "";
+        }
+        if (!newTranslations.street && !jsonObject[streetKey]) {
+          newTranslations.street = prev[targetLang]?.street || sourceData.street || "";
+        }
 
-      setEditedTranslations(prev => ({
-        ...prev,
-        [targetLang]: newTranslations
-      }));
+        updatedTranslations = {
+          ...prev,
+          [targetLang]: newTranslations
+        };
+
+        // console.log("Setting new translations:", { targetLang, newTranslations, sourceData, jsonObject, currentFormData, updatedTranslations });
+
+        return updatedTranslations;
+      });
+
+      return updatedTranslations;
 
       // Show success message with attempt info
       // if (aiResponse.attempt > 1) {
@@ -498,21 +556,27 @@ Please return ONLY a JSON response in this format:
       // }
 
     } catch (error) {
-      console.error("Error getting AI translation:", error);
+      // console.error("Error getting AI translation:", error);
       
       // Fallback: Copy current language content to other language if AI fails
       const sourceLang = isRTL ? "ar-SA" : "en-US";
       const targetLang = isRTL ? "en-US" : "ar-SA";
       
-      console.log("AI translation failed, using fallback copy");
-      setEditedTranslations(prev => ({
-        ...prev,
-        [targetLang]: {
-          description: prev[sourceLang].description || "",
-          city: prev[sourceLang].city || "",
-          street: prev[sourceLang].street || "",
-        }
-      }));
+      // console.log("AI translation failed, using fallback copy");
+      
+      // Return updated translations even on error (using fallback)
+      let fallbackTranslations;
+      setEditedTranslations(prev => {
+        fallbackTranslations = {
+          ...prev,
+          [targetLang]: {
+            description: prev[sourceLang]?.description || sourceData?.description || "",
+            city: prev[sourceLang]?.city || sourceData?.city || "",
+            street: prev[sourceLang]?.street || sourceData?.street || "",
+          }
+        };
+        return fallbackTranslations;
+      });
       
       let errorMessage = t("aiTranslationFailedFallback");
       
@@ -527,6 +591,9 @@ Please return ONLY a JSON response in this format:
         description: errorMessage,
         variant: "default",
       });
+      
+      // Return fallback translations
+      return fallbackTranslations;
     } finally {
       setIsAiProcessing(false);
     }
@@ -551,23 +618,43 @@ Please return ONLY a JSON response in this format:
 
   // Validate all form data
   const validateFormData = () => {
-    const description = editedTranslations['en-US'].description || editedTranslations['ar-SA'].description || "";
-    const city = editedTranslations['en-US'].city || editedTranslations['ar-SA'].city || "";
-    const street = editedTranslations['en-US'].street || editedTranslations['ar-SA'].street || "";
-
+    const currentFields = editedTranslations[currentLangCode];
+    
+    // Check if avatar is provided (either new upload or existing user avatar)
+    const hasNewAvatar = avatar && avatar instanceof File;
+    const hasExistingAvatar = user?.avatar && user.avatar.trim() !== "";
+    
+    if (!hasNewAvatar && !hasExistingAvatar) {
+      return {
+        success: false,
+        error: {
+          errors: [{
+            message: `${t("Avatar") || "Avatar"} ${t("notSubmittedWithoutFill") || "is required"}`,
+            path: ["avatar"]
+          }]
+        }
+      };
+    }
+    
     const formDataToValidate = {
       phone_number,
       first_name,
       last_name,
       country,
-      city,
-      street,
-      description,
+      city: currentFields.city || "",
+      street: currentFields.street || "",
+      description: currentFields.description || "",
       gender,
+      post_code,
+      avatar: avatar || null, // Pass null if no new avatar (existing will be used)
       geo_location: geo_location && geo_location.lat && geo_location.lng ? geo_location : { lat: 0, lng: 0 },
     };
 
+    // console.log("Validation - formDataToValidate.avatar:", formDataToValidate.avatar);
+    // console.log("Validation - hasNewAvatar:", hasNewAvatar, "hasExistingAvatar:", hasExistingAvatar);
+
     const result = profileSchema.safeParse(formDataToValidate);
+    // console.log("Validation - Result:", JSON.stringify(result, null, 2));
     return result;
   };
 
@@ -576,53 +663,6 @@ Please return ONLY a JSON response in this format:
     setIsLoading(true);
     
     try {
-      // Check ALL required fields and show specific toast errors for missing ones
-      const descriptionValue = editedTranslations['en-US'].description || editedTranslations['ar-SA'].description || "";
-      const cityValue = editedTranslations['en-US'].city || editedTranslations['ar-SA'].city || "";
-      const streetValue = editedTranslations['en-US'].street || editedTranslations['ar-SA'].street || "";
-
-      const errorMessages = [];
-      
-      // Check all required fields and create descriptive error messages
-      if (!first_name || first_name.trim() === "") {
-        errorMessages.push(`${t("firstName")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!last_name || last_name.trim() === "") {
-        errorMessages.push(`${t("lastName")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!phone_number || phone_number.trim() === "") {
-        errorMessages.push(`${t("phoneNumber")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!country || country.trim() === "") {
-        errorMessages.push(`${t("country")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!cityValue || cityValue.trim() === "") {
-        errorMessages.push(`${t("city")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!streetValue || streetValue.trim() === "") {
-        errorMessages.push(`${t("street")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!descriptionValue || descriptionValue.trim() === "") {
-        errorMessages.push(`${t("description")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!gender || gender.trim() === "") {
-        errorMessages.push(`${t("gender")} ${t("notSubmittedWithoutFill")}`);
-      }
-      if (!geo_location || !geo_location.lat || !geo_location.lng) {
-        errorMessages.push(`${t("currentPosition")} ${t("notSubmittedWithoutFill")}`);
-      }
-
-      // If any field is missing, show error and don't save or translate
-      if (errorMessages.length > 0) {
-        toast({
-          title: t("validationError"),
-          description: errorMessages.join(". "),
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return; // Exit early - no translation or save if fields are missing
-      }
-
       // Validate all required fields with schema validation
       const validationResult = validateFormData();
       
@@ -640,70 +680,57 @@ Please return ONLY a JSON response in this format:
         return; // Exit early - no translation or save if validation fails
       }
 
-      // Only perform translation if all fields are valid and complete
-      console.log("Starting automatic translation...");
-      await handleAiTranslate();
-      console.log("Translation completed successfully");
+      // Always perform translation on every submit using ACTUAL current form data
+      // console.log("Starting automatic translation with current form data...");
       
-      // Get final values after translation
-      const updatedDescription = editedTranslations['en-US'].description || editedTranslations['ar-SA'].description || descriptionValue;
-      const updatedCity = editedTranslations['en-US'].city || editedTranslations['ar-SA'].city || cityValue;
-      const updatedStreet = editedTranslations['en-US'].street || editedTranslations['ar-SA'].street || streetValue;
+      // Get the ACTUAL current form data from the current language being edited
+      const currentFields = editedTranslations[currentLangCode];
+      const currentFormDataForTranslation = {
+        description: currentFields.description || "",
+        city: currentFields.city || "",
+        street: currentFields.street || ""
+      };
+      
+      // console.log("Current form data for translation:", currentFormDataForTranslation, "currentLangCode:", currentLangCode);
+      
+      // Perform translation with actual current form data and get updated translations
+      const updatedTranslations = await handleAiTranslate(currentFormDataForTranslation);
+      // console.log("Translation completed successfully, updated translations:", updatedTranslations);
+      
+      // Use the returned updated translations (guaranteed to be latest)
+      const updatedDescription = updatedTranslations['en-US']?.description || updatedTranslations['ar-SA']?.description || description;
+      const updatedCity = updatedTranslations['en-US']?.city || updatedTranslations['ar-SA']?.city || city;
+      const updatedStreet = updatedTranslations['en-US']?.street || updatedTranslations['ar-SA']?.street || street;
 
       // Check if all required data is completed
-      if(first_name && last_name && phone_number && updatedDescription && updatedCity && country && updatedStreet && gender && geo_location && geo_location.lat && geo_location.lng) {
+      const hasAvatar = avatar || (user?.avatar && user.avatar.trim() !== "");
+      if(first_name && last_name && phone_number && updatedDescription && updatedCity && country && updatedStreet && gender && geo_location && geo_location.lat && geo_location.lng && hasAvatar) {
         set_completed_data('true')
       }
       else {
         set_completed_data('false')
       }
 
-      // Check if there are any changes to save (including translations)
-      const hasTranslationChanges = editedTranslations["en-US"].description || 
-                                   editedTranslations["ar-SA"].description ||
-                                   editedTranslations["en-US"].city || 
-                                   editedTranslations["ar-SA"].city ||
-                                   editedTranslations["en-US"].street || 
-                                   editedTranslations["ar-SA"].street;
-
-      if (!isDataChanged && !avatar && !hasTranslationChanges) {
-        toast({
-          title: t("noChangesToSave"),
-          description: t("youHaveNotUpdatedAnyField"),
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (!userCollectionData || Object.keys(userCollectionData).length === 0) {
-        toast({
-          title: t("warning"),
-          description: t("noChangesToSave"),
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
+      // Always save all data with translations, not just when there are changes
+      // Use the updated translations returned from handleAiTranslate (guaranteed latest)
       const finalTranslations = [
         {
             languages_code: "en-US",
-            description: editedTranslations["en-US"].description || "",
-            city: editedTranslations["en-US"].city || "",
-            street: editedTranslations["en-US"].street || "",
+            description: updatedTranslations["en-US"]?.description || editedTranslations["en-US"]?.description || "",
+            city: updatedTranslations["en-US"]?.city || editedTranslations["en-US"]?.city || "",
+            street: updatedTranslations["en-US"]?.street || editedTranslations["en-US"]?.street || "",
         },
         {
             languages_code: "ar-SA",
-            description: editedTranslations["ar-SA"].description || "",
-            city: editedTranslations["ar-SA"].city || "",
-            street: editedTranslations["ar-SA"].street || "",
+            description: updatedTranslations["ar-SA"]?.description || editedTranslations["ar-SA"]?.description || "",
+            city: updatedTranslations["ar-SA"]?.city || editedTranslations["ar-SA"]?.city || "",
+            street: updatedTranslations["ar-SA"]?.street || editedTranslations["ar-SA"]?.street || "",
         }
       ];
 
-      console.log("Sending translations to server:", finalTranslations);
+      // console.log("Sending translations to server:", finalTranslations);
       const handleEditeProfile =  await editeProfile(userCollectionData, user.id, avatar, finalTranslations);
-      console.log("Profile saved successfully with translations");
+      // console.log("Profile saved successfully with translations");
       // Check if there's a target to redirect to swap page
       const targetSwapId = await getTarget();
       const decoded = await decodedToken()
@@ -714,6 +741,9 @@ Please return ONLY a JSON response in this format:
           title: t("successfully"),
           description: t("savedSuccessfullyWithTranslation"),
         });
+        
+        // Refresh user data after successful submit
+        await getUser();
         
         if (makeCheckUserHasProducts.count>1) {
             if(targetSwapId){
@@ -736,7 +766,7 @@ Please return ONLY a JSON response in this format:
       
      
     } catch (error) {
-      console.error("Error updating profile:", error)
+      // console.error("Error updating profile:", error)
       toast({
         title: t("errorPrefix"),
         description: error.message || t("failedToUpdateProfile"),
@@ -760,7 +790,7 @@ Please return ONLY a JSON response in this format:
         if (decoded?.id) {
           const updateResult = await updatePhoneVerification(decoded.id, verifiedPhoneNumber, true)
           if (!updateResult.success) {
-            console.error('Failed to update phone verification status:', updateResult.error)
+            // console.error('Failed to update phone verification status:', updateResult.error)
           }
         }
       }
@@ -770,7 +800,7 @@ Please return ONLY a JSON response in this format:
         description: t("phoneNumberVerified"),
       })
     } catch (error) {
-      console.error('Error updating phone verification:', error)
+      // console.error('Error updating phone verification:', error)
       toast({
         title: t("error"),
         description: t("phoneVerifiedFailedUpdate"),
@@ -841,7 +871,7 @@ Please return ONLY a JSON response in this format:
           const data = await response.json()
           pos.name = data.display_name || "Current Location"
         } catch (error) {
-          console.error("Reverse geocoding failed", error)
+          // console.error("Reverse geocoding failed", error)
           pos.name = "Current Location"
         }
 
@@ -916,10 +946,10 @@ Please return ONLY a JSON response in this format:
      
 
       <Tabs defaultValue="profile" className="w-full relative z-10">
-      <div className={`grid grid-cols-1 gap-8 md:grid-cols-4 rtl:grid-flow-col-dense `}  >
+      <div className={`grid grid-cols-1 gap-8 lg:grid-cols-4`}  >
       
           {/* Sidebar */}
-           <motion.div className={`md:col-span-1 `} variants={itemVariants}>
+           <motion.div className={`w-full lg:col-span-1 order-1 ${isRTL ? 'lg:order-2' : 'lg:order-1'}`} variants={itemVariants}>
           <motion.h1
           className={`mx-2 text-2xl font-bold inline text-primary/90 mb-2 ${isRTL?'force-rtl':''}`}
           initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
@@ -1001,7 +1031,7 @@ onClick={()=>{ handleKYC() }}
           </motion.div>
 
           {/* Main Content */}
-           <motion.div className={`md:col-span-3 ${isRTL ? 'md:col-start-1' : ''}`} variants={itemVariants}>
+           <motion.div className={`w-full lg:col-span-3 order-2 ${isRTL ? 'lg:order-1' : 'lg:order-2'}`} variants={itemVariants}>
               <TabsContent value="profile">
                 <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
                   <motion.div variants={cardVariants} whileHover="hover">
@@ -1122,7 +1152,7 @@ onClick={()=>{ handleKYC() }}
                             </div>
 
                             {/* Location Fields */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rtl:grid-flow-col-dense">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 ">
                               {/* Country field - Searchable Select (single) */}
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label
@@ -1332,7 +1362,7 @@ onClick={()=>{ handleKYC() }}
                                                 {t("SelectedPosition") || "Selected Position"}
                                               </CardTitle>
                                             </CardHeader>
-                                            <CardContent className="space-y-2">
+                                            <CardContent className={`space-y-2 ${isRTL ? 'force-rtl':'' }`}>
                                               <motion.p
                                                 className="text-sm"
                                                 initial={{ opacity: 0, x: getDirectionValue(-10, 10) }}
@@ -1370,7 +1400,7 @@ onClick={()=>{ handleKYC() }}
                             </motion.div>
 
                             {/* Contact and Personal Info */}
-                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rtl:grid-flow-col-dense">
+                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 ">
                               <motion.div className="space-y-2" variants={inputVariants}>
                                 <Label htmlFor="email"
                                 
@@ -1629,16 +1659,6 @@ onClick={()=>{ handleKYC() }}
                           </motion.div> */}
                         </motion.div>
                       </CardContent>
-                       <CardFooter className="flex justify-end rtl:justify-start bg-background border-t border-border/50">
-                        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                          <Button
-                            onClick={(e)=>{handleSubmit(e)}}
-                            className="shadow-lg hover:shadow-xl transition-all duration-300 mt-4"
-                          >
-                            {t("SaveChanges") || "Save Changes"}
-                          </Button>
-                        </motion.div>
-                      </CardFooter>
                     </Card>
                   </motion.div>
                 </motion.div>
@@ -1730,7 +1750,7 @@ onClick={()=>{ handleKYC() }}
                             </div>
                           </motion.div>
 
-                          <motion.div
+                          {/* <motion.div
                             className={`space-y-4 pt-8 border-t border-border ${isRTL?'force-rtl':''}`}
                             variants={itemVariants}
                           >
@@ -1748,7 +1768,7 @@ onClick={()=>{ handleKYC() }}
                                 {t("DeleteAccount") || "Delete Account"}
                               </Button>
                             </motion.div>
-                          </motion.div>
+                          </motion.div> */}
                         </motion.div>
                       </CardContent>
                     </Card>

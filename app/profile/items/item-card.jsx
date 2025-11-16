@@ -78,7 +78,7 @@ const ItemCard = ({ item }) => {
     try {
       // Update item quantity
       const updateProduc = await updateProductQuantity(item.id, quantity, status_swap , completed_offer) // This will be replaced with proper quantity update
-    console.log("updateProduc",updateProduc)
+    // console.log("updateProduc",updateProduc)
       setShowQuantityDialog(false)
       router.refresh()
     } catch (error) {
@@ -105,11 +105,11 @@ const ItemCard = ({ item }) => {
     try {
  
  const offerCheck = await checkItemInOfferItems(item.id)
- console.log("offerCheck",offerCheck)
+//  console.log("offerCheck",offerCheck)
  if (offerCheck.exists) {
   // check checkItemIncludedInCompletedOffer
   const itemUpdatedCheck = await checkItemUpdate(item.id)
-  console.log("CompletedOfferCheck",itemUpdatedCheck)
+  // console.log("CompletedOfferCheck",itemUpdatedCheck)
 if(itemUpdatedCheck.data.updated){
   toast({
     title: t("itemDeleted") || "Item Deleted",
@@ -119,7 +119,7 @@ if(itemUpdatedCheck.data.updated){
   
 }else{
   const updateQuantity = await handleUpdateQuantityStatus(0,"unavailable","false")
-  console.log("updateQuantity",updateQuantity)
+  // console.log("updateQuantity",updateQuantity)
   toast({
     title: t("itemDeleted") || "Item Deleted",
     description: t("itemDeletedDesc") || "The item has been successfully deleted.",

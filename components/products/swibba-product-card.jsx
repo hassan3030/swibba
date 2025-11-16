@@ -213,7 +213,7 @@ export function SwibbaProductCard({
         router.push(`/auth/login`)
       }
     }catch(error){
-console,log(error , "error in swap operation")
+// console,log(error , "error in swap operation")
     }
    
   }

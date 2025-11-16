@@ -14,7 +14,7 @@ export const getAllCategories = async () => {
          params: { fields: "*,translations.*, main_image.*,parent_category.*,*.*.*", sort: "name" } 
     } 
     );
-    console.log(`Retrieved All categories:`, response);
+    // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -38,7 +38,7 @@ export const getLevelOneCategories = async () => {
         params: { fields: "*,translations.*" }
       }
     );
-    console.log(`Retrieved All categories:`, response);
+    // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -62,7 +62,7 @@ export const getLevelTwoCategories = async () => {
         params: { fields: "*,translations.*,parent_category.*" }
       }
     );
-    console.log(`Retrieved All categories:`, response);
+    // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -84,7 +84,7 @@ export const getFounders = async () => {
     const response = await axios.get(
       `https://deel-deal-directus.csiwm3.easypanel.host/items/Founder?fields=*,*.*&sort=order`
     );
-    console.log(`Retrieved Founders:`, response);
+    // console.log(`Retrieved Founders:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -101,7 +101,7 @@ export const getFounders = async () => {
 export const getAllHints = async () => {
   try {
     const response = await axios.get(`${baseItemsURL}Hints?fields=*,*.* &sort=date_created`)
-    console.log(`Retrieved All hints:`, response.data.data);
+    // console.log(`Retrieved All hints:`, response.data.data);
     return {
       success: true,
       data: response.data.data || [],
@@ -117,7 +117,7 @@ export const getAllHints = async () => {
 export const getHintByName = async (name) => {
   try {
     const response = await axios.get(`${baseItemsURL}Hints?filter[title][_eq]=${name}&fields=*,*.*&sort=date_created`)
-    console.log(`Retrieved Hint by name:`, response.data.data);
+    // console.log(`Retrieved Hint by name:`, response.data.data);
     return {
       success: true,
       data: response.data.data || [],
@@ -142,7 +142,7 @@ export const getAllSubCategories = async () => {
          params: { fields: "*,translations.*, parent_category.*,*.*.*", sort: "name" } 
     } 
     );
-    console.log(`Retrieved All sub_categories:`, response);
+    // console.log(`Retrieved All sub_categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -168,7 +168,7 @@ export const getAllBrands = async () => {
          params: {  limit: -1 , fields: "*,translations.*, parent_category.*, sub_category.*, *.*.*", sort: "name"} 
     } 
     );
-    console.log(`Retrieved All Brands:`, response);
+    // console.log(`Retrieved All Brands:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -192,7 +192,7 @@ export const getAllModels = async () => {
          params: {  limit: -1 ,  fields: "*,translations.*, parent_brand.*, sub_category.*, *.*.*", sort: "name" } 
     } 
     );
-    console.log(`Retrieved All models:`, response);
+    // console.log(`Retrieved All models:`, response);
     return {
       success: true,
       data: response.data.data || [],

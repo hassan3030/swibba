@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useTranslations } from "@/lib/use-translations"
-import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, RefreshCw, X } from "lucide-react"
+import { Send, Search, MessageCircle, ArrowLeft, ShoppingCart, Bell, Verified, RefreshCw, X, Trash, Trash2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -16,8 +16,8 @@ import { getUserById } from "@/callAPI/users"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { mediaURL } from "@/callAPI/utiles";
-import { BiCartDownload } from "react-icons/bi";
-import { TbShoppingCartUp } from "react-icons/tb";
+import { PiSwapBold } from "react-icons/pi";
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -274,8 +274,8 @@ const Messages = () => {
   const handleRemoveCompletedOffer = async (offerId) => {
     const response = await deleteMessageByOfferId(offerId)
     // const response = await getMessagesByOfferId(offerId)
-    console.log("🔍 DEBUG - Response:", response)
-    console.log("🔍 DEBUG - Offer ID:", offerId)
+    // console.log("🔍 DEBUG - Response:", response)
+    // console.log("🔍 DEBUG - Offer ID:", offerId)
     if(response.success){
       toast({
         title: t("successfully") || "Successfully",
@@ -448,7 +448,7 @@ const Messages = () => {
                               </motion.div>
                               <div className="flex flex-col ml-2 flex-1 min-w-0">
                                  <div className="flex items-center justify-between">
-                                   <span className="px-1 text-gray-400 capitalize truncate">{offer.partner_name || ""}</span>
+                                   <span className="px-1 text-white capitalize truncate">{offer.partner_name || ""}</span>
                                    {/* {offer.status_offer === "completed" && (
                                      <motion.div
                                        initial={{ scale: 0 }}
@@ -528,10 +528,46 @@ const Messages = () => {
                     </motion.div>
                   </div>
 
-                  <div>
+                  <div className="flex items-center gap-2">
                     <h3 className="font-semibold capitalize">
                       {partner.first_name} {partner.last_name}
                     </h3>
+                    {selectedOffer?.status_offer === "completed" && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const res = await deleteChatsByOfferId(selectedOffer.id)
+                            if (res?.success) {
+                              toast({
+                                title: t("successfully") || "Successfully",
+                                description: t("Chatdeletedsuccessfully") || "Chat deleted successfully",
+                              })
+                              setSelectedOffer(null)
+                              setMessages([])
+                              await fetchOffers(false)
+                            } else {
+                              toast({
+                                title: t("error") || "Error",
+                                description: t("Failedtodeletechat") || "Failed to delete chat",
+                                variant: "destructive",
+                              })
+                            }
+                          } catch (e) {
+                            toast({
+                              title: t("error") || "Error",
+                              description: t("Failedtodeletechat") || "Failed to delete chat",
+                              variant: "destructive",
+                            })
+                          }
+                        }}
+                      >
+                        {/* {t("DeleteChat") || "Delete Chat"} */}
+                        <Trash2 className="h-8 w-8" />
+
+                      </Button>
+                    )}
                   </div>
 
                   {myUserId === selectedOffer.from_user_id ? (
@@ -541,10 +577,10 @@ const Messages = () => {
                         size="icon"
                         className="relative  group"
                         onClick={() => {
-                          router.push(`/send-items#${selectedOffer.id}`)
+                          router.push(`/offers`)
                         }}
                       >
-                        <TbShoppingCartUp className="h-8 w-8" />
+                        <PiSwapBold className="h-8 w-8" />
                         <span className="pointer-events-none absolute top-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100">
                           {t("goToSendItems") || "Go to Send Items"}
                         </span>
@@ -557,10 +593,10 @@ const Messages = () => {
                         size="icon"
                         className="relative group"
                         onClick={() => {
-                          router.push(`/recived-items#${selectedOffer.id}`)
+                          router.push(`/offers`)
                         }}
                       >
-                        <BiCartDownload className="h-8 w-8" />
+                        <PiSwapBold className="h-8 w-8" />
                           <span className="pointer-events-none absolute -bottom-8 right-0 z-10 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
                           {t("goToNotifications") || "Go to Recived Offers"}
                         </span>
@@ -729,39 +765,6 @@ const Messages = () => {
                 {/* Static message input at the end */}
                 <div className="w-full flex justify-center p-4 border-t bg-card/30">
                   <div className="flex space-x-2 max-w-3xl w-full">
-                    {selectedOffer?.status_offer === "completed" && (
-                      <Button
-                        variant="destructive"
-                        onClick={async () => {
-                          try {
-                            const res = await deleteChatsByOfferId(selectedOffer.id)
-                            if (res?.success) {
-                              toast({
-                                title: t("successfully") || "Successfully",
-                                description: t("Chatdeletedsuccessfully") || "Chat deleted successfully",
-                              })
-                              setSelectedOffer(null)
-                              setMessages([])
-                              await fetchOffers(false)
-                            } else {
-                              toast({
-                                title: t("error") || "Error",
-                                description: t("Failedtodeletechat") || "Failed to delete chat",
-                                variant: "destructive",
-                              })
-                            }
-                          } catch (e) {
-                            toast({
-                              title: t("error") || "Error",
-                              description: t("Failedtodeletechat") || "Failed to delete chat",
-                              variant: "destructive",
-                            })
-                          }
-                        }}
-                      >
-                        {t("DeleteChat") || "Delete Chat"}
-                      </Button>
-                    )}
                     <Input
                       placeholder={t("Typeyourmessage") || "Type your message..."}
                       value={message}

@@ -180,7 +180,7 @@ export function ItemCardProfile({
         router.push(`/auth/login`)
       }
     }catch(error){
-console,log(error , "error in swap operation")
+// console,log(error , "error in swap operation")
     }
    
   }

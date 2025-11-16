@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { notFound, useRouter, useParams } from "next/navigation"
-import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus, BadgeX } from "lucide-react"
+import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus, BadgeX, ArrowRight, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -195,22 +195,22 @@ export default function ProductPage() {
       setCompletedOffersCount(completedOffers.count)
     }
   } catch (error) {
-    console.error("Error fetching completed offers:", error)
+    // console.error("Error fetching completed offers:", error)
     setCompletedOffersCount(0)
   }
   }
 
   const handleGetBreviousRating = async (id) => {
     try {
-      const response = await getReview(id) 
-      if (!response.data) {
+      const response = await getCompletedOffer(id) 
+      if (!response) {
         setRate(0)
       } else {
-        const rates = response.data.average_rating
+        const rates = response.rate
         setRate(rates)
       }
     } catch (error) {
-      console.error("Error fetching rating:", error)
+      // console.error("Error fetching rating:", error)
       setRate(0)
     }
   }
@@ -266,7 +266,7 @@ export default function ProductPage() {
         router.push(`/auth/login`)
       }
     }catch(error){
-console,log(error , "error in swap operation")
+// console,log(error , "error in swap operation")
     }
    
   }
@@ -299,10 +299,27 @@ console,log(error , "error in swap operation")
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3 text-start">
                   {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1 truncate text-start capitalize">
-                {product.category?(!isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
-                      
-                </p>
+              
+                <Link href={`/categories/${product.category}`}>
+                  <span
+                    className="inline-block text-primary border-primary/90 hover:cursor-pointer capitalize hover:scale-105 text-xs sm:text-sm px-2 py-1"
+                  >
+                    {isRTL ? product.translations[1]?.category : product.translations[0]?.category || product.category}
+                    {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}
+                  </span>
+                </Link>
+
+{product.brand!=='no_brand' && product.brand !==null && product.brand !=='' && product.brand !=='none' ? (
+  <Link href={`/brands/${product.brand}`}>
+    <span
+      className="inline-block text-primary hover:cursor-pointer capitalize hover:scale-105 text-xs sm:text-sm px-2 py-1"
+    >  
+      {isRTL ? product.translations[1]?.brand : product.translations[0]?.brand || product.brand}
+      {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}  
+    </span>
+  </Link>
+) : null}
+                
               </div>
               <motion.div
                 initial={{ scale: 0 }}

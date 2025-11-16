@@ -76,12 +76,12 @@ const ForgotPasswordPage = () => {
   const onSubmit = async (data) => {
     setIsLoading(true)
     setFeedback({ type: "", message: "" }) 
-    console.log("on submit data", data.email)
+    // console.log("on submit data", data.email)
 
     try {
       const email = data.email.trim()
       const response = await forgotPassword(email)
-      console.log("on submit response", response)
+      // console.log("on submit response", response)
       if (response.success) {
         setFeedback({
           type: "success",
@@ -97,14 +97,14 @@ const ForgotPasswordPage = () => {
           type: "success", // Still show success to prevent checking if an email exists
           message: t("passwordResetSuccess") || "If an account with that email exists, a password reset link has been sent.",
         })
-        console.error("Forgot password error (API):", response.error)
+        // console.error("Forgot password error (API):", response.error)
       }
     } catch (error) {
       setFeedback({
         type: "success", // Still show success
         message: t("passwordResetSuccess") || "If an account with that email exists, a password reset link has been sent.",
       })
-      console.error("Forgot password error (Catch):", error)
+      // console.error("Forgot password error (Catch):", error)
     } finally {
       setIsLoading(false)
     }

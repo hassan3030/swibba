@@ -245,7 +245,7 @@ export function ItemUpdate(props) {
           setAllModels(modelsRes.data || [])
         }
       } catch (error) {
-        console.error('Error fetching data for chained selects:', error)
+        // console.error('Error fetching data for chained selects:', error)
       }
     }
     
@@ -965,7 +965,7 @@ export function ItemUpdate(props) {
       brand: selectedBrandId && selectedBrandId !== "none" ? selectedBrandId : "none",
       model: selectedModelId && selectedModelId !== "none" ? selectedModelId : "none",
     }
-console.log("payload in update page", payload)
+// console.log("payload in update page", payload)
     if ((existingImages.length + files.length) === 0) {
       toast({
         title: t("error") || "ERROR",
@@ -977,7 +977,7 @@ console.log("payload in update page", payload)
 
     try {
       // console.log("Payload being sent:", payload)
-      console.log("Translations being sent:", translationsToSend)
+      // console.log("Translations being sent:", translationsToSend)
       
       const updateItem = await updateProduct(payload, files, id)
       if (updateItem.success) {
@@ -1170,7 +1170,7 @@ else{
     try {
       await handleSubmit(data)
     } catch (error) {
-      console.error("Error updating item:", error)
+      // console.error("Error updating item:", error)
       toast({
         title: t("error") || "ERROR",
         description: error.message || t("FailedtoupdateitemPleasetryagain") || "Failed to update item. Please try again.",
@@ -1947,13 +1947,13 @@ else{
                                           playsInline
                                           preload="metadata"
                                           onError={(e) => {
-                                            console.error('Video load error:', e, 'URL:', img.url)
+                                            // console.error('Video load error:', e, 'URL:', img.url)
                                             // Show fallback if video fails to load
                                             e.target.style.display = 'none'
                                             e.target.nextElementSibling.style.display = 'flex'
                                           }}
-                                          onLoadStart={() => console.log('Video loading started:', img.url)}
-                                          onCanPlay={() => console.log('Video can play:', img.url)}
+                                          // onLoadStart={() => console.log('Video loading started:', img.url)}
+                                          // onCanPlay={() => console.log('Video can play:', img.url)}
                                         />
                                         <div className="absolute inset-0 bg-gray-200 items-center justify-center hidden" style={{ display: 'none' }}>
                                           <div className="text-center text-gray-600">
@@ -2030,8 +2030,8 @@ else{
                                         onError={(e) => {
                                           console.error('Video load error:', e, 'URL:', isExistingImage ? file.url : url)
                                         }}
-                                        onLoadStart={() => console.log('Video loading started:', isExistingImage ? file.url : url)}
-                                        onCanPlay={() => console.log('Video can play:', isExistingImage ? file.url : url)}
+                                        // onLoadStart={() => console.log('Video loading started:', isExistingImage ? file.url : url)}
+                                        // onCanPlay={() => console.log('Video can play:', isExistingImage ? file.url : url)}
                                       />
                                     ) : mediaType === 'audio' ? (
                                       <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">

@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { CategoryCard } from "@/components/products/category-card"
@@ -8,7 +8,8 @@ import { categories as fallbackCategories } from "@/lib/data"
 import { getAllCategories } from "@/callAPI/static"
 import { useState, useEffect } from "react"
 import LoadingSpinner from "@/components/loading/loading-spinner"
-import { mediaURL } from "@/callAPI/utiles";
+import { mediaURL } from "@/callAPI/utiles"
+import { Button } from "@/components/ui/button"
 
 
 
@@ -55,6 +56,7 @@ const CategoriesPage = () => {
   const [categories, setCategories] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [displayCount, setDisplayCount] = useState(10)
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -76,7 +78,7 @@ const CategoriesPage = () => {
           setCategories(fallbackCategories)
         }
       } catch (error) {
-        console.error("Error fetching categories:", error)
+        // console.error("Error fetching categories:", error)
         setError(error)
         // Use fallback categories on error
         setCategories(fallbackCategories)
@@ -132,7 +134,7 @@ const CategoriesPage = () => {
           initial="hidden"
           animate="visible"
         >
-          {categories.map((category, index) => (
+          {categories.slice(0, displayCount).map((category, index) => (
             <motion.div
               key={category.name}
               variants={itemVariants}
@@ -147,6 +149,30 @@ const CategoriesPage = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Load More Button */}
+        {categories.length > displayCount && (
+          <motion.div
+            className="flex justify-center mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Button
+              onClick={() => setDisplayCount(prev => prev + 10)}
+              variant="outline"
+              className="flex items-center gap-2 hover:scale-105 transition-transform"
+            >
+              {t("loadMore") || "Load More"}
+              <motion.div
+                animate={{ y: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+            </Button>
+          </motion.div>
+        )}
       </section>
     </motion.div>
   )

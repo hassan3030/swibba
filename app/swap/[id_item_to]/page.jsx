@@ -162,9 +162,9 @@ export default function SwapPage() {
     try {
       const response = await getHintByName(name);
       setHintSwapRules(response.data);
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
   useEffect(() => {

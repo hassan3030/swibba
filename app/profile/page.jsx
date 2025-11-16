@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
 import { mediaURL } from "@/callAPI/utiles";
+import { useLanguage } from "@/lib/language-provider"
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -157,7 +158,7 @@ export default function ProfilePage() {
   const [swapItems, setSwapItems] = useState([])
   const [showSwitchHeart, setShowSwitchHeart] = useState(false)
   const [completedOffersCount, setCompletedOffersCount] = useState(0)
-
+  const { isRTL, toggleLanguage } = useLanguage()
   const getCompletedOffers = async () => {
     try {
       const decoded = await decodedToken()
@@ -168,7 +169,7 @@ export default function ProfilePage() {
         setCompletedOffersCount(0)
       }
     } catch (error) {
-      console.error("Error fetching completed offers:", error)
+      // console.error("Error fetching completed offers:", error)
       setCompletedOffersCount(0)
     }
   }
@@ -199,16 +200,15 @@ export default function ProfilePage() {
   }
 
   const handleGetBreviousRating = async (id) => {
-    const response = await getReview(id) 
+
+    const response = await getCompletedOffer(id) 
     // console.log("response", response.data)
 
-    if (!response.data) {
+    if (!response) {
       setRate(0)
     } else {
-      const rates = response.data.average_rating
-      // console.log("rates", rates)
-      // const calculateAverageRating = getCalculateAverageRating(rates)
-      // console.log("calculateAverageRating", calculateAverageRating)
+      const rates = response.rate
+      
 
       setRate(rates)
       // console.log("rate", rate)
@@ -219,9 +219,9 @@ export default function ProfilePage() {
     try {
       const userPruducts = await getProductByUserId("all")
       const userPruductsAvailable = await getProductByUserId("available")
-      console.log("userPruductsAvailable", userPruductsAvailable)
+      // console.log("userPruductsAvailable", userPruductsAvailable)
       const userPruductsUnavailable = await getProductByUserId("unavailable")
-      console.log("userPruductsUnavailable", userPruductsUnavailable)
+      // console.log("userPruductsUnavailable", userPruductsUnavailable)
       
       // Check if the API call was successful and data exists
       if (!userPruducts || !userPruducts.success || !userPruducts.data) {
@@ -248,7 +248,7 @@ export default function ProfilePage() {
       
       return productsData
     } catch (error) {
-      console.error("Error fetching user products:", error)
+      // console.error("Error fetching user products:", error)
       // Ensure state is always set to an array, never undefined
       setmyUnavailableItems([])
       setmyAvailableItems([])
@@ -358,7 +358,7 @@ export default function ProfilePage() {
         <motion.div variants={itemVariants}>
           <motion.div variants={cardVariants} whileHover="hover" className="h-full">
             <Card className="h-full shadow-lg hover:shadow-2xl transition-all duration-300 border border-border/50 ">
-              <CardHeader className="flex flex-row items-center gap-4 pb-4">
+              <CardHeader className="flex flex-row rtl:flex-row-reverse items-center gap-4 pb-4">
                 <motion.div variants={avatarVariants} whileHover="hover" className="relative">
                   <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-primary/20 shadow-lg">
                     <AvatarImage src={avatarPath || "/placeholder.svg"} alt={full_name} />
@@ -419,7 +419,7 @@ export default function ProfilePage() {
                     </motion.div>
                     <span className="font-medium text-foreground">
                       {user?.country || user?.city || user?.street ? 
-                        `${user?.country || ""} ${user?.city || ""} ${user?.street || ""}`.trim() :
+                        `${isRTL ? user?.translations?.[1]?.country || "" : user?.translations?.[0]?.country || ""} ${isRTL ? user?.translations?.[1]?.city || "" : user?.translations?.[0]?.city || ""} ${isRTL ? user?.translations?.[1]?.street || "" : user?.translations?.[0]?.street || ""}`.trim() :
                         (t("noAddress") || "No address provided")
                       }
                     </span>

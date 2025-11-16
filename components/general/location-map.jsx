@@ -80,7 +80,7 @@ const LocationMap = ({
         setMap(mapInstance)
         setMarker(currentMarker)
       } catch (err) {
-        console.error("Error loading map:", err)
+        // console.error("Error loading map:", err)
         setError("Failed to load map.")
       } finally {
         setIsLoading(false)

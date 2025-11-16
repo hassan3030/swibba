@@ -232,7 +232,7 @@ export function Header() {
         router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
       }
     } catch (error) {
-      console.error("Search error:", error)
+      // console.error("Search error:", error)
       // Fallback to simple redirect
       router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
     }

@@ -88,7 +88,7 @@ export default function ProductPage() {
 const getOfferQuantity = async () => {
   try {
     const offerItems = await getOfferItemsByItemIdItself(id)
-    console.log("offerItems", offerItems)
+    // console.log("offerItems", offerItems)
     if (offerItems.success && offerItems.data) {
       setTotalQuantity(offerItems.data.total_quantity || 0)
       
@@ -129,7 +129,7 @@ const getOfferQuantity = async () => {
                   null
               }
             } catch (error) {
-              console.error(`Error fetching user details for ${partner.id}:`, error)
+              // console.error(`Error fetching user details for ${partner.id}:`, error)
               return {
                 ...partner,
                 name: partner.email_user_from,
@@ -147,7 +147,7 @@ const getOfferQuantity = async () => {
       setPartnerUsers([])
     }
   } catch (error) {
-    console.error("Error fetching offer quantity:", error)
+    // console.error("Error fetching offer quantity:", error)
     setTotalQuantity(0)
     setPartnerUsers([])
   }
@@ -208,24 +208,25 @@ const getOfferQuantity = async () => {
       } else {
       const completedOffers = await getCompletedOffer(userId)
       setCompletedOffersCount(completedOffers.count)
+      setRate(completedOffers.rate)
     }
   } catch (error) {
-    console.error("Error fetching completed offers:", error)
+    // console.error("Error fetching completed offers:", error)
     setCompletedOffersCount(0)
   }
   }
 
   const handleGetBreviousRating = async (id) => {
     try {
-      const response = await getReview(id) 
-      if (!response.data) {
+      const response = await  getCompletedOffers(id)
+      if (!response) {
         setRate(0)
       } else {
-        const rates = response.data.average_rating
+        const rates = response.rate
         setRate(rates)
       }
     } catch (error) {
-      console.error("Error fetching rating:", error)
+      // console.error("Error fetching rating:", error)
       setRate(0)
     }
   }
@@ -265,10 +266,25 @@ const getOfferQuantity = async () => {
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3 text-start">
                   {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1 truncate text-start">
-                {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
+                  <Link href={`/categories/${product.category}`}>
+                  <span
+                    className="inline-block text-primary capitalize border-primary/90 hover:cursor-pointer hover:scale-105 text-xs sm:text-sm px-2 py-1"
+                  >
+                    {isRTL ? product.translations[1]?.category : product.translations[0]?.category || product.category}
+                    {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}
+                  </span>
+                </Link>
 
-                </p>
+{product.brand!=='no_brand' && product.brand !==null && product.brand !=='' && product.brand !=='none' ? (
+  <Link href={`/brands/${product.brand}`}>
+    <span
+      className="inline-block text-primary capitalize hover:cursor-pointer hover:scale-105 text-xs sm:text-sm px-2 py-1"
+    >  
+      {isRTL ? product.translations[1]?.brand : product.translations[0]?.brand || product.brand}
+      {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}  
+    </span>
+  </Link>
+) : null}
               </div>
               <motion.div
                 initial={{ scale: 0 }}

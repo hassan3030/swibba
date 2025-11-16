@@ -173,7 +173,7 @@ const ResetPasswordPage = () => {
         type: "error",
         message: t("passwordResetFailed") || "Failed to reset password.",
       })
-      console.error("Reset password error:", error)
+      // console.error("Reset password error:", error)
     } finally {
       setIsLoading(false)
     }

@@ -53,7 +53,7 @@ export default function Home() {
           setShowSwitchHeart(true)
         }
       } catch (error) {
-        console.error("Error initializing app:", error)
+        // console.error("Error initializing app:", error)
       } finally {
         setIsInitialLoading(false)
       }

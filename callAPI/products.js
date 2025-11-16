@@ -435,7 +435,7 @@ export const getProductsEnhanced = async (filters = {}) => {
       message: "Products retrieved successfully",
     }
   } catch (error) {
-    console.error("getProductsEnhanced error:", error)
+    // console.error("getProductsEnhanced error:", error)
     return handleApiError(error, "Get Products Enhanced")
   }
 }
@@ -581,9 +581,9 @@ else if( availablity=="unavailable"){
       }
     }
   )
-  console.log("unavailableItemsOffers", unavailableItemsOffers)
+  // console.log("unavailableItemsOffers", unavailableItemsOffers)
   let unavailableItemsOffersIds = unavailableItemsOffers.data.data.map(item => item.item_id)
-  console.log("unavailableItemsOffersIds", unavailableItemsOffersIds)
+  // console.log("unavailableItemsOffersIds", unavailableItemsOffersIds)
   // Filter out items whose all related offers are completed
   try {
     const offerIdSet = new Set(unavailableItemsOffers.data.data.map(it => it.offer_id).filter(Boolean))
@@ -611,10 +611,10 @@ else if( availablity=="unavailable"){
         .map(([itemId]) => itemId)
       // Overwrite with filtered IDs
       unavailableItemsOffersIds = filteredIds
-      console.log("unavailableItemsOffersIds (filtered non-completed only)", unavailableItemsOffersIds)
+      // console.log("unavailableItemsOffersIds (filtered non-completed only)", unavailableItemsOffersIds)
     }
   } catch (e) {
-    console.warn("Failed to filter Offer_Items by offer status:", e?.message)
+    // console.warn("Failed to filter Offer_Items by offer status:", e?.message)
   }
 
 
@@ -853,7 +853,7 @@ export const removeProductImage = async (itemId, fileId) => {
       if (!relation) {
         // If relation doesn't exist, it might have been already deleted.
         // We can consider this a success to avoid unnecessary errors on the frontend.
-        console.warn(`Image relation for item ${itemId} and file ${fileId} not found. It might be already deleted.`);
+        // console.warn(`Image relation for item ${itemId} and file ${fileId} not found. It might be already deleted.`);
         return {
           success: true,
           message: "Image relation not found, assumed already deleted.",
@@ -937,7 +937,7 @@ export const deleteProduct = async (id) => {
            Authorization: `Bearer ${token}`,
          },
        })
-       console.log("productImages", productImages)
+      //  console.log("productImages", productImages)
        // delete the product
              await axios.delete(`${baseItemsURL}Items/${id}`, {
                headers: {
@@ -1042,7 +1042,7 @@ export const addProduct = async (payload, files) => {
               "Content-Type": "multipart/form-data",
             },
           })
-          console.log("fileRes", fileRes)
+          // console.log("fileRes", fileRes)
           const fileId = fileRes.data?.data?.id
           if (!fileId) {
             throw new Error(`Failed to upload image ${i + 1}`)
@@ -1067,7 +1067,7 @@ export const addProduct = async (payload, files) => {
 
           uploadResults.push({ index: i, file_id: fileId, success: true })
         } catch (uploadError) {
-          console.error(`Failed to upload image ${i + 1}:`, uploadError.message)
+          // console.error(`Failed to upload image ${i + 1}:`, uploadError.message)
           uploadResults.push({ index: i, success: false, error: uploadError.message })
         }
       }
@@ -1137,9 +1137,9 @@ export const updateProduct = async (payload, files, itemId) => {
         throw new Error("Only JPEG, PNG, and WebP images are allowed")
       }
       
-      console.log("payload in products.js", payload)
+      // console.log("payload in products.js", payload)
       const { deleted_image_file_ids, retained_image_file_ids, ...filteredPayload } = payload;
-       console.log("filteredPayload",filteredPayload);
+      //  console.log("filteredPayload",filteredPayload);
       // const filterPaylod = 
 
       const itemRes = await axios.patch(
@@ -1157,7 +1157,7 @@ export const updateProduct = async (payload, files, itemId) => {
       )
 
 
-console.log("itemRes", itemRes)
+// console.log("itemRes", itemRes)
       if (!itemRes.data?.data?.id) {
         throw new Error("Failed to update product")
       }
@@ -1180,7 +1180,7 @@ console.log("itemRes", itemRes)
                  "Content-Type": "application/json",
                },
             });
-          console.log("relationRes", relationRes)
+          // console.log("relationRes", relationRes)
             const relation = relationRes.data?.data?.[0];
             if (relation) {
               await axios.delete(`${baseItemsURL}Items_files/${relation.id}`, {
@@ -1188,10 +1188,10 @@ console.log("itemRes", itemRes)
                   "Content-Type": "application/json",
                 },
               });
-              console.log("relation deleted" + relation.id)
+              // console.log("relation deleted" + relation.id)
             }
           } catch (deleteError) {
-            console.warn(`Failed to delete image relation for file ${fileId}:`, deleteError.message);
+            // console.warn(`Failed to delete image relation for file ${fileId}:`, deleteError.message);
             // Continue with other deletions even if one fails
           }
         }
@@ -1213,7 +1213,7 @@ console.log("itemRes", itemRes)
               "Content-Type": "multipart/form-data",
             },
           })
-          console.log("fileRes", fileRes)
+          // console.log("fileRes", fileRes)
           const fileId = fileRes.data?.data?.id
           if (!fileId) {
             throw new Error(`Failed to upload image ${i + 1}`)
@@ -1232,10 +1232,10 @@ console.log("itemRes", itemRes)
               },
             },
           )
-          console.log("fileUploadRes" + fileUploadRes)
+          // console.log("fileUploadRes" + fileUploadRes)
           uploadResults.push({ index: i, file_id: fileId, success: true })
         } catch (uploadError) {
-          console.error(`Failed to upload image ${i + 1}:`, uploadError.message)
+          // console.error(`Failed to upload image ${i + 1}:`, uploadError.message)
           uploadResults.push({ index: i, success: false, error: uploadError.message })
         }
       }

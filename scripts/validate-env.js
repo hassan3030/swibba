@@ -48,7 +48,7 @@ const productionOnlyVars = [
   // Critical server-side variables for production
   "JWT_SECRET",
   "STRIPE_SECRET_KEY",
-  "DATABASE_URL",
+  "DATADIRECTUS_URL",
 ]
 
 // Feature-dependent required variables

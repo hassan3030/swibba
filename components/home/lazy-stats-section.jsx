@@ -5,7 +5,7 @@ import { Users, ShieldCheck, Package, Sparkles } from "lucide-react"
 import { getProducts } from "@/callAPI/products"
 import { getAllUsers } from "@/callAPI/users"
 import axios from "axios"
-import { baseItemsURL, baseURL } from "@/callAPI/utiles"
+import { baseItemsURL, DIRECTUS_URL } from "@/callAPI/utiles"
 import { useInView } from "react-intersection-observer"
 
 
@@ -60,12 +60,57 @@ const pulseVariants = {
   }
 // Lazy-loaded Stats Section Component
 const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
-    const [itemsCountNumber, setItemsCountNumber] = useState(itemsCount || 0)
-    const [usersCountNumber, setUsersCountNumber] = useState(usersCount || 0)
+    const [itemsCountNumber, setItemsCountNumber] = useState(0)
+    const [usersCountNumber, setUsersCountNumber] = useState(0)
+    const [displayItemsCount, setDisplayItemsCount] = useState(0)
+    const [displayUsersCount, setDisplayUsersCount] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
     const [hasLoaded, setHasLoaded] = useState(false)
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 })
     const controls = useAnimation()
+  
+    // Counter animation effect
+    useEffect(() => {
+      if (hasLoaded && itemsCountNumber > 0) {
+        const duration = 2000 // 2 seconds
+        const steps = 60
+        const increment = itemsCountNumber / steps
+        let current = 0
+        
+        const timer = setInterval(() => {
+          current += increment
+          if (current >= itemsCountNumber) {
+            setDisplayItemsCount(itemsCountNumber)
+            clearInterval(timer)
+          } else {
+            setDisplayItemsCount(Math.floor(current))
+          }
+        }, duration / steps)
+        
+        return () => clearInterval(timer)
+      }
+    }, [itemsCountNumber, hasLoaded])
+
+    useEffect(() => {
+      if (hasLoaded && usersCountNumber > 0) {
+        const duration = 2000 // 2 seconds
+        const steps = 60
+        const increment = usersCountNumber / steps
+        let current = 0
+        
+        const timer = setInterval(() => {
+          current += increment
+          if (current >= usersCountNumber) {
+            setDisplayUsersCount(usersCountNumber)
+            clearInterval(timer)
+          } else {
+            setDisplayUsersCount(Math.floor(current))
+          }
+        }, duration / steps)
+        
+        return () => clearInterval(timer)
+      }
+    }, [usersCountNumber, hasLoaded])
   
     useEffect(() => {
       if (inView && !hasLoaded) {
@@ -79,13 +124,6 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
             const itemsCount = itemsResponse.count || 0
             const usersCount = usersResponse.count || 0
             
-            // console.log("Direct API Stats loaded:", { 
-            //   itemsCount, 
-            //   usersCount, 
-            //   itemsData: itemsResponse.data, 
-            //   usersData: usersResponse.data 
-            // })
-            
             // Set fallback values if counts are 0 (for testing)
             const finalItemsCount = itemsCount > 0 ? itemsCount : 150 // Fallback for testing
             const finalUsersCount = usersCount > 0 ? usersCount : 50 // Fallback for testing
@@ -95,7 +133,6 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
             setHasLoaded(true)
             controls.start("visible")
           } catch (error) {
-            // console.error("Error loading stats:", error)
             // Set fallback values if API fails
             setItemsCountNumber(150) // Fallback for testing
             setUsersCountNumber(50) // Fallback for testing
@@ -112,35 +149,37 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
     return (
       <motion.section
         ref={ref}
-        className="container pt-4 relative z-10"
+        className="relative py-20"
         variants={statsContainerVariants}
         initial="hidden"
         animate={controls}
       >
-        <motion.div
-          className="text-center mb-4"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-        >
+        {/* Gradient shapes */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-gradient-to-r from-primary/8 to-transparent dark:from-primary/12 dark:to-transparent rounded-full blur-3xl" />
+
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4"
-            variants={pulseVariants}
-            animate="animate"
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
           >
-            <Sparkles className="h-4 w-4" />
-            <span className="text-sm font-medium">{t('TrustedPlatform') || 'Trusted Platform'}</span>
+            <motion.div
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 text-primary mb-6"
+             
+            >
+              <span className="text-sm font-semibold">{t('TrustedPlatform') || 'Trusted Platform'}</span>
+            </motion.div>
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold text-center mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground/80 dark:from-foreground dark:via-foreground dark:to-foreground/90 bg-clip-text "
+              variants={shimmerVariants}
+              animate="animate"
+            >
+              {t('JoinThousandsofHappySwapers') || 'Join Thousands of Happy Swappers'}
+            </motion.h2>
           </motion.div>
-          <motion.h2
-            className="text-2xl md:text-3xl font-bold text-center mb-2"
-            variants={shimmerVariants}
-            animate="animate"
-          >
-            {t('JoinThousandsofHappySwapers') || 'Join Thousands of Happy Swapers'}
-          </motion.h2>
-        </motion.div>
   
-        <div className="grid grid-cols-3 gap-6 md:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
           <motion.div
             className="flex flex-col items-center justify-center text-center group"
             whileHover={{ scale: 1.05 }}
@@ -161,31 +200,34 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               />
               <motion.div  
                 className="relative z-10 p-4 rounded-full bg-primary shadow-lg"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
               >
                 <Users className="h-8 w-8 md:h-12 md:w-12 text-white" />
               </motion.div>
             </motion.div>
             {isLoading || !hasLoaded ? (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent  dark:text-white">
-                ---
+              <div className="text-5xl md:text-7xl font-bold text-foreground dark:text-foreground">
+                0
               </div>
             ) : (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text text-transparent  dark:text-white">
-                {usersCountNumber}
-              </div>
+              <motion.div 
+                className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                {displayUsersCount}+
+              </motion.div>
             )}
             <motion.div
-              className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
+              className="text-base md:text-lg text-muted-foreground mt-4 font-semibold"
               variants={statsItemVariants}
             >
-              {t('ActiveSwapers')|| 'Swapers'}
+              {t('ActiveSwapers')|| 'Active Swappers'}
             </motion.div>
             <motion.div
-              className="w-12 h-1 bg-secondary rounded-full mt-2  dark:bg-white"
+              className="w-16 h-1 bg-gradient-to-r from-primary to-primary/50 rounded-full mt-3"
               initial={{ width: 0 }}
-              animate={{ width: 48 }}
+              animate={{ width: 64 }}
               transition={{ delay: 1, duration: 0.8 }}
             />
           </motion.div>
@@ -211,25 +253,28 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               />
               <motion.div
                 className="relative z-10 p-4 rounded-full bg-primary shadow-lg"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
               >
                 <ShieldCheck className="h-8 w-8 md:h-12 md:w-12 text-white" />
               </motion.div>
             </motion.div>
-            <div className="text-4xl md:text-6xl  dark:text-white font-bold bg-secondary bg-clip-text text-transparent">
+            <motion.div 
+              className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               99.9%
-            </div>
+            </motion.div>
             <motion.div
-              className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
+              className="text-base md:text-lg text-muted-foreground mt-4 font-semibold"
               variants={statsItemVariants}
             >
               {t('SafeSwaps')||'Safe Swaps'}
             </motion.div>
             <motion.div
-              className="w-12 h-1 bg-secondary rounded-full mt-2  dark:bg-white"
+              className="w-16 h-1 bg-gradient-to-r from-primary to-primary/50 rounded-full mt-3"
               initial={{ width: 0 }}
-              animate={{ width: 48 }}
+              animate={{ width: 64 }}
               transition={{ delay: 1.2, duration: 0.8 }}
             />
           </motion.div>
@@ -255,34 +300,38 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
               />
               <motion.div
                 className="relative z-10 p-4 rounded-full bg-primary shadow-lg"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
               >
                 <Package className="h-8 w-8 md:h-12 md:w-12 text-white" />
               </motion.div>
             </motion.div>
             {isLoading || !hasLoaded ? (
-              <div className="text-4xl md:text-6xl font-bold bg-secondary bg-clip-text   dark:text-white text-transparent">
-                ---
+              <div className="text-5xl md:text-7xl font-bold text-foreground dark:text-foreground">
+                0
               </div>
             ) : (
-              <div className="text-4xl md:text-6xl font-bold  dark:text-white bg-secondary bg-clip-text text-transparent">
-                {itemsCountNumber}
-              </div>
+              <motion.div 
+                className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                {displayItemsCount}+
+              </motion.div>
             )}
             <motion.div
-              className="text-sm md:text-base text-muted-foreground mt-3 font-medium"
+              className="text-base md:text-lg text-muted-foreground mt-4 font-semibold"
               variants={statsItemVariants}
             >
-              {t('ItemsSwaps')||'Items Swaps'}
+              {t('ItemsSwaps')||'Items Available'}
             </motion.div>
             <motion.div
-              className="w-12 h-1 bg-secondary rounded-full mt-2  dark:bg-white"
+              className="w-16 h-1 bg-gradient-to-r from-primary to-primary/50 rounded-full mt-3"
               initial={{ width: 0 }}
-              animate={{ width: 48 }}
+              animate={{ width: 64 }}
               transition={{ delay: 1.4, duration: 0.8 }}
             />
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </motion.section>
     )

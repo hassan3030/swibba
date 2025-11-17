@@ -1,24 +1,36 @@
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 import axios from "axios"
-import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
+import {validateAuth , baseItemsURL, DIRECTUS_URL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
 
 // Get available/unavailable products by user ID
-export const getAllCategories = async () => {
+export const getAllCategories = async (limit = null, optimized = false) => {
   try {
+    // Optimized fields for faster loading (only image, name, translations)
+    const fields = optimized 
+      ? "name,translations.*,main_image.id,main_image.type"
+      : "*,translations.*, main_image.*,parent_category.*,*.*.*"
+    
+    const params = { 
+      fields,
+      sort: "name"
+    }
+    
+    // Add limit if specified
+    if (limit && limit > 0) {
+      params.limit = limit
+    }
    
     const response = await axios.get(
       `${baseItemsURL}Categories`,
-      {
-         // Include parent_category relation so the UI can derive subcategories
-         params: { fields: "*,translations.*, main_image.*,parent_category.*,*.*.*", sort: "name" } 
-    } 
+      { params } 
     );
     // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
+      total: response.data.meta?.total_count || response.data.data?.length || 0,
       names: response.data.data.map(category => category.name) || [],
       message: `All categories retrieved successfully`,
     };

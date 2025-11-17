@@ -1,44 +1,85 @@
 "use client"
 import { LoginForm } from "@/components/auth/login-form"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { AnimatedBackground } from "@/components/auth/animated-background"
 import Link from "next/link"
+import { useTranslations } from "@/lib/use-translations"
+import { motion } from "framer-motion"
 import { ArrowLeft } from "lucide-react"
-import { useTranslations } from "@/lib/use-translations";
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect , useState} from "react"
-import { useToast } from "@/components/ui/use-toast"
-
 
 export default function LoginPage() {
-  const { t } = useTranslations();
-  const { toast } = useToast()
-
- 
-
+  const { t } = useTranslations()
 
   return (
-    <div className="container flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-10">
+    <div className="flex min-h-screen w-full">
+      {/* Left Side - Form (40%) */}
+      <div className="w-full lg:w-[40%] flex flex-col justify-center px-6 py-12 lg:px-12 xl:px-16 relative z-10 bg-background dark:bg-gray-950 ">
+        {/* Back to Home - Top Left */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute top-6 left-6"
+        >
+          <Link 
+            href="/" 
+            className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-300 hover:scale-105 shadow-sm"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+        </motion.div>
 
-  
-      <Link href="/" className="mb-8 flex items-center text-sm text-primary/90 hover:text-primary hover:scale-105 transition-all duration-200">
-        <ArrowLeft className="mr-2 h-4 w-4 mx-1 " />
-       {t("back")||"Back to home"}
+        <div className="w-full max-w-md mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8 mt-16"
+          >
+            <h2 className="text-3xl font-bold mb-2">
+              {t("Signinto") || "Sign in to"} <span className="text-primary">Swibba</span>
+            </h2>
+            <p className="text-muted-foreground">
+              {t("Enteryourcredentialstoaccessyouraccount") || "Enter your credentials to access your account"}
+            </p>
+          </motion.div>
 
-      </Link>
-
-      <Card className="mx-auto w-full max-w-md">
-        <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">{t("Signinto")||"Sign in to"} Swibba</CardTitle>
-     
-          <CardDescription>
-       {t("Enteryourcredentialstoaccessyouraccount")||"Enter your credentials to access your account"}
-            
-             </CardDescription>
-        </CardHeader>
-        <CardContent>
+          {/* Login Form */}
           <LoginForm />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Right Side - Animated Background (60%) */}
+      <div className="hidden lg:flex lg:w-[60%] relative overflow-hidden">
+        <AnimatedBackground />
+        
+        {/* Logo in Top Corner */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute top-8 ltr:right-8 rtl:left-8 z-10"
+        >
+          <Link href="/" className="inline-block">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
+              <img 
+                src="/logo.png" 
+                alt="Swibba Logo" 
+                className="h-10 w-auto"
+              />
+            </div>
+          </Link>
+        </motion.div>
+        
+        {/* Slogan at Bottom */}
+        <div className="absolute bottom-12 left-0 right-0 z-10 px-12">
+          <div className="text-center  mx-auto bg-slate-300/20 rounded-lg p-2">
+            <h2 className="text-3xl font-bold drop-shadow-2xl  dark:text-white">
+              {t("swibbaSlogan") || "Swap. Trade. Connect."}
+            </h2>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

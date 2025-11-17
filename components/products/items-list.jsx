@@ -84,6 +84,21 @@ const paginationVariants = {
   },
 }
 
+const pageTransitionVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 300 : -300,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    x: direction < 0 ? 300 : -300,
+    opacity: 0,
+  }),
+}
+
 const sidebarVariants = {
   hidden: {
     x: "-100%",
@@ -123,16 +138,19 @@ export function ItemsList({
   defaultCategory = "all",
   LinkItemOffer=false,
   totalCount = null,
-  useApiPagination = false,
+  skipFetch = false, // New prop to skip fetching if data already provided
 }) {
   // const [products, setProducts] = useState([])
   const [allItems, setAllItems] = useState(items || []) // Store all items
   const [displayedItems, setDisplayedItems] = useState([]) // Filtered items
   const [isLoading, setIsLoading] = useState(!items || items.length === 0) // Load if no items provided
+  const [isPaginationLoading, setIsPaginationLoading] = useState(false) // Loading state for pagination changes
   const [productsCount, setProductsCount] = useState(0)
+  const [allItemsFetched, setAllItemsFetched] = useState(false) // Track if all items are already loaded
   const [searchTerm, setSearchTerm] = useState("")
   const [category, setCategory] = useState(defaultCategory)
   const [page, setPage] = useState(1)
+  const [slideDirection, setSlideDirection] = useState(0)
   const [showFilterSidebar, setShowFilterSidebar] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
   const { toast } = useToast()
@@ -178,14 +196,24 @@ export function ItemsList({
   const [modelsOpen, setModelsOpen] = useState(false)
   const router = useRouter()
   const { t } = useTranslations()
-  const itemsPerPage = 8
+  const itemsPerPage = 12
 
   // Load all items on component mount
   useEffect(() => {
+    const controller = new AbortController()
+    
     const loadAllItems = async () => {
-      // If items are provided as props, use them
+      // If items are provided as props and skipFetch is true, use them directly
       if (items && items.length > 0) {
         setAllItems(items)
+        setAllItemsFetched(true)
+        setIsLoading(false)
+        return
+      }
+      
+      // Skip fetching if explicitly told to and no items provided
+      if (skipFetch) {
+        setAllItemsFetched(true)
         setIsLoading(false)
         return
       }
@@ -193,25 +221,33 @@ export function ItemsList({
       // Otherwise, fetch all items from API
       setIsLoading(true)
       try {
-        const response = await getProductsEnhanced({ limit: -1 }) // Fetch all items
+        // Fetch all products without limit parameter
+        const response = await getProductsEnhanced({})
         if (response.success) {
           setAllItems(response.data || [])
           setProductsCount(response.data?.length || 0)
+          setAllItemsFetched(true)
         } else {
           setAllItems([])
           setProductsCount(0)
+          setAllItemsFetched(true)
         }
       } catch (error) {
-        // console.error("Error loading items:", error)
+        if (error.name !== 'AbortError') {
+          console.error("Error loading items:", error)
+        }
         setAllItems([])
         setProductsCount(0)
+        setAllItemsFetched(true)
       } finally {
         setIsLoading(false)
       }
     }
     
     loadAllItems()
-  }, [items])
+    
+    return () => controller.abort()
+  }, [items, skipFetch])
 
   // Load static data (categories, subcategories, brands, models)
   useEffect(() => {
@@ -444,9 +480,19 @@ export function ItemsList({
   
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return
+    
+    // Show skeleton only on first pagination if all items aren't fetched yet
+    if (!allItemsFetched && page === 1) {
+      setIsPaginationLoading(true)
+      // Simulate loading delay for better UX
+      const timer = setTimeout(() => {
+        setIsPaginationLoading(false)
+      }, 300)
+      // Cleanup handled by component lifecycle
+    }
+    
+    setSlideDirection(newPage > page ? 1 : -1)
     setPage(newPage)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-    // Pagination is handled by useEffect dependency
   }
 
   // Advanced filter handlers
@@ -686,14 +732,14 @@ export function ItemsList({
       )}
 
       <AnimatePresence mode="wait"  >
-        {isLoading ? (
+        {isLoading || isPaginationLoading ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             key="loading"
           >
-            <ItemsListSkeleton count={itemsPerPage > 12 ? 12 : itemsPerPage} />
+            <ItemsListSkeleton count={itemsPerPage} />
           </motion.div>
         ) : paginatedItems.length === 0 ? (
           <motion.div
@@ -723,29 +769,32 @@ export function ItemsList({
           </motion.div>
         ) : (
           <motion.div key="content">
-            <motion.div
-              className="flex flex-row gap-4 justify-center flex-wrap max-w-screen"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <AnimatePresence>
+            <AnimatePresence mode="wait" custom={slideDirection}>
+              <motion.div
+                key={page}
+                custom={slideDirection}
+                variants={pageTransitionVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 400, damping: 35, mass: 0.8 },
+                  opacity: { duration: 0.15 },
+                }}
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-items-center max-w-screen-xl mx-auto"
+              >
                 {paginatedItems.map((item, index) => (
                   <motion.div
-                   key={item.id || index}
-                    variants={itemVariants}
-                    custom={index}
-                    layout
-                    whileHover={{
-                      y: -8,
-                      transition: { type: "spring", stiffness: 300, damping: 30 },
-                    }}
+                    key={item.id || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
                   >
                     <ItemCardProfile {...item} showbtn={showbtn} showSwitchHeart={showSwitchHeart} LinkItemOffer={LinkItemOffer} />
                   </motion.div>
                 ))}
-              </AnimatePresence>
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
 
            
             <motion.div variants={paginationVariants} initial="hidden" animate="visible">
@@ -1495,55 +1544,41 @@ export function ItemsList({
   )
 }
 
-// SimplePagination component with animations
+// SimplePagination component - simplified without animations
 function SimplePagination({ currentPage, totalPages, onPageChange }) {
   const { t } = useTranslations()
 
   // if (totalPages <= 1) return null
 
   return (
-    <motion.div
-      className="flex justify-center mt-6 gap-2"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-    >
-      <motion.button
-        className="px-3 py-1 rounded border dark:text-black bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
+    <div className="flex justify-center mt-6 gap-2">
+      <button
+        className="px-3 py-1 rounded border dark:text-black bg-white hover:bg-gray-100 disabled:opacity-50 transition-colors"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
       >
         {t("prev") || "Prev"}
-      </motion.button>
+      </button>
 
       {[...Array(totalPages)].map((_, idx) => (
-        <motion.button
+        <button
           key={idx + 1}
-          className={`px-3 dark:text-black py-1 border rounded transition-all duration-200 ${
+          className={`px-3 dark:text-black py-1 border rounded transition-colors ${
             currentPage === idx + 1 ? "bg-primary text-white shadow-lg" : "bg-white hover:bg-gray-100"
           }`}
           onClick={() => onPageChange(idx + 1)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: idx * 0.05 }}
         >
           {idx + 1}
-        </motion.button>
+        </button>
       ))}
 
-      <motion.button
-        className="px-3 py-1 dark:text-black rounded border bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
+      <button
+        className="px-3 py-1 dark:text-black rounded border bg-white hover:bg-gray-100 disabled:opacity-50 transition-colors"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
       >
         {t("next") || "Next"}
-      </motion.button>
-    </motion.div>
+      </button>
+    </div>
   )
 }

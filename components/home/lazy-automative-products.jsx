@@ -41,10 +41,10 @@ const LazyAutomativeProducts = ({ showSwitchHeart, t }) => {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <motion.div whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+        <div>
           <ProductCarousel title={t("automotive")} viewAllHref="/products" viewAllLabel={t("viewAll")}> 
             {isLoading || !hasLoaded
-              ? Array.from({ length: 6 }).map((_, i) => (
+              ? Array.from({ length: 8 }).map((_, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -58,10 +58,9 @@ const LazyAutomativeProducts = ({ showSwitchHeart, t }) => {
                 ? items.map((product, index) => (
                     <motion.div
                       key={product.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.5 }}
-                      whileHover={{ y: -10 }}
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ delay: index * 0.08, duration: 0.5, ease: "easeOut" }}
                     >
                       <SwibbaProductCard {...product} showSwitchHeart={showSwitchHeart} />
                     </motion.div>
@@ -72,7 +71,7 @@ const LazyAutomativeProducts = ({ showSwitchHeart, t }) => {
                     </motion.div>
                   ))}
           </ProductCarousel>
-        </motion.div>
+        </div>
       </motion.section>
     )
   }

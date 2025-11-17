@@ -1,6 +1,6 @@
 import axios from "axios"
 import {
-  baseURL,
+  DIRECTUS_URL,
   baseItemsURL,
   getCookie,
   decodedToken,
@@ -33,7 +33,7 @@ export const addCashBalance = async (amount, description = "") => {
     }
 
     const response = await axios.post(
-      `${baseURL}items/cash_balance`,
+      `${DIRECTUS_URL}items/cash_balance`,
       cashData,
       { headers }
     )
@@ -158,7 +158,7 @@ export const withdrawCash = async (amount, paymentMethodId, description = "") =>
     }
 
     const response = await axios.post(
-      `${baseURL}items/cash_balance`,
+      `${DIRECTUS_URL}items/cash_balance`,
       withdrawData,
       { headers }
     )

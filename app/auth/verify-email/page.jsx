@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,12 +12,17 @@ export default function VerifyEmailPage() {
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [tokenURL, setTokenURL] = useState('');
+  const hasVerifiedRef = useRef(false); // Track if verification was attempted using ref
   const router = useRouter();
   const { t } = useTranslations()
 
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Prevent duplicate verification attempts
+    if (hasVerifiedRef.current) return;
+    hasVerifiedRef.current = true;
+    
     const verifyEmail = async () => {
       const token = searchParams.get('token');
       
@@ -27,13 +32,16 @@ export default function VerifyEmailPage() {
       // });
 
       if (!token) {
-        setStatus('error');
-        setMessage(t('No verification token found in the URL. Please check your email for the correct verification link.'));
+        if (isMounted) {
+          setStatus('error');
+          setMessage(t('No verification token found in the URL. Please check your email for the correct verification link.'));
+        }
         return;
       }
 
       try {
-        setTokenURL(token)
+        setTokenURL(token);
+        
         // change url --------------
         const response = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
           method: 'GET',
@@ -44,32 +52,32 @@ export default function VerifyEmailPage() {
 
         const data = await response.json();
         
-        // console.log('Verification API response:', {
-        //   status: response.status,
-        //   data,
-        //   success: response.ok
-        // });
+        console.log('Verification API response:', {
+          status: response.status,
+          data,
+          success: response.ok
+        });
 
         if (response.ok && data.success) {
           setStatus('success');
-          setMessage(t(data.message)|| 'Email verified successfully! You can now sign in to your account.');
+          setMessage(t(data.message) || 'Email verified successfully! You can now sign in to your account.');
           // Redirect to sign in page after 3 seconds
           setTimeout(() => {
-            router.push(`/auth/login?token=${tokenURL}`);
+            router.push(`/auth/login`);
           }, 3000);
         } else {
           setStatus('error');
           setMessage(t(data.error) || 'Email verification failed. Please try again later.');
         }
       } catch (error) {
-        // console.error('Verification request failed:', error);
+        console.error('Verification request failed:', error);
         setStatus('error');
         setMessage(t("Failed to verify email. Please check your internet connection and try again."));
       }
     };
 
     verifyEmail();
-  }, [searchParams, router]);
+  }, [searchParams, router, t]);
 
   const handleGoToSignIn = () => {
     // handle change --------------

@@ -399,14 +399,11 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
     <>
 
       <motion.header
-        className={`fixed top-0  w-full border-b transition-all duration-300 z-[10000000]${
+        className={`fixed top-0 w-full border-b transition-all duration-300 z-[10000000] bg-background dark:bg-gray-950 ${
           isScrolled 
-            ? " !bg-white shadow-lg dark:!bg-[#121212]" 
-            : " !bg-white shadow-sm dark:!bg-[#121212]"
-        } dark:border-[#2a2a2a]`}
-        style={{
-          backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
-        }}
+            ? "shadow-lg" 
+            : "shadow-sm"
+        } dark:border-border/50`}
         variants={navVariants}
         initial="visible"
         animate={showHeader ? "visible" : "hidden"}
@@ -414,11 +411,9 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
        
  
         {/* Main header */}
-        <div className={` top-0 container transition-all duration-300 z-[10000000] ${
+        <div className={`top-0 container transition-all duration-300 z-[10000000] ${
           isScrolled ? "py-3" : "py-2"
-        }`} style={{
-          backgroundColor: theme === 'dark' ? '#121212' : '#ffffff'
-        }}>
+        }`}>
           <motion.div 
             className="flex items-center justify-between gap-4"
             animate={{
@@ -1112,64 +1107,79 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
           </AnimatePresence>
         </div>
 
-        {/* Enhanced Categories navigation */}
+        {/* Enhanced Categories navigation with Infinite Marquee */}
         <AnimatePresence>
           {showCategoriesBar && (
             <motion.div
-              className="border-t dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
+              className="border-t bg-background dark:bg-gray-950 dark:border-border/50 shadow-sm overflow-hidden relative"
               initial={{ opacity: 0, height: 0, y: -10 }}
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-          <div className="container overflow-x-auto scrollbar-hide">
-            <nav className="flex space-x-2 py-3">
-              {categoriesName.slice(0, 10).map((category, i) => {
-                const IconComponent = categoryIcons[category]
-                return (
-                  <motion.div key={i} custom={i} variants={itemVariants} initial="hidden" animate="visible">
-                    <Link
-                      href={`/categories/${category}`}
-                      className={cn(
-                        "relative whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 flex items-center gap-2",
-                        pathname === `/categories/${category}` 
-                          ? "text-primary-foreground bg-primary shadow-md" 
-                          : "text-muted-foreground hover:text-primary hover:bg-primary/10 bg-background/50 hover:shadow-sm border border-border/50"
-                      )}
-                    >
-                      {IconComponent && <IconComponent className="w-4 h-4 relative z-10" />}
-                      <span className="relative z-10 hidden sm:inline">{t(category)}</span>
-                      {pathname === `/categories/${category}` && (
-                        <motion.div
-                          className="absolute inset-0 bg-primary rounded-full"
-                          layoutId="activeCategory"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                    </Link>
-                  </motion.div>
-                )
-              })}
+              <style jsx>{`
+                @keyframes scroll-left {
+                  from {
+                    transform: translateX(0);
+                  }
+                  to {
+                    transform: translateX(-33.333%);
+                  }
+                }
+                
+                @keyframes scroll-right {
+                  from {
+                    transform: translateX(0);
+                  }
+                  to {
+                    transform: translateX(33.333%);
+                  }
+                }
+                
+                .marquee-wrapper {
+                  display: flex;
+                  width: fit-content;
+                  animation: ${isRTL ? 'scroll-right' : 'scroll-left'} 20s linear infinite;
+                }
+                
+                .marquee-wrapper:hover {
+                  animation-play-state: paused;
+                }
+              `}</style>
               
-              {/* View All Categories Link */}
-              <motion.div 
-                custom={categoriesName.length} 
-                variants={itemVariants} 
-                initial="hidden" 
-                animate="visible"
-                className="mt-1"
-              >
-                <Link
-                  href="/categories"
-                  className="whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 text-primary hover:bg-primary/10 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 shadow-sm"
-                >
-                  <span className="relative z-10 ">{t('viewAll') || 'View All'}</span>
-                </Link>
-              </motion.div>
-            </nav>
-          </div>
+              <div className="relative py-3 flex overflow-hidden">
+                <div className="marquee-wrapper">
+                  {[1, 2, 3].map((setNum) => (
+                    <div key={`set-${setNum}`} className="flex items-center gap-3 px-2 flex-shrink-0">
+                      {categoriesName.map((category, i) => {
+                        const IconComponent = categoryIcons[category]
+                        return (
+                          <Link
+                            key={`cat-${setNum}-${i}`}
+                            href={`/categories/${category}`}
+                            className={cn(
+                              "relative whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 flex items-center gap-2 flex-shrink-0",
+                              pathname === `/categories/${category}` 
+                                ? "text-primary-foreground bg-primary shadow-md" 
+                                : "text-muted-foreground hover:text-primary hover:bg-primary/10 bg-background/50 hover:shadow-sm border border-border/50"
+                            )}
+                          >
+                            {IconComponent && <IconComponent className="w-4 h-4" />}
+                            <span>{t(category)}</span>
+                          </Link>
+                        )
+                      })}
+                      
+                      <Link
+                        href="/categories"
+                        className="whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 text-primary hover:bg-primary/10 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 shadow-sm flex items-center flex-shrink-0"
+                      >
+                        <span>{t('viewAll') || 'View All'}</span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

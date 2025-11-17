@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react" 
+import { useState, useEffect, useCallback, useMemo } from "react" 
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -13,10 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-import { register , signupByGoogle } from "@/callAPI/users"
+import { register } from "@/callAPI/users"
 import { Progress } from "@/components/ui/progress"
-import { FaGoogle } from "react-icons/fa6";
-import { decodedToken, getCookie } from "@/callAPI/utiles"
 
 
 // Animation variants
@@ -78,40 +76,63 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
   const router = useRouter()
   const { toast } = useToast()
   const { t } = useTranslations()
 
-  const formSchema = z
-    .object({
-      userName: z
-        .string()
-        .min(2, t("Namemustbeatleast2characters") || "Name must be at least 2 characters")
-        .max(26, t("Namemustbelessthan50characters") || "Name must be less than 50 characters"),
-      email: z.string().email(t("Pleaseenteravalidemailaddress") || "Please enter a valid email address"),
-      password: z
-        .string()
-        .min(8, t("Passwordmustbeatleast8characters") || "Password must be at least 8 characters")
-        .regex(
-          /[A-Z]/,
-          t("Passwordmustcontainatleastoneuppercaseletter") || "Password must contain at least one uppercase letter",
-        )
-        .regex(
-          /[a-z]/,
-          t("Passwordmustcontainatleastonelowercaseletter") || "Password must contain at least one lowercase letter",
-        )
-        .regex(/[0-9]/, t("Passwordmustcontainatleastonenumber") || "Password must contain at least one number"),
-      confirmPassword: z.string(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: t("Passwordsdonotmatch") || "Passwords do not match",
-      path: ["confirmPassword"],
-    })
+  // Memoize form schema to prevent recreation on every render
+  const formSchema = useMemo(
+    () =>
+      z
+        .object({
+          userName: z
+            .string()
+            .trim()
+            .min(2, t("Namemustbeatleast2characters") || "Name must be at least 2 characters")
+            .max(50, t("Namemustbelessthan50characters") || "Name must be less than 50 characters")
+            .regex(
+              /^[a-zA-Z\s'-]+$/,
+              t("Namecanonlycontainlettersspacesandhyphens") || "Name can only contain letters, spaces, apostrophes and hyphens"
+            ),
+          email: z
+            .string()
+            .trim()
+            .toLowerCase()
+            .email(t("Pleaseenteravalidemailaddress") || "Please enter a valid email address")
+            .max(254, t("Emailistoolong") || "Email is too long"),
+          password: z
+            .string()
+            .min(8, t("Passwordmustbeatleast8characters") || "Password must be at least 8 characters")
+            .max(128, t("Passwordistoolong") || "Password is too long")
+            .regex(
+              /[A-Z]/,
+              t("Passwordmustcontainatleastoneuppercaseletter") || "Password must contain at least one uppercase letter"
+            )
+            .regex(
+              /[a-z]/,
+              t("Passwordmustcontainatleastonelowercaseletter") || "Password must contain at least one lowercase letter"
+            )
+            .regex(
+              /[0-9]/,
+              t("Passwordmustcontainatleastonenumber") || "Password must contain at least one number"
+            )
+            .regex(
+              /[^A-Za-z0-9]/,
+              t("Passwordmustcontainatleastonespecialcharacter") || "Password must contain at least one special character"
+            ),
+          confirmPassword: z.string().min(1, t("Pleaseconfirmyourpassword") || "Please confirm your password"),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("Passwordsdonotmatch") || "Passwords do not match",
+          path: ["confirmPassword"],
+        }),
+    [t]
+  )
 
   const form = useForm({
     resolver: zodResolver(formSchema),
-     defaultValues: {
+    mode: "onBlur", // Validate on blur for better UX
+    defaultValues: {
       userName: "",
       email: "",
       password: "",
@@ -119,80 +140,100 @@ export function RegisterForm() {
     },
   })
 
-  // Calculate password strength
-  const calculatePasswordStrength = (password) => {
+  // Calculate password strength - memoized for performance
+  const calculatePasswordStrength = useCallback((password) => {
     if (!password) return 0
     
     let strength = 0
     
-    // Length check
-    if (password.length >= 8) strength += 20
-    if (password.length >= 12) strength += 10
+    // Length checks
+    if (password.length >= 8) strength += 15
+    if (password.length >= 12) strength += 15
+    if (password.length >= 16) strength += 10
     
     // Character variety checks
-    if (/[A-Z]/.test(password)) strength += 20 // Has uppercase
+    if (/[A-Z]/.test(password)) strength += 15 // Has uppercase
     if (/[a-z]/.test(password)) strength += 15 // Has lowercase
     if (/[0-9]/.test(password)) strength += 15 // Has number
-    if (/[^A-Za-z0-9]/.test(password)) strength += 20 // Has special char
+    if (/[^A-Za-z0-9]/.test(password)) strength += 15 // Has special char
     
     return Math.min(100, strength) 
-  }
+  }, [])
 
-  // Get strength text and color
-  const getStrengthDetails = (strength) => {
-    if (strength === 0) return { text: t("passwordStrengthNone") || "None", color: "bg-gray-300" }
-    if (strength < 40) return { text: t("passwordStrengthWeak") || "Weak", color: "bg-red-500" }
-    if (strength < 70) return { text: t("passwordStrengthMedium") || "Medium", color: "bg-yellow-500" }
-    return { text: t("passwordStrengthStrong") || "Strong", color: "bg-green-500" }
-  }
+  // Get strength text and color - memoized for performance
+  const getStrengthDetails = useCallback(
+    (strength) => {
+      if (strength === 0) return { text: t("passwordStrengthNone") || "None", color: "bg-gray-300" }
+      if (strength < 50) return { text: t("passwordStrengthWeak") || "Weak", color: "bg-red-500" }
+      if (strength < 75) return { text: t("passwordStrengthMedium") || "Medium", color: "bg-yellow-500" }
+      return { text: t("passwordStrengthStrong") || "Strong", color: "bg-green-500" }
+    },
+    [t]
+  )
 
   // Watch password field for strength calculation
   const watchPassword = form.watch("password", "")
   
-  // Update password strength when password changes
-  useEffect(() => {
-    setPasswordStrength(calculatePasswordStrength(watchPassword))
-  }, [watchPassword])
-
-
+  // Calculate password strength in real-time
+  const passwordStrength = useMemo(
+    () => calculatePasswordStrength(watchPassword),
+    [watchPassword, calculatePasswordStrength]
+  )
   
-  const onSubmit = async () => {
+  const strengthDetails = useMemo(
+    () => getStrengthDetails(passwordStrength),
+    [passwordStrength, getStrengthDetails]
+  )
+
+
+  const onSubmit = async (data) => {
+    // Form is already validated by Zod schema, no need for manual checks
     setIsLoading(true)
 
     try {
-      if (!form.getValues().email || !form.getValues().password  || !form.getValues().confirmPassword || !form.getValues().userName) {
+      // Trim and sanitize data
+      const sanitizedData = {
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+        userName: data.userName.trim(),
+      }
+
+      const response = await register(
+        sanitizedData.email,
+        sanitizedData.password,
+        sanitizedData.userName
+      )
+
+      if (response?.success) {
         toast({
-          title: t("error") || "ERROR",
-          description: t("pleasefilldata") || "please fill data",
+          title: t("successfully") || "Success",
+          description:
+            t("RegistrationSuccessfulPleaseCheckYourEmail") ||
+            "Registration successful! Please check your email to verify your account.",
+        })
+        
+        // Clear form for security
+        form.reset()
+        
+        // Redirect to login with message
+        router.push("/auth/login?message=verify-email")
+      } else {
+        // Handle specific error cases
+        const errorMessage = response?.error || 
+          t("TherewasaproblemcreatingyouraccountPleasetryagain") ||
+          "There was a problem creating your account. Please try again."
+        
+        toast({
+          title: t("error") || "Error",
+          description: errorMessage,
           variant: "destructive",
         })
-      } else {
-
-        const response = await register(form.getValues().email, form.getValues().password, form.getValues().userName)
-        if (response && response.success) {
-          toast({
-            title: t("successfully") || "Successfully",
-            description:
-              t("RegistrationSuccessfulPleaseCheckYourEmail") || "Registration successful! Please check your email to verify your account.",
-          })
-          // Redirect to a page that tells user to check email
-          // The email verification link will redirect to /auth/verify-email
-          router.push(`/auth/login?message=verify-email`)   
-          router.refresh()
-        } else {
-          toast({
-            title: t("error") || "ERROR",
-            description:
-              response?.error || t("TherewasaproblemcreatingyouraccountPleasetryagain") ||
-              "There was a problem creating your account. Please try again.",
-            variant: "destructive",
-          })
-        }
       }
     } catch (error) {
-      // console.error("Registration error:", error)
+      console.error("Registration error:", error)
+      
       toast({
-        title: t("error") || "ERROR",
+        title: t("error") || "Error",
         description:
           t("TherewasaproblemcreatingyouraccountPleasetryagain") ||
           "There was a problem creating your account. Please try again.",
@@ -204,11 +245,7 @@ export function RegisterForm() {
   }
 
 
-  // login by google 
-  const handleSignupByGoogle = async ()=>{
 
-
-  }
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-md mx-auto">
@@ -339,12 +376,12 @@ export function RegisterForm() {
                           {t("passwordStrength") || "Password Strength"}:
                         </span>
                         <span className="text-xs font-medium">
-                          {getStrengthDetails(passwordStrength).text} ({passwordStrength}%)
+                          {strengthDetails.text} ({passwordStrength}%)
                         </span>
                       </div>
                       <Progress 
                         value={passwordStrength} 
-                        className={`h-1 ${getStrengthDetails(passwordStrength).color}`} 
+                        className={`h-1 ${strengthDetails.color}`} 
                       />
                       
                       {/* Password requirements */}
@@ -445,12 +482,12 @@ export function RegisterForm() {
           </motion.div>
 
           <motion.div className="flex flex-col gap-4" variants={itemVariants}>
-            <motion.div variants={buttonVariants}  className="flex flex-row gap-4">
+            <motion.div variants={buttonVariants}>
               <Button
-              whileHover="hover" whileTap="tap"
+                whileHover="hover" 
+                whileTap="tap"
                 type="submit"
                 className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg"
-                onClick={onSubmit}
                 disabled={isLoading}
               >
                 <AnimatePresence mode="wait">
@@ -485,44 +522,6 @@ export function RegisterForm() {
                   )}
                 </AnimatePresence>
               </Button>
-
-
-              {/* <Button
-                whileHover="hover" whileTap="tap"
-                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg"
-                onClick={()=>{handleSignupByGoogle()}}
-                disabled={isLoading}
-              >
-                <AnimatePresence mode="wait">
-                  {isLoading ? (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center"
-                    >
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                        className="mr-2"
-                      >
-                        <Loader2 className="h-4 w-4" />
-                      </motion.div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="create"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center"
-                    >
-                <FaGoogle  className="w-5 h-5"/>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button> */}
             </motion.div>
 
             <motion.div

@@ -68,6 +68,7 @@ if (!token && req.nextUrl.pathname.startsWith('/payment')) {
   
   return NextResponse.redirect(new URL('/auth/login', req.url));
 }
+
   return NextResponse.next();
 }
  

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Facebook, Instagram, Twitter } from "lucide-react"
+import { CopyrightIcon, Facebook, Instagram, Twitter } from "lucide-react"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
 import Image from "next/image"
@@ -58,7 +58,7 @@ export function Footer() {
 
   return (
     <motion.footer
-      className="border-t bg-background my-2"
+      className="border-t bg-background dark:bg-gray-950 dark:border-border/50 py-4"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -146,12 +146,12 @@ export function Footer() {
         >
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <motion.p
-              className="text-sm text-primary/90"
+              className="text-sm text-primary/90 flex items-center gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-             <span className="text-xl"> &copy;</span> {new Date().getFullYear()}<Image className="inline-block w-28 h-5 rounded-full mx-1 -mt-1" src="/logo.png" alt="swibba" width={100} height={100} />  {t("allRightsReserved")}
+              <CopyrightIcon className="w-4 h-4" /> {new Date().getFullYear()}<Image className="w-28 h-5 rounded-full" src="/logo.png" alt="swibba" width={100} height={100} />  {t("allRightsReserved")}
             </motion.p>
           </div>
         </motion.div>

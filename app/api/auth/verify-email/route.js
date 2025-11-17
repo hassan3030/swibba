@@ -14,39 +14,39 @@ export async function GET(request) {
       );
     }
 
-    // console.log('Verifying email with token:', token.substring(0, 20) + '...');
-
- 
     // const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
     const directusUrl = baseURL
-    const verifyResponse = await fetch(`${directusUrl}/users/register/verify-email?token=${encodeURIComponent(token)}`, {
+    
+    // Try query parameter approach (as per your Directus setup)
+    const queryUrl = `${directusUrl}users/register/verify-email?token=${encodeURIComponent(token)}`;
+    
+    const verifyResponse = await fetch(queryUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    // console.log('Directus verification response status:', verifyResponse.status);
-
-    if (verifyResponse.status === 204 || verifyResponse.ok) {
-      console.log('Email verification successful');
+    // Directus returns 200 with success response for verification
+    if (verifyResponse.ok && (verifyResponse.status === 200 || verifyResponse.status === 204)) {
       return NextResponse.json({
         success: true,
         message: 'Email verified successfully! You can now sign in to your account.',
       });
     }
 
-    
+    // Handle error response
     let errorMessage = 'Invalid or expired verification token. Please request a new verification email.';
     
     try {
       const errorData = await verifyResponse.json();
-      // console.error('Directus verification failed:', errorData);
       if (errorData.errors?.[0]?.message) {
         errorMessage = errorData.errors[0].message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
       }
     } catch {
-      // console.error('Directus verification failed with status:', verifyResponse.status);
+      // If can't parse error, use default message
     }
     
     return NextResponse.json(

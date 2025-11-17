@@ -56,38 +56,49 @@ const CategoriesPage = () => {
   const [categories, setCategories] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [displayCount, setDisplayCount] = useState(10)
+  const [displayCount, setDisplayCount] = useState(50) // Show 50 items per page
+  const [totalCount, setTotalCount] = useState(0)
 
   useEffect(() => {
+    const controller = new AbortController()
+    
     const fetchCategories = async () => {
       try {
         setIsLoading(true)
-        const response = await getAllCategories()
+        // Use optimized API call - only fetch name, image, and translations
+        const response = await getAllCategories(null, true)
         
         if (response.success) {
           // Transform API data to match expected format
           const transformedCategories = response.data.map(category => ({
             name: category.name,
-            imageSrc: `${mediaURL}${category.main_image?.id}`,
+            imageSrc: category.main_image?.id ? `${mediaURL}${category.main_image.id}` : '',
             translations: category.translations || [],
-            catLevels: category.cat_levels || null,
+            catLevels: null, // Not needed for optimized view
           }))
           setCategories(transformedCategories)
+          setTotalCount(response.total || transformedCategories.length)
         } else {
           // Use fallback categories if API fails
           setCategories(fallbackCategories)
+          setTotalCount(fallbackCategories.length)
         }
       } catch (error) {
-        // console.error("Error fetching categories:", error)
-        setError(error)
-        // Use fallback categories on error
-        setCategories(fallbackCategories)
+        if (error.name !== 'AbortError') {
+          console.error("Error fetching categories:", error)
+          setError(error)
+          // Use fallback categories on error
+          setCategories(fallbackCategories)
+          setTotalCount(fallbackCategories.length)
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchCategories()
+    
+    return () => controller.abort()
   }, [])
 
   if (isLoading) {
@@ -101,7 +112,12 @@ const CategoriesPage = () => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <motion.div 
+      className="bg-background dark:bg-gray-950 min-h-screen"
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      transition={{ duration: 0.5 }}
+    >
       {/* Categories */}
       <section className="container py-8">
         <motion.div
@@ -159,11 +175,11 @@ const CategoriesPage = () => {
             transition={{ delay: 0.3 }}
           >
             <Button
-              onClick={() => setDisplayCount(prev => prev + 10)}
+              onClick={() => setDisplayCount(prev => prev + 50)}
               variant="outline"
               className="flex items-center gap-2 hover:scale-105 transition-transform"
             >
-              {t("loadMore") || "Load More"}
+              {t("loadMore") || "Load More"} ({categories.length - displayCount} {t("remaining") || "remaining"})
               <motion.div
                 animate={{ y: [0, 4, 0] }}
                 transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}

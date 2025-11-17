@@ -1,5 +1,5 @@
 import axios from "axios"
-import { getCookie, decodedToken, baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest , validateAuth , getOptionalAuth } from "./utiles.js"
+import { getCookie, decodedToken, baseItemsURL, DIRECTUS_URL, handleApiError, makeAuthenticatedRequest , validateAuth , getOptionalAuth } from "./utiles.js"
 import { getUserByProductId } from "./users.js"
 import { checkItemIncludedInCompletedOffer } from "./swap.js"
 
@@ -808,7 +808,7 @@ export const getProductsOwnerById = async (productId) => {
 //       return { success: true, data: [], message: "No valid file IDs provided." };
 //     }
 
-//     const response = await axios.get(`${baseURL}files`, {
+//     const response = await axios.get(`${DIRECTUS_URL}files`, {
 //       params: {
 //         filter: {
 //           id: { _in: fileIds },
@@ -947,7 +947,7 @@ export const deleteProduct = async (id) => {
        
              // console.log("productImages", productImages)
              productImages.data.data.images.forEach(async (image) => {
-              await axios.delete(`${baseURL}files/${image.directus_files_id.id}`, {
+              await axios.delete(`${DIRECTUS_URL}files/${image.directus_files_id.id}`, {
                headers: {
                  Authorization: `Bearer ${token}`,
                },
@@ -1036,7 +1036,7 @@ export const addProduct = async (payload, files) => {
           let formData = new FormData()
           formData.append("file", file)
 
-          const fileRes = await axios.post(`${baseURL}files`, formData, {
+          const fileRes = await axios.post(`${DIRECTUS_URL}files`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
@@ -1207,7 +1207,7 @@ export const updateProduct = async (payload, files, itemId) => {
           const formData = new FormData()
           formData.append("file", file)
 
-          const fileRes = await axios.post(`${baseURL}files`, formData, {
+          const fileRes = await axios.post(`${DIRECTUS_URL}files`, formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",

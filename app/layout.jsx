@@ -1,15 +1,12 @@
 import { Inter , Cairo } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
-import { Header } from "@/components/general/header"
-import { Footer } from "@/components/general/footer"
-import { MobileHeader } from "@/components/general/mobile-header"
-import { MobileFooter } from "@/components/general/mobile-footer"
+import { ConditionalLayout } from "@/components/layout/conditional-layout"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { LanguageProvider } from "@/lib/language-provider"
-import { headers } from "next/headers";
 import Image from "next/image";
 
 import "./globals.css"
+import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -108,43 +105,43 @@ export const viewport = {
   colorScheme: "light dark",
 };
 
-export default async function  RootLayout({ children }) {
-  const pathname = headers().get("/chat");
-
+export default function RootLayout({ children }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning className={cairo.variable}>
       <body className={cairo.className}>
-   <ThemeProvider>
+        <ThemeProvider>
           <LanguageProvider>
-                <div className="flex min-h-screen flex-col" dir="ltr">
-                  {/* Desktop Header - Hidden on mobile */}
-                  <div className="hidden md:block">
-                    <Header />
-                  </div>
-                  
-                  {/* Mobile Header */}
-                  <div className="block md:hidden">
-                    <MobileHeader />
-                  </div>
-                  
-                  <div className="flex-1 pb-16 md:pb-0">{children}</div>
-                  
-                  {/* Desktop Footer - Hidden on mobile */}
-                  {pathname==null && (
-                    <div className="hidden md:block">
-                      <Footer />
-                    </div>
-                  )}
-                  
-                  {/* Mobile Footer */}
-                  <div className="block md:hidden">
-                    <MobileFooter />
-                  </div>
-                </div>
-                <Toaster position="top-right "   />
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+            <Toaster position="top-right" />
           </LanguageProvider>
         </ThemeProvider>
 
+        {/* Add custom animations */}
+        <Script id="custom-animations" strategy="beforeInteractive">
+          {`
+            if (typeof document !== 'undefined') {
+              const style = document.createElement('style');
+              style.textContent = \`
+                @keyframes blob {
+                  0%, 100% { transform: translate(0, 0) scale(1); }
+                  25% { transform: translate(20px, -50px) scale(1.1); }
+                  50% { transform: translate(-20px, 20px) scale(0.9); }
+                  75% { transform: translate(50px, 50px) scale(1.05); }
+                }
+                .animate-blob { animation: blob 20s infinite ease-in-out; }
+                .animation-delay-2000 { animation-delay: 2s; }
+                .animation-delay-4000 { animation-delay: 4s; }
+                .animation-delay-6000 { animation-delay: 6s; }
+                .bg-noise {
+                  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+                }
+              \`;
+              document.head.appendChild(style);
+            }
+          `}
+        </Script>
      
       </body>
     </html>

@@ -1,5 +1,5 @@
 import axios from "axios"
-import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest, decodedToken, getCookie } from "./utiles.js"
+import {validateAuth , baseItemsURL, DIRECTUS_URL, handleApiError, makeAuthenticatedRequest, decodedToken, getCookie } from "./utiles.js"
 import { getUserById, getUserByProductId } from "./users.js"
 import { deleteProduct } from "./products.js"
  
@@ -1163,7 +1163,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
       }
 
       // Create the offer
-      const offerRes = await axios.post(`${baseURL}/items/Offers`, {
+      const offerRes = await axios.post(`${DIRECTUS_URL}/items/Offers`, {
         from_user_id: auth.userId,
         to_user_id,
         cash_adjustment: cash_adjustment || 0,
@@ -1187,7 +1187,7 @@ export const addOffer = async (to_user_id, cash_adjustment = 0, user_prods, owne
           throw new Error(`Failed to get owner for item ${item.itemId}`)
         }
 
-        const offerItemResponse = await axios.post(`${baseURL}/items/Offer_Items`, {
+        const offerItemResponse = await axios.post(`${DIRECTUS_URL}/items/Offer_Items`, {
           offer_id,
           item_id: item.itemId,
           offered_by: ownerResult.data.id,

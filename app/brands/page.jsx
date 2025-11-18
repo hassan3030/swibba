@@ -26,7 +26,7 @@ const BrandCard = ({ brand }) => {
   const [imgSrc, setImgSrc] = useState(computeInitialSrc());
 
   return (
-    <Link href={`/brands/${brand.name}`} className="transform transition-transform duration-300 hover:scale-105 hover:shadow-xl rounded-lg hover:border hover:border-primary/30 ">
+    <Link href={`/brands/${brand.name}`} className="transform transition-transform duration-300 hover:scale-105 rounded-lg border hover:border-primary/30 ">
       <div className="text-primary/90 bg-primary/15 flex flex-col items-center justify-center cursor-pointer shadow-lg rounded-lg p-4 space-y-3 w-44">
         <div className="bg-white/80 rounded-full p-2 flex items-center justify-center h-20 w-20">
           <Image
@@ -138,7 +138,7 @@ const BrandsPage = () => {
           type="button"
           aria-label={showSearch ? 'Hide search' : 'Show search'}
           onClick={() => setShowSearch(s => !s)}
-          className="p-2 rounded-md hover:bg-primary/10 transition"
+          className="p-2 rounded-md hover:bg-primary/10"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />

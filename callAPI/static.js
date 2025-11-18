@@ -177,7 +177,7 @@ export const getAllBrands = async () => {
       `${baseItemsURL}Brands`,
       {
          // Include parent_category relation so the UI can derive subcategories
-         params: {  limit: -1 , fields: "*,translations.*, parent_category.*, sub_category.*, *.*.*", sort: "name"} 
+         params: {  limit: -1 , fields: "*,translations.*, parent_category.*, sub_category.*, brand_icon , *.*.*", sort: "name"} 
     } 
     );
     // console.log(`Retrieved All Brands:`, response);

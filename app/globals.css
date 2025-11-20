@@ -701,25 +701,9 @@ input[type=number] {
 
 
 .hero-gradient {
-/* 1 */
-  /* @apply bg-gradient-to-bl from-primary/10 via-background to-primary/90; */
-  /* 2 */
-  /* @apply bg-gradient-to-tl from-primary/10 via-background to-primary/90;
-   */
- /* 3 */
- /* @apply bg-gradient-to-tl from-primary/10 via-background to-primary/20; */
-
- /* 4 */
  @apply bg-gradient-to-tl from-primary/80 via-background to-primary/80;
 
 }
-
-/* ----------------------------------------
-   Gradient presets: gradient-primary variants
-   Usage:
-     - Add one of these classes to any container background
-     - Base `.gradient-primary` maps to Variant 4 (current hero style)
------------------------------------------ */
 
 /* Variant 1: Subtle start, strong end (bottom-left direction) */
 .gradient-primary-1 {

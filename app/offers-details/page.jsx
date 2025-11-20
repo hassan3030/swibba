@@ -285,7 +285,7 @@ export default function OffersDetailsPage() {
   const [filteredOffers, setFilteredOffers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("completed")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [expandedOffer, setExpandedOffer] = useState(null)

@@ -361,7 +361,7 @@ export function SwibbaProductCard({
             </AnimatePresence>
 
             {/* Heart button above photo */}
-            {showSwitchHeart && (
+            {showSwitchHeart &&  (
               <motion.button
                 type="button"
                 className="absolute top-3 right-3 z-10 backdrop-blur-md rounded-full p-2.5 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 transition-all shadow-lg"

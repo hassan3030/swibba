@@ -77,7 +77,8 @@ export default function OffersPage() {
   const [sentUserSwaps, setSentUserSwaps] = useState([])
   const [receivedItemsOffer, setReceivedItemsOffer] = useState([])
   const [sentItemsOffer, setSentItemsOffer] = useState([])
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showDeleteItemDialog, setShowDeleteItemDialog] = useState(false)
+  const [showRejectSwapDialog, setShowRejectSwapDialog] = useState(false)
   const [showCompleteDialog, setShowCompleteDialog] = useState(false)
   const [pendingDelete, setPendingDelete] = useState({
     idItem: null,
@@ -85,6 +86,13 @@ export default function OffersPage() {
     owner: null,
     itemIdItself: null,
     cashAdjustment: null,
+    isReceived: null,
+  })
+  const [pendingDeleteItem, setPendingDeleteItem] = useState({
+    offerItemId: null,
+    itemId: null,
+    offerId: null,
+    isReceived: null,
   })
   const [pendingCompleted, setPendingCompleted] = useState({
     idOffer: null,
@@ -169,7 +177,7 @@ export default function OffersPage() {
         } else {
           text = `${t("Thepriceisequal") || "The price is equal"}`
         }
-      }
+      } 
     } else {
       // For sent offers, we are the sender
       if (userId === myUserId) {
@@ -351,26 +359,15 @@ export default function OffersPage() {
     const senderCountAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by === senderId).length
     const receiverCountAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by !== senderId).length
 
+    // If this is the last item for sender or receiver, show confirmation dialog
     if (senderCountAfterDelete === 0 || receiverCountAfterDelete === 0) {
-      try {
-        await rejectOfferById(item.offer_id)
-        toast({
-          title: t("successfully") || "Successfully",
-          description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
-        })
-        if (isReceived) {
-          getReceivedOffers()
-        } else {
-          getSentOffers()
-        }
-        router.refresh()
-      } catch (err) {
-        toast({
-          title: t("error") || "Error",
-          description: t("Failedtodeleteswap") || "Failed to delete swap",
-          variant: "destructive",
-        })
-      }
+      setPendingDeleteItem({
+        offerItemId,
+        itemId,
+        offerId: item.offer_id,
+        isReceived,
+      })
+      setShowDeleteItemDialog(true)
       return
     }
 
@@ -410,6 +407,29 @@ export default function OffersPage() {
     }
   }
 
+  const handleDeleteItemConfirm = async () => {
+    try {
+      await rejectOfferById(pendingDeleteItem.offerId)
+      toast({
+        title: t("successfully") || "Successfully",
+        description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
+      })
+      setShowDeleteItemDialog(false)
+      if (pendingDeleteItem.isReceived) {
+        getReceivedOffers()
+      } else {
+        getSentOffers()
+      }
+      router.refresh()
+    } catch (err) {
+      toast({
+        title: t("error") || "Error",
+        description: t("Failedtodeleteswap") || "Failed to delete swap",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleDeleteSwap = async (swapId, isReceived) => {
     try {
       await rejectOfferById(swapId)
@@ -417,7 +437,6 @@ export default function OffersPage() {
         title: t("successfully") || "Successfully",
         description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
       })
-      setShowDeleteDialog(false)
       if (isReceived) {
         getReceivedOffers()
       } else {
@@ -508,8 +527,9 @@ export default function OffersPage() {
             idItem: null,
             idOffer: offerId,
             owner: null,
+            isReceived: isReceived,
           })
-          setShowDeleteDialog(true)
+          setShowRejectSwapDialog(true)
         }}
         onCompleteSwap={(offerId) => {
           setPendingCompleted({
@@ -555,8 +575,8 @@ export default function OffersPage() {
 
   return (
     <>
-      {/* Delete Swap Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {/* Delete Item Dialog - When removing last item */}
+      <Dialog open={showDeleteItemDialog} onOpenChange={setShowDeleteItemDialog}>
         <DialogContent>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -564,27 +584,64 @@ export default function OffersPage() {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <DialogHeader>
+            <DialogHeader className="mt-2">
               <DialogTitle>{t("DeleteEntireSwapConfirmation") || "Delete Entire Swap?"}</DialogTitle>
               <DialogDescription>
                 {t("Thisisthelastiteminyouroffer_deletingitwilldeletetheentireswap") ||
                   "This is the last item in your offer. Deleting it will delete the entire swap. Are you sure?"}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="flex flex-col gap-2 sm:flex-row">
+            <DialogFooter className="flex flex-col gap-2 sm:flex-row mt-2">
               <DialogClose asChild>
                 <Button
                   variant="destructive"
                   className="mx-2"
-                  onClick={async () => {
-                    await handleDeleteSwap(pendingDelete.idOffer, activeTab === "received")
-                  }}
+                  onClick={handleDeleteItemConfirm}
                 >
                   {t("DeleteEntireSwap") || "Delete Entire Swap"}
                 </Button>
               </DialogClose>
               <DialogClose asChild>
-                <Button className="mx-2" variant="secondary" onClick={() => setShowDeleteDialog(false)}>
+                <Button className="mx-2" variant="secondary" onClick={() => setShowDeleteItemDialog(false)}>
+                  {t("Cancel") || "Cancel"}
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Swap Dialog */}
+      <Dialog open={showRejectSwapDialog} onOpenChange={setShowRejectSwapDialog}>
+        <DialogContent>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <DialogHeader className="mt-2">
+              <DialogTitle className="mt-2">{t("RejectSwapConfirmation") || "Reject Swap?"}</DialogTitle>
+              <DialogDescription className="mb-2">
+                {t("AreyousureyouwanttorejectthisswapThisactioncannotbeundone") ||
+                  "Are you sure you want to reject this swap? This action cannot be undone."}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col gap-2 sm:flex-row mt-2">
+              <DialogClose asChild>
+                <Button
+                  variant="destructive"
+                  className="mx-2"
+                  onClick={async () => {
+                    await handleDeleteSwap(pendingDelete.idOffer, pendingDelete.isReceived)
+                    setShowRejectSwapDialog(false)
+                  }}
+                >
+                  {t("RejectSwap") || "Reject Swap"}
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button className="mx-2" variant="secondary" onClick={() => setShowRejectSwapDialog(false)}>
                   {t("Cancel") || "Cancel"}
                 </Button>
               </DialogClose>

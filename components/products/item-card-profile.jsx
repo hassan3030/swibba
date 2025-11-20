@@ -92,6 +92,7 @@ export function ItemCardProfile({
   // const [bigImage, setBigImage] = useState("")
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   let linkToItemOffer = LinkItemOffer ? `/products/in_offer/${id}` : `/products/out_offer/${id}`  // Advanced filter states
 
   // const getDataImage = async () => {
@@ -186,8 +187,9 @@ export function ItemCardProfile({
  const handleGetWishItem = useCallback(async () => {
     try {
       const user = await decodedToken()
+      if (!user?.id) return
       const WishItem = await getWishList(user.id)
-      if (WishItem.data && user.id) {
+      if (WishItem.data) {
         const isItem = WishItem.data.find((i) => i.item_id == id) ? true : false
         setSwitchHeart(isItem)
       }
@@ -199,9 +201,10 @@ export function ItemCardProfile({
   const handleAddWishItem = useCallback(async () => {
    try {
       const user = await decodedToken()
+      if (!user?.id) return
       const WishItem = await getWishList(user.id)
       const WishItemId = WishItem.data.filter((i) => i.item_id == id)
-      if (WishItem.data && user.id) {
+      if (WishItem.data) {
         const isItem = WishItem.data.find((i) => i.item_id == id)
         if (isItem) {
           await deleteWishList(WishItemId[0]?.id)
@@ -230,15 +233,35 @@ export function ItemCardProfile({
 
   useEffect(() => {
     let isMounted = true
+    const verifyAuth = async () => {
+      try {
+        const token = await getCookie()
+        if (isMounted) {
+          setIsAuthenticated(Boolean(token))
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsAuthenticated(false)
+        }
+      }
+    }
+    verifyAuth()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
     
-    if (isMounted && showSwitchHeart) {
+    if (isMounted && showSwitchHeart && isAuthenticated) {
       handleGetWishItem()
     }
     
     return () => {
       isMounted = false
     }
-  }, [handleGetWishItem, showSwitchHeart])
+  }, [handleGetWishItem, showSwitchHeart, isAuthenticated])
 
   return (
     <Link href={linkToItemOffer} className="block w-full">
@@ -313,7 +336,7 @@ export function ItemCardProfile({
               </AnimatePresence>
 
               {/* Heart button */}
-              {showSwitchHeart && (
+              {showSwitchHeart && isAuthenticated && (
                 <motion.button
                   type="button"
                   className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-md rounded-full p-2.5 hover:bg-background transition-all shadow-lg border border-border/40"
@@ -369,7 +392,7 @@ export function ItemCardProfile({
 
               {/* Description */}
               <motion.p
-                className="line-clamp-2 text-xs text-muted-foreground first-letter:capitalize leading-relaxed"
+                className="line-clamp-1 text-xs text-muted-foreground first-letter:capitalize leading-relaxed "
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}

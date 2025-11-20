@@ -6,7 +6,7 @@ import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { getUserById, getUserByProductId } from "@/callAPI/users"
 import { getProductByUserId, getProductById } from "@/callAPI/products"
-import { getOfferById, getOfferItemsByOfferId, getOffeReceived, getCompletedOffer} from "@/callAPI/swap"
+import { getOfferById, getOfferItemsByOfferId, getOffeReceived, getCompletedOffer, getAllMessage, addMessage, acceptedOfferById, rejectOfferById, deleteOfferItemsById, completedOfferById, deleteFinallyOfferById} from "@/callAPI/swap"
 import { decodedToken, getCookie, validateAuth, mediaURL } from "@/callAPI/utiles"
 import { ProfileHeroSection, ProfileStatsGrid, ProfileContentTabs } from "@/components/profile/profile-tab"
 
@@ -28,6 +28,19 @@ export default function ProfilePage() {
   const [showSwitchHeart, setShowSwitchHeart] = useState(false)
   const [completedOffersCount, setCompletedOffersCount] = useState(0)
   const { isRTL } = useLanguage()
+  
+  // Offers data for tabs
+  const [sentOffers, setSentOffers] = useState([])
+  const [receivedOffers, setReceivedOffers] = useState([])
+  const [sentSwapItems, setSentSwapItems] = useState([])
+  const [receivedSwapItems, setReceivedSwapItems] = useState([])
+  const [sentUserSwaps, setSentUserSwaps] = useState([])
+  const [receivedUserSwaps, setReceivedUserSwaps] = useState([])
+  const [sentItemsOffer, setSentItemsOffer] = useState([])
+  const [receivedItemsOffer, setReceivedItemsOffer] = useState([])
+  const [chatMessages, setChatMessages] = useState([])
+  const [message, setMessage] = useState("")
+  const [myUserId, setMyUserId] = useState(null)
 
   // Fetch completed offers
   const getCompletedOffers = async () => {
@@ -91,49 +104,161 @@ export default function ProfilePage() {
     }
   }
 
-  // Fetch received offers
+  // Fetch received offers with full data
   const getrecievedOffers = async () => {
     try {
-      const { userId } = await validateAuth()
-      const notifications = await getOffeReceived(userId)
-      if (notifications.success && Array.isArray(notifications.data)) {
-        const filteredOffers = notifications.data.filter(
-          (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
-        )
-        setrecievedOffers(filteredOffers.length)
-      } else {
-        setrecievedOffers(0)
+      const token = await getCookie()
+      if (!token) return
+      
+      const { id } = await decodedToken()
+      const offersReceived = await getOffeReceived(id)
+      
+      const offerItems = []
+      const items = []
+      const usersSwaper = []
+
+      for (const offer of offersReceived.data) {
+        const offerItem = await getOfferItemsByOfferId(offer.id)
+        const user_from = await getUserById(offer.from_user_id)
+        const user_to = await getUserById(offer.to_user_id)
+        usersSwaper.push(user_from.data, user_to.data)
+        if (offerItem?.success && Array.isArray(offerItem.data)) {
+          offerItems.push(...offerItem.data)
+        }
       }
+
+      for (const item of offerItems) {
+        const product = await getProductById(item.item_id)
+        items.push({
+          ...product.data,
+          offer_item_id: item.id,
+          offered_by: item.offered_by,
+          offer_id: item.offer_id,
+          user_id: product.data.user_id,
+          quantity: item.quantity,
+        })
+      }
+
+      const uniqueUsers = Array.from(
+        new Map(
+          (usersSwaper || []).filter((u) => u && u.id).map((user) => [user.id, user])
+        ).values()
+      )
+
+      setReceivedOffers(offersReceived.data)
+      setReceivedUserSwaps(uniqueUsers)
+      setReceivedSwapItems(items)
+      setReceivedItemsOffer(offerItems)
+      
+      const filteredOffers = offersReceived.data.filter(
+        (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
+      )
+      setrecievedOffers(filteredOffers.length)
     } catch (error) {
       setrecievedOffers(0)
+      setReceivedOffers([])
     }
   }
 
-  // Fetch sent offers
+  // Fetch sent offers with full data
   const getOffers = async () => {
     const token = await getCookie()
-    if (token) {
-      const { id } = await decodedToken(token)
-      const offers = await getOfferById(id)
+    if (!token) return
+    
+    const { id } = await decodedToken()
+    const offers = await getOfferById(id)
 
-      if (offers.success && Array.isArray(offers.data)) {
-        const filteredOffers = offers.data.filter(
-          (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
-        )
-        setSentOffersCount(filteredOffers.length)
-      } else {
-        setSentOffersCount(0)
+    const offerItems = []
+    const items = []
+    const usersSwaper = []
+
+    for (const offer of offers.data) {
+      const offerItem = await getOfferItemsByOfferId(offer.id)
+      const user_from = await getUserById(offer.from_user_id)
+      const user_to = await getUserById(offer.to_user_id)
+      usersSwaper.push(user_from.data, user_to.data)
+      if (offerItem?.success && Array.isArray(offerItem.data)) {
+        offerItems.push(...offerItem.data)
       }
+    }
+
+    for (const item of offerItems) {
+      const product = await getProductById(item.item_id)
+      items.push({
+        ...product.data,
+        offer_item_id: item.id,
+        offered_by: item.offered_by,
+        offer_id: item.offer_id,
+        quantity: item.quantity,
+      })
+    }
+
+    const uniqueUsers = Array.from(
+      new Map(
+        (usersSwaper || []).filter((u) => u && u.id).map((user) => [user.id, user])
+      ).values()
+    )
+
+    setSentOffers(offers.data)
+    setSentUserSwaps(uniqueUsers)
+    setSentSwapItems(items)
+    setSentItemsOffer(offerItems)
+
+    if (offers.success && Array.isArray(offers.data)) {
+      const filteredOffers = offers.data.filter(
+        (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
+      )
+      setSentOffersCount(filteredOffers.length)
+    } else {
+      setSentOffersCount(0)
+    }
+  }
+  
+  // Fetch user ID
+  const fetchUserId = async () => {
+    try {
+      const { id } = await decodedToken()
+      setMyUserId(id)
+    } catch (error) {
+      setMyUserId(null)
+    }
+  }
+  
+  // Fetch chat messages
+  const handleGetMessages = async () => {
+    try {
+      const messages = await getAllMessage()
+      setChatMessages(messages.data || [])
+    } catch (error) {
+      setChatMessages([])
+    }
+  }
+  
+  const handleSendMessage = async (to_user_id, offer_id) => {
+    if (!message.trim()) return
+    try {
+      await addMessage(message.trim(), to_user_id, offer_id)
+      setMessage("")
+      handleGetMessages()
+    } catch (error) {
+      // Handle error
     }
   }
 
   // Initial data fetch
   useEffect(() => {
-    getCompletedOffers()
-    getrecievedOffers()
-    getUser()
-    getOffers()
-    getUserProducts()
+    const fetchData = async () => {
+      await fetchUserId()
+      await Promise.all([
+        getCompletedOffers(),
+        getrecievedOffers(),
+        getUser(),
+        getOffers(),
+        getUserProducts(),
+        handleGetMessages()
+      ])
+    }
+    fetchData()
   }, [])
 
   // Update avatar when user changes

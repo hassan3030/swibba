@@ -1,5 +1,9 @@
 export const translations = {
   en  :{
+    swaps:"Swaps",
+    RejectSwapConfirmation:"Reject Swap Confirmation",
+    AreyousureyouwanttorejectthisswapThisactioncannotbeundone:"Are you sure you want to reject this swap? This action cannot be undone.",
+    
     missing:"Missing",
     locationSelected: "Location",
     
@@ -1578,7 +1582,10 @@ SelectCountry: "Select a country",
     failedToUpdateProfile: "Failed to update profile",
   },
   ar: {
-
+    swaps:"المبادلات",
+    RejectSwapConfirmation:"تأكيد رفض المبادلة",
+    AreyousureyouwanttorejectthisswapThisactioncannotbeundone:"هل أنت متأكد أنك تريد رفض هذه المبادلة؟ لا يمكن التراجع عن هذا الإجراء.",
+        
     missing:"غير موجود",
     locationSelected: "الموقع",
 

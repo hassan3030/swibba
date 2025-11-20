@@ -5,14 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Package, Star, Settings } from "lucide-react"
-import { BiCartDownload } from "react-icons/bi"
+import { Package, Star, Settings, ArrowRightLeft } from "lucide-react"
 import { TbShoppingCartUp } from "react-icons/tb"
+import { BiCartDownload } from "react-icons/bi"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { ItemsList } from "@/components/products/items-list"
-import SendItems from "@/app/send-items/page"
-import RecivedItems from "@/app/recived-items/page"
+import OffersPage from "@/app/offers/page"
 
 const tabVariants = {
   initial: { opacity: 0, y: 20 },
@@ -38,7 +37,7 @@ export function ProfileContentTabs({
   myUnavailableItems, 
   sentOffersCount, 
   recievedOffers,
-  showSwitchHeart 
+  showSwitchHeart
 }) {
   const { t } = useTranslations()
 
@@ -47,25 +46,25 @@ export function ProfileContentTabs({
       value: "items", 
       icon: Package, 
       label: t("yourProducts") || "Your Products", 
-      count: Array.isArray(myAvailableItems) ? myAvailableItems.length : 0 
+      count: Array.isArray(myAvailableItems) ? myAvailableItems.length : 0,
+      countIcon: Package
     },
     {
       value: "unavailableItems",
       icon: Star,
       label: t("itemsInOffers") || "Items In Offers",
-      count: Array.isArray(myUnavailableItems) ? myUnavailableItems.length : 0
+      count: Array.isArray(myUnavailableItems) ? myUnavailableItems.length : 0,
+      countIcon: Star
     }, 
     { 
-      value: "offers", 
-      icon: TbShoppingCartUp, 
-      label: t("sendoffers") || "Send Offers", 
-      count: sentOffersCount || 0 
-    },
-    {
-      value: "recivedOffers",
-      icon: BiCartDownload,
-      label: t("recivedOffers") || "Received Offers",
-      count: recievedOffers || 0
+      value: "swaps", 
+      icon: ArrowRightLeft, 
+      label: t("swaps") || "Swaps", 
+      count: (sentOffersCount || 0) + (recievedOffers || 0),
+      sentCount: sentOffersCount || 0,
+      receivedCount: recievedOffers || 0,
+      sentIcon: TbShoppingCartUp,
+      receivedIcon: BiCartDownload
     }
   ]
 
@@ -99,20 +98,57 @@ export function ProfileContentTabs({
                   >
                     <tab.icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
                     <span className="truncate flex-1 text-left">{tab.label}</span>
-                    <motion.span
-                      className={`
-                        rounded-full px-2.5 py-0.5 text-xs font-bold min-w-[28px] text-center
-                        ${isActive 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-muted/80 text-foreground border border-border/30'
-                        }
-                      `}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index }}
-                    >
-                      {tab.count}
-                    </motion.span>
+                    {tab.value === "swaps" ? (
+                      <div className="flex items-center gap-1.5">
+                        <motion.span
+                          className={`
+                            rounded-full px-2 py-0.5 text-xs font-bold min-w-[28px] text-center flex items-center gap-1
+                            ${isActive 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted/80 text-foreground border border-border/30'
+                            }
+                          `}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index }}
+                        >
+                          <TbShoppingCartUp className="h-3 w-3" />
+                          {tab.sentCount}
+                        </motion.span>
+                        <span className="text-xs text-muted-foreground">|</span>
+                        <motion.span
+                          className={`
+                            rounded-full px-2 py-0.5 text-xs font-bold min-w-[28px] text-center flex items-center gap-1
+                            ${isActive 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted/80 text-foreground border border-border/30'
+                            }
+                          `}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index + 0.05 }}
+                        >
+                          <BiCartDownload className="h-3 w-3" />
+                          {tab.receivedCount}
+                        </motion.span>
+                      </div>
+                    ) : (
+                      <motion.span
+                        className={`
+                          rounded-full px-2.5 py-0.5 text-xs font-bold min-w-[28px] text-center flex items-center gap-1
+                          ${isActive 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted/80 text-foreground border border-border/30'
+                          }
+                        `}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index }}
+                      >
+                        {tab.countIcon && <tab.countIcon className="h-3 w-3" />}
+                        {tab.count}
+                      </motion.span>
+                    )}
                     {isActive && (
                       <motion.div
                         className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent"
@@ -156,20 +192,57 @@ export function ProfileContentTabs({
                           `}>
                             <tab.icon className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                           </div>
-                          <motion.span
-                            className={`
-                              absolute -top-2 -right-2 rounded-full px-2 py-0.5 text-xs font-bold min-w-[24px] text-center shadow-md
-                              ${isActive 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-muted/90 text-foreground border border-border/40'
-                              }
-                            `}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index }}
-                          >
-                            {tab.count}
-                          </motion.span>
+                          {tab.value === "swaps" ? (
+                            <div className="absolute -top-2 -right-2 flex items-center gap-0.5">
+                              <motion.span
+                                className={`
+                                  rounded-full px-1 py-0.5 text-[10px] font-bold min-w-[20px] text-center shadow-md flex items-center gap-0.5
+                                  ${isActive 
+                                    ? 'bg-primary text-primary-foreground' 
+                                    : 'bg-muted/90 text-foreground border border-border/40'
+                                  }
+                                `}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index }}
+                              >
+                                <TbShoppingCartUp className="h-2.5 w-2.5" />
+                                {tab.sentCount}
+                              </motion.span>
+                              <span className="text-[8px] text-muted-foreground">|</span>
+                              <motion.span
+                                className={`
+                                  rounded-full px-1 py-0.5 text-[10px] font-bold min-w-[20px] text-center shadow-md flex items-center gap-0.5
+                                  ${isActive 
+                                    ? 'bg-primary text-primary-foreground' 
+                                    : 'bg-muted/90 text-foreground border border-border/40'
+                                  }
+                                `}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index + 0.05 }}
+                              >
+                                <BiCartDownload className="h-2.5 w-2.5" />
+                                {tab.receivedCount}
+                              </motion.span>
+                            </div>
+                          ) : (
+                            <motion.span
+                              className={`
+                                absolute -top-2 -right-2 rounded-full px-1.5 py-0.5 text-xs font-bold min-w-[24px] text-center shadow-md flex items-center gap-0.5
+                                ${isActive 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-muted/90 text-foreground border border-border/40'
+                                }
+                              `}
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 * index }}
+                            >
+                              {tab.countIcon && <tab.countIcon className="h-2.5 w-2.5" />}
+                              {tab.count}
+                            </motion.span>
+                          )}
                           {isActive && (
                             <motion.div
                               className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"
@@ -244,33 +317,15 @@ export function ProfileContentTabs({
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="offers" className="mt-0">
+        <TabsContent value="swaps" className="mt-0">
           <motion.div
-            key="offers"
+            key="swaps"
             variants={tabVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
-            <h2 className="mb-6 text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              {t("myOffers") || "My Offers"}
-            </h2>
-            <SendItems />
-          </motion.div>
-        </TabsContent>
-
-        <TabsContent value="recivedOffers" className="mt-0">
-          <motion.div
-            key="recivedOffers"
-            variants={tabVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <h2 className="mb-6 text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              {t("myRecivedOffers") || "My Received Offers"}
-            </h2>
-            <RecivedItems />
+            <OffersPage />
           </motion.div>
         </TabsContent>
 

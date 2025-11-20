@@ -15,7 +15,7 @@ const FilterItemsCategoryPage = async ({params}) => {
     
   return (
   <div className="my-3 mx-3">
-      <ItemsList items={products.data} showCategoriesFilter={true} showFilters={showFilters} defaultCategory={normalizedCat}/> 
+      <ItemsList items={products.data} showCategoriesFilter={true} showFilters={showFilters} defaultCategory={normalizedCat} /> 
  </div>
   )
 }

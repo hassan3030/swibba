@@ -78,7 +78,7 @@ const HeroSection = () => {
   }, []);
 
   return ( 
-    <section className="relative overflow-hidden min-h-screen flex items-center py-20">
+    <section className="relative overflow-hidden min-h-screen flex items-center py-20 gradient-primary-3">
       {/* Gradient shapes */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-primary/10 to-transparent dark:from-primary/15 dark:to-transparent rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-secondary/8 to-transparent dark:from-secondary/12 dark:to-transparent rounded-full blur-3xl" />

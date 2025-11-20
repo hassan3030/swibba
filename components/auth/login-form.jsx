@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { cn } from "@/lib/utils"
-import { checkUserHasProducts, login, loginByGoogle } from "@/callAPI/users"
+import { checkUserHasProducts, login, loginByGoogle, getKYC } from "@/callAPI/users"
 import { FaGoogle } from "react-icons/fa6";
 import { getTarget, decodedToken, removeTarget } from "@/callAPI/utiles"
 import { jwtDecode } from "jwt-decode"
@@ -196,6 +196,18 @@ export function LoginForm() {
             return
           }
 
+          const kycStatus = await getKYC(decoded.id)
+          if (kycStatus?.data === false) {
+            toast({
+              title: t("completeProfile") || "Complete your profile",
+              description: t("completeProfileDesc") || "Please complete your profile information before continuing.",
+              variant: "default",
+            })
+            router.push(`/profile/settings/editProfile`)
+            router.refresh()
+            return
+          }
+
           // Check if user has products
           const productRes = await checkUserHasProducts(decoded.id)
 
@@ -208,12 +220,11 @@ export function LoginForm() {
             })
             router.push(`/profile/settings/editItem/new`)
             router.refresh()
-
           } else {
             // Has products: go to swap page
             router.push(`/swap/${getTargetSwap}`)
             await removeTarget()
-          router.refresh()
+            router.refresh()
           }
         } else {
           // No target: go to home
@@ -224,7 +235,6 @@ export function LoginForm() {
         // Login failed - check for email verification error
         const errorMessage = response.error || response.message || ""
         const lowerErrorMessage = errorMessage.toLowerCase()
-        
         // Check if error is related to email verification
         const isEmailUnverified = 
           lowerErrorMessage.includes("email not verified") ||
@@ -279,11 +289,6 @@ export function LoginForm() {
       setIsLoading(false)
 
     }
-  }
-// login by google 
-  const handleLoginByGoogle = async ()=>{
-
-
   }
 
   return (

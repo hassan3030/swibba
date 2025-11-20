@@ -149,14 +149,11 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
     return (
       <motion.section
         ref={ref}
-        className="relative py-20"
+        className="relative py-20 z-10"
         variants={statsContainerVariants}
         initial="hidden"
         animate={controls}
       >
-        {/* Gradient shapes */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-gradient-to-r from-primary/8 to-transparent dark:from-primary/12 dark:to-transparent rounded-full blur-3xl" />
-
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             className="text-center mb-16"

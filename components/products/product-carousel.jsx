@@ -70,9 +70,19 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
   const containerRef = useRef(null)
   const { isRTL } = useLanguage()
 
+  // Count the number of children
+  const childrenCount = Array.isArray(children) ? children.length : 1
+
   const checkScrollability = useCallback(() => {
     const container = containerRef.current
     if (!container) return
+
+    // Hide arrows if less than 4 items
+    if (childrenCount < 4) {
+      setCanScrollLeft(false)
+      setCanScrollRight(false)
+      return
+    }
 
     const { scrollLeft, scrollWidth, clientWidth } = container
 
@@ -83,7 +93,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
       setCanScrollLeft(scrollLeft > 0)
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
     }
-  }, [isRTL])
+  }, [isRTL, childrenCount])
 
   useEffect(() => {
     checkScrollability()
@@ -157,7 +167,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
 
   return (
     
-    <motion.div className="relative py-4" variants={containerVariants} initial="hidden" animate="visible">
+    <motion.div className="relative py-4 z-10" variants={containerVariants} initial="hidden" animate="visible">
       <motion.div className="mb-6 flex items-center justify-between" variants={headerVariants}>
         <motion.div className="flex flex-col gap-2">
           <motion.h2

@@ -396,7 +396,7 @@ export const getUserByProductId = async (productId) => {
 // }
 // // ----------------------------------
 // Edit profile with enhanced validation and authentication
-export const editeProfile = async (userData, authId, avatar = null , translations) => {
+export const editeProfile = async (userData, authId, avatar = null , translations, shouldRemoveAvatar = false) => {
   // console.log("translations call api :  " , translations)
   try {
     return await makeAuthenticatedRequest(async () => {
@@ -415,11 +415,25 @@ export const editeProfile = async (userData, authId, avatar = null , translation
       }
       const updateData = { ...userData , translations: translations }
 
-      if (avatar) {
+      // Get current user to handle existing avatar
+      const currentUser = await getUserById(decoded.id)
+      const hasExistingAvatar = currentUser.success && currentUser.data.avatar
+
+      if (shouldRemoveAvatar && hasExistingAvatar) {
+        // User wants to remove avatar - delete from backend and set to null
         try {
-          // Remove old avatar if exists
-          const currentUser = await getUserById(decoded.id)
-          if (currentUser.success && currentUser.data.avatar) {
+          await axios.delete(`${baseURL}files/${currentUser.data.avatar}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          updateData.avatar = null
+        } catch (deleteError) {
+          console.warn("Avatar deletion failed:", deleteError.message)
+        }
+      } else if (avatar) {
+        // User is uploading new avatar
+        try {
+          // Delete old avatar if exists
+          if (hasExistingAvatar) {
             await axios.delete(`${baseURL}files/${currentUser.data.avatar}`, {
               headers: { Authorization: `Bearer ${token}` },
             })
@@ -438,7 +452,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
 
           updateData.avatar = avatarResponse.data.data.id
         } catch (avatarError) {
-          // console.warn("Avatar upload failed:", avatarError.message)
+          console.warn("Avatar upload failed:", avatarError.message)
         }
       }
 
@@ -549,7 +563,8 @@ export const updatePhoneVerification = async (userId, phoneNumber, isVerified = 
 
     const updateData = {
       phone_number: phoneNumber,
-      verified: isVerified.toString()
+      verified_phone: isVerified,
+      country_code: phoneNumber.match(/^(\+\d{1,4})/)?.[1] || null
     };
 
     const response = await axios.patch(
@@ -571,6 +586,95 @@ export const updatePhoneVerification = async (userId, phoneNumber, isVerified = 
     };
   } catch (error) {
     return handleApiError(error, "Update Phone Verification");
+  }
+};
+
+// Request phone verification OTP
+export const requestPhoneVerification = async (phoneNumber, countryCode) => {
+  try {
+    if (!phoneNumber || !countryCode) {
+      throw new Error("Phone number and country code are required");
+    }
+
+    const response = await axios.post(
+      '/api/phone-verification/request',
+      {
+        phone_number: phoneNumber,
+        country_code: countryCode
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: response.data.message || "OTP sent successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Request Phone Verification");
+  }
+};
+
+// Verify phone OTP
+export const verifyPhoneOTP = async (phoneNumber, otp) => {
+  try {
+    if (!phoneNumber || !otp) {
+      throw new Error("Phone number and OTP are required");
+    }
+
+    const response = await axios.post(
+      '/api/phone-verification/verify',
+      {
+        phone_number: phoneNumber,
+        otp: otp
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: response.data.message || "Phone verified successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Verify Phone OTP");
+  }
+};
+
+// Resend phone verification OTP
+export const resendPhoneOTP = async (phoneNumber) => {
+  try {
+    if (!phoneNumber) {
+      throw new Error("Phone number is required");
+    }
+
+    const response = await axios.post(
+      '/api/phone-verification/resend',
+      {
+        phone_number: phoneNumber
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: response.data.message || "OTP resent successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Resend Phone OTP");
   }
 };
 

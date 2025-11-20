@@ -12,12 +12,12 @@ import { useToast } from "@/components/ui/use-toast"
 import { countriesWithFlags, validatePhoneNumber } from "@/lib/countries-data"
 import FlagIcon from "@/components/general/flag-icon" 
 
-const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerified, isVerified = false }) => {
+const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerified, isVerified = false, userCountryCode = null }) => {
   const { t } = useTranslations()
   const { toast } = useToast()
   
-  const [step, setStep] = useState("phone") // "phone" or "verify"
-  const [selectedCountryCode, setSelectedCountryCode] = useState("+20")
+  const [step, setStep] = useState("phone") // "phone" or "otp"
+  const [selectedCountryCode, setSelectedCountryCode] = useState(userCountryCode || "+20")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -31,19 +31,28 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
   // Get selected country info
   const selectedCountry = countriesWithFlags.find(c => c.code === selectedCountryCode) || countriesWithFlags[0]
 
-  // Initialize phone number from current phone
+  // Initialize phone number from current phone (without country code)
   useEffect(() => {
     if (currentPhone) {
-      // Extract country code and phone number
-      const phoneMatch = currentPhone.match(/^(\+\d+)(.*)$/)
-      if (phoneMatch) {
-        setSelectedCountryCode(phoneMatch[1])
-        setPhoneNumber(phoneMatch[2])
+      // If phone has + prefix, it includes country code - remove it
+      if (currentPhone.startsWith('+')) {
+        const phoneMatch = currentPhone.match(/^(\+\d{1,4})(.*)$/)
+        if (phoneMatch) {
+          const [, code, number] = phoneMatch
+          setSelectedCountryCode(code)
+          setPhoneNumber(number)
+        }
       } else {
+        // Phone number without country code (like 01158952209)
         setPhoneNumber(currentPhone)
+        // Use provided country code or default to Egypt
+        setSelectedCountryCode(userCountryCode || "+20")
       }
+    } else {
+      // Use provided country code or default to Egypt
+      setSelectedCountryCode(userCountryCode || "+20")
     }
-  }, [currentPhone])
+  }, [currentPhone, userCountryCode])
 
   // Timer for code expiry
   useEffect(() => {
@@ -74,7 +83,14 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
   // Validate phone number when it changes
   useEffect(() => {
     if (phoneNumber) {
-      const validation = validatePhoneNumber(selectedCountryCode, phoneNumber)
+      // For Egyptian numbers, check if it starts with 0 (local format)
+      let numberToValidate = phoneNumber
+      if (selectedCountryCode === "+20" && phoneNumber.startsWith('0')) {
+        // Remove leading zero for validation
+        numberToValidate = phoneNumber.substring(1)
+      }
+      
+      const validation = validatePhoneNumber(selectedCountryCode, numberToValidate)
       setIsValidNumber(validation.isValid)
       setValidationError(validation.error)
     } else {
@@ -105,15 +121,18 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
     setIsLoading(true)
     
     try {
-      const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`
+      // Remove leading zero if present for validation
+      const cleanedPhoneNumber = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber
+      const fullPhoneNumber = `${selectedCountryCode}${cleanedPhoneNumber}`
       
-      const response = await fetch('/api/sms/send-code', {
+      const response = await fetch('/api/phone-verification/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: fullPhoneNumber
+          phone_number: fullPhoneNumber,
+          country_code: selectedCountryCode
         })
       })
 
@@ -155,10 +174,10 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
       return
     }
 
-    if (verificationCode.length !== 6) {
+    if (verificationCode.length !== 4) {
       toast({
         title: t("error") || "Error",
-        description: t("codeMustBe6Digits") || "Verification code must be 6 digits",
+        description: t("codeMustBe4Digits") || "Verification code must be 4 digits",
         variant: "destructive",
       })
       return
@@ -167,16 +186,18 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
     setIsVerifying(true)
     
     try {
-      const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`
+      // Remove leading zero if present for validation
+      const cleanedPhoneNumber = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber
+      const fullPhoneNumber = `${selectedCountryCode}${cleanedPhoneNumber}`
       
-      const response = await fetch('/api/sms/verify-code', {
+      const response = await fetch('/api/phone-verification/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: fullPhoneNumber,
-          code: verificationCode
+          phone_number: fullPhoneNumber,
+          otp: verificationCode
         })
       })
 
@@ -188,7 +209,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
 
       // Verification successful
       setIsVerifying(false)
-      onVerified(fullPhoneNumber)
+      onVerified()
       onOpenChange(false)
       
       toast({
@@ -249,8 +270,8 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
           </DialogTitle>
           <DialogDescription>
             {step === "phone" 
-              ? t("enterPhoneToReceiveCode") || "Enter your phone number to receive a verification code"
-              : t("enterCodeSent") || "Enter the verification code sent to your phone"
+              ? t("enterPhoneToReceiveOTP") || "Enter your phone number to receive a verification OTP"
+              : t("enterOTPSent") || "Enter the OTP code sent to your phone"
             }
           </DialogDescription>
         </DialogHeader>
@@ -322,8 +343,23 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                   </div> */}
                   <Input
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
-                    placeholder="123456789"
+                    onChange={(e) => {
+                      const input = e.target.value.replace(/\D/g, "")
+                      // Allow leading zero for Egyptian numbers
+                      if (selectedCountryCode === "+20") {
+                        // Egyptian numbers: allow 0 at start, max 11 digits (01XXXXXXXXX)
+                        if (input.length <= 11) {
+                          setPhoneNumber(input)
+                        }
+                      } else {
+                        // Other countries: no leading zero, max 15 digits
+                        const cleaned = input.startsWith('0') ? input.substring(1) : input
+                        if (cleaned.length <= 15) {
+                          setPhoneNumber(cleaned)
+                        }
+                      }
+                    }}
+                    placeholder={selectedCountryCode === "+20" ? "01XXXXXXXXX" : "123456789"}
                     className={`flex-1 ${!isValidNumber && phoneNumber ? 'border-red-500 focus:border-red-500' : ''}`}
                   />
                 </div>
@@ -335,7 +371,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 )}
               </div>
 
-              {/* Send Code Button */}
+              {/* Send OTP Button */}
               <Button
                 onClick={sendVerificationCode}
                 disabled={isLoading || !phoneNumber || !isValidNumber}
@@ -344,19 +380,19 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("sendingCode") || "Sending Code..."}
+                    {t("sendingOTP") || "Sending OTP..."}
                   </>
                 ) : (
                   <>
                     <Phone className="mr-2 h-4 w-4" />
-                    {t("sendVerificationCode") || "Send Verification Code"}
+                    {t("sendOTP") || "Send OTP"}
                   </>
                 )}
               </Button>
             </motion.div>
           ) : (
             <motion.div
-              key="verify-step"
+              key="otp-step"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -364,7 +400,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
             >
               {/* Phone Number Display */}
               <div className="p-3 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">{t("codeSentTo") || "Code sent to"}:</p>
+                <p className="text-sm text-muted-foreground">{t("otpSentTo") || "OTP sent to"}:</p>
                 <p className="font-medium flex items-center gap-2">
                   <FlagIcon flag={selectedCountry.flag} countryCode={selectedCountry.iso} className="text-lg" />
                   {selectedCountryCode}{phoneNumber}
@@ -372,7 +408,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 {timeRemaining > 0 && (
                   <div className="flex items-center gap-1 mt-2">
                     <span className="text-xs text-muted-foreground">
-                      {t("codeExpiresIn") || "Code expires in"}:
+                      {t("otpExpiresIn") || "OTP expires in"}:
                     </span>
                     <span className={`text-xs font-mono ${timeRemaining < 60 ? 'text-red-600 animate-pulse' : timeRemaining < 120 ? 'text-orange-600' : 'text-green-600'}`}>
                       {formatTime(timeRemaining)}
@@ -381,22 +417,25 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 )}
                 {timeRemaining === 0 && sentCode && (
                   <div className="text-xs text-red-600 mt-2">
-                    {t("codeHasExpired") || "Verification code has expired. Please request a new one."}
+                    {t("otpHasExpired") || "OTP has expired. Please request a new one."}
                   </div>
                 )}
               </div>
 
 
-              {/* Verification Code Input */}
+              {/* OTP Input */}
               <div className="space-y-2">
-                <Label>{t("verificationCode") || "Verification Code"}</Label>
+                <Label>{t("otpCode") || "OTP Code"}</Label>
                 <Input
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="123456"
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  placeholder="1234"
                   className="text-center text-lg tracking-widest font-mono"
-                  maxLength={6}
+                  maxLength={4}
                 />
+                <p className="text-xs text-muted-foreground text-center">
+                  {t("enterFourDigitOTP") || "Enter the 4-digit OTP code"}
+                </p>
               </div>
 
               {/* Action Buttons */}
@@ -411,7 +450,7 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 </Button>
                 <Button
                   onClick={verifyCode}
-                  disabled={isVerifying || verificationCode.length !== 6}
+                  disabled={isVerifying || verificationCode.length !== 4}
                   className="flex-1"
                 >
                   {isVerifying ? (
@@ -428,28 +467,31 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 </Button>
               </div>
 
-              {/* Resend Code */}
+              {/* Resend OTP */}
               <Button
                 variant="link"
                 onClick={async () => {
                   setIsLoading(true)
                   try {
-                    const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`
+                    // Remove leading zero if present for validation
+                    const cleanedPhoneNumber = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber
+                    const fullPhoneNumber = `${selectedCountryCode}${cleanedPhoneNumber}`
                     
-                    const response = await fetch('/api/sms/resend-code', {
+                    const response = await fetch('/api/phone-verification/resend', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
                       },
                       body: JSON.stringify({
-                        phoneNumber: fullPhoneNumber
+                        phone_number: fullPhoneNumber,
+                        country_code: selectedCountryCode
                       })
                     })
 
                     const result = await response.json()
 
                     if (!result.success) {
-                      throw new Error(result.error || 'Failed to resend verification code')
+                      throw new Error(result.error || 'Failed to resend OTP')
                     }
 
                     // Update the verification state
@@ -458,14 +500,14 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                     setTimeRemaining(result.data.expiresIn)
                     
                     toast({
-                      title: t("codeResent") || "Code Resent",
-                      description: t("verificationCodeResent") || "Verification code resent successfully",
+                      title: t("otpResent") || "OTP Resent",
+                      description: t("otpResentSuccess") || "OTP resent successfully",
                     })
                   } catch (error) {
                     // console.error('Resend SMS error:', error)
                     toast({
                       title: t("error") || "Error",
-                      description: error.message || t("failedToResendCode") || "Failed to resend verification code",
+                      description: error.message || t("failedToResendOTP") || "Failed to resend OTP",
                       variant: "destructive",
                     })
                   } finally {
@@ -478,12 +520,12 @@ const PhoneVerificationPopup = ({ open, onOpenChange, currentPhone = "", onVerif
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("sendingCode") || "Sending Code..."}
+                    {t("sendingOTP") || "Sending OTP..."}
                   </>
                 ) : timeRemaining > 240 ? (
-                  `${t("resendCodeIn") || "Resend code in"} ${formatTime(timeRemaining - 240)}`
+                  `${t("resendOTPIn") || "Resend OTP in"} ${formatTime(timeRemaining - 240)}`
                 ) : (
-                  t("resendCode") || "Resend Code"
+                  t("resendOTP") || "Resend OTP"
                 )}
               </Button>
             </motion.div>

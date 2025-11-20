@@ -102,14 +102,7 @@ const LazyCategoriesSection = ({ t, categories = [], categoriesNames = [] }) => 
     }, [inView, hasLoaded])
   
     return (
-      <motion.section ref={ref} className="relative py-20 overflow-hidden">
-        {/* Modern gradient blurs for background */}
-        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 opacity-70" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-gradient-to-tl from-secondary/15 via-primary/10 to-transparent rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 opacity-70" />
-        
-        {/* Central ambient glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-full blur-[100px] opacity-60" />
-
+      <motion.section ref={ref} className="relative py-20 overflow-hidden z-10">
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             className="text-center mb-16 max-w-3xl mx-auto" 

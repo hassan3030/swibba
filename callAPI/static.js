@@ -169,15 +169,18 @@ export const getAllSubCategories = async () => {
 
 
 
-// Get Brands
-export const getAllBrands = async () => {
+// Get Brands with optional optimization
+export const getAllBrands = async (optimized = false) => {
   try {
-   
+    // Optimized fields for faster loading (only image, name, translations)
+    const fields = optimized 
+      ? "id,name,translations.*,brand_icon.id,brand_icon.filename_download"
+      : "*,translations.*, parent_category.*, sub_category.*, brand_icon , *.*.*"
+    
     const response = await axios.get(
       `${baseItemsURL}Brands`,
       {
-         // Include parent_category relation so the UI can derive subcategories
-         params: {  limit: -1 , fields: "*,translations.*, parent_category.*, sub_category.*, brand_icon , *.*.*", sort: "name"} 
+         params: {  limit: -1 , fields, sort: "name"} 
     } 
     );
     // console.log(`Retrieved All Brands:`, response);
@@ -185,7 +188,6 @@ export const getAllBrands = async () => {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
-      // names: response.data.data.map(category => category.name) || [],
       message: `All Brands retrieved successfully`,
     };
   } catch (error) {

@@ -129,91 +129,97 @@ const Wishlist = () => {
 
   return (
     <motion.div
-      className="container mx-auto py-8 px-4 max-w-6xl"
+      className="min-h-screen bg-background dark:bg-gray-950"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.header
-        className="flex items-center justify-between mb-8"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        <div className="flex items-center gap-4">
-          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-            <Button variant="outline" size="icon" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-          </motion.div>
-          <div>
+      <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <motion.header
+          className="flex items-center justify-between mb-6"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex items-center gap-3">
+            <motion.div
+              variants={heartVariants}
+              animate="beat"
+            >
+              <Heart className="h-6 w-6 text-destructive fill-current" />
+            </motion.div>
             <motion.h1
-              className="text-3xl font-bold"
+              className="text-2xl md:text-3xl font-bold"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               {t("MyWishlist") || "My Wishlist"}
             </motion.h1>
-            <motion.p
-              className="text-muted-foreground"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              {wishlistItems.length} {wishlistItems.length === 1 ? t("item") || "item" : t("items") || "items"}{" "}
-              {t("saved") || "saved"}
-            </motion.p>
           </div>
-        </div>
-        <motion.div variants={heartVariants} animate="beat">
-          <Heart className="h-8 w-8 text-destructive fill-current" />
-        </motion.div>
-      </motion.header>
-
-      {wishlistItems.length === 0 ? (
-        <motion.div className="text-center py-16" variants={emptyStateVariants} initial="hidden" animate="visible">
           <motion.div
+            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
           >
-            <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <span className="text-base font-bold text-primary-foreground">{wishlistItems.length}</span>
           </motion.div>
-          <h3 className="text-xl font-semibold mb-2">{t("Yourwishlistisempty") || "Your wishlist is empty"}</h3>
-          <p className="text-muted-foreground mb-6">
-            {t("Startbrowsingandsaveitemsyouliketoswapfor") || " Start browsing and save items you'd like to swap for"}
-          </p>
-          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-            <Button asChild>
-              <Link href="/products">{t("BrowseProducts") || "Browse Products"}</Link>
-            </Button>
+        </motion.header>
+
+        {/* Divider */}
+        <div className="mb-8">
+          <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        </div>
+
+        {wishlistItems.length === 0 ? (
+          <motion.div 
+            className="text-center py-20 bg-card dark:bg-gray-900 rounded-xl border border-border" 
+            variants={emptyStateVariants} 
+            initial="hidden" 
+            animate="visible"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+              className="w-24 h-24 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6"
+            >
+              <Heart className="h-12 w-12 text-destructive" />
+            </motion.div>
+            <h3 className="text-2xl font-semibold mb-3">{t("Yourwishlistisempty") || "Your wishlist is empty"}</h3>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              {t("Startbrowsingandsaveitemsyouliketoswapfor") || " Start browsing and save items you'd like to swap for"}
+            </p>
+            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+              <Button asChild size="lg" className="rounded-full">
+                <Link href="/products">{t("BrowseProducts") || "Browse Products"}</Link>
+              </Button>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      ) : (
-        <motion.div
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <AnimatePresence>
-            {wishlistItems.map((item, index) => (
-              <motion.div
-                key={item.wishlist_id}
-                variants={cardVariants}
-                layout
-                layoutId={`wishlist-${item.wishlist_id}`}
-                custom={index}
-              >
-                <WishlistCard item={item} onRemove={removeFromWishlist} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      )}
+        ) : (
+          <motion.div
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <AnimatePresence>
+              {wishlistItems.map((item, index) => (
+                <motion.div
+                  key={item.wishlist_id}
+                  variants={cardVariants}
+                  layout
+                  layoutId={`wishlist-${item.wishlist_id}`}
+                  custom={index}
+                >
+                  <WishlistCard item={item} onRemove={removeFromWishlist} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   )
 }

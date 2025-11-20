@@ -425,7 +425,7 @@ const SendItems = () => {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background dark:bg-gray-950 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -536,12 +536,12 @@ const SendItems = () => {
       </Dialog>
 
       <motion.div
-        className="min-h-screen bg-background"
+        className="min-h-screen bg-background dark:bg-gray-950"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="max-w-7xl mx-auto px-0 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Swap Summary Stats */}
           <motion.div
             className="mb-6 grid grid-cols-2 md:grid-cols-5 gap-4"
@@ -591,7 +591,7 @@ const SendItems = () => {
 
           {/* Offers List */}
          
-          <motion.div variants={containerVariants} initial="hidden" animate="visible">
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="pb-6">
             <AnimatePresence mode="popLayout">
               {[...offers]
                 .sort((a, b) => new Date(b.date_created) - new Date(a.date_created))

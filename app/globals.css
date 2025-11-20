@@ -10,6 +10,13 @@
 @import 'flag-icon-css/css/flag-icons.min.css';
 @import 'leaflet/dist/leaflet.css';
 
+/* Custom Grid Pattern Background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgb(0 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
 
 .force-rtl{
   display: inherit !important;

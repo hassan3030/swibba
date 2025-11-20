@@ -781,7 +781,7 @@ export function ItemsList({
                   x: { type: "spring", stiffness: 400, damping: 35, mass: 0.8 },
                   opacity: { duration: 0.15 },
                 }}
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-items-center max-w-screen-xl mx-auto"
+                className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-5 lg:gap-6 w-full"
               >
                 {paginatedItems.map((item, index) => (
                   <motion.div
@@ -1551,9 +1551,9 @@ function SimplePagination({ currentPage, totalPages, onPageChange }) {
   // if (totalPages <= 1) return null
 
   return (
-    <div className="flex justify-center mt-6 gap-2">
+    <div className="flex justify-center mt-8 gap-2 py-4">
       <button
-        className="px-3 py-1 rounded border dark:text-black bg-white hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        className="px-4 py-2 rounded-lg border dark:text-white bg-card hover:bg-muted disabled:opacity-50 transition-colors shadow-sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
@@ -1563,8 +1563,8 @@ function SimplePagination({ currentPage, totalPages, onPageChange }) {
       {[...Array(totalPages)].map((_, idx) => (
         <button
           key={idx + 1}
-          className={`px-3 dark:text-black py-1 border rounded transition-colors ${
-            currentPage === idx + 1 ? "bg-primary text-white shadow-lg" : "bg-white hover:bg-gray-100"
+          className={`px-4 py-2 border rounded-lg transition-colors shadow-sm ${
+            currentPage === idx + 1 ? "bg-primary text-primary-foreground shadow-md font-semibold" : "bg-card dark:text-white hover:bg-muted"
           }`}
           onClick={() => onPageChange(idx + 1)}
         >
@@ -1573,7 +1573,7 @@ function SimplePagination({ currentPage, totalPages, onPageChange }) {
       ))}
 
       <button
-        className="px-3 py-1 dark:text-black rounded border bg-white hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        className="px-4 py-2 rounded-lg border bg-card dark:text-white hover:bg-muted disabled:opacity-50 transition-colors shadow-sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >

@@ -241,16 +241,18 @@ export function ItemCardProfile({
   }, [handleGetWishItem, showSwitchHeart])
 
   return (
-    <Link href={linkToItemOffer}>
+    <Link href={linkToItemOffer} className="block w-full">
       <motion.div 
         variants={cardVariants}
         initial="hidden" 
         animate="visible" 
         whileHover="hover"
+        className="h-full"
       >
-        <Card className="group overflow-hidden w-[180px] h-[380px] flex flex-col border border-border/50 bg-card/95 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30">
+        <Card className="group relative overflow-hidden h-full flex flex-col border-0 bg-card shadow-md hover:shadow-2xl transition-all duration-500 rounded-2xl">
+          {/* Image Container */}
           <div className="relative flex-shrink-0">
-            <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
+            <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/60">
               <AnimatePresence>
                
                   <motion.div
@@ -314,7 +316,7 @@ export function ItemCardProfile({
               {showSwitchHeart && (
                 <motion.button
                   type="button"
-                  className="absolute top-2 right-2 z-10 bg-white/20 backdrop-blur-md rounded-full p-2 hover:bg-white/30 transition-all shadow-lg border border-white/20"
+                  className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-md rounded-full p-2.5 hover:bg-background transition-all shadow-lg border border-border/40"
                   onClick={(e) => {
                     e.stopPropagation()
                     e.preventDefault()
@@ -326,77 +328,88 @@ export function ItemCardProfile({
                   whileTap={{ scale: 0.9 }}
                 >
                   <Heart
-                    className={`h-5 w-5 transition-all duration-300 drop-shadow-md ${
-                      switchHeart ? "text-red-500 fill-current" : "text-white"
+                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
+                      switchHeart ? "text-red-500 fill-current" : "text-muted-foreground"
                     }`}
                   />
                 </motion.button>
               )}
             </div>
 
+            {/* Status Badge */}
             <motion.div
-              className="absolute left-2 top-2"
+              className="absolute left-3 top-3"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Badge className="bg-primary/90 backdrop-blur-sm text-primary-foreground hover:bg-primary shadow-lg border border-primary/20 capitalize">
+              <Badge className="bg-primary text-primary-foreground hover:bg-primary shadow-md border-0 capitalize text-xs px-2 py-0.5">
                 {t(status_item)}
               </Badge>
             </motion.div>
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
           </div>
 
-          <CardContent className="p-3 space-y-2 flex-1 flex flex-col justify-between">
+          {/* Content Container */}
+          <CardContent className="p-4 space-y-2.5 flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-card/50">
             <div className="space-y-2">
-            <motion.div
-              className="flex items-start justify-between gap-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h3 className="line-clamp-1 text-base font-bold group-hover:text-primary transition-colors capitalize">{!isRTL ? (translations[0]?.name): (translations[1]?.name|| name) }</h3>
-            </motion.div>
+              {/* Title */}
+              <motion.div
+                className="flex items-start justify-between gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <h3 className="line-clamp-2 text-sm sm:text-base font-bold group-hover:text-primary transition-colors capitalize leading-tight">
+                  {!isRTL ? (translations[0]?.name): (translations[1]?.name|| name) }
+                </h3>
+              </motion.div>
 
-           
+              {/* Description */}
+              <motion.p
+                className="line-clamp-2 text-xs text-muted-foreground first-letter:capitalize leading-relaxed"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                { (!isRTL ? translations[0]?.description: translations[1]?.description) || description}
+              </motion.p>
 
-            <motion.p
-              className="line-clamp-2 text-xs text-muted-foreground first-letter:capitalize leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              { (!isRTL ? translations[0]?.description: translations[1]?.description) || description}
-            </motion.p>
+              {/* Pricing Section */}
+              <motion.div 
+                className="space-y-1.5 pt-1"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                {/* Main Price */}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg sm:text-xl font-bold text-primary">
+                    {Number(price).toLocaleString('en-US')}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-medium">{t("le")}</span>
+                </div>
 
-            <motion.div
-              className="flex items-center gap-1 text-sm font-bold text-primary"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <span className="text-xs text-muted-foreground font-normal">{t("price")}:</span>
-              <span>{Number(price).toLocaleString('en-US')} {t("le")}</span>
-            </motion.div>
-
-            <motion.div
-              className="flex items-center gap-1 text-xs text-muted-foreground"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="font-medium">{t("aIExpectedPrice")}:</span>
-              <span className="font-semibold text-secondary2">{Number(value_estimate).toLocaleString('en-US')} LE</span>
-            </motion.div>
+                {/* AI Price */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">{t("aIExpectedPrice")}:</span>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    {Number(value_estimate).toLocaleString('en-US')} LE
+                  </span>
+                </div>
+              </motion.div>
             </div>
           </CardContent>
 
-          {/* Swap button */}
+          {/* Swap Button */}
           {status_swap == "available" && showbtn && (
             <motion.div
-              className="p-3 pt-0 flex-shrink-0"
+              className="p-3 sm:p-4 pt-0 flex-shrink-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
             >
               <motion.div 
                 whileHover={{ scale: 1.02 }} 
@@ -404,7 +417,7 @@ export function ItemCardProfile({
                 transition={{ duration: 0.2 }}
               >
                 <Button
-                  className="w-full bg-gradient-to-r from-primary-yellow to-primary-orange text-gray-900 font-semibold hover:from-primary-orange hover:to-primary-yellow shadow-md hover:shadow-lg transition-all"
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all rounded-xl"
                   size="sm"
                   onClick={(e) => {
                     makeSwap(e)

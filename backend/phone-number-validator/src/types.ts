@@ -10,6 +10,7 @@ export interface VerifyOTPBody {
 
 export interface ResendOTPBody {
   phone_number: string;
+  country_code?: string;
 }
 
 export interface ApiResponse<T = any> {

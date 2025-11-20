@@ -1,175 +1,25 @@
 "use client" 
-import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  ChevronLeft,
-  User, 
-  Globe, 
-  Shield,
-  CirclePlus,
-  Navigation,
-  Loader2,
-  MapPin,
-  Settings,
-  Camera,
-  Lock,
-  Sparkles,
-  CreditCard,
-  Phone,
-  Info,
-  Languages,
-  Search,
-  RefreshCw,
-} from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Settings, User, Palette, Shield, Plus, Mail, Phone } from "lucide-react"
 import { checkUserHasProducts, editeProfile, getKYC, getUserById, resetPassword, updatePhoneVerification } from "@/callAPI/users"
 import { useRouter } from "next/navigation"
-import { decodedToken, getCookie, getTarget, removeTarget } from "@/callAPI/utiles"
-import { LanguageToggle } from "@/components/language-toggle"
+import { decodedToken, getCookie, getTarget, removeTarget, mediaURL } from "@/callAPI/utiles"
 import { useTranslations } from "@/lib/use-translations"
-import { useTheme } from "@/lib/theme-provider"
 import { useToast } from "@/components/ui/use-toast"
 import { z } from "zod"
-import { countriesList } from "@/lib/data"
-import { countriesListWithFlags, validatePhoneNumber } from "@/lib/countries-data"
-import PhoneVerificationPopup from "@/components/profile/phone-verification-popup"
-import LocationMap from "@/components/general/location-map"
-import FlagIcon from "@/components/general/flag-icon"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-
+import { validatePhoneNumber } from "@/lib/countries-data"
+import PhoneVerificationPopup from "@/components/profile/edit-profile/phone-verification-popup"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
 import { useRTL } from "@/hooks/use-rtl"
-import PaymentPage from "@/app/payment/page"
-import { mediaURL } from "@/callAPI/utiles";
-import { ThemeToggle } from "@/components/theme-toggle"
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.4, ease: "easeOut" },
-  },
-  hover: {
-    scale: 1.02,
-    y: -5,
-    transition: { duration: 0.2 },
-  },
-}
-
-const headerVariants = {
-  hidden: { opacity: 0, x: -30 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.6, ease: "easeOut" },
-  },
-}
-
-const tabVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.3 },
-  },
-  exit: {
-    opacity: 0,
-    x: 20,
-    transition: { duration: 0.2 },
-  },
-}
-
-const inputVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3 },
-  },
-  focus: {
-    scale: 1.02,
-    transition: { duration: 0.2 },
-  },
-}
-
-const avatarVariants = {
-  hidden: { scale: 0, rotate: -180 },
-  visible: {
-    scale: 1,
-    rotate: 0,
-    transition: {
-      type: "spring",
-      stiffness: 260,
-      damping: 20,
-      delay: 0.3,
-    },
-  },
-  hover: {
-    scale: 1.1,
-    rotate: 5,
-    transition: { duration: 0.2 },
-  },
-}
-
-const floatingVariants = {
-  float: {
-    y: [-10, 10, -10],
-    rotate: [0, 5, -5, 0],
-    transition: {
-      repeat: Number.POSITIVE_INFINITY,
-      duration: 4,
-      ease: "easeInOut",
-    },
-  },
-}
-
-const buttonVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.3 },
-  },
-  hover: {
-    scale: 1.05,
-    transition: { duration: 0.2 },
-  },
-  tap: {
-    scale: 0.95,
-  },
-}
+import { containerVariants, itemVariants } from "@/components/profile/edit-profile/edit-profile-animations"
+import ProfileTab from "@/components/profile/edit-profile/profile-tab"
+import PreferencesTab from "@/components/profile/edit-profile/preferences-tab"
+import SecurityTab from "@/components/profile/edit-profile/security-tab"
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -197,11 +47,14 @@ export default function ProfileSettingsPage() {
   const [user, setUser] = useState({})
   const [avatar, setAvatar] = useState(null)
   const [avatarPath, setAvatarPath] = useState("")
+  const [shouldRemoveAvatar, setShouldRemoveAvatar] = useState(false)
+  const [activeTab, setActiveTab] = useState("profile")
   const [first_name, setFirstName] = useState("")
   const [email, setEmail] = useState("")
   const [last_name, setLasttName] = useState("")
   const [gender, setGender] = useState("")
   const [phone_number, setPhone] = useState("")
+  const [country_code, setCountryCode] = useState("+20")
   const [country, setCountry] = useState("")
   const [city, setCity] = useState("")
   const [street, setStreet] = useState("")
@@ -213,9 +66,9 @@ export default function ProfileSettingsPage() {
   const [selectedPosition, setSelectedPosition] = useState(null)
   const [translations, setTranslations] = useState([])
   const [completed_data,set_completed_data] = useState('false')
-  const [verified,setVerified] = useState('false')
   const [showPhoneVerification, setShowPhoneVerification] = useState(false)
   const [phoneValidationError, setPhoneValidationError] = useState("")
+  const [verifiedPhone, setVerifiedPhone] = useState(false)
 
   const updatePassword = async () => {
     if (!newPassword || !confirmPassword) {
@@ -266,7 +119,7 @@ export default function ProfileSettingsPage() {
       const userData = await getUserById(id)
       // console.log("userData profile:",userData) 
       setUser(userData.data)
-      setVerified(userData.data.verified)
+      setVerifiedPhone(userData.data.verified_phone || false)
     }
   }
   const profileSchema = z.object({
@@ -328,15 +181,32 @@ export default function ProfileSettingsPage() {
     getUser()
   }, [])
 
+  // Trigger map refresh when switching back to profile tab
+  useEffect(() => {
+    if (activeTab === 'profile') {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [activeTab])
+
 
   useEffect(() => {
     if (!user || Object.keys(user).length === 0) return;
     
-    setAvatarPath(`${mediaURL}${user?.avatar}` || "/placeholder-user.jpg")
+    // Only set avatarPath if user has a valid avatar
+    if (user?.avatar && user.avatar !== "null" && user.avatar !== "undefined") {
+      setAvatarPath(`${mediaURL}${user.avatar}`)
+    } else {
+      setAvatarPath("")
+    }
     setFirstName(user?.first_name || "")
     setLasttName(user?.last_name || "")
     setGender(user?.gender || "")
     setPhone(user?.phone_number || "")
+    setCountryCode(user?.country_code || "+20")
     setCountry(user?.country || "")
     
     setStreet(user?.street || "")
@@ -349,7 +219,7 @@ export default function ProfileSettingsPage() {
     set_geo_location(user?.geo_location || {})
     setEmail(user?.email || "")
     set_completed_data(user?.completed_data || 'false')
-    setVerified(user?.verified || 'false')
+    setVerifiedPhone(user?.verified_phone || false)
 
     // Set selected position if geo_location exists
     if (user?.geo_location && user.geo_location.lat && user.geo_location.lng) {
@@ -379,6 +249,27 @@ export default function ProfileSettingsPage() {
 
 
 
+  // Parse phone number to extract country code and phone
+  const parsePhoneNumber = (phone) => {
+    if (!phone) return { country_code: null, phone_number: null }
+    
+    // If phone starts with +, extract country code
+    if (phone.startsWith('+')) {
+      const match = phone.match(/^(\+\d{1,4})(.*)$/)
+      if (match) {
+        return { country_code: match[1], phone_number: match[2] }
+      }
+    }
+    
+    // If phone starts with 0 (Egyptian local format), default to Egypt
+    if (phone.startsWith('0')) {
+      return { country_code: '+20', phone_number: phone.substring(1) }
+    }
+    
+    // Otherwise, assume it's without country code, default to Egypt
+    return { country_code: '+20', phone_number: phone }
+  }
+
   const userCollectionData = {
     first_name: first_name || "",
     last_name: last_name || "",
@@ -388,6 +279,9 @@ export default function ProfileSettingsPage() {
     street: editedTranslations["en-US"].street || "",
     post_code: post_code || "",
     gender: gender || "",
+    // Always include phone fields - verification is optional
+    // Users can save unverified phone and verify later
+    country_code: country_code || "+20",
     phone_number: phone_number || "",
     geo_location: geo_location || {},
     completed_data: completed_data || "false",
@@ -407,7 +301,7 @@ export default function ProfileSettingsPage() {
     geo_location,
     translations,
     completed_data,
-    verified,
+    verifiedPhone,
   })
 
   const handleChange = (e) => {
@@ -636,6 +530,9 @@ Please return ONLY a JSON response in this format:
       };
     }
     
+    // Phone verification is optional - user can save without verification
+    // Verification is only required for using certain features
+    
     const formDataToValidate = {
       phone_number,
       first_name,
@@ -704,6 +601,7 @@ Please return ONLY a JSON response in this format:
 
       // Check if all required data is completed
       const hasAvatar = avatar || (user?.avatar && user.avatar.trim() !== "");
+      // Phone must be provided (but verification is optional)
       if(first_name && last_name && phone_number && updatedDescription && updatedCity && country && updatedStreet && gender && geo_location && geo_location.lat && geo_location.lng && hasAvatar) {
         set_completed_data('true')
       }
@@ -729,7 +627,7 @@ Please return ONLY a JSON response in this format:
       ];
 
       // console.log("Sending translations to server:", finalTranslations);
-      const handleEditeProfile =  await editeProfile(userCollectionData, user.id, avatar, finalTranslations);
+      const handleEditeProfile =  await editeProfile(userCollectionData, user.id, avatar, finalTranslations, shouldRemoveAvatar);
       // console.log("Profile saved successfully with translations");
       // Check if there's a target to redirect to swap page
       const targetSwapId = await getTarget();
@@ -741,6 +639,9 @@ Please return ONLY a JSON response in this format:
           title: t("successfully"),
           description: t("savedSuccessfullyWithTranslation"),
         });
+        
+        // Reset removal flag after successful save
+        setShouldRemoveAvatar(false);
         
         // Refresh user data after successful submit
         await getUser();
@@ -777,23 +678,13 @@ Please return ONLY a JSON response in this format:
     }
   }
 
-  const handlePhoneVerified = async (verifiedPhoneNumber) => {
+  const handlePhoneVerified = async () => {
     try {
-      // Update the phone number in the form
-      setPhone(verifiedPhoneNumber)
-      setVerified('true')
+      // Only update verification status, don't change phone number
+      setVerifiedPhone(true)
       
-      // Update the verification status in the database
-      const token = await getCookie()
-      if (token) {
-        const decoded = await decodedToken(token)
-        if (decoded?.id) {
-          const updateResult = await updatePhoneVerification(decoded.id, verifiedPhoneNumber, true)
-          if (!updateResult.success) {
-            // console.error('Failed to update phone verification status:', updateResult.error)
-          }
-        }
-      }
+      // Refresh user data to get updated verified_phone from backend
+      await getUser()
       
       toast({
         title: t("success"),
@@ -825,23 +716,35 @@ Please return ONLY a JSON response in this format:
   }
 
   const handlePhoneChange = (newPhone) => {
+    // Phone should only contain digits now (no + or country code)
     setPhone(newPhone)
     
     // Reset verification status if phone changes
-    if (verified === 'true' && newPhone !== phone_number) {
-      setVerified('false')
+    if (verifiedPhone && newPhone !== phone_number) {
+      setVerifiedPhone(false)
     }
     
-    // Validate phone number if it looks like it has a country code
-    if (newPhone && newPhone.startsWith('+')) {
-      const match = newPhone.match(/^(\+\d{1,4})(.*)$/)
-      if (match) {
-        const [, countryCode, phoneOnly] = match
-        const validation = validatePhoneNumber(countryCode, phoneOnly)
-        setPhoneValidationError(validation.isValid ? "" : t("invalidNumber"))
-      }
+    // Validate phone number with current country code
+    if (newPhone) {
+      const validation = validatePhoneNumber(country_code || "+20", newPhone)
+      setPhoneValidationError(validation.isValid ? "" : t("invalidNumber"))
     } else {
       setPhoneValidationError("")
+    }
+  }
+
+  const handleCountryCodeChange = (newCountryCode) => {
+    setCountryCode(newCountryCode)
+    
+    // Reset verification status if country code changes
+    if (verifiedPhone) {
+      setVerifiedPhone(false)
+    }
+    
+    // Re-validate phone number with new country code
+    if (phone_number) {
+      const validation = validatePhoneNumber(newCountryCode, phone_number)
+      setPhoneValidationError(validation.isValid ? "" : t("invalidNumber"))
     }
   }
 
@@ -922,893 +825,202 @@ Please return ONLY a JSON response in this format:
 
   return (
     <motion.div
-      className="container py-8 relative overflow-hidden "
+      className="min-h-screen bg-background"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      {/* Decorative background elements */}
-      <div className={`absolute inset-0 overflow-hidden pointer-events-none`}>
-        <motion.div className={`absolute top-20 ${getDirectionClass('right-10', 'left-10')} text-primary/5`} variants={floatingVariants} animate="float">
-          <Settings className="h-32 w-32" />
-        </motion.div>
+      <div className="container max-w-7xl mx-auto px-4 py-8 md:py-12">
+        {/* Header */}
         <motion.div
-          className={`absolute bottom-20 ${getDirectionClass('left-10', 'right-10')} text-secondary/5`}
-          variants={floatingVariants}
-          animate="float"
-          transition={{ delay: 2 }}
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <Sparkles className="h-24 w-24" />
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Settings className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className={`text-3xl md:text-4xl font-bold text-foreground ${isRTL ? 'force-rtl' : ''}`}>
+                {t("accountSettings") || "Account Settings"}
+              </h1>
+            </div>
+          </div>
         </motion.div>
-      </div>
 
-     
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mb-8"
+          >
+            <div className="bg-gradient-to-r from-card/80 via-card to-card/80 backdrop-blur-sm rounded-xl p-2 border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+              {/* Desktop & Tablet View */}
+              <div className="hidden sm:flex items-center gap-2">
+                <TabsList className={`inline-flex h-12 items-center bg-transparent p-0 gap-2 flex-1 ${isRTL ? 'justify-end' : 'justify-start'}`}>
+                  <TabsTrigger
+                    value="profile"
+                    className="relative h-11 rounded-lg px-6 font-semibold text-muted-foreground shadow-none transition-all duration-300 hover:text-foreground hover:bg-background/60 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_4px_12px_rgba(0,0,0,0.15)] data-[state=active]:scale-[1.02]"
+                  >
+                    <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                      <User className="h-4 w-4" />
+                      <span className={isRTL ? 'force-rtl' : ''}>{t("profile") || "Profile"}</span>
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preferences"
+                    className="relative h-11 rounded-lg px-6 font-semibold text-muted-foreground shadow-none transition-all duration-300 hover:text-foreground hover:bg-background/60 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_4px_12px_rgba(0,0,0,0.15)] data-[state=active]:scale-[1.02]"
+                  >
+                    <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                      <Palette className="h-4 w-4" />
+                      <span className={isRTL ? 'force-rtl' : ''}>{t("preferences") || "Preferences"}</span>
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="security"
+                    className="relative h-11 rounded-lg px-6 font-semibold text-muted-foreground shadow-none transition-all duration-300 hover:text-foreground hover:bg-background/60 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_4px_12px_rgba(0,0,0,0.15)] data-[state=active]:scale-[1.02]"
+                  >
+                    <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                      <Shield className="h-4 w-4" />
+                      <span className={isRTL ? 'force-rtl' : ''}>{t("security") || "Security"}</span>
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+                <Button
+                  onClick={handleKYC}
+                  size="sm"
+                  className="h-11 px-6 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                    <Plus className="h-4 w-4" />
+                    <span className={isRTL ? 'force-rtl' : ''}>{t("addItem") || "Add Item"}</span>
+                  </span>
+                </Button>
+              </div>
 
-      <Tabs defaultValue="profile" className="w-full relative z-10">
-      <div className={`grid grid-cols-1 gap-8 lg:grid-cols-4`}  >
-      
-          {/* Sidebar */}
-           <motion.div className={`w-full lg:col-span-1 order-1 ${isRTL ? 'lg:order-2' : 'lg:order-1'}`} variants={itemVariants}>
-          <motion.h1
-          className={`mx-2 text-2xl font-bold inline text-primary/90 mb-2 ${isRTL?'force-rtl':''}`}
-          initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          {t("accountSettings")}
-        </motion.h1>
-            <motion.div variants={cardVariants} whileHover="hover" className="sticky top-8">
-              <TabsList className="flex h-auto w-full flex-col items-start rtl:items-end justify-start shadow-lg border border-border/50 p-2 rounded-xl bg-background">
-                {[
-                  { value: "profile", icon: User, label: t("profile") },
-                  { value: "preferences", icon: Globe, label: t("preferences") },
-                  { value: "security", icon: Shield, label: t("security") }
-                 
-                  // { value: "payment", icon: CreditCard, label: t("payment") },
-                ].map((tab, index) => (
-                  <motion.div
-                    key={tab.value}
-                     initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full hover:bg-primary/20 rounded-md mt-1"
-                   >
+              {/* Mobile View */}
+              <div className="flex flex-col gap-2 sm:hidden">
+                <div className={`overflow-x-auto scrollbar-hide -mx-2 px-2 ${isRTL ? 'direction-rtl' : ''}`}>
+                  <TabsList className={`inline-flex h-12 items-center bg-transparent p-0 gap-2 min-w-full w-max ${isRTL ? 'justify-end flex-row-reverse' : 'justify-start'}`}>
                     <TabsTrigger
-                      value={tab.value}
-                      className="w-full justify-start rtl:justify-end text-left rtl:text-right data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg border border-transparent data-[state=active]:border-primary/30"
+                      value="profile"
+                      className="relative h-11 rounded-lg px-4 font-semibold text-muted-foreground shadow-none transition-all duration-300 hover:text-foreground hover:bg-background/60 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_4px_12px_rgba(0,0,0,0.15)] whitespace-nowrap"
                     >
-                      <motion.div
-                        animate={{ rotate: [0, 5, -5, 0] }}
-                        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 4 }}
-                      >
-                        <tab.icon className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-                      </motion.div>
-                       <span className="px-1">
-                      {tab.label}
+                      <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                        <User className="h-4 w-4" />
+                        <span className={isRTL ? 'force-rtl' : ''}>{t("profile") || "Profile"}</span>
                       </span>
                     </TabsTrigger>
-                  </motion.div>
-                ))}
-
-
-<span
- initial={{ opacity: 0, x: getDirectionValue(-20, 20) }}
- animate={{ opacity: 1, x: 0 }}
- transition={{ delay: 0.4 + 4 * 0.1 }}
- whileHover={{ scale: 1.02 }}
- whileTap={{ scale: 0.98 }}
- className="w-full  rounded-md mt-1"
-onClick={()=>{ handleKYC() }}
->
-
-                   
-                    
-                   
                     <TabsTrigger
-                      value={'add'}
-                      className="w-full justify-start rtl:justify-end text-left rtl:text-right data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 rounded-lg"
+                      value="preferences"
+                      className="relative h-11 rounded-lg px-4 font-semibold text-muted-foreground shadow-none transition-all duration-300 hover:text-foreground hover:bg-background/60 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_4px_12px_rgba(0,0,0,0.15)] whitespace-nowrap"
                     >
-                      <motion.div
-                        animate={{ rotate: [0, 5, -5, 0] }}
-                        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 4 }}
-                        
-                      >
-                      </motion.div>
-                        <CirclePlus className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-                        <span className="px-1">
-                      {t("addItem")}
-                        </span>
+                      <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                        <Palette className="h-4 w-4" />
+                        <span className={isRTL ? 'force-rtl' : ''}>{t("preferences") || "Preferences"}</span>
+                      </span>
                     </TabsTrigger>
-                  
-</span>
-
-
-              </TabsList>
-            </motion.div>
+                    <TabsTrigger
+                      value="security"
+                      className="relative h-11 rounded-lg px-4 font-semibold text-muted-foreground shadow-none transition-all duration-300 hover:text-foreground hover:bg-background/60 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_4px_12px_rgba(0,0,0,0.15)] whitespace-nowrap"
+                    >
+                      <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                        <Shield className="h-4 w-4" />
+                        <span className={isRTL ? 'force-rtl' : ''}>{t("security") || "Security"}</span>
+                      </span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <Button
+                  onClick={handleKYC}
+                  size="sm"
+                  className="w-full h-11 px-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}>
+                    <Plus className="h-4 w-4" />
+                    <span className={isRTL ? 'force-rtl' : ''}>{t("addItem") || "Add Item"}</span>
+                  </span>
+                </Button>
+              </div>
+            </div>
           </motion.div>
 
-          {/* Main Content */}
-           <motion.div className={`w-full lg:col-span-3 order-2 ${isRTL ? 'lg:order-1' : 'lg:order-2'}`} variants={itemVariants}>
-              <TabsContent value="profile">
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit">
-                  <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background overflow-hidden">
-                      <CardHeader className={`bg-gradient-to-r from-primary/10 to-secondary/10  ${isRTL?'force-rtl':''}`}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                            {t("profileInformation")}
-                          </CardTitle>
-                          <CardDescription className="text-base">
-                            {t("updateProfileInformation")}
-                          </CardDescription>
-                        </motion.div>
-                      </CardHeader>
-                      <CardContent className="p-8">
-                        <form >
-                          {/* Avatar Section */}
-                          <motion.div
-                            className="mb-8 flex flex-col items-center space-y-4"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.3 }}
-                          >
-                            <motion.div
-                              className="relative h-24 w-24 overflow-hidden rounded-full ring-4 ring-primary/20 shadow-xl"
-                              variants={avatarVariants}
-                              whileHover="hover"
-                            >
-                              {avatarPath && user?.avatar ? (
-                                <Image
-                                  src={avatarPath}
-                                  alt={`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("account")}`}
-                                  width={96}
-                                  height={96}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex items-center justify-center h-full w-full bg-background border border-border/50">
-                                  <Image
-                                    src="/placeholder-user.jpg"
-                                    alt={t("noAvatar")}
-                                    width={96}
-                                    height={96}
-                                    className="h-full w-full object-cover absolute inset-0"
-                                  />
-                                  <span className="absolute inset-0 flex items-center justify-center text-foreground/70 font-semibold">
-                                  {`${(String(user?.first_name).length <= 11 ? (String(user?.first_name)) : (String(user?.first_name).slice(0, 10)) )|| t("noAvatar") }`}
-                                  </span>
-                                </div>
-                              )}
-                              <motion.div
-                                className="absolute inset-0 bg-foreground/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300"
-                                whileHover={{ opacity: 1 }}
-                              >
-                                <Camera className="h-6 w-6 text-background" />
-                              </motion.div>
-                            </motion.div>
-                          </motion.div>
+          {/* Tab Contents */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <TabsContent value="profile" className="mt-0">
+              <ProfileTab
+                user={user}
+                avatarPath={avatarPath}
+                first_name={first_name}
+                setFirstName={setFirstName}
+                last_name={last_name}
+                setLasttName={setLasttName}
+                country={country}
+                setCountry={setCountry}
+                editedTranslations={editedTranslations}
+                setEditedTranslations={setEditedTranslations}
+                currentLangCode={currentLangCode}
+                post_code={post_code}
+                setPostCode={setPostCode}
+                email={email}
+                phone_number={phone_number}
+                country_code={country_code}
+                handlePhoneChange={handlePhoneChange}
+                onCountryCodeChange={handleCountryCodeChange}
+                phoneValidationError={phoneValidationError}
+                verified={verifiedPhone}
+                setShowPhoneVerification={setShowPhoneVerification}
+                avatar={avatar}
+                setAvatar={setAvatar}
+                shouldRemoveAvatar={shouldRemoveAvatar}
+                setShouldRemoveAvatar={setShouldRemoveAvatar}
+                gender={gender}
+                setGender={setGender}
+                isGettingLocation={isGettingLocation}
+                getCurrentPosition={getCurrentPosition}
+                selectedPosition={selectedPosition}
+                geo_location={geo_location}
+                handleLocationSelect={handleLocationSelect}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                isAiProcessing={isAiProcessing}
+                activeTab={activeTab}
+                t={t}
+                isRTL={isRTL}
+                getDirectionClass={getDirectionClass}
+                getDirectionValue={getDirectionValue}
+              />
+            </TabsContent>
 
-                          <motion.div
-                            className="space-y-6"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {/* Name Fields */}
-                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rtl:grid-flow-col-dense">
-                              
-                              
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="first_name"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-                                >
-                                  {t("firstName")}
-                                </Label>
-                            
+            <TabsContent value="preferences" className="mt-0">
+              <PreferencesTab t={t} isRTL={isRTL} />
+            </TabsContent>
 
-
-
-                                <motion.div whileFocus="focus">
-                                
-                                  <Input
-                                    id="first_name"
-                                    name="first_name"
-                                    value={first_name}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent text-left rtl:text-right"
-                                    dir={isRTL ? 'rtl' : 'ltr'}
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="last_name"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                 
-                                >
-                                  {t("LastName") || "Last Name"}
-                                </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="last_name"
-                                    name="last_name"
-                                    value={last_name}
-                                    onChange={(e) => setLasttName(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent text-left rtl:text-right"
-                                    dir={isRTL ? 'rtl' : 'ltr'}
-                                  />
-                                </motion.div>
-                              </motion.div>
-                            </div>
-
-                            {/* Location Fields */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 ">
-                              {/* Country field - Searchable Select (single) */}
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="country"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                >
-                                  {t("Country") || "Country"}
-                                </Label>
-                                <motion.div whileFocus="focus" >
-                                  <Select
-                                    value={country}
-                                    onValueChange={setCountry}
-                                  >
-                                    <SelectTrigger className="hover:bg-primary/20">
-                                      <SelectValue placeholder={t("SelectCountry") || "Select country"}>
-                                        {country && (
-                                          <div className="flex items-center gap-2">
-                                            <FlagIcon 
-                                              flag={countriesListWithFlags.find(c => c.name === country)?.flag}
-                                              countryCode={country}
-                                              className="text-lg"
-                                            />
-                                            <span>{t(country) || country}</span>
-                                          </div>
-                                        )}
-                                      </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent className="h-40 no-scroll-arrows">
-                                      <div className="flex items-center gap-2 px-3 py-2 sticky top-0 bg-background border-b">
-                                        <Search className="h-4 w-4 opacity-50" />
-                                        <input 
-                                          className="flex h-8 w-full rounded-md bg-background top-0 px-3 py-1 text-sm outline-none placeholder:text-muted-foreground"
-                                          placeholder={t("Search country...")}
-                                          onChange={(e) => {
-                                            const searchField = e.target;
-                                            const value = searchField.value.toLowerCase();
-                                            const items = searchField.closest('.select-content')?.querySelectorAll('.select-item') || [];
-                                            
-                                            items.forEach(item => {
-                                              const countryName = item.textContent.toLowerCase();
-                                              const translatedName = t(item.getAttribute('data-value'))?.toLowerCase() || '';
-                                              const shouldShow = countryName.includes(value) || translatedName.includes(value);
-                                              item.style.display = shouldShow ? '' : 'none';
-                                            });
-                                          }}
-                                          dir={isRTL ? 'rtl' : 'ltr'}
-                                        />
-                                      </div>
-                                      <div className="overflow-y-auto max-h-[calc(10rem-40px)]">
-                                        {countriesListWithFlags.map((c) => (
-                                          <SelectItem key={c.name} value={c.name} className="text-right hover:!bg-primary/20 select-item" data-value={c.name}>
-                                            <div className="flex items-center gap-2">
-                                              <FlagIcon flag={c.flag} countryCode={c.name} className="text-lg" />
-                                              <span>{t(c.name) || c.name}</span>
-                                            </div>
-                                          </SelectItem>
-                                        ))}
-                                      </div>
-                                    </SelectContent>
-                                  </Select>
-                                </motion.div>
-                              </motion.div>
-
-                              {/* City field */}
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label htmlFor="city"   className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-                                >
-                                  {t("City") || "City"}
-                                </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="city"
-                                    name="city"
-                                    value={editedTranslations[currentLangCode].city}
-                                    onChange={(e) => {
-                                        const { value } = e.target;
-                                        setEditedTranslations(prev => ({
-                                            ...prev,
-                                            [currentLangCode]: { ...prev[currentLangCode], city: value }
-                                        }));
-                                    }}
-                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent text-left rtl:text-right"
-                                     dir={currentLangCode === 'ar-SA' ? 'rtl' : 'ltr'}
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                              {/* Street field */}
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="street"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                >
-                                  {t("Street") || "Street"}
-                                </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="street"
-                                    name="street"
-                                    value={editedTranslations[currentLangCode].street}
-                                    onChange={(e) => {
-                                        const { value } = e.target;
-                                        setEditedTranslations(prev => ({
-                                            ...prev,
-                                            [currentLangCode]: { ...prev[currentLangCode], street: value }
-                                        }));
-                                    }}
-                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent text-left rtl:text-right"
-                                     dir={currentLangCode === 'ar-SA' ? 'rtl' : 'ltr'}
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                              {/* Postal Code field */}
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="post_code"
-                                  className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                >
-                                  {t("Postalcode") || "Postal Code"}
-                                </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="post_code"
-                                    name="post_code"
-                                    value={post_code}
-                                    onChange={(e) => setPostCode(e.target.value)}
-                                     className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent text-left rtl:text-right"
-                                     dir={isRTL ? 'rtl' : 'ltr'}
-                                  />
-                                </motion.div>
-                              </motion.div>
-                            </div>
-
-                            {/* Location Services */}
-                            <motion.div variants={inputVariants}>
-                              <motion.div variants={cardVariants} whileHover="hover">
-                                <Card className="bg-background  ">
-                                  <CardHeader>
-                                     <CardTitle className="flex items-center gap-2 text-lg rtl:flex-row-reverse">
-                                      <motion.div
-                                        animate={{ rotate: [0, 360] }}
-                                        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 8, ease: "linear" }}
-                                      >
-                                        <Navigation className="h-5 w-5 text-primary" />
-                                      </motion.div>
-                                      {t("CurrentPosition") || "Current Position"}
-                                    </CardTitle>
-                                  </CardHeader>
-                                  <CardContent className="space-y-4">
-                                    <motion.div  whileHover="hover" whileTap="tap">
-                                      <Button
-                                        type="button"
-                                        onClick={getCurrentPosition}
-                                        disabled={isGettingLocation}
-                                        className="w-full bg-secondary text-background shadow-lg"
-                                      >
-                                        {isGettingLocation ? (
-                                          <>
-                                            <motion.div
-                                              animate={{ rotate: 360 }}
-                                              transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}
-                                            >
-                                               <Loader2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-                                            </motion.div>
-                                            {t("GettingLocation") || "Getting Location..."}
-                                          </>
-                                        ) : (
-                                          <>
-                                             <MapPin className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-                                            {t("GetCurrentLocation") || "Get Current Location"}
-                                          </>
-                                        )}
-                                      </Button>
-                                    </motion.div>
-
-                                    {/* Interactive Map */}
-                                    <motion.div
-                                      initial={{ opacity: 0, y: 20 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      transition={{ delay: 0.4 }}
-                                    >
-                                      <LocationMap
-                                        latitude={selectedPosition?.lat || geo_location?.lat || 30.0444}
-                                        longitude={selectedPosition?.lng || geo_location?.lng || 31.2357}
-                                        onLocationSelect={handleLocationSelect}
-                                        height="250px"
-                                        className="shadow-lg"
-                                      />
-                                    </motion.div>
-
-                                    <AnimatePresence>
-                                      {selectedPosition && (
-                                        <motion.div
-                                          initial={{ opacity: 0, height: 0 }}
-                                          animate={{ opacity: 1, height: "auto" }}
-                                          exit={{ opacity: 0, height: 0 }}
-                                          transition={{ duration: 0.3 }}
-                                        >
-                                          <Card className="bg-background/50 backdrop-blur-sm">
-                                            <CardHeader>
-                                               <CardTitle className="flex items-center gap-2 text-base rtl:flex-row-reverse">
-                                                <MapPin className="h-4 w-4 text-primary" />
-                                                {t("SelectedPosition") || "Selected Position"}
-                                              </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className={`space-y-2 ${isRTL ? 'force-rtl':'' }`}>
-                                              <motion.p
-                                                className="text-sm"
-                                                initial={{ opacity: 0, x: getDirectionValue(-10, 10) }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.1 }}
-                                              >
-                                                <strong>{t("Name") || "Name"}:</strong> {selectedPosition.name}
-                                              </motion.p>
-                                              <motion.p
-                                                className="text-sm"
-                                                initial={{ opacity: 0, x: getDirectionValue(-10, 10) }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.2 }}
-                                              >
-                                                <strong>{t("Latitude") || "Latitude"}:</strong>{" "}
-                                                {selectedPosition.lat.toFixed(6)}
-                                              </motion.p>
-                                              <motion.p
-                                                className="text-sm"
-                                                initial={{ opacity: 0, x: getDirectionValue(-10, 10) }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.3 }}
-                                              >
-                                                <strong>{t("Longitude") || "Longitude"}:</strong>{" "}
-                                                {selectedPosition.lng.toFixed(6)}
-                                              </motion.p>
-                                            </CardContent>
-                                          </Card>
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </CardContent>
-                                </Card>
-                              </motion.div>
-                            </motion.div>
-
-                            {/* Contact and Personal Info */}
-                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 ">
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label htmlFor="email"
-                                
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-                                >
-                                  {t("email") || "Email"}
-                                </Label>
-                                <Input
-                                  disabled
-                                  id="email"
-                                  name="email"
-                                  type="email"
-                                  value={email || ""}
-                                  className="bg-background border border-border/50 cursor-not-allowed"
-                                />
-                              </motion.div>
-
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="phone_number"
-
-                                   className={`text-sm font-medium text-foreground flex items-center gap-2 rtl:flex-row-reverse ${isRTL?'force-rtl':''}`}
-                                >
-                                  {t("phoneNumber") || "Phone Number"}
-                                  {verified === 'true' && (
-                                    <motion.div
-                                      initial={{ scale: 0 }}
-                                      animate={{ scale: 1 }}
-                                       className="flex items-center gap-1 text-secondary2 rtl:flex-row-reverse"
-                                    >
-                                      <Shield className="h-4 w-4" />
-                                      <span className="text-xs">{t("verified") || "Verified"}</span>
-                                    </motion.div>
-                                  )}
-                                </Label>
-                                <div className="flex gap-2">
-                                  <motion.div whileFocus="focus" className="flex-1">
-                                    <Input
-                                      id="phone_number"
-                                      name="phone_number"
-                                      value={phone_number}
-                                      type="tel"
-                                      onChange={(e) => handlePhoneChange(e.target.value)}
-                                      className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent ${phoneValidationError ? 'border-destructive focus:border-destructive' : ''}`}
-                                      placeholder={t("enterPhoneNumber") || "Enter phone number"}
-                                    />
-                                    {phoneValidationError && (
-                                      <motion.div 
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                         className="flex items-center gap-2 rtl:flex-row-reverse text-destructive text-sm mt-1"
-                                      >
-                                        <Shield className="h-3 w-3" />
-                                        <span>{phoneValidationError}</span>
-                                      </motion.div>
-                                    )}
-                                  </motion.div>
-                                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                    <Button
-                                      type="button"
-                                      variant={verified === 'true' ? "secondary" : "outline"}
-                                      size="sm"
-                                      onClick={() => setShowPhoneVerification(true)}
-                                      className={`${verified === 'true' ? 'bg-secondary2/10 text-secondary2 border-secondary2/30 hover:bg-secondary2/20' : ''}`}
-                                    >
-                                      {verified === 'true' ? (
-                                        <>
-                                           <Shield className="h-4 w-4 mr-1 rtl:ml-1 rtl:mr-0" />
-                                          {t("reverify") || "Re-verify"}
-                                        </>
-                                      ) : (
-                                        <>
-                                           <Phone className="h-4 w-4 mr-1 rtl:ml-1 rtl:mr-0" />
-                                          {t("verify") || "Verify"}
-                                        </>
-                                      )}
-                                    </Button>
-                                  </motion.div>
-                                </div>
-                              </motion.div>
-                            </div>
-
-                            {/* Avatar Upload and Gender */}
-                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rtl:grid-flow-col-dense">
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="avatar"
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                                  
-                                >
-                                  {t("Avatar") || "Avatar"}
-                                </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="avatar"
-                                    name="avatar"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => setAvatar(e.target.files[0])}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent"
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                              <motion.div className="space-y-2" variants={inputVariants}>
-                                <Label
-                                  htmlFor="gender"
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                               
-                                >
-                                  {t("Gender") || "Gender"}
-                                </Label>
-                                <Select value={gender} onValueChange={(value) => setGender(value)}>
-                                  <SelectTrigger className="transition-all  hover:bg-primary/20 duration-300 focus:ring-2  focus:ring-ring focus:border-transparent">
-                                    <SelectValue placeholder={t("SelectGender") || "Select Gender"} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="male" className="hover:!bg-primary/20">{t("Male") || "Male"}</SelectItem>
-                                    <SelectItem value="female" className="hover:!bg-primary/20">{t("Female") || "Female"}</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </motion.div>
-                            </div>
-
-                            {/* Description */}
-                            <motion.div className="space-y-2" variants={inputVariants}>
-                              <Label
-                                htmlFor="description"
-                                className={`text-sm font-medium text-foreground ${isRTL?'force-rtl':''}`}
-
-                               
-                              >
-                                {t("descriptionProfile") || "Description"}
-                              </Label>
-                              <motion.div whileFocus="focus">
-                                <Textarea
-                                  id="description"
-                                  name="description"
-                                  value={editedTranslations[currentLangCode].description}
-                                  onChange={(e) => {
-                                      const { value } = e.target;
-                                      setEditedTranslations(prev => ({
-                                          ...prev,
-                                          [currentLangCode]: { ...prev[currentLangCode], description: value }
-                                      }));
-                                  }}
-                                  rows={4}
-                                   className={`transition-all duration-300 focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-left ${isRTL?'force-rtl':''}`}
-                                   dir={currentLangCode === 'ar-SA' ? 'rtl' : 'ltr'}
-                                   placeholder={currentLangCode === 'ar-SA' 
-                                     ? "أخبر الآخرين عن نفسك..." 
-                                     : "Tell others about yourself..."
-                                   }
-                                />
-                              </motion.div>
-                            </motion.div>
-
-                          </motion.div>
-                        </form>
-                      </CardContent>
-                      <CardFooter className="flex justify-end rtl:justify-start bg-background border-t border-border/50">
-                        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                          <Button
-                            onClick={(e)=>{handleSubmit(e)}}
-                            disabled={isLoading || isAiProcessing}
-                            className="bg-primary mt-1 hover:bg-primary/80 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
-                          >
-                            {isLoading || isAiProcessing ? (
-                              <span className="flex items-center gap-2">
-                                <Loader2 className="animate-spin h-4 w-4" />
-                                {isAiProcessing 
-                                  ? (t("saving") || "Saving...")
-                                  : (t("saving") || "Saving...")
-                                }
-                              </span>
-                            ) : (
-                               <span className="flex items-center gap-2 rtl:flex-row-reverse">
-                                 {/* <Languages className="h-4 w-4" /> */}
-                                 {t("save") || "Save"}
-                               </span>
-                            )}
-                          </Button>
-                        </motion.div>
-                      </CardFooter>
-                    </Card>
-                  </motion.div>
-                </motion.div>
-              </TabsContent>
-
-              <TabsContent value="preferences" key='preferences'>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="preferences">
-                  <motion.div variants={cardVariants} whileHover="hover">
-                    <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background">
-                      <CardHeader className={`bg-gradient-to-r from-primary/10 to-secondary/10 ${isRTL?'force-rtl':''}`}>
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                          {t("preferences") || "Preferences"}
-                        </CardTitle>
-                        <CardDescription className="text-base">
-                          {t("Customizeyourexperience") || "Customize your experience on the platform."}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-8">
-                        <motion.div
-                          className="space-y-8"
-                          variants={containerVariants}
-                          initial="hidden"
-                          animate="visible"
-                        >
-                          <motion.div
-                            className="flex items-center justify-between p-4 rounded-lg bg-background border border-border/50 hover:border-primary/30 transition-colors"
-                            variants={itemVariants}
-                            whileHover={{ scale: 1.02 }}
-                          >
-                            <div>
-                              <h3 className={`font-medium text-lg ${isRTL?'force-rtl':''}`}>{t("DarkMode") || "Dark Mode"}</h3>
-                              <p className="text-sm text-foreground/70">
-                                {t("Customizeyourexperience") || "Toggle between light and dark themes"}
-                              </p>
-                            </div>
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              {/* <Switch
-                                checked={theme === "dark"}
-                                onClick={() => toggleTheme()}
-                                onCheckedChange={(checked) => handleSwitchChange("darkMode", checked)}
-                              /> */}
-                              <ThemeToggle/>
-                            </motion.div>
-                          </motion.div>
-
-
-
- <motion.div
-                            className="flex items-center justify-between p-4 rounded-lg bg-background border border-border/50 hover:border-primary/30 transition-colors"
-                            variants={itemVariants}
-                            whileHover={{ scale: 1.02 }}
-                          >
-                            <div>
-                              <h3 className={`font-medium text-lg ${isRTL?'force-rtl':''}`}>{t("changeLanguage") || "Change Language"}</h3>
-                              <p className="text-sm text-foreground/70">
-                                {t("changeLanguageDescription") || "Change the language of the platform."}
-                              </p>
-                            </div>
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              {/* <Switch
-                                checked={theme === "dark"}
-                                onClick={() => toggleTheme()}
-                                onCheckedChange={(checked) => handleSwitchChange("darkMode", checked)}
-                              /> */}
-                              <LanguageToggle />
-                            </motion.div>
-                          </motion.div>
-                          {/* <motion.div variants={itemVariants}>
-                            <LanguageToggle />
-                          </motion.div> */}
-                        </motion.div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </motion.div>
-              </TabsContent>
-
-              <TabsContent value="security"  key='security'>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="security">
-                  <motion.div variants={cardVariants} whileHover="hover">
-                     <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background">
-                       <CardHeader className={`bg-gradient-to-r from-destructive/10 to-destructive/5 ${isRTL?'force-rtl':''}`}>
-                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
-                           <motion.div
-                             animate={{ rotate: [0, -5, 5, 0] }}
-                             transition={{ repeat: Number.POSITIVE_INFINITY, duration: 3 }}
-                           >
-                             <Lock className="h-6 w-6 text-destructive" />
-                           </motion.div>
-                           {t("security") || "Security"}
-                         </CardTitle>
-                         <CardDescription className={`text-base ${isRTL?'force-rtl':''}`}>
-                           {t("Manageyouraccountsecurityprivacy") ||
-                             "Manage your account security and privacy settings."}
-                         </CardDescription>
-                       </CardHeader>
-                      <CardContent className="p-8">
-                        <motion.div
-                          className="space-y-8"
-                          variants={containerVariants}
-                          initial="hidden"
-                          animate="visible"
-                        >
-                          <motion.div className={`space-y-4 ${isRTL?'force-rtl':''}`} variants={itemVariants}>
-                             <h3 className="font-medium text-lg">{t("ChangePassword") || "Change Password"}</h3>
-                             <div className="space-y-4">
-                               <motion.div className="space-y-2" variants={inputVariants}>
-
-                                 <Label htmlFor="current-email" className={`text-sm font-medium ${isRTL?'force-rtl':''}`}>
-                                   {t("CurrentEmail") || "Current Email"}
-                                 </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="current-email"
-                                    type="email"
-                                    value={currentEmail}
-                                    onChange={(e) => setCurrentEmail(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-destructive focus:border-transparent"
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                               <motion.div className="space-y-2" variants={inputVariants}>
-                                 <Label htmlFor="new-password" className={`text-sm font-medium ${isRTL?'force-rtl':''}`}>
-                                   {t("NewPassword") || "New Password"}
-                                 </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="new-password"
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-destructive focus:border-transparent"
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                               <motion.div className="space-y-2" variants={inputVariants}>
-                                 <Label htmlFor="confirm-password" className={`text-sm font-medium ${isRTL?'force-rtl':''}`}>
-                                   {t("ConfirmPassword") || "Confirm New Password"}
-                                 </Label>
-                                <motion.div whileFocus="focus">
-                                  <Input
-                                    id="confirm-password"
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="transition-all duration-300 focus:ring-2 focus:ring-destructive focus:border-transparent"
-                                  />
-                                </motion.div>
-                              </motion.div>
-
-                              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                                <Button
-                                  onClick={updatePassword}
-                                  className="bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-destructive-foreground shadow-lg hover:shadow-xl transition-all duration-300"
-                                >
-                                  {t("UpdatePassword") || "Update Password"}
-                                </Button>
-                              </motion.div>
-                            </div>
-                          </motion.div>
-
-                          {/* <motion.div
-                            className={`space-y-4 pt-8 border-t border-border ${isRTL?'force-rtl':''}`}
-                            variants={itemVariants}
-                          >
-                             <h3 className="font-medium text-lg text-destructive">
-                               {t("DeleteAccount") || "Delete Account"}
-                             </h3>
-                             <p className="text-sm text-foreground/70">
-                               {t("Permanentlydeleteyouraccoun") || "Permanently delete your account and all your data."}
-                             </p>
-                            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                              <Button
-                                variant="destructive"
-                                className="bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive shadow-lg hover:shadow-xl transition-all duration-300"
-                              >
-                                {t("DeleteAccount") || "Delete Account"}
-                              </Button>
-                            </motion.div>
-                          </motion.div> */}
-                        </motion.div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </motion.div>
-              </TabsContent>
-
-              <TabsContent value="payment" key='payment'>
-                <motion.div variants={tabVariants} initial="hidden" animate="visible" exit="exit" key="payment">
-                  <motion.div variants={cardVariants} whileHover="hover">
-                     <Card className="shadow-xl border border-border/50 bg-gradient-to-br from-card to-background">
-                       <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
-                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent flex items-center gap-2 rtl:flex-row-reverse">
-                           {t("payment") || "Payment"}
-                         </CardTitle>
-                         <CardDescription className="text-base">
-                           {t("Manageyourpaymentmethods") || "Manage your payment methods"}
-                         </CardDescription>
-                       </CardHeader>
-                      <CardContent className="p-8">
-                        <motion.div
-                          className="space-y-8"
-                          variants={containerVariants}
-                          initial="hidden"
-                          animate="visible"
-                        >
-                          <motion.div className="space-y-4" variants={itemVariants}>
-                            <div className="space-y-4">
-                              <PaymentPage showHeader={false} />
-                            </div>
-                          </motion.div>
-                        </motion.div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </motion.div>
-              </TabsContent>
+            <TabsContent value="security" className="mt-0">
+              <SecurityTab
+                currentEmail={currentEmail}
+                setCurrentEmail={setCurrentEmail}
+                newPassword={newPassword}
+                setNewPassword={setNewPassword}
+                confirmPassword={confirmPassword}
+                setConfirmPassword={setConfirmPassword}
+                updatePassword={updatePassword}
+                t={t}
+                isRTL={isRTL}
+              />
+            </TabsContent>
           </motion.div>
-        </div>
-      </Tabs>
+        </Tabs>
+      </div>
 
       {/* Phone Verification Popup */}
       <PhoneVerificationPopup
@@ -1816,7 +1028,8 @@ onClick={()=>{ handleKYC() }}
         onOpenChange={setShowPhoneVerification}
         currentPhone={phone_number}
         onVerified={handlePhoneVerified}
-        isVerified={verified === 'true'}
+        isVerified={verifiedPhone}
+        userCountryCode={user?.country_code || "+20"}
       />
     </motion.div>
   )

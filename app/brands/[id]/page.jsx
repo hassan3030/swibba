@@ -119,13 +119,19 @@ const BrandItemsPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container  p-4">
       {/* Scrollable Brands Header */}
       <div className="mb-6 pb-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
-        <div className="inline-flex space-x-3 p-1">
-          {allBrands.map((brand) => (
+        <div className="flex justify-center  space-x-3 p-1">
+          {allBrands.slice(0, 12).map((brand) => (
             <BrandHeaderCard key={brand.id} brand={brand} currentBrandId={brandId} />
           ))}
+          {/* View All Button */}
+          <Link href="/brands">
+            <div className="flex-shrink-0 px-4 py-2 rounded-full cursor-pointer transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md">
+              <span className="text-sm font-medium whitespace-nowrap">{t('viewAll')}</span>
+            </div>
+          </Link>
         </div>
       </div>
 

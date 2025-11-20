@@ -648,12 +648,12 @@ export default function OffersPage() {
       </Dialog>
 
       <motion.div
-        className="min-h-screen bg-background "
+        className="min-h-screen bg-background dark:bg-gray-950"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="max-w-5xl mx-auto px-0 py-8 ">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/10 shadow-sm">
@@ -675,7 +675,7 @@ export default function OffersPage() {
             />
 
             {/* Received Offers Tab */}
-            <TabsContent value="received" className="mt-0">
+            <TabsContent value="received" className="mt-0 pb-6">
               <motion.div variants={containerVariants} initial="hidden" animate="visible">
                 <AnimatePresence mode="popLayout">
                   {[...receivedOffers]
@@ -710,7 +710,7 @@ export default function OffersPage() {
             </TabsContent>
 
             {/* Sent Offers Tab */}
-            <TabsContent value="sent" className="mt-0">
+            <TabsContent value="sent" className="mt-0 pb-6">
               <motion.div variants={containerVariants} initial="hidden" animate="visible">
                 <AnimatePresence mode="popLayout">
                   {[...sentOffers]

@@ -67,6 +67,10 @@ export default defineEndpoint({
         const phoneNumber = sanitizePhoneNumber(body.phone_number);
         const validationResult = phoneValidationService.validatePhone(phoneNumber, body.country_code);
 
+        // Extract phone number without country code for storage
+        // Example: +201158952209 -> country_code: +20, phone_number: 1158952209
+        const phoneWithoutCode = phoneNumber.replace(body.country_code, '');
+
         // Check if phone number is already taken by another user
         if (await isPhoneNumberTaken(knex, validationResult.formattedNumber, user.id)) {
           throw createError('PHONE_IN_USE');
@@ -80,8 +84,9 @@ export default defineEndpoint({
         const otpHash = otpService.hashOTP(otp);
         const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-        // Store verification data in user record
-        await updateUserVerification(knex, user.id, validationResult.formattedNumber, otpHash, expiresAt);
+        // Store verification data in user record, including phone_number (without code) and country_code
+        // This allows verification to work even if profile isn't fully saved yet
+        await updateUserVerification(knex, user.id, otpHash, expiresAt, phoneWithoutCode, body.country_code);
 
         // Send SMS
         const provider = phoneValidationService.selectSMSProvider(validationResult.formattedNumber);
@@ -122,8 +127,8 @@ export default defineEndpoint({
 
         const phoneNumber = sanitizePhoneNumber(body.phone_number);
 
-        // Check if user has pending verification for this phone number
-        if (!user.otp_hash || !user.expires_at || user.phone_number !== phoneNumber) {
+        // Check if user has pending verification
+        if (!user.otp_hash || !user.expires_at) {
           throw createError('NO_PENDING_VERIFICATION');
         }
 
@@ -147,7 +152,7 @@ export default defineEndpoint({
         }
 
         // Mark phone as verified
-        await verifyUserPhone(knex, user.id, phoneNumber);
+        await verifyUserPhone(knex, user.id);
 
         logger.info(`Phone ${phoneNumber} verified successfully for user ${user.id}`);
 
@@ -180,9 +185,13 @@ export default defineEndpoint({
         const user = await getCurrentUser(knex, req.accountability);
 
         const phoneNumber = sanitizePhoneNumber(body.phone_number);
+        const countryCode = body.country_code || user.country_code || '+20';
+        
+        // Extract phone number without country code for storage
+        const phoneWithoutCode = phoneNumber.replace(countryCode, '');
 
-        // Check if user has pending verification for this phone number
-        if (!user.otp_hash || !user.expires_at || user.phone_number !== phoneNumber) {
+        // Check if user has pending verification
+        if (!user.otp_hash || !user.expires_at) {
           throw createError('NO_PENDING_VERIFICATION');
         }
 
@@ -196,8 +205,8 @@ export default defineEndpoint({
         const otpHash = otpService.hashOTP(otp);
         const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-        // Update verification data
-        await updateUserVerification(knex, user.id, phoneNumber, otpHash, expiresAt);
+        // Update verification data, keeping phone_number (without code) and country_code
+        await updateUserVerification(knex, user.id, otpHash, expiresAt, phoneWithoutCode, countryCode);
 
         // Send SMS
         const provider = phoneValidationService.selectSMSProvider(phoneNumber);

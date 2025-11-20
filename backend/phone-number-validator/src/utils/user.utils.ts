@@ -35,27 +35,37 @@ export async function isPhoneNumberTaken(knex: Knex, phoneNumber: string, exclud
 export async function updateUserVerification(
   knex: Knex,
   userId: string,
-  phoneNumber: string,
   otpHash: string,
-  expiresAt: Date
+  expiresAt: Date,
+  phoneNumber?: string,
+  countryCode?: string
 ): Promise<void> {
+  const updateData: any = {
+    otp_hash: otpHash,
+    expires_at: expiresAt,
+    attempts: 0,
+    created_at: new Date()
+  };
+
+  // If phone_number and country_code are provided, save them
+  // This allows verification to work even if profile isn't fully saved yet
+  if (phoneNumber !== undefined) {
+    updateData.phone_number = phoneNumber;
+  }
+  if (countryCode !== undefined) {
+    updateData.country_code = countryCode;
+  }
+
   await knex('directus_users')
     .where('id', userId)
-    .update({
-      phone_number: phoneNumber,
-      otp_hash: otpHash,
-      expires_at: expiresAt,
-      attempts: 0,
-      verified_phone: false,
-      created_at: new Date()
-    });
+    .update(updateData);
 }
 
-export async function verifyUserPhone(knex: Knex, userId: string, phoneNumber: string): Promise<void> {
+export async function verifyUserPhone(knex: Knex, userId: string): Promise<void> {
+  // Only update the verified_phone flag, don't change phone_number or country_code
   await knex('directus_users')
     .where('id', userId)
     .update({
-      phone_number: phoneNumber,
       verified_phone: true,
       otp_hash: null,
       expires_at: null,

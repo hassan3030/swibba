@@ -814,7 +814,7 @@ export default function OffersDetailsPage() {
                     <motion.div key={offer.id} variants={itemVariants}>
                       <Card className="overflow-hidden">
                         <div>
-                          <CardHeader className="flex flex-row items-start gap-4 space-y-0">
+                          <CardHeader className="flex flex-row items-start gap-4 space-y-0 rtl:flex-row-reverse">
                             <Avatar>
                                 <AvatarImage 
                                   src={

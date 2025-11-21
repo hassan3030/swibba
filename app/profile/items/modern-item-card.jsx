@@ -234,7 +234,7 @@ export default function ModernItemCard({ item }) {
             
             {/* Status Badge Overlay */}
             <div className={`absolute top-3 ${isRTL ? 'left-3' : 'right-3'}`}>
-              <Badge className={`${statusColor} backdrop-blur-sm text-xs font-medium px-2.5 py-1`}>
+              <Badge className={` backdrop-blur-sm text-xs font-medium px-2.5 py-1`}>
                 {t(item.status_item)}
               </Badge>
             </div>
@@ -299,7 +299,7 @@ export default function ModernItemCard({ item }) {
                 <Calendar className="h-3 w-3" />
                 <span>{new Date(item.date_created).toLocaleDateString()}</span>
               </div>
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" >
                 {t(item.category)}
               </Badge>
             </div>

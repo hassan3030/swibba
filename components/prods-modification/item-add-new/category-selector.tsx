@@ -114,15 +114,15 @@ export function CategorySelector({
           name="sub_category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-foreground">{t("SubCategories") || "Sub Categories"}</FormLabel>
+              <FormLabel className="text-foreground flex items-center gap-2 font-semibold ">{t("SubCategories") || "Sub Categories"}</FormLabel>
               <Popover open={isSubCategoryPopoverOpen} onOpenChange={setIsSubCategoryPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <FormControl>
+                  <FormControl className=" ">
                     <Button
                       type="button"
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between bg-background border-input text-foreground"
+                      className="w-full   justify-between bg-background border-input text-foreground"
                       disabled={!selectedCategoryId || selectedCategoryId === "none"}
                     >
                       {field.value && field.value !== "none"

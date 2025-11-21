@@ -42,7 +42,7 @@ const CategoriesPage = () => {
           setCategories(fallbackCategories)
         }
       } catch (err) {
-        console.error("Error fetching categories:", err)
+        // console.error("Error fetching categories:", err)
         setError(err)
         setCategories(fallbackCategories)
       } finally {
@@ -134,7 +134,7 @@ const CategoriesPage = () => {
             <input
               type="text"
               placeholder={t('searchCategories') || 'Search categories...'}
-              className="w-full pl-10 pr-4 py-2.5 border border-primary/30 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
+              className="w-full pl-10 px-4 py-2.5 border border-primary/30 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

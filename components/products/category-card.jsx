@@ -155,7 +155,7 @@ export function CategoryCard({ name, imageSrc, translations = [], showCategoryLe
           
           {/* Category name with modern typography */}
           <div className="w-full text-center">
-            <h3 className="font-bold text-sm md:text-base text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+            <h3 className="font-bold text-sm capitalize md:text-base text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
               {displayName}
             </h3>
             {/* Animated underline */}

@@ -116,7 +116,7 @@ const WishlistCard = ({ item, onRemove }) => {
               </CardTitle>
             </motion.div>
             <motion.p
-              className="text-muted-foreground text-sm mb-4 capitalize line-clamp-2 leading-relaxed"
+              className="text-muted-foreground text-sm mb-4 capitalize line-clamp-1 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}

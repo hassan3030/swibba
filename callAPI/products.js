@@ -352,9 +352,27 @@ export const getProductsEnhanced = async (filters = {}) => {
       additionalFilters.push({ _or: allowedCatFilters })
     }
 
-    // Brand filter
+    // Brand filter (case-insensitive attempt)
     if (filters.brand) {
-      additionalFilters.push({ brand: { _eq: filters.brand } })
+      try {
+        const raw = String(filters.brand)
+        const lower = raw.toLowerCase()
+        const upper = raw.toUpperCase()
+        // Some Directus installations/datastores are case-sensitive for _contains.
+        // To increase the chance of a case-insensitive match, add an _or group
+        // checking original, lowercased and uppercased variants.
+        additionalFilters.push({
+          _or: [
+            { brand: { _contains: raw } },
+            { brand: { _contains: lower } },
+            { brand: { _contains: upper } },
+
+          ]
+        })
+      } catch (e) {
+        // fallback to original behaviour if something goes wrong
+        additionalFilters.push({ brand: { _contains: filters.brand } })
+      }
     }
 
 

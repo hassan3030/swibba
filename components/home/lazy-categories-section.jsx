@@ -6,6 +6,7 @@ import { CategoryCard } from "@/components/products/category-card"
 import { CategoryCardSkeleton } from "@/components/loading/category-card-skeleton"
 import { useInView } from "react-intersection-observer"
 import { mediaURL } from "@/callAPI/utiles"
+import Link from "next/link"
 
 
 
@@ -116,7 +117,9 @@ const LazyCategoriesSection = ({ t, categories = [], categoriesNames = [] }) => 
               animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.6 }}
             >
+            <Link href="/categories" className="inline-flex items-center gap-2">
               <span className="text-xs font-semibold tracking-wider uppercase">{t('PopularCategories') || 'Popular Categories'}</span>
+            </Link>
             </motion.div>
             <motion.h2
               className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text "

@@ -226,7 +226,7 @@ passwordResetSuccess: "If an account with that email exists, a password reset li
                  passwordsDoNotMatch: "Passwords do not match",
                 resettingPassword: "Resetting Password...",
                  resetPassword: "Reset Password",
-
+ 
 
 
 
@@ -1433,7 +1433,6 @@ SelectCountry: "Select a country",
     visitHelpCenter: "Visit Help Center",
     communityForums: "Community Forums",
     // FAQ questions
-    resetPassword: "How do I reset my password?",
     resetPasswordAnswer:
       'To reset your password, click on "Forgot Password" on the login page. You\'ll receive an email with instructions to create a new password.',
     paymentMethods: "What payment methods do you accept?",
@@ -3171,7 +3170,6 @@ SelectCountry: "اختر الدولة",
     visitHelpCenter: "زيارة مركز المساعدة",
     communityForums: "منتديات المجتمع",
     // FAQ questions
-    resetPassword: "كيف أعيد تعيين كلمة المرور الخاصة بي؟",
     resetPasswordAnswer:
       'لإعادة تعيين كلمة المرور الخاصة بك، انقر على "نسيت كلمة المرور" في صفحة تسجيل الدخول. ستتلقى بريدًا إلكترونيًا يحتوي على تعليمات لإنشاء كلمة مرور جديدة.',
     paymentMethods: "ما هي طرق الدفع التي تقبلونها؟",

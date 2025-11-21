@@ -207,8 +207,8 @@ export function ItemAdd() {
               {/* Form Content */}
               <div className="p-6 sm:p-8 md:p-12">
               {step === 1 && (
-                <motion.div 
-                  className="space-y-6" 
+                <motion.div
+                  className="space-y-6"
                   variants={itemVariants}
                   initial="hidden"
                   animate="visible"
@@ -369,6 +369,7 @@ export function ItemAdd() {
                     isEstimating={ai.isEstimating}
                     aiPriceEstimationHint={ai.aiPriceEstimationHint}
                     requestAiPriceEstimate={ai.requestAiPriceEstimate}
+                    aiResponse={ai.aiResponse}
                     formData={form.getValues()}
                     images={media.images}
                     t={t}

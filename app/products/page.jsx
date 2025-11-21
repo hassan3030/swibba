@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { motion } from "framer-motion"
 import { getProducts } from "@/callAPI/products"
 import { getCookie } from "@/callAPI/utiles"
@@ -23,25 +23,38 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    const controller = new AbortController()
+    
     async function fetchData() {
-      setIsLoading(true)
-      // Fetch first page with limit 10 to get total count
-      const productsData = await getProducts({}, { page: 1, limit: 10 })
-      if (productsData.success) {
-        setProducts(productsData.data)
-        setTotalCount(productsData.total || 0)
-      }
+      try {
+        setIsLoading(true)
+        // Fetch ALL products - don't pass limit to get all available items
+        const productsData = await getProducts()
+        
+        if (productsData.success) {
+          setProducts(productsData.data)
+          setTotalCount(productsData.total || productsData.data?.length || 0)
+        }
 
-      const token = await getCookie()
-      if (token) setShowSwitchHeart(true)
-      setIsLoading(false)
+        const token = await getCookie()
+        if (token) setShowSwitchHeart(true)
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching products:', error)
+        }
+      } finally {
+        setIsLoading(false)
+      }
     }
+    
     fetchData()
+    
+    return () => controller.abort()
   }, [])
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen py-4 bg-background dark:bg-gray-950 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -60,7 +73,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <motion.div className="mt-2 mx-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <motion.div className="p-4 bg-background dark:bg-gray-950" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
         {/* <HeaderComp /> */}
       </motion.div>
@@ -70,7 +83,7 @@ export default function ProductsPage() {
           showbtn={true} 
           showSwitchHeart={showSwitchHeart} 
           totalCount={totalCount}
-          useApiPagination={true}
+          skipFetch={true}
         />
       </motion.div>
     </motion.div>

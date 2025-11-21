@@ -23,6 +23,7 @@ import {
   HandPlatter,
   ListChecks,
   Heart,
+  PackageSearch,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -33,7 +34,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import { getCookie, decodedToken, removeCookie, removeTarget } from "@/callAPI/utiles"
 import { getKYC, getUserById } from "@/callAPI/users"
-import { getOffeReceived, getMessagesByUserId } from "@/callAPI/swap"
+import { getOffeReceived, getMessagesByUserId , getOfferById } from "@/callAPI/swap"
 import Image from "next/image"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
@@ -43,6 +44,7 @@ import { useTheme } from "@/lib/theme-provider"
 import { useLanguage } from "@/lib/language-provider"
 import { getProductSearchFilter } from "@/callAPI/products"
 import { mediaURL } from "@/callAPI/utiles"
+import { PiSwapBold } from "react-icons/pi";
 
 const navVariants = {
   hidden: { 
@@ -107,6 +109,7 @@ export function MobileHeader() {
   const { isRTL, toggleLanguage } = useLanguage()
   const { toast } = useToast()
   const pathname = usePathname()
+  const [offersLength, setOffersLength] = useState(0)
 
   const [showHeader, setShowHeader] = useState(true)
   const lastScrollY = useRef(0)
@@ -128,11 +131,28 @@ export function MobileHeader() {
             
             // Fetch offersReceived
             const offersReceived = await getOffeReceived(decoded.id)
-            setNotificationCount(offersReceived?.data?.length || 0)
+            // setNotificationCount(offersReceived?.data?.length || 0)
             
             // Fetch messages
             const messages = await getMessagesByUserId(decoded.id)
             setMessageCount(messages?.partnerMessages?.length || 0)
+
+
+            // PiSwapBold
+            const offers = await getOfferById(decoded.id)
+            const filteredOffers = Array.isArray(offers.data)
+              ? offers.data.filter((offer) => offer.status_offer === "pending" || offer.status_offer === "accepted")
+              : []
+            const notifications = await getOffeReceived(decoded.id)
+            const filteredNotifications = Array.isArray(notifications.data)
+              ? notifications.data.filter(
+                  (notifications) => notifications.status_offer === "pending" || notifications.status_offer === "accepted",
+                )
+              : []
+            let allOffersCount = filteredOffers.length + filteredNotifications.length
+              setOffersLength(allOffersCount)
+
+
           }
         } else {
           // Clear user data if no token
@@ -205,7 +225,7 @@ export function MobileHeader() {
         router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
       }
     } catch (error) {
-      console.error("Search error:", error)
+      // console.error("Search error:", error)
       // Fallback to simple redirect
       router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
     }
@@ -287,13 +307,13 @@ export function MobileHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => router.push("/recived-items")}
+                onClick={() => router.push("/offers")}
                 className="relative h-10 w-10"
               >
-                <BiCartDownload className="h-5 w-5" />
-                {notificationCount > 0 && (
+                <PiSwapBold className="h-5 w-5" />
+                {offersLength > 0 && (
                   <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-primary text-white text-xs">
-                    {notificationCount > 9 ? "9+" : notificationCount}
+                    {offersLength > 9 ? "9+" : offersLength}
                   </Badge>
                 )}
               </Button>
@@ -301,6 +321,8 @@ export function MobileHeader() {
           </div>
         </div>
       </motion.header>
+      {/* spacer for header height */}
+      <div className="h-16 bg-transparent" />
 
       {/* Slide-out Menu */}
       <AnimatePresence>
@@ -473,23 +495,15 @@ export function MobileHeader() {
                         </Link>
 
                         <Link
-                          href="/send-items"
+                          href="/offers"
                           className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <TbShoppingCartUp className="h-5 w-5 " />
-                          <span className="font-medium">{t("sendItems") || "Send Items"}</span>
+                          <PiSwapBold className="h-5 w-5 " />
+                          <span className="font-medium">{t("AllOffers") || "All Offers"}</span>
                         </Link>
 
-                        <Link
-                          href="/recived-items"
-                          className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <BiCartDownload className="h-5 w-5 " />
-                          <span className="font-medium">{t("receivedItems") || "Received Items"}</span>
-                        </Link>
-
+                       
                         <Link
                           href="/chat"
                           className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
@@ -516,7 +530,16 @@ export function MobileHeader() {
                           <Heart className="h-5 w-5 " />
                           <span className="font-medium">{t("MyWishlist") || "My Wishlist"}</span>
                         </Link>
-                        
+
+                        <Link
+                          href="/offers-details"
+                            className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <PackageSearch  className="h-5 w-5 " />
+                          <span className="font-medium">{t("offersDetails") || "Offers Details"}</span>
+                        </Link>
+
                         <Link
                           href="/customerService"
                           className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"

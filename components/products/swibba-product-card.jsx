@@ -35,15 +35,6 @@ const cardVariants = {
       ease: "easeOut",
     },
   },
-  hover: {
-    y: -8,
-    scale: 1.02,
-    boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-    transition: {
-      duration: 0.3,
-      ease: "easeInOut",
-    },
-  },
 }
 
 const imageVariants = {
@@ -136,6 +127,7 @@ export function SwibbaProductCard({
   const [loading, setLoading] = useState(true)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [showSwapDialog, setShowSwapDialog] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const { isRTL, toggleLanguage } = useLanguage()
 
   const { t } = useTranslations()
@@ -213,7 +205,7 @@ export function SwibbaProductCard({
         router.push(`/auth/login`)
       }
     }catch(error){
-console,log(error , "error in swap operation")
+// console,log(error , "error in swap operation")
     }
    
   }
@@ -279,13 +271,19 @@ console,log(error , "error in swap operation")
   return (
 
     <>
-     <motion.div variants={cardVariants} initial="hidden" animate="visible" whileHover="hover" className="group">
-    
+     <motion.div 
+       variants={cardVariants} 
+       initial="hidden" 
+       animate="visible" 
+       className="group h-full"
+       onHoverStart={() => setIsHovered(true)}
+       onHoverEnd={() => setIsHovered(false)}
+     >
       
       <Link href={`/products/out_offer/${id}`}>
-        <div className="group relative flex lg:w-[210px] w-[150px] flex-col overflow-hidden rounded-md border bg-background transition-all hover:shadow-md">
+        <div className="group relative flex h-full lg:w-[280px] md:w-[240px] w-[165px] flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-background/20 shadow-sm hover:shadow-xl transition-shadow duration-300">
           {/* Image container */}
-          <div className="relative aspect-square overflow-hidden">
+          <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
             <AnimatePresence>
               {/* {loading ? (
                 <motion.div
@@ -312,10 +310,10 @@ console,log(error , "error in swap operation")
                     
                     if (mediaType === 'video') {
                       return (
-                        <motion.div variants={imageVariants} className="w-full h-full relative">
+                        <div className="w-full h-full relative">
                           <video
                             src={mediaUrl.url}
-                            className="w-full h-full object-cover transition-transform duration-300"
+                            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                             muted
                             loop
                             playsInline
@@ -327,11 +325,11 @@ console,log(error , "error in swap operation")
                               <Play className="h-6 w-6 text-gray-800 fill-current" />
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       )
                     } else if (mediaType === 'audio') {
                       return (
-                        <motion.div variants={imageVariants} className="w-full h-full relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <div className="w-full h-full relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-110">
                           <div className="text-center text-white">
                             <div className="text-4xl mb-2">🎵</div>
                             <div className="text-sm font-medium">Audio File</div>
@@ -341,22 +339,20 @@ console,log(error , "error in swap operation")
                             className="hidden"
                             onLoadedData={() => setImageLoaded(true)}
                           />
-                        </motion.div>
+                        </div>
                       )
                     } else {
                       return (
-                        <motion.div variants={imageVariants} className="w-full h-full">
-                          <Image
-                            src={mediaUrl.url || "/placeholder.svg"}
-                            alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
-                            fill
-                            className="transition-transform duration-300 object-fill"
-                            placeholder="blur"
-                            blurDataURL="/placeholder.svg?height=300&width=300"
-                            priority
-                            onLoad={() => setImageLoaded(true)}
-                          />
-                        </motion.div>
+                        <Image
+                          src={mediaUrl.url || "/placeholder.svg"}
+                          alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
+                          fill
+                          className="transition-transform duration-500 ease-out object-fill group-hover:scale-110"
+                          placeholder="blur"
+                          blurDataURL="/placeholder.svg?height=300&width=300"
+                          priority
+                          onLoad={() => setImageLoaded(true)}
+                        />
                       )
                     }
                   })()}
@@ -365,10 +361,10 @@ console,log(error , "error in swap operation")
             </AnimatePresence>
 
             {/* Heart button above photo */}
-            {showSwitchHeart && (
+            {showSwitchHeart &&  (
               <motion.button
                 type="button"
-                className="absolute top-2 right-2 z-10  backdrop-blur-sm  rounded-full p-2 bg-transparent hover:bg-white/90 transition-colors"
+                className="absolute top-3 right-3 z-10 backdrop-blur-md rounded-full p-2.5 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 transition-all shadow-lg"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -381,24 +377,26 @@ console,log(error , "error in swap operation")
                 animate={switchHeart ? "liked" : "initial"}
               >
                 <Heart
-                  className={`h-4 w-4 transition-colors -mt-1 ${
-                    switchHeart ? "text-red-500 fill-current" : "text-muted-foreground"
+                  className={`h-5 w-5 transition-all duration-300 ${
+                    switchHeart ? "text-red-500 fill-current scale-110" : "text-gray-600 dark:text-gray-300"
                   }`}
                 />
               </motion.button>
             )}
 
             {/* Badges */}
-            <motion.div className="absolute left-2 top-2 flex flex-col gap-1" variants={badgeVariants}>
-              <Badge className="bg-accent-orange text-white capitalize">{t(status_item)}</Badge>
+            <motion.div className="absolute left-3 top-3 flex flex-col gap-2" variants={badgeVariants}>
+              <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 text-white capitalize shadow-md px-3 py-1 text-xs font-semibold">
+                {t(status_item)}
+              </Badge>
             </motion.div>
           </div>
 
           {/* Content */}
-          <div className="flex flex-1 flex-col p-3">
+          <div className="flex flex-1 flex-col p-4 gap-2">
             {/* Title */}
             <motion.h3
-              className="mb-1 line-clamp-1 overflow-ellipsis text-sm font-medium capitalize"
+              className="mb-0 line-clamp-2 text-sm lg:text-base font-semibold capitalize leading-tight text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
@@ -407,38 +405,45 @@ console,log(error , "error in swap operation")
             </motion.h3> 
 
             {/* Price */}
-            <motion.div className="mb-1 " variants={priceVariants}>
-              <div className="flex items-baseline gap-1">
-                <motion.span className="text-lg font-bold line-clamp-1 text-secondary2">
-                  {Number(price).toLocaleString('en-US')} {t("LE") || "LE"}
+            <motion.div className="mb-1" variants={priceVariants}>
+              <div className="flex items-baseline gap-2">
+                <motion.span className="text-xl lg:text-2xl font-bold line-clamp-1 text-primary">
+                  {Number(price).toLocaleString('en-US')}
+                </motion.span>
+                <motion.span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {t("LE") || "LE"}
                 </motion.span>
               </div>
             </motion.div>
 
-            {/* ------------------------------------------ */}
-           
-            <motion.div className="mb-1 " variants={priceVariants}>
-              <div className="flex items-baseline gap-1">
-                <motion.span className="text-sm  line-clamp-1 text-gray-400">
-                 {new Date(date_created).toLocaleDateString('en-US')}
+            {/* Date and Location */}
+            <div className="flex flex-col gap-1.5">
+              <motion.div className="flex items-center gap-1.5" variants={priceVariants}>
+                <svg className="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <motion.span className="text-xs line-clamp-1 text-gray-500 dark:text-gray-400">
+                  {new Date(date_created).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </motion.span>
-              </div>
-            </motion.div>
-            <motion.div className="mb-1 " variants={priceVariants}>
-              <div className="flex items-baseline gap-1">
-                <motion.span className="text-sm  line-clamp-1 text-gray-400" >
-                {(!isRTL ? translations[0]?.city: translations[1]?.city) || city},
-                {(!isRTL ? translations[0]?.street: translations[1]?.street) || street}
-                
+              </motion.div>
+              
+              <motion.div className="flex items-center gap-1.5" variants={priceVariants}>
+                <svg className="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <motion.span className="text-xs line-clamp-1 text-gray-500 dark:text-gray-400">
+                  {(!isRTL ? translations[0]?.city: translations[1]?.city) || city}
+                  {(((!isRTL ? translations[0]?.street: translations[1]?.street) || street)) && `, ${(!isRTL ? translations[0]?.street: translations[1]?.street) || street}`}
                 </motion.span>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
          
            
            
             {/* Swap button */}
             <motion.div
-              className="mt-auto"
+              className="mt-auto pt-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.3 }}
@@ -450,7 +455,7 @@ console,log(error , "error in swap operation")
                 whileTap="tap"
               >
                 <Button
-                  className="w-full bg-primary-yellow text-gray-800 hover:bg-primary-orange hover:text-white transition-colors"
+                  className="w-full bg-primary text-white font-semibold hover:bg-primary/90 hover:shadow-lg transition-all duration-300 rounded-xl h-10"
                   size="sm"
                   onClick={(e) => makeSwap(e)}
                   disabled={isAddingToCart || isAddedToCart}
@@ -462,7 +467,7 @@ console,log(error , "error in swap operation")
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-2"
                       >
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
                         {t("requesting")}
@@ -473,9 +478,9 @@ console,log(error , "error in swap operation")
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-2"
                       >
-                        <Check className="h-4 w-4" />
+                        <Check className="h-5 w-5" />
                         {t("requested")}
                       </motion.span>
                     ) : (
@@ -484,9 +489,9 @@ console,log(error , "error in swap operation")
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-2"
                       >
-                        <Repeat className="h-4 w-4" />
+                        <Repeat className="h-5 w-5" />
                         {t("swap")}
                       </motion.span>
                     )}
@@ -495,6 +500,18 @@ console,log(error , "error in swap operation")
               </motion.div>
             </motion.div>
           </div>
+          
+          {/* Green hover overlay on entire card */}
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-gradient-to-br from-primary/10 via-emerald-500/5 to-primary/10 pointer-events-none rounded-2xl"
+              />
+            )}
+          </AnimatePresence>
         </div>
       </Link>
     </motion.div>

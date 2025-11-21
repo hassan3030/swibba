@@ -17,7 +17,7 @@ function isValidResponse(response) {
   // Check if response looks like JSON (starts with { or [)
   const trimmedText = response.text.trim();
   if (!trimmedText.startsWith('{') && !trimmedText.startsWith('[') && !trimmedText.includes('```')) {
-    console.warn('Response does not appear to be JSON format:', trimmedText.substring(0, 100));
+    // console.warn('Response does not appear to be JSON format:', trimmedText.substring(0, 100));
     return false;
   }
   
@@ -34,7 +34,7 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
     
     // Validate input before making requests
     if (!input || input.trim() === '') {
-        console.error('AI Request failed: Empty input provided');
+        // console.error('AI Request failed: Empty input provided');
         return {
             text: "",
             success: false,
@@ -46,7 +46,7 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
     }
     
     if (!systemPrompt || systemPrompt.trim() === '') {
-        console.error('AI Request failed: Empty system prompt provided');
+        // console.error('AI Request failed: Empty system prompt provided');
         return {
             text: "",
             success: false,
@@ -59,8 +59,8 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            console.log(`AI Request attempt ${attempt}/${maxRetries}`);
-            console.log(`Input length: ${input.length} characters`);
+            // console.log(`AI Request attempt ${attempt}/${maxRetries}`);
+            // console.log(`Input length: ${input.length} characters`);
             
             const res = await fetch("/api/chat", {
                 method: "POST",
@@ -85,29 +85,29 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
             
             // Check if response is valid
             if (res.ok && isValidResponse(response)) {
-                console.log(`AI Request successful on attempt ${attempt}`);
+                // console.log(`AI Request successful on attempt ${attempt}`);
                 return response;
             }
             
             // If response is invalid, treat as failure
-            console.warn(`AI Request attempt ${attempt} returned invalid response:`, data.text || 'empty');
+            // console.warn(`AI Request attempt ${attempt} returned invalid response:`, data.text || 'empty');
             lastError = new Error(`Invalid AI response: ${data.text || data.error || 'empty response'}`);
             
             // If this isn't the last attempt, wait before retrying
             if (attempt < maxRetries) {
-                console.log(`Retrying in ${retryDelay}ms...`);
+                // console.log(`Retrying in ${retryDelay}ms...`);
                 await delay(retryDelay);
                 // Increase delay for next attempt (exponential backoff)
                 retryDelay *= 1.5;
             }
             
         } catch (error) {
-            console.error(`AI Request attempt ${attempt} failed:`, error);
+            // console.error(`AI Request attempt ${attempt} failed:`, error);
             lastError = error;
             
             // If this isn't the last attempt, wait before retrying
             if (attempt < maxRetries) {
-                console.log(`Retrying in ${retryDelay}ms...`);
+                // console.log(`Retrying in ${retryDelay}ms...`);
                 await delay(retryDelay);
                 // Increase delay for next attempt (exponential backoff)
                 retryDelay *= 1.5;
@@ -116,7 +116,7 @@ export async function sendMessage(input, systemPrompt, maxRetries = 3, retryDela
     }
     
     // All attempts failed
-    console.error(`All ${maxRetries} AI request attempts failed. Last error:`, lastError);
+    // console.error(`All ${maxRetries} AI request attempts failed. Last error:`, lastError);
     return {
         text: "",
         success: false,

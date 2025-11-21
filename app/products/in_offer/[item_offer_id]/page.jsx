@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { notFound, useRouter, useParams } from "next/navigation"
-import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus, BadgeX } from "lucide-react"
+import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus, BadgeX, ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -88,7 +88,7 @@ export default function ProductPage() {
 const getOfferQuantity = async () => {
   try {
     const offerItems = await getOfferItemsByItemIdItself(id)
-    console.log("offerItems", offerItems)
+    // console.log("offerItems", offerItems)
     if (offerItems.success && offerItems.data) {
       setTotalQuantity(offerItems.data.total_quantity || 0)
       
@@ -129,7 +129,7 @@ const getOfferQuantity = async () => {
                   null
               }
             } catch (error) {
-              console.error(`Error fetching user details for ${partner.id}:`, error)
+              // console.error(`Error fetching user details for ${partner.id}:`, error)
               return {
                 ...partner,
                 name: partner.email_user_from,
@@ -147,7 +147,7 @@ const getOfferQuantity = async () => {
       setPartnerUsers([])
     }
   } catch (error) {
-    console.error("Error fetching offer quantity:", error)
+    // console.error("Error fetching offer quantity:", error)
     setTotalQuantity(0)
     setPartnerUsers([])
   }
@@ -208,24 +208,25 @@ const getOfferQuantity = async () => {
       } else {
       const completedOffers = await getCompletedOffer(userId)
       setCompletedOffersCount(completedOffers.count)
+      setRate(completedOffers.rate)
     }
   } catch (error) {
-    console.error("Error fetching completed offers:", error)
+    // console.error("Error fetching completed offers:", error)
     setCompletedOffersCount(0)
   }
   }
 
   const handleGetBreviousRating = async (id) => {
     try {
-      const response = await getReview(id) 
-      if (!response.data) {
+      const response = await  getCompletedOffers(id)
+      if (!response) {
         setRate(0)
       } else {
-        const rates = response.data.average_rating
+        const rates = response.rate
         setRate(rates)
       }
     } catch (error) {
-      console.error("Error fetching rating:", error)
+      // console.error("Error fetching rating:", error)
       setRate(0)
     }
   }
@@ -265,9 +266,26 @@ const getOfferQuantity = async () => {
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3 text-start">
                   {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1 truncate text-start">
-                  {t(product.category)}
-                </p>
+                  <Link href={`/categories/${product.category}`}>
+                  <span
+                    className="inline-block text-primary capitalize border-primary/90 hover:cursor-pointer hover:scale-105 text-xs sm:text-sm px-2 py-1"
+                  >
+                    {isRTL ? (product.translations[1]?.category || product.category) : (product.translations[0]?.category || product.category) || product.category}
+
+                    {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}
+                  </span>
+                </Link>
+
+{product.brand!='no_brand' && product.brand !=null && product.brand !='' && product.brand !='none' ? (
+  <Link href={`/brands/${product.brand}`}>
+    <span
+      className="inline-block text-primary capitalize hover:cursor-pointer hover:scale-105 text-xs sm:text-sm px-2 py-1"
+    >  
+      {isRTL ? product.translations[1]?.brand : product.translations[0]?.brand || product.brand}
+      {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}  
+    </span>
+  </Link>
+) : null}
               </div>
               <motion.div
                 initial={{ scale: 0 }}
@@ -415,7 +433,7 @@ const getOfferQuantity = async () => {
                     className="text-sm sm:text-base w-full"
                   >
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("name")}` : `${t("name")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start capitalize">
                       {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
                     </div>
                     <Separator />
@@ -443,10 +461,15 @@ const getOfferQuantity = async () => {
 
 
                     <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {t(product.category)}
+                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary capitalize">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start capitalize">
+                    {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
+                      {product.sub_category?(isRTL ? product.translations[0]?.sub_category: product.translations[1]?.sub_category || product.sub_category):'' }{' '}
+                      {product.brand? (isRTL ? product.translations[0]?.brand: product.translations[1]?.brand || product.brand):'' }{' '}
+                      {product.model?(isRTL ? product.translations[0]?.model: product.translations[1]?.model || product.model):'' }{' '}
                     </div>
+
+                    
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("price")}` : `${t("price")}:`}</h2>
                     <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2 text-start">
@@ -459,7 +482,7 @@ const getOfferQuantity = async () => {
                     </div>
                     <Separator />
                     <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("status")}` : `${t("status")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary text-start">
+                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary text-start capitalize">
                       {t(product.status_item)}
                     </div>
                     
@@ -479,9 +502,13 @@ const getOfferQuantity = async () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="grid gap-2 text-primary text-sm sm:text-base"
+                    className="grid gap-2 text-primary text-sm sm:text-base capitalize"
                   >
-                    {t(product.category)}
+                      {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
+                      {product.sub_category?( !isRTL? product.translations[0]?.sub_category: product.translations[1]?.sub_category || product.sub_category):'' }{' '}
+                      {product.brand? (!isRTL ? product.translations[0]?.brand: product.translations[1]?.brand || product.brand):'' }{' '}
+                      {product.model?(!isRTL ? product.translations[0]?.model: product.translations[1]?.model || product.model):'' }{' '}
+                   
                   </motion.div>
                 </TabsContent>
                 <TabsContent value="swap_status" className="mt-3 sm:mt-4">

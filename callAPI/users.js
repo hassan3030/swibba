@@ -11,6 +11,8 @@ import {
   getTarget,
   STANDARD_ROLE_ID,
   resetPasswordURL,
+  verifyEmailURL,
+  registerEmailURL,
   swibbaURL,
   removeTarget
 } from "./utiles.js"
@@ -114,49 +116,55 @@ export const register = async (email, password, first_name, additional_data = {}
    
 
    try {
-  
+    // Register user - this will send email verification
+    // Configure the verification redirect URL to point directly to the verify-email page
+    // The page handles all verification logic directly without needing an API route
+    // const verificationRedirectUrl = `${registerEmailURL}?redirect=${encodeURIComponent("/profile/settings/editProfile")}`
+    const verificationRedirectUrl = `${verifyEmailURL}`
+    // Directus allows setting custom verification URL
+    // The verification URL points directly to /auth/verify-email page which handles everything
     const response = await axios.post(`${baseURL}users/register`, {
       email: cleanEmail,
       password: password,
       first_name: cleanFirstName,
+      verification_url: verificationRedirectUrl,
+      // Note: Directus verification URL should be configured to point to your frontend URL
+      // Set PUBLIC_URL environment variable in Directus to your frontend URL
+      // Or configure VERIFY_EMAIL_URL in Directus environment variables
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
 
-    }
-      );
-      
-
-      const getRes = await axios.get(`${baseURL}users`, {
+    // Get the created user
+    const getRes = await axios.get(`${baseURL}users`, {
       params: {
         filter: { email: { _eq: cleanEmail } },
       },
-    });
-    // console.log('i am in regisration getRes  ',getRes )
+    })
 
-    const user = getRes.data.data[0];
+    const user = getRes.data.data[0]
     if (!user) {
-      // console.log('User not found.');
-      return;
+      throw new Error("User not found after registration")
     }
-    // console.log('i am in regisration user ',user )
 
-    const userId = user.id;
-    // console.log('i am in regisration userId ',userId )
+    // Don't activate user yet - wait for email verification
+    // Email verification link will be sent automatically by Directus
+    // User needs to verify email before account is activated
 
-    // Step 2: Update (PATCH) the user status to active
-    const patchRes = await axios.patch(`${baseURL}users/${userId}`,
-      { status: 'active' ,
-        role:STANDARD_ROLE_ID
-      },
-    );
-
-    // console.log('User activated:', patchRes.data.data);
-
-// console.log('User registered:', response.data.data);
-
-const logining  =  await login(email , password)
-    // console.log('i am in regisration function2 ',logining )
-
+    return {
+      success: true,
+      data: user,
+      message: "Registration successful. Please check your email to verify your account.",
+    }
   } catch (error) {
-    // console.error('Registration error:', error.response?.data || error.message);
+    // console.error('Registration error:', error.response?.data || error.message)
+    return {
+      success: false,
+      error: error.response?.data?.errors?.[0]?.message || error.message || "Registration failed",
+      message: "Registration failed",
+    }
   }
 }
 
@@ -194,7 +202,7 @@ export const getUserById = async (id) => {
     };
   } catch (error) {
     // Improved error logging
-    console.error(`Failed to get user by ID ${id}:`, error.response?.data || error.message);
+    // console.error(`Failed to get user by ID ${id}:`, error.response?.data || error.message);
     return handleApiError(error, "Get User By ID");
   }
 };
@@ -275,7 +283,7 @@ export const getUserByProductId = async (productId) => {
 
     return userResult;
   } catch (error) {
-    console.error(`Failed to get user by product ID ${productId}:`, error.response?.data || error.message);
+    // console.error(`Failed to get user by product ID ${productId}:`, error.response?.data || error.message);
     return handleApiError(error, "Get User By Product ID");
   }
 };
@@ -388,8 +396,8 @@ export const getUserByProductId = async (productId) => {
 // }
 // // ----------------------------------
 // Edit profile with enhanced validation and authentication
-export const editeProfile = async (userData, authId, avatar = null , translations) => {
-  console.log("translations call api :  " , translations)
+export const editeProfile = async (userData, authId, avatar = null , translations, shouldRemoveAvatar = false) => {
+  // console.log("translations call api :  " , translations)
   try {
     return await makeAuthenticatedRequest(async () => {
       const decoded = await decodedToken()
@@ -407,11 +415,25 @@ export const editeProfile = async (userData, authId, avatar = null , translation
       }
       const updateData = { ...userData , translations: translations }
 
-      if (avatar) {
+      // Get current user to handle existing avatar
+      const currentUser = await getUserById(decoded.id)
+      const hasExistingAvatar = currentUser.success && currentUser.data.avatar
+
+      if (shouldRemoveAvatar && hasExistingAvatar) {
+        // User wants to remove avatar - delete from backend and set to null
         try {
-          // Remove old avatar if exists
-          const currentUser = await getUserById(decoded.id)
-          if (currentUser.success && currentUser.data.avatar) {
+          await axios.delete(`${baseURL}files/${currentUser.data.avatar}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          updateData.avatar = null
+        } catch (deleteError) {
+          console.warn("Avatar deletion failed:", deleteError.message)
+        }
+      } else if (avatar) {
+        // User is uploading new avatar
+        try {
+          // Delete old avatar if exists
+          if (hasExistingAvatar) {
             await axios.delete(`${baseURL}files/${currentUser.data.avatar}`, {
               headers: { Authorization: `Bearer ${token}` },
             })
@@ -430,7 +452,7 @@ export const editeProfile = async (userData, authId, avatar = null , translation
 
           updateData.avatar = avatarResponse.data.data.id
         } catch (avatarError) {
-          // console.warn("Avatar upload failed:", avatarError.message)
+          console.warn("Avatar upload failed:", avatarError.message)
         }
       }
 
@@ -513,6 +535,7 @@ export const logout = async () => {
   try {
     await removeTarget()
     await removeCookie()
+     window.location.href = "/"
     // console.log("User logged out successfully")
     return {
       success: true,
@@ -540,7 +563,8 @@ export const updatePhoneVerification = async (userId, phoneNumber, isVerified = 
 
     const updateData = {
       phone_number: phoneNumber,
-      verified: isVerified.toString()
+      verified_phone: isVerified,
+      country_code: phoneNumber.match(/^(\+\d{1,4})/)?.[1] || null
     };
 
     const response = await axios.patch(
@@ -562,6 +586,95 @@ export const updatePhoneVerification = async (userId, phoneNumber, isVerified = 
     };
   } catch (error) {
     return handleApiError(error, "Update Phone Verification");
+  }
+};
+
+// Request phone verification OTP
+export const requestPhoneVerification = async (phoneNumber, countryCode) => {
+  try {
+    if (!phoneNumber || !countryCode) {
+      throw new Error("Phone number and country code are required");
+    }
+
+    const response = await axios.post(
+      '/api/phone-verification/request',
+      {
+        phone_number: phoneNumber,
+        country_code: countryCode
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: response.data.message || "OTP sent successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Request Phone Verification");
+  }
+};
+
+// Verify phone OTP
+export const verifyPhoneOTP = async (phoneNumber, otp) => {
+  try {
+    if (!phoneNumber || !otp) {
+      throw new Error("Phone number and OTP are required");
+    }
+
+    const response = await axios.post(
+      '/api/phone-verification/verify',
+      {
+        phone_number: phoneNumber,
+        otp: otp
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: response.data.message || "Phone verified successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Verify Phone OTP");
+  }
+};
+
+// Resend phone verification OTP
+export const resendPhoneOTP = async (phoneNumber) => {
+  try {
+    if (!phoneNumber) {
+      throw new Error("Phone number is required");
+    }
+
+    const response = await axios.post(
+      '/api/phone-verification/resend',
+      {
+        phone_number: phoneNumber
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: response.data.message || "OTP resent successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Resend Phone OTP");
   }
 };
 
@@ -614,7 +727,7 @@ export const addMessage = async (email, name, message, phone_number) => {
 
 // Request password reset
 export const forgotPassword = async (email) => {
-  console.log("forget Password email", email)
+  // console.log("forget Password email", email)
   try {
     if (!email) {
       throw new Error("Email is required");
@@ -644,7 +757,7 @@ export const forgotPassword = async (email) => {
   //   }),
   // });
 
-  console.log("forget Password response", response)
+  // console.log("forget Password response", response)
     return {
       success: response.status === 200 || response.status === 201 || response.status === 204,
       message: "Password reset link sent successfully. Please check your email.",
@@ -787,7 +900,7 @@ export const checkUserHasProducts = async (user_id) => {
       })
       
    
-   console.log("checkUserHasProducts:",response.data.data)
+  //  console.log("checkUserHasProducts:",response.data.data)
     // console.log("Product retrieved successfully, ID:", id)
     return {
       success: true,
@@ -815,3 +928,57 @@ export const checkUserHasProducts = async (user_id) => {
 }
 
 
+// Check if user email is verified
+export const checkUeserEmailValid = async (token) => {
+  try {
+    if (!token) {
+      throw new Error("Verification token is required")
+    }
+
+    // Verify the email using the token
+    const response = await axios.post(
+      `${baseURL}auth/verify-email`,
+      {
+        token: token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+
+    // If verification is successful, get the user data
+    if (response.data?.data?.user) {
+      const userId = response.data.data.user.id || response.data.data.user
+      
+      // Get user details
+      const userResult = await getUserById(userId)
+      
+      if (!userResult.success) {
+        throw new Error("Failed to get user data after verification")
+      }
+
+      return {
+        success: true,
+        data: userResult.data,
+        verified: true,
+        message: "Email verified successfully",
+      }
+    }
+
+    return {
+      success: false,
+      verified: false,
+      message: "Email verification failed",
+    }
+  } catch (error) {
+    // console.error("Email verification error:", error.response?.data || error.message)
+    return {
+      success: false,
+      verified: false,
+      error: error.response?.data?.errors?.[0]?.message || error.message || "Email verification failed",
+      message: "Email verification failed",
+    }
+  }
+}

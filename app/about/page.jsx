@@ -17,7 +17,7 @@ const AboutPage = () => {
       if (response.success) {
         setFounders(response.data);
       } else {
-        console.error(response.message);
+        // console.error(response.message);
       }
     };
 

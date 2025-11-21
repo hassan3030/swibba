@@ -24,10 +24,12 @@ import { useParams, useRouter } from "next/navigation"
 import { useRTL } from "@/hooks/use-rtl"
 import { getMediaType } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getHintByName, getAllCategories } from "@/callAPI/static";
+import { getHintByName, getAllCategories, getAllSubCategories, getAllBrands, getAllModels } from "@/callAPI/static";
+import { categoriesName } from "@/lib/data";
 import ItemCard from "@/components/swap/item-card"
 import { mediaURL } from "@/callAPI/utiles";
 import { TbShoppingCartUp } from "react-icons/tb";
+import { PiSwapBold } from "react-icons/pi";
 
 // Animation variants
 const containerVariants = {
@@ -130,6 +132,21 @@ export default function SwapPage() {
   const [filtersSub, setFiltersSub] = useState({ level1List: [], level2List: [] })
   const [catLevelsOpen, setCatLevelsOpen] = useState(false)
   const [catLevelsTree, setCatLevelsTree] = useState([])
+  // Chained filters data
+  const [allCategories, setAllCategories] = useState([])
+  const [allSubCategories, setAllSubCategories] = useState([])
+  const [allBrands, setAllBrands] = useState([])
+  const [allModels, setAllModels] = useState([])
+  // Chained filters selection
+  const [chainCategoryId, setChainCategoryId] = useState("")
+  const [chainSubCategoryId, setChainSubCategoryId] = useState("")
+  const [chainBrandId, setChainBrandId] = useState("")
+  const [chainModelId, setChainModelId] = useState("")
+  // Chained filters popover open states
+  const [openCat, setOpenCat] = useState(false)
+  const [openSubCat, setOpenSubCat] = useState(false)
+  const [openBrand, setOpenBrand] = useState(false)
+  const [openModel, setOpenModel] = useState(false)
   
   // Scroll functionality
   const makeSwapRef = useRef(null)
@@ -145,9 +162,9 @@ export default function SwapPage() {
     try {
       const response = await getHintByName(name);
       setHintSwapRules(response.data);
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
   useEffect(() => {
@@ -171,26 +188,22 @@ export default function SwapPage() {
     getMyDataUser()
   }, [])
 
-  // Load categories (L1/L2) once
+  // Load chained filter datasets
   useEffect(() => {
     const load = async () => {
-      const res = await getAllCategories()
-      if (res?.success) {
-        const tree = []
-        ;(res.data || []).forEach(cat => {
-          const catNameEn = cat?.translations?.[0]?.name || cat?.name || ""
-          const catNameAr = cat?.translations?.[1]?.name || cat?.name || ""
-          const l1 = cat?.cat_levels?.level_1 || []
-          const l1Nodes = l1.map(l => {
-            const l1_en = l?.name_en || ""
-            const l1_ar = l?.name_ar || ""
-            const l2 = l?.level_2 || []
-            const l2Nodes = l2.map(s => ({ key: s?.name_en || s?.name_ar || "", label_en: s?.name_en || "", label_ar: s?.name_ar || "" }))
-            return { key: l1_en || l1_ar, label_en: l1_en, label_ar: l1_ar, level_2: l2Nodes }
-          })
-          tree.push({ cat_key: catNameEn || catNameAr, cat_en: catNameEn, cat_ar: catNameAr, level_1: l1Nodes })
-        })
-        setCatLevelsTree(tree)
+      try {
+        const [cats, subs, brands, models] = await Promise.all([
+          getAllCategories(),
+          getAllSubCategories(),
+          getAllBrands(),
+          getAllModels()
+        ])
+        if (cats?.success) setAllCategories(cats.data || [])
+        if (subs?.success) setAllSubCategories(subs.data || [])
+        if (brands?.success) setAllBrands(brands.data || [])
+        if (models?.success) setAllModels(models.data || [])
+      } catch (e) {
+        // silent
       }
     }
     load()
@@ -285,6 +298,21 @@ export default function SwapPage() {
       setSelectedOtherItems([])
     }
   }, [selectedMyItems, myItems])
+
+  // // Show hint as toast when it appears
+  // useEffect(() => {
+  //   if (showHint && hintSwapRules && hintSwapRules.length > 0) {
+  //     const currentTranslation = isRTL 
+  //       ? hintSwapRules[0]?.translations?.find(t => t.languages_code === 'ar-SA')
+  //       : hintSwapRules[0]?.translations?.find(t => t.languages_code === 'en-US');
+  //     const title = currentTranslation?.title || (t("SwapHints") || "Swap Hints")
+  //     const steps = (currentTranslation?.hints_steps || []).slice(0, 3).join(" • ")
+  //     toast({
+  //       title,
+  //       description: steps || (t("FollowTheRulesForBetterMatches") || "Follow the rules for better matches."),
+  //     })
+  //   }
+  // }, [showHint, hintSwapRules, isRTL])
 
   // Fetch data on mount
   useEffect(() => {
@@ -452,6 +480,30 @@ export default function SwapPage() {
       if (selectedCategory && selectedCategory !== "all") {
         if (item.category !== selectedCategory) return false
       }
+      // Chained category filter
+      if (chainCategoryId) {
+        const catObj = allCategories.find(c => {
+          const id = typeof c.id === 'object' ? c.id?.id : c.id
+          return String(id) === String(chainCategoryId)
+        })
+        const catName = catObj?.name
+        if (catName && item.category !== catName) return false
+      }
+      // Chained subcategory filter
+      if (chainSubCategoryId) {
+        const itemSub = typeof item.sub_category === 'object' ? item.sub_category?.id : item.sub_category
+        if (String(itemSub) !== String(chainSubCategoryId)) return false
+      }
+      // Chained brand filter
+      if (chainBrandId) {
+        const itemBrand = typeof item.brand === 'object' ? item.brand?.id : item.brand
+        if (String(itemBrand) !== String(chainBrandId)) return false
+      }
+      // Chained model filter
+      if (chainModelId) {
+        const itemModel = typeof item.model === 'object' ? item.model?.id : item.model
+        if (String(itemModel) !== String(chainModelId)) return false
+      }
       
       // Price range filter
       if (priceRange.min || priceRange.max) {
@@ -507,7 +559,6 @@ export default function SwapPage() {
   const otherSelectedValue = getTotalValue(selectedOtherItems, otherItems)
   const priceDifference = mySelectedValue - otherSelectedValue
   const canCreateSwap = selectedMyItems.length > 0 && selectedOtherItems.length > 0
-
   // Add offer handler
   const handleAddOffer = async () => {
     setDisabledOffer(true)
@@ -527,7 +578,7 @@ export default function SwapPage() {
         totalPrice: itemTotalPrices[itemId] || 0
       }))
       
-      await addOffer(
+      const addOfferState = await addOffer(
         to_user.data.id, 
         priceDifference, 
         myItemsWithQuantities, 
@@ -535,22 +586,31 @@ export default function SwapPage() {
         myEmail, 
         otherEmail
       )
-      
-      toast({
-        title: t("successfully") || "Success",
-        description: "Successfully created offer",
-      })
-      setSelectedMyItems([])
-      setSelectedOtherItems([])
-      setItemQuantities({})
-      setItemTotalPrices({})
-      setDisabledOffer(false)
-      setShowSwapHint(true)
-      router.refresh()
+      if(addOfferState){
+        toast({
+          title: t("successfully") || "Success",
+          description: t("Successfullycreatedofferchecktheoffers")||`Successfully created offer check the offers`,
+        })
+        setSelectedMyItems([])
+        setSelectedOtherItems([])
+        setItemQuantities({})
+        setItemTotalPrices({})
+        setDisabledOffer(false)
+        setShowSwapHint(true)
+        // router.refresh()
+      }else{
+        toast({
+          title: t("faildSwap") || "Failed Swap",
+          description: t("InvalidswapornotloggedPleasetryagain")||"Invalid swap or not logged in. Please try again.",
+          variant: "destructive",
+        })
+        setDisabledOffer(false)
+      }
+     
     } catch (error) {
       toast({
         title: t("faildSwap") || "Failed Swap",
-        description: "Invalid swap or not logged in. Please try again.",
+        description: t("InvalidswapornotloggedPleasetryagain")||"Invalid swap or not logged in. Please try again.",
         variant: "destructive",
       })
       setDisabledOffer(false)
@@ -901,165 +961,200 @@ export default function SwapPage() {
                                     />
                                   </div>
                                 </div>
-                              {/* Category Levels (Main/Level 1 & 2) */}
+                              {/* Chained Filters: Category → Sub Category → Brand → Model */}
                                 <div className="space-y-2">
                                   <label className="text-sm font-medium text-foreground/70">
-                                  {t("categories") || "Categories"}
+                                  {t("category") || "Category"}
                                   </label>
-                                <Popover open={catLevelsOpen} onOpenChange={setCatLevelsOpen}>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="w-full justify-between"
-                                    >
-                                      {((filtersSub.mainList || [])?.length + (filtersSub.level1List || [])?.length + (filtersSub.level2List || [])?.length) > 0
-                                        ? `${((filtersSub.mainList||[])?.length + (filtersSub.level1List||[])?.length + (filtersSub.level2List||[])?.length)} ${t("selected") || "selected"}`
-                                        : t("SelectCategory") || "Select Category"}
-                                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-full p-0 max-h-96 overflow-y-auto">
-                                    <Command>
-                                      <CommandInput placeholder={t("searchCategory") || "Search category ..."} />
-
-                                      {
-                                        catLevelsTree?(  
-                                           <CommandList>
-                                          {/* Select All Button */}
-                                          <div className="px-2 py-2 ">
-                                            <button
-                                              onClick={() => {
-                                                const allMain = catLevelsTree.map(cat => cat.cat_key)
-                                                const allL1 = catLevelsTree.flatMap(cat => cat.level_1.map(l1 => l1.key))
-                                                const allL2 = catLevelsTree.flatMap(cat=>cat.level_1.flatMap(l1=>l1.level_2.map(l2=>l2.key)))
-                                                setFiltersSub(f => (
-                                                  (f.mainList?.length===allMain.length&&f.level1List?.length===allL1.length&&f.level2List?.length===allL2.length)
-                                                    ? {mainList:[],level1List:[],level2List:[]}
-                                                    : {mainList:allMain,level1List:allL1,level2List:allL2}
-                                                ))
-                                              }}
-                                              className="text-xs bg-card hover:bg-primary/10 px-2 py-1 rounded mb-2"
-                                            >
-                                              {t("SelectAll")||"Select All"}
-                                            </button>
-                                          </div>
-                                          {catLevelsTree.map((cat) => {
-                                            const catLabel = isRTL ? (cat.cat_ar || cat.cat_en) : (cat.cat_en || cat.cat_ar);
-                                            const checkedMain = (filtersSub.mainList||[]).includes(cat.cat_key);
-                                            // -- gather all l1/l2 under this main branch
-                                            const allL1 = (cat.level_1||[]).map(l1=>l1.key);
-                                            const allL2 = (cat.level_1||[]).flatMap(l1=>(l1.level_2||[]).map(s=>s.key));
-                                            return (
-                                              <div key={cat.cat_key} className="px-2 border-b pb-2 mb-2 last:border-b-0 last:pb-0 last:mb-0">
-                                                {/* Main Category Checkbox */}
-                                                <div className="flex items-center space-x-2">
-                                                  <input
-                                                    type="checkbox"
-                                                    checked={checkedMain}
-                                                    onChange={() => {
-                                                      setFiltersSub(prev => {
-                                                        let next = { ...prev };
-                                                        if (checkedMain) {
-                                                          // remove entire branch
-                                                          next.mainList = (next.mainList||[]).filter(x => x !== cat.cat_key);
-                                                          next.level1List = (next.level1List||[]).filter(x => !allL1.includes(x));
-                                                          next.level2List = (next.level2List||[]).filter(x => !allL2.includes(x));
-                                                        } else {
-                                                          next.mainList = [...new Set([...(next.mainList||[]),cat.cat_key])];
-                                                          next.level1List = [...new Set([...(next.level1List||[]),...allL1])];
-                                                          next.level2List = [...new Set([...(next.level2List||[]),...allL2])];
-                                                        }
-                                                        return next;
-                                                      });
+                                  <Popover open={openCat} onOpenChange={setOpenCat}>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" className="w-full justify-between">
+                                        {(() => {
+                                          const cat = (allCategories.length > 0 ? allCategories : categoriesName.map(n => ({ id: n, name: n })))
+                                            .find(c => String((typeof c.id === 'object' ? c.id?.id : c.id)) === String(chainCategoryId))
+                                          const name = cat ? (isRTL ? (cat?.translations?.[1]?.name || cat?.name) : (cat?.translations?.[0]?.name || cat?.name)) : (t("SelectCategory") || "Select Category")
+                                          return name
+                                        })()}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[320px] p-0">
+                                      <Command>
+                                        <CommandInput placeholder={t("searchCategory") || "Search category ..."} />
+                                        <CommandList className="max-h-64 overflow-y-auto">
+                                          <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>
+                                          <CommandGroup>
+                                            {(allCategories.length > 0 ? allCategories : categoriesName.map(n => ({ id: n, name: n }))).map(cat => {
+                                              const id = typeof cat.id === 'object' ? cat.id?.id : cat.id
+                                              const name = isRTL ? (cat?.translations?.[1]?.name || cat?.name) : (cat?.translations?.[0]?.name || cat?.name)
+                                              return (
+                                                <CommandItem
+                                                  key={id}
+                                                  onSelect={() => {
+                                                    setChainCategoryId(String(id))
+                                                    setChainSubCategoryId("")
+                                                    setChainBrandId("")
+                                                    setChainModelId("")
+                                                    setOpenCat(false)
+                                                  }}
+                                                >
+                                                  {name}
+                                                </CommandItem>
+                                              )
+                                            })}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-foreground/70">
+                                  {t("subCategories") || "Sub Categories"}
+                                  </label>
+                                  <Popover open={openSubCat} onOpenChange={setOpenSubCat}>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" className="w-full justify-between" disabled={!chainCategoryId}>
+                                        {(() => {
+                                          const sc = allSubCategories.find(s => String((typeof s.id === 'object' ? s.id?.id : s.id)) === String(chainSubCategoryId))
+                                          const name = sc ? (isRTL ? (sc?.translations?.[1]?.name || sc?.name) : (sc?.translations?.[0]?.name || sc?.name)) : (t("SelectSubCategory") || "Select Sub Category")
+                                          return name
+                                        })()}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[320px] p-0">
+                                      <Command>
+                                        <CommandInput placeholder={t("searchSubCategories") || "Search sub categories ..."} />
+                                        <CommandList className="max-h-64 overflow-y-auto">
+                                          <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>
+                                          <CommandGroup>
+                                            {allSubCategories
+                                              .filter(sc => {
+                                                const parent = typeof sc.parent_category === 'object' ? sc.parent_category?.id : sc.parent_category
+                                                return chainCategoryId ? String(parent) === String(chainCategoryId) : true
+                                              })
+                                              .map(sc => {
+                                                const id = typeof sc.id === 'object' ? sc.id?.id : sc.id
+                                                const name = isRTL ? (sc?.translations?.[1]?.name || sc?.name) : (sc?.translations?.[0]?.name || sc?.name)
+                                                return (
+                                                  <CommandItem
+                                                    key={id}
+                                                    onSelect={() => {
+                                                      setChainSubCategoryId(String(id))
+                                                      setChainBrandId("")
+                                                      setChainModelId("")
+                                                      setOpenSubCat(false)
                                                     }}
-                                                    className="rounded border-border text-primary focus:ring-primary"
-                                                  />
-                                                  <span className="font-bold capitalize">{catLabel}</span>
-                                                </div>
-                                                <div className="pl-4">
-                                                  {(cat.level_1||[]).map((l1) => {
-                                                    const l1Label = isRTL ? (l1.label_ar || l1.label_en) : (l1.label_en || l1.label_ar);
-                                                    const l1Checked = (filtersSub.level1List||[]).includes(l1.key);
-                                                    const l2Keys = (l1.level_2||[]).map(l2=>l2.key);
-                                                    return (
-                                                      <div key={l1.key} className="py-1">
-                                                        <div className="flex items-center space-x-2">
-                                                          <input
-                                                            type="checkbox"
-                                                            checked={l1Checked}
-                                                            onChange={() => {
-                                                              setFiltersSub(prev => {
-                                                                let next = { ...prev };
-                                                                if (l1Checked) {
-                                                                  // remove l1 and children
-                                                                  next.level1List = (next.level1List||[]).filter(x => x !== l1.key);
-                                                                  next.level2List = (next.level2List||[]).filter(x => !l2Keys.includes(x));
-                                                                  // uncheck main if all children unchecked
-                                                                  if ((next.level1List||[]).filter(x=>allL1.includes(x)).length===0) { next.mainList = (next.mainList||[]).filter(x=>x!==cat.cat_key); }
-                                                                } else {
-                                                                  next.level1List = [...new Set([...(next.level1List||[]),l1.key])];
-                                                                  next.level2List = [...new Set([...(next.level2List||[]),...l2Keys])];
-                                                                  // check main if all l1 checked
-                                                                  if ([...new Set([...(next.level1List||[]),l1.key])].length===allL1.length) { next.mainList = [...new Set([...(next.mainList||[]),cat.cat_key])]; }
-                                                                }
-                                                                return next;
-                                                              });
-                                                            }}
-                                                            className="rounded border-border text-primary focus:ring-primary"
-                                                          />
-                                                          <span className="capitalize">{l1Label}</span>
-                                                        </div>
-                                                        <div className="pl-6">
-                                                          {(l1.level_2||[]).map(l2 => {
-                                                            const l2Label = isRTL ? (l2.label_ar || l2.label_en) : (l2.label_en || l2.label_ar);
-                                                            const l2Checked = (filtersSub.level2List||[]).includes(l2.key);
-                                                            return (
-                                                              <div className="flex items-center py-1 space-x-2" key={l2.key}>
-                                                                <input
-                                                                  type="checkbox"
-                                                                  checked={l2Checked}
-                                                                  onChange={() => {
-                                                                    setFiltersSub(prev => {
-                                                                      let next = {...prev};
-                                                                      if (l2Checked) {
-                                                                        next.level2List = (next.level2List||[]).filter(x => x !== l2.key);
-                                                                        // uncheck l1 if all children unchecked
-                                                                        if ((next.level2List||[]).filter(x=>l2Keys.includes(x)).length===0) { next.level1List = (next.level1List||[]).filter(x=>x!==l1.key); }
-                                                                        // uncheck main if no children checked at all
-                                                                        if ((next.level1List||[]).filter(x=>allL1.includes(x)).length===0) { next.mainList = (next.mainList||[]).filter(x=>x!==cat.cat_key); }
-                                                                      } else {
-                                                                        next.level2List = [...new Set([...(next.level2List||[]),l2.key])];
-                                                                        // check l1 if all l2 checked for l1
-                                                                        if ([...new Set([...(next.level2List||[]),l2.key])].filter(x=>l2Keys.includes(x)).length===l2Keys.length) { next.level1List = [...new Set([...(next.level1List||[]),l1.key])]; }
-                                                                        // check main if all l1 checked
-                                                                        if ([...new Set([...(next.level1List||[]),l1.key])].length===allL1.length) { next.mainList = [...new Set([...(next.mainList||[]),cat.cat_key])]; }
-                                                                      }
-                                                                      return next;
-                                                                    });
-                                                                  }}
-                                                                  className="rounded border-border text-primary focus:ring-primary"
-                                                                />
-                                                                <span className="capitalize">{l2Label}</span>
-                                                              </div>
-                                                            );
-                                                          })}
-                                                        </div>
-                                                      </div>
-                                                    );
-                                                  })}
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </CommandList>):( <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>)
-                                      }
-                                     
-                                   
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                               
+                                                  >
+                                                    {name}
+                                                  </CommandItem>
+                                                )
+                                              })}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-foreground/70">
+                                  {t("brands") || "Brands"}
+                                  </label>
+                                  <Popover open={openBrand} onOpenChange={setOpenBrand}>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" className="w-full justify-between" disabled={!chainSubCategoryId}>
+                                        {(() => {
+                                          const b = allBrands.find(s => String((typeof s.id === 'object' ? s.id?.id : s.id)) === String(chainBrandId))
+                                          const name = b ? (isRTL ? (b?.translations?.[1]?.name || b?.name) : (b?.translations?.[0]?.name || b?.name)) : (t("SelectBrand") || "Select Brand")
+                                          return name
+                                        })()}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[320px] p-0">
+                                      <Command>
+                                        <CommandInput placeholder={t("searchBrands") || "Search brands ..."} />
+                                        <CommandList className="max-h-64 overflow-y-auto">
+                                          <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>
+                                          <CommandGroup>
+                                            {allBrands
+                                              .filter(b => {
+                                                const pc = typeof b.parent_category === 'object' ? b.parent_category?.id : b.parent_category
+                                                const sc = typeof b.sub_category === 'object' ? b.sub_category?.id : b.sub_category
+                                                return (chainCategoryId ? String(pc) === String(chainCategoryId) : true)
+                                                  && (chainSubCategoryId ? String(sc) === String(chainSubCategoryId) : true)
+                                              })
+                                              .map(b => {
+                                                const id = typeof b.id === 'object' ? b.id?.id : b.id
+                                                const name = isRTL ? (b?.translations?.[1]?.name || b?.name) : (b?.translations?.[0]?.name || b?.name)
+                                                return (
+                                                  <CommandItem
+                                                    key={id}
+                                                    onSelect={() => {
+                                                      setChainBrandId(String(id))
+                                                      setChainModelId("")
+                                                      setOpenBrand(false)
+                                                    }}
+                                                  >
+                                                    {name}
+                                                  </CommandItem>
+                                                )
+                                              })}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-foreground/70">
+                                  {t("models") || "Models"}
+                                  </label>
+                                  <Popover open={openModel} onOpenChange={setOpenModel}>
+                                    <PopoverTrigger asChild>
+                                      <Button variant="outline" className="w-full justify-between" disabled={!chainBrandId}>
+                                        {(() => {
+                                          const m = allModels.find(s => String((typeof s.id === 'object' ? s.id?.id : s.id)) === String(chainModelId))
+                                          const name = m ? (isRTL ? (m?.translations?.[1]?.name || m?.name) : (m?.translations?.[0]?.name || m?.name)) : (t("SelectModel") || "Select Model")
+                                          return name
+                                        })()}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[320px] p-0">
+                                      <Command>
+                                        <CommandInput placeholder={t("searchModels") || "Search models ..."} />
+                                        <CommandList className="max-h-64 overflow-y-auto">
+                                          <CommandEmpty>{t("NoResults") || "No results found."}</CommandEmpty>
+                                          <CommandGroup>
+                                            {allModels
+                                              .filter(m => {
+                                                const pb = typeof m.parent_brand === 'object' ? m.parent_brand?.id : m.parent_brand
+                                                const sc = typeof m.sub_category === 'object' ? m.sub_category?.id : m.sub_category
+                                                return (chainBrandId ? String(pb) === String(chainBrandId) : true)
+                                                  && (chainSubCategoryId ? String(sc) === String(chainSubCategoryId) : true)
+                                              })
+                                              .map(m => {
+                                                const id = typeof m.id === 'object' ? m.id?.id : m.id
+                                                const name = isRTL ? (m?.translations?.[1]?.name || m?.name) : (m?.translations?.[0]?.name || m?.name)
+                                                return (
+                                                  <CommandItem
+                                                    key={id}
+                                                    onSelect={() => {
+                                                      setChainModelId(String(id))
+                                                      setOpenModel(false)
+                                                    }}
+                                                  >
+                                                    {name}
+                                                  </CommandItem>
+                                                )
+                                              })}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
                                 </div>
 
                                 {/* Price Range */}
@@ -1070,6 +1165,7 @@ export default function SwapPage() {
                                   <div className="flex gap-2">
                                     <Input
                                       type="number"
+                                      min={1}
                                       placeholder={t("Min") || "Min"}
                                       value={priceRange.min}
                                       onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
@@ -1077,6 +1173,7 @@ export default function SwapPage() {
                                     />
                                     <Input
                                       type="number"
+                                      min={1}
                                       placeholder={t("Max") || "Max"}
                                       value={priceRange.max}
                                       onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
@@ -1352,7 +1449,8 @@ export default function SwapPage() {
                               <div className="text-sm text-foreground/70 mb-2">{t("PriceDifference") || "Price Difference"}</div>
 
                                 {priceDifference > 0 ? "+" : ""}
-                                {Number(priceDifference).toLocaleString()} LE
+                                {priceDifference!=0 && Number(priceDifference).toLocaleString()} 
+                                {priceDifference!=0 && t("le")}
                                 {priceDifference > 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Yougain") || "You gain"})</span>}
                                 {priceDifference < 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Youpayextra") || "You pay extra"})</span>}
                                 {priceDifference === 0 && <span className={`text-sm ${getDirectionClass("ml-2", "mr-2")}`}>({t("Equalvalue") || "Equal value"})</span>}
@@ -1384,7 +1482,7 @@ export default function SwapPage() {
                                   ) : (
                                     <>
                                       <ArrowLeftRight className={`h-5 w-5 ${getDirectionClass("mr-3", "ml-3")}`} />
-                                      {t("MakeSwap") || "Make Swap"}
+                                      {t("swapMaker") || "Make Swap"}
                                     </>
                                   )}
                                 </Button>
@@ -1540,13 +1638,13 @@ export default function SwapPage() {
                   {/* Main Content */}
                   <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl mx-auto text-center">
                     {/* Icon */}
-                    <motion.div
+                    <motion.div 
                       initial={{ scale: 0.8 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-4"
                     >
-                      <TbShoppingCartUp className="h-12 w-12 text-primary" />
+                      <PiSwapBold className="h-12 w-12 text-primary" />
                     </motion.div>
 
                     {/* Message */}
@@ -1557,7 +1655,7 @@ export default function SwapPage() {
                       className="space-y-4"
                     >
                       <h2 className="text-4xl font-bold text-foreground">
-                        {t("checkSendOffers") || "Check Send Offers"}
+                        {t("checkSwaps") || "Check Swaps"}
                       </h2>
                       <p className="text-xl text-foreground/70">
                         {t("checkSendOffersMessage") || "Your swap offer has been created successfully! Check your sent offers in the header."}
@@ -1592,18 +1690,18 @@ export default function SwapPage() {
                       <Button
                         onClick={() => {
                           setShowSwapHint(false)
-                          router.push("/send-items")
+                          router.push("/offers")
                         }}
                         className="bg-primary hover:bg-primary/80 text-white px-8 py-6 text-lg"
                       >
-                        {t("ViewSendOffers") || "View Send Offers"}
+                        {t("ViewSwaps") || "View Send Swaps"}
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => setShowSwapHint(false)}
+                        onClick={() => {setShowSwapHint(false), router.refresh() }}
                         className="px-8 py-6 text-lg"
                       >
-                        {t("Close") || "Close"}
+                        {t("close") || "Close"}
                       </Button>
                     </motion.div>
                   </div>

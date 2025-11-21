@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
@@ -16,9 +16,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { cn } from "@/lib/utils"
-import { checkUserHasProducts, login, loginByGoogle } from "@/callAPI/users"
+import { checkUserHasProducts, login, loginByGoogle, getKYC } from "@/callAPI/users"
 import { FaGoogle } from "react-icons/fa6";
 import { getTarget, decodedToken, removeTarget } from "@/callAPI/utiles"
+import { jwtDecode } from "jwt-decode"
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -93,11 +94,13 @@ export function LoginForm() {
   const { toast } = useToast()
   const { t } = useTranslations()
   const { isRTL } = useLanguage()
-
+  
+  
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -132,6 +135,43 @@ export function LoginForm() {
     return isValid
   }
 
+  useEffect(() => {
+    if (!searchParams) {
+      return
+    }
+
+    const token = searchParams.get("token")
+    if (token) {
+      try {
+        const decoded = jwtDecode(token)
+        const tokenEmail =
+          decoded?.email ||
+          decoded?.Email ||
+          decoded?.user?.email ||
+          decoded?.data?.email
+
+        if (typeof tokenEmail === "string" && tokenEmail.includes("@")) {
+          setValue("email", tokenEmail, { shouldValidate: true, shouldDirty: false })
+        }
+
+        if (!token && !tokenEmail) {
+          toast({
+            title: t("fillData") || "Fill Data",
+            description: t("fillDataLogin") || "Please enter your email address and password to login",
+            variant: "default",
+          })
+        }
+        
+      } catch (error) {
+        // console.error("Failed to decode login token:", error)
+      }
+    }
+
+
+   
+  }, [searchParams])
+
+
   const onSubmit = async (data) => {
     // console.log("data on submit in login ", data)
 
@@ -156,6 +196,18 @@ export function LoginForm() {
             return
           }
 
+          const kycStatus = await getKYC(decoded.id)
+          if (kycStatus?.data === false) {
+            toast({
+              title: t("completeProfile") || "Complete your profile",
+              description: t("completeProfileDesc") || "Please complete your profile information before continuing.",
+              variant: "default",
+            })
+            router.push(`/profile/settings/editProfile`)
+            router.refresh()
+            return
+          }
+
           // Check if user has products
           const productRes = await checkUserHasProducts(decoded.id)
 
@@ -168,35 +220,75 @@ export function LoginForm() {
             })
             router.push(`/profile/settings/editItem/new`)
             router.refresh()
-
           } else {
             // Has products: go to swap page
             router.push(`/swap/${getTargetSwap}`)
             await removeTarget()
-          router.refresh()
+            router.refresh()
           }
         } else {
           // No target: go to home
           router.push("/")
           router.refresh()
         }
+      } else {
+        // Login failed - check for email verification error
+        const errorMessage = response.error || response.message || ""
+        const lowerErrorMessage = errorMessage.toLowerCase()
+        // Check if error is related to email verification
+        const isEmailUnverified = 
+          lowerErrorMessage.includes("email not verified") ||
+          lowerErrorMessage.includes("unverified") ||
+          lowerErrorMessage.includes("verify your email") ||
+          lowerErrorMessage.includes("email verification") ||
+          lowerErrorMessage.includes("verification required") ||
+          lowerErrorMessage.includes("please verify")
+
+        if (isEmailUnverified) {
+          toast({
+            title: t("emailUnverified") || "Email not verified",
+            description: t("pleaseVerifyEmail") || "Please verify your email address before logging in. Check your inbox for the verification link.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: t("loginFailed") || "Login failed",
+            description: t(errorMessage) || t("invalidCredentials") || "Invalid email or password. Please try again.",
+            variant: "destructive",
+          })
+        }
       }
     } catch (error) {
-      toast({
-        title: t("loginFailed") || "Login failed",
-        description: t("invalidCredentials") || "Invalid email or password. Please try again.",
-        variant: "destructive",
-      })
+      const errorMessage = error?.response?.data?.message || error?.message || ""
+      const lowerErrorMessage = errorMessage.toLowerCase()
+      
+      // Check if error is related to email verification
+      const isEmailUnverified = 
+        lowerErrorMessage.includes("email not verified") ||
+        lowerErrorMessage.includes("unverified") ||
+        lowerErrorMessage.includes("verify your email") ||
+        lowerErrorMessage.includes("email verification") ||
+        lowerErrorMessage.includes("verification required") ||
+        lowerErrorMessage.includes("please verify")
+
+      if (isEmailUnverified) {
+        toast({
+          title: t("emailUnverified") || "Email not verified",
+          description: t("pleaseVerifyEmail") || "Please verify your email address before logging in. Check your inbox for the verification link.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: t("loginFailed") || "Login failed",
+          description: errorMessage || t("invalidCredentials") || "Invalid email or password. Please try again.",
+          variant: "destructive",
+        })
+      }
       // console.error("Login error:", error)
     } finally {
       setIsLoading(false)
 
     }
-  }
-// login by google 
-  const handleLoginByGoogle = async ()=>{
-
-
   }
 
   return (

@@ -1,10 +1,11 @@
 "use client"
-import { List, ListChecks, MessageCircle, Verified } from "lucide-react"
+import { List, ListChecks, MessageCircle, PackageSearch, Verified } from "lucide-react"
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BiCartDownload } from "react-icons/bi";
 import { TbShoppingCartUp } from "react-icons/tb";
+import { PiSwapBold } from "react-icons/pi";
 import {
   Heart,
   Search,
@@ -58,6 +59,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
 import { mediaURL } from "@/callAPI/utiles";
+import { useToast } from "@/components/ui/use-toast"
+
 const navVariants = {
   hidden: { 
     opacity: 0, 
@@ -148,6 +151,7 @@ export function Header() {
   const [filter, serFilter] = useState("")
   const [cartLength, setCartLength] = useState(0)
   const [notificationsLength, setNotificationsLength] = useState(0)
+  const [offersLength, setOffersLength] = useState(0)
   const [wishlistLength, setWishlistLength] = useState(0)
   const [chatLength, setChatLength] = useState(0)
   const [hasSearched, setHasSearched] = useState(false)
@@ -158,6 +162,8 @@ export function Header() {
   const lastScrollY = useRef(0)
 
   const router = useRouter()
+  const { toast } = useToast()
+
   const { isRTL, toggleLanguage } = useLanguage()
   const { theme, toggleTheme } = useTheme()
   const { t } = useTranslations()
@@ -226,7 +232,7 @@ export function Header() {
         router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
       }
     } catch (error) {
-      console.error("Search error:", error)
+      // console.error("Search error:", error)
       // Fallback to simple redirect
       router.push(`/filterItems/${encodeURIComponent(searchTerm.trim())}`)
     }
@@ -313,20 +319,19 @@ export function Header() {
       const filteredOffers = Array.isArray(offers.data)
         ? offers.data.filter((offer) => offer.status_offer === "pending" || offer.status_offer === "accepted")
         : []
-
       const notifications = await getOffeReceived(id)
-
       const filteredNotifications = Array.isArray(notifications.data)
         ? notifications.data.filter(
             (notifications) => notifications.status_offer === "pending" || notifications.status_offer === "accepted",
           )
         : []
-
-      setCartLength(filteredOffers.length)
-      setNotificationsLength(filteredNotifications.length)
+let allOffersCount = filteredOffers.length + filteredNotifications.length
+        setOffersLength(allOffersCount)
+        
+      // setCartLength(filteredOffers.length)
+      // setNotificationsLength(filteredNotifications.length)
     } else {
-      setCartLength(0)
-      setNotificationsLength(0)
+      setOffersLength(0)
     }
   }
 
@@ -334,7 +339,7 @@ export function Header() {
     await removeCookie()
     await removeTarget()
     setUser(null)
-    router.push("/auth/login")
+    router.push("/auth/login") 
     window.location.reload()
   }
 
@@ -394,14 +399,11 @@ export function Header() {
     <>
 
       <motion.header
-        className={`fixed top-0  w-full border-b transition-all duration-300 z-[10000000]${
+        className={`fixed top-0 w-full border-b transition-all duration-300 z-[10000000] bg-background dark:bg-gray-950 ${
           isScrolled 
-            ? " !bg-white shadow-lg dark:!bg-[#121212]" 
-            : " !bg-white shadow-sm dark:!bg-[#121212]"
-        } dark:border-[#2a2a2a]`}
-        style={{
-          backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
-        }}
+            ? "shadow-lg" 
+            : "shadow-sm"
+        } dark:border-border/50`}
         variants={navVariants}
         initial="visible"
         animate={showHeader ? "visible" : "hidden"}
@@ -409,11 +411,9 @@ export function Header() {
        
  
         {/* Main header */}
-        <div className={` top-0 container transition-all duration-300 z-[10000000] ${
+        <div className={`top-0 container transition-all duration-300 z-[10000000] ${
           isScrolled ? "py-3" : "py-2"
-        }`} style={{
-          backgroundColor: theme === 'dark' ? '#121212' : '#ffffff'
-        }}>
+        }`}>
           <motion.div 
             className="flex items-center justify-between gap-4"
             animate={{
@@ -609,6 +609,13 @@ export function Header() {
                           <span>{t("manageItems")}</span>
                         </Link>
                       </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild>
+                        <Link href="/offers-details" className="hover:bg-primary/10 bg-background/50 hover:shadow-sm ">
+                          <PackageSearch  className="mr-2 h-4 w-4" />
+                          <span>{t("offersDetails")||"Offers Details"}</span>
+                        </Link>
+                      </DropdownMenuItem>
                     </>
 
                     <DropdownMenuSeparator className="dark:bg-[#2a2a2a] text-primary" />
@@ -693,7 +700,7 @@ export function Header() {
               {user ? (
                 <>
                   {/* Notifications */}
-                  <motion.div custom={5} variants={itemVariants}>
+                  {/* <motion.div custom={5} variants={itemVariants}>
                     <Link href="/recived-items" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -722,10 +729,42 @@ export function Header() {
                         </Button>
                       </motion.div>
                     </Link>
+                  </motion.div> */}
+
+
+                  <motion.div custom={5} variants={itemVariants}>
+                    <Link href="/offers" className="relative z-[100000]">
+                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative hover:bg-primary/80 hover:text-popover/80 group"
+                        >
+                          <PiSwapBold className="h-5 w-5" />
+                          <AnimatePresence>
+                            {offersLength > 0 && (
+                              <motion.span
+                                className="absolute animate-bounce -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary/90 text-xs text-primary-foreground dark:text-black"
+                                variants={badgeVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                              >
+                                {offersLength}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                          <span className="sr-only">{t("AllOffers") || "All  Offers"}</span>
+                          <span className="pointer-events-none absolute -bottom-8 right-0 z-50 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-100 dark:bg-black">
+                            {t("AllOffers") || "All  Offers"}
+                          </span>
+                        </Button>
+                      </motion.div>
+                    </Link>
                   </motion.div>
 
                   {/* Cart */}
-                  <motion.div custom={6} variants={itemVariants}>
+                  {/* <motion.div custom={6} variants={itemVariants}>
                     <Link href="/send-items" className="relative z-[100000] ">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -754,10 +793,10 @@ export function Header() {
                         </Button>
                       </motion.div>
                     </Link>
-                  </motion.div>
+                  </motion.div> */}
                   
                   {/* Wishlist */}
-                  <motion.div custom={7} variants={itemVariants}>
+                  <motion.div custom={6} variants={itemVariants}>
                       <Link href="/wishList" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -789,7 +828,7 @@ export function Header() {
                   </motion.div>
 
                   {/* Messages */}
-                  <motion.div custom={8} variants={itemVariants}>
+                  <motion.div custom={7} variants={itemVariants}>
                     <Link href="/chat" className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -821,7 +860,7 @@ export function Header() {
                   </motion.div>
 
                   {/* Add items */}
-                  <motion.div custom={9} variants={itemVariants}>
+                  <motion.div custom={8} variants={itemVariants}>
                     <span className="relative z-[100000]">
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                         <Button
@@ -841,7 +880,7 @@ export function Header() {
                   </motion.div>
 
                   {/* lang and theme */}
-                  <motion.div custom={10} variants={itemVariants}>
+                  <motion.div custom={9} variants={itemVariants}>
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
                         <Button
                           variant="ghost"
@@ -854,7 +893,7 @@ export function Header() {
                       </motion.div>
                   </motion.div>
                   
-                  <motion.div custom={11} variants={itemVariants}>
+                  <motion.div custom={10} variants={itemVariants}>
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
                         <Button 
                           variant="ghost"
@@ -872,7 +911,7 @@ export function Header() {
             </motion.div>
 
             {/* Mobile menu button */}
-            <motion.div custom={10} variants={itemVariants} initial="hidden" animate="visible" className="md:hidden">
+            <motion.div custom={11} variants={itemVariants} initial="hidden" animate="visible" className="md:hidden">
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                 <Button
                   variant="ghost"
@@ -1068,64 +1107,79 @@ export function Header() {
           </AnimatePresence>
         </div>
 
-        {/* Enhanced Categories navigation */}
+        {/* Enhanced Categories navigation with Infinite Marquee */}
         <AnimatePresence>
           {showCategoriesBar && (
             <motion.div
-              className="border-t dark:bg-gradient-to-r dark:from-[#121212] dark:via-[#1a1a1a] dark:to-[#121212] dark:border-[#2a2a2a] shadow-sm"
+              className="border-t bg-background dark:bg-gray-950 dark:border-border/50 shadow-sm overflow-hidden relative"
               initial={{ opacity: 0, height: 0, y: -10 }}
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-          <div className="container overflow-x-auto scrollbar-hide">
-            <nav className="flex space-x-2 py-3">
-              {categoriesName.slice(0, 10).map((category, i) => {
-                const IconComponent = categoryIcons[category]
-                return (
-                  <motion.div key={i} custom={i} variants={itemVariants} initial="hidden" animate="visible">
-                    <Link
-                      href={`/categories/${category}`}
-                      className={cn(
-                        "relative whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 flex items-center gap-2",
-                        pathname === `/categories/${category}` 
-                          ? "text-primary-foreground bg-primary shadow-md" 
-                          : "text-muted-foreground hover:text-primary hover:bg-primary/10 bg-background/50 hover:shadow-sm border border-border/50"
-                      )}
-                    >
-                      {IconComponent && <IconComponent className="w-4 h-4 relative z-10" />}
-                      <span className="relative z-10 hidden sm:inline">{t(category)}</span>
-                      {pathname === `/categories/${category}` && (
-                        <motion.div
-                          className="absolute inset-0 bg-primary rounded-full"
-                          layoutId="activeCategory"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                    </Link>
-                  </motion.div>
-                )
-              })}
+              <style jsx>{`
+                @keyframes scroll-left {
+                  from {
+                    transform: translateX(0);
+                  }
+                  to {
+                    transform: translateX(-33.333%);
+                  }
+                }
+                
+                @keyframes scroll-right {
+                  from {
+                    transform: translateX(0);
+                  }
+                  to {
+                    transform: translateX(33.333%);
+                  }
+                }
+                
+                .marquee-wrapper {
+                  display: flex;
+                  width: fit-content;
+                  animation: ${isRTL ? 'scroll-right' : 'scroll-left'} 20s linear infinite;
+                }
+                
+                .marquee-wrapper:hover {
+                  animation-play-state: paused;
+                }
+              `}</style>
               
-              {/* View All Categories Link */}
-              <motion.div 
-                custom={categoriesName.length} 
-                variants={itemVariants} 
-                initial="hidden" 
-                animate="visible"
-                className="mt-1"
-              >
-                <Link
-                  href="/categories"
-                  className="whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 text-primary hover:bg-primary/10 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 shadow-sm"
-                >
-                  <span className="relative z-10 ">{t('viewAll') || 'View All'}</span>
-                </Link>
-              </motion.div>
-            </nav>
-          </div>
+              <div className="relative py-3 flex overflow-hidden">
+                <div className="marquee-wrapper">
+                  {[1, 2, 3].map((setNum) => (
+                    <div key={`set-${setNum}`} className="flex items-center gap-3 px-2 flex-shrink-0">
+                      {categoriesName.map((category, i) => {
+                        const IconComponent = categoryIcons[category]
+                        return (
+                          <Link
+                            key={`cat-${setNum}-${i}`}
+                            href={`/categories/${category}`}
+                            className={cn(
+                              "relative whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 flex items-center gap-2 flex-shrink-0",
+                              pathname === `/categories/${category}` 
+                                ? "text-primary-foreground bg-primary shadow-md" 
+                                : "text-muted-foreground hover:text-primary hover:bg-primary/10 bg-background/50 hover:shadow-sm border border-border/50"
+                            )}
+                          >
+                            {IconComponent && <IconComponent className="w-4 h-4" />}
+                            <span>{t(category)}</span>
+                          </Link>
+                        )
+                      })}
+                      
+                      <Link
+                        href="/categories"
+                        className="whitespace-nowrap px-4 py-2 text-sm font-medium capitalize rounded-full transition-all duration-300 hover:scale-105 text-primary hover:bg-primary/10 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 shadow-sm flex items-center flex-shrink-0"
+                      >
+                        <span>{t('viewAll') || 'View All'}</span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

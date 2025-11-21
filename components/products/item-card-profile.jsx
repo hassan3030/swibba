@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, memo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -10,35 +10,30 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Heart, Repeat, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getMediaType } from "@/lib/utils"
-import { getImageProducts } from "@/callAPI/products"
 import { getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
 import { decodedToken, getCookie, removeTarget, setTarget } from "@/callAPI/utiles"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-
 import { useLanguage } from "@/lib/language-provider"
 import { checkUserHasProducts, getKYC } from "@/callAPI/users"
 import { mediaURL } from "@/callAPI/utiles";
   
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
     transition: {
-      duration: 0.4,
+      duration: 0.3,
       ease: "easeOut",
     },
   },
   hover: {
-    y: -5,
-    scale: 1.02,
-    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+    y: -8,
     transition: {
-      duration: 0.2,
-      ease: "easeInOut",
+      duration: 0.3,
+      ease: "easeOut",
     },
   },
 }
@@ -97,6 +92,7 @@ export function ItemCardProfile({
   // const [bigImage, setBigImage] = useState("")
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   let linkToItemOffer = LinkItemOffer ? `/products/in_offer/${id}` : `/products/out_offer/${id}`  // Advanced filter states
 
   // const getDataImage = async () => {
@@ -139,7 +135,7 @@ export function ItemCardProfile({
   //   }
   // }
 
-  const makeSwap = async (e) => {
+  const makeSwap = useCallback(async (e) => {
     e.preventDefault()
     e.stopPropagation()
     const token = await getCookie()
@@ -182,30 +178,33 @@ export function ItemCardProfile({
         router.push(`/auth/login`)
       }
     }catch(error){
-console,log(error , "error in swap operation")
+// console,log(error , "error in swap operation")
     }
    
-  }
+  }, [id, t, toast, router])
 
 
- const handleGetWishItem = async () => {
+ const handleGetWishItem = useCallback(async () => {
     try {
       const user = await decodedToken()
+      if (!user?.id) return
       const WishItem = await getWishList(user.id)
-      if (WishItem.data && user.id) {
+      if (WishItem.data) {
         const isItem = WishItem.data.find((i) => i.item_id == id) ? true : false
         setSwitchHeart(isItem)
       }
     } catch (error) {
       // console.error("Error getting wish item:", error)
     }
-  }
-  const handleAddWishItem = async () => {
+  }, [id])
+  
+  const handleAddWishItem = useCallback(async () => {
    try {
       const user = await decodedToken()
+      if (!user?.id) return
       const WishItem = await getWishList(user.id)
       const WishItemId = WishItem.data.filter((i) => i.item_id == id)
-      if (WishItem.data && user.id) {
+      if (WishItem.data) {
         const isItem = WishItem.data.find((i) => i.item_id == id)
         if (isItem) {
           await deleteWishList(WishItemId[0]?.id)
@@ -226,24 +225,57 @@ console,log(error , "error in swap operation")
     } catch (error) {
       // console.error("Error updating wishlist:", error)
     }
-  }
+  }, [id, t, toast])
    
   // useEffect(() => {
   //   getDataImage()
   // }, [])
 
   useEffect(() => {
-    handleGetWishItem()
-    // console.log("i am in the item card profile images", images)
-    // console.log("i am in the item card profile images", images[0]?.directus_files_id)
-  }, [switchHeart])
+    let isMounted = true
+    const verifyAuth = async () => {
+      try {
+        const token = await getCookie()
+        if (isMounted) {
+          setIsAuthenticated(Boolean(token))
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsAuthenticated(false)
+        }
+      }
+    }
+    verifyAuth()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    
+    if (isMounted && showSwitchHeart && isAuthenticated) {
+      handleGetWishItem()
+    }
+    
+    return () => {
+      isMounted = false
+    }
+  }, [handleGetWishItem, showSwitchHeart, isAuthenticated])
 
   return (
-    <Link href={linkToItemOffer}>
-      <motion.div  initial="hidden" animate="visible" whileHover="hover">
-        <Card className="overflow-hidden w-[150px] transition-all duration-200 hover:shadow-md ">
-          <div className="relative">
-            <div className="relative aspect-square overflow-hidden">
+    <Link href={linkToItemOffer} className="block w-full">
+      <motion.div 
+        variants={cardVariants}
+        initial="hidden" 
+        animate="visible" 
+        whileHover="hover"
+        className="h-full"
+      >
+        <Card className="group relative overflow-hidden h-full flex flex-col border-0 bg-card shadow-md hover:shadow-2xl transition-all duration-500 rounded-2xl">
+          {/* Image Container */}
+          <div className="relative flex-shrink-0">
+            <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/60">
               <AnimatePresence>
                
                   <motion.div
@@ -290,10 +322,10 @@ console,log(error , "error in swap operation")
                             src={mediaUrl.url}
                             alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                             fill
+                            loading="lazy"
                             placeholder="blur"
-                            blurDataURL="/placeholder.svg?height=300&width=300"
-                            priority
-                            // onLoad={() => setImageLoaded(true)}
+                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 180px"
                             className="object-cover transition-transform duration-300"
                           />
                         )
@@ -304,10 +336,10 @@ console,log(error , "error in swap operation")
               </AnimatePresence>
 
               {/* Heart button */}
-              {showSwitchHeart && (
+              {showSwitchHeart && isAuthenticated && (
                 <motion.button
                   type="button"
-                  className="absolute top-2 right-2 z-10 bg-transparent backdrop-blur-sm rounded-full p-2 hover:scale-105 transition-colors"
+                  className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-md rounded-full p-2.5 hover:bg-background transition-all shadow-lg border border-border/40"
                   onClick={(e) => {
                     e.stopPropagation()
                     e.preventDefault()
@@ -315,11 +347,11 @@ console,log(error , "error in swap operation")
                   }}
                   variants={heartVariants}
                   animate={switchHeart ? "animate" : "initial"}
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   <Heart
-                    className={`h-5 w-5 transition-colors ${
+                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
                       switchHeart ? "text-red-500 fill-current" : "text-muted-foreground"
                     }`}
                   />
@@ -327,68 +359,88 @@ console,log(error , "error in swap operation")
               )}
             </div>
 
+            {/* Status Badge */}
             <motion.div
-              className="absolute left-2 top-2"
+              className="absolute left-3 top-3"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 capitalize">{t(status_item)}</Badge>
+              <Badge className="bg-primary text-primary-foreground hover:bg-primary shadow-md border-0 capitalize text-xs px-2 py-0.5">
+                {t(status_item)}
+              </Badge>
             </motion.div>
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
           </div>
 
-          <CardContent className="p-2">
+          {/* Content Container */}
+          <CardContent className="p-4 space-y-2.5 flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-card/50">
+            <div className="space-y-2">
+              {/* Title */}
+              <motion.div
+                className="flex items-start justify-between gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <h3 className="line-clamp-1 text-sm sm:text-base font-bold group-hover:text-primary transition-colors capitalize leading-tight">
+                  {!isRTL ? (translations[0]?.name): (translations[1]?.name|| name) }
+                </h3>
+              </motion.div>
+
+              {/* Description */}
+              <motion.p
+                className="line-clamp-1 text-xs text-muted-foreground first-letter:capitalize leading-relaxed "
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                { (!isRTL ? translations[0]?.description: translations[1]?.description) || description}
+              </motion.p>
+
+              {/* Pricing Section */}
+              <motion.div 
+                className="space-y-1.5 pt-1"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                {/* Main Price */}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg sm:text-xl font-bold text-primary">
+                    {Number(price).toLocaleString('en-US')}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-medium">{t("le")}</span>
+                </div>
+
+                {/* AI Price */}
+                {/* <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">{t("aIExpectedPrice")}:</span>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    {Number(value_estimate).toLocaleString('en-US')} LE
+                  </span>
+                </div> */}
+              </motion.div>
+            </div>
+          </CardContent>
+
+          {/* Swap Button */}
+          {status_swap == "available" && showbtn && (
             <motion.div
-              className="mb-1 flex items-start justify-between gap-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h3 className="line-clamp-1 overflow-ellipsis font-semibold group-hover:text-primary capitalize">{!isRTL ? (translations[0]?.name): (translations[1]?.name|| name) }</h3>
-            </motion.div>
-
-           
-
-            <motion.p
-              className="mb-1 line-clamp-1 overflow-ellipsis text-sm text-muted-foreground first-letter:capitalize"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              { (!isRTL ? translations[0]?.description: translations[1]?.description) || description}
-            </motion.p>
-
-            <motion.div
-              className="flex items-center max-w-[150px] line-clamp-1 overflow-hidden whitespace-nowrap text-sm font-semibold text-secondary2"
-              initial={{ opacity: 0, y: 10 }}
+              className="p-3 sm:p-4 pt-0 flex-shrink-0"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              {t("price")}:{Number(price).toLocaleString('en-US')} {t("le")}
-            </motion.div>
-
-            <motion.div
-              className="flex items-center whitespace-nowrap text-sm font-semibold text-secondary2/90 mb-1"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span>{t("aIExpectedPrice")}:</span>
-              <span className=" overflow-ellipsis">{Number(value_estimate).toLocaleString('en-US')} LE</span>
-            </motion.div>
-          </CardContent>
-
-          {/* Swap button */}
-          {status_swap == "available" && showbtn && (
-            <motion.div
-              className="p-2 pt-0"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+              <motion.div 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
                 <Button
-                  className="w-full bg-primary-yellow text-gray-800 hover:bg-primary-orange hover:text-white transition-colors"
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all rounded-xl"
                   size="sm"
                   onClick={(e) => {
                     makeSwap(e)
@@ -405,3 +457,6 @@ console,log(error , "error in swap operation")
     </Link>
   )
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ItemCardProfile)

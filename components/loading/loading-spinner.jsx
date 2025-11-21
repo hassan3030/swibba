@@ -55,7 +55,7 @@ const LoadingSpinner = ({
               }}
             >
               {/* <span className="text-white font-bold text-lg">SWIBBA</span> */}
-              <Image src="/logo.png" alt="Swibba Logo" width={100} height={100} />
+              <Image src="/logo.png" alt={t('swibbaLogo')} width={100} height={100} />
             </motion.div>
           </div>
           
@@ -76,7 +76,7 @@ const LoadingSpinner = ({
   const spinnerContent = (
     <div className={`flex flex-col items-center justify-center ${className}`}>
       <motion.div
-        className={`${sizeClasses[size]} border-primary border-t-transparent rounded-full`}
+        className={`${sizeClasses[size]} border-white border-t-transparent rounded-full`}
         animate={{ rotate: 360 }}
         transition={spinTransition}
       />

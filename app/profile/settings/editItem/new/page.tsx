@@ -1,8 +1,8 @@
 "use client"
 
-import { ItemAdd } from "@/components/prods-modification/item-add"
+import { ItemAdd } from "@/components/prods-modification/item-add-new"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations";
 
@@ -11,12 +11,26 @@ import { useTranslations } from "@/lib/use-translations";
 export default function NewItemPage() {
     const { t } = useTranslations();
   return (
-    <div className="w-full py-2 ">
-      <div className="mx-4 max-[370px]:mx-0 lg:mx-8">
-        <h1 className="text-3xl m-1 font-bold text-primary/90 max-[370px]:text-xl">{t('ListNewItem')||"List a New Item"}</h1>
-        <p className="text-foreground/70 m-1  max-[370px]:text-sm">{t('Createadetailedlistingtofindtheperfectswapforyouritem')||"Create a detailed listing to find the perfect swap for your item."}</p>
+    <div className="min-h-screen bg-background dark:bg-gray-950">
+      {/* Modern Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/50">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text  mb-4">
+              {t('ListNewItem') || "List a New Item"}
+            </h1>
+            <p className="text-lg text-foreground/70 leading-relaxed">
+              {t('Createadetailedlistingtofindtheperfectswapforyouritem') || "Create a detailed listing to find the perfect swap for your item."}
+            </p>
+          </div>
+        </div>
       </div>
-      <ItemAdd />
+      
+      {/* Main Content */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <ItemAdd />
+      </div>
     </div>
   )
 }

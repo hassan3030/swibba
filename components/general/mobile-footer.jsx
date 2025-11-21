@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { 
   Home, 
@@ -14,8 +14,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/use-translations"
+import { useToast } from "@/components/ui/use-toast"
 import { getCookie, decodedToken } from "@/callAPI/utiles"
 import { getOffeReceived, getMessagesByUserId } from "@/callAPI/swap"
+import { getKYC } from "@/callAPI/users"
 
 const tabVariants = {
   inactive: {
@@ -50,8 +52,11 @@ const iconVariants = {
 export function MobileFooter() {
   const [user, setUser] = useState(null)
   const [messageCount, setMessageCount] = useState(0)
+  const [isKycVerified, setIsKycVerified] = useState(false)
   const { t } = useTranslations()
   const pathname = usePathname()
+  const router = useRouter()
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -59,12 +64,22 @@ export function MobileFooter() {
         const token = await getCookie()
         if (token) {
           const decoded = await decodedToken()
-          if (decoded?.id) {
-            setUser({ id: decoded.id })
-            
-            // Fetch messages count
-            const messages = await getMessagesByUserId(decoded.id)
-            setMessageCount(messages?.partnerMessages?.length || 0)
+          if (!decoded?.id) {
+            return
+          }
+
+          setUser({ id: decoded.id })
+
+          const [messages, kycStatus] = await Promise.all([
+            getMessagesByUserId(decoded.id),
+            getKYC(decoded.id),
+          ])
+
+          setMessageCount(messages?.partnerMessages?.length || 0)
+          if (kycStatus?.success) {
+            setIsKycVerified(Boolean(kycStatus.data))
+          } else {
+            setIsKycVerified(false)
           }
         }
       } catch (error) {
@@ -74,6 +89,45 @@ export function MobileFooter() {
     
     fetchUserData()
   }, [])
+
+  const handleKYC= async()=>{
+    try{
+      const decoded = await decodedToken()
+      if(decoded){
+        const kyc = await getKYC(decoded.id)
+        if (kyc.data === false) {
+          toast({
+            title: t("completeYourProfile"),
+            description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
+            variant: "default",
+          })
+          router.push(`/profile/settings/editProfile`)
+    
+        }
+        else {
+            router.push(`/profile/settings/editItem/new`)
+          }
+      }else{
+        router.push(`/auth/login`)
+      }
+
+
+    }catch{
+      toast({
+        title: t("error"),
+        description: t("tryAgain") || "Please try again.",
+        variant: "default",
+      })
+    
+    }
+   
+  }
+
+  const handleAddClick = async (event) => {
+    event.preventDefault()
+    await handleKYC()
+
+  }
 
   const navItems = [
     {
@@ -94,9 +148,10 @@ export function MobileFooter() {
       label: t("add") || "Add",
       isActive: pathname === "/profile/settings/editItem/new",
       isSpecial: true,
+      onClick: handleAddClick,
     },
-    {
-      href: user ? "/chat" : "/auth/login",
+    { 
+      href: user ? "/chat" : "/chat",
       icon: MessageCircle,
       label: t("messages") || "Messages",
       isActive: pathname === "/chat" || pathname.startsWith("/chat"),
@@ -105,7 +160,7 @@ export function MobileFooter() {
     {
       href: user ? "/profile" : "/auth/login",
       icon: User,
-      label: t("profile") || "Profile",
+      label: t("profileFooter") || "Profile",
       isActive: pathname === "/profile" || pathname.startsWith("/profile"),
     },
   ]
@@ -118,12 +173,8 @@ export function MobileFooter() {
       className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t"
     >
       <div className="flex items-center justify-around px-2 py-2 safe-area-padding-bottom ">
-        {navItems.map((item, index) => (
-          <Link
-            key={index}
-            href={item.href}
-            className="flex flex-col items-center justify-center flex-1 hover:text-primary"
-          >
+        {navItems.map((item, index) => {
+          const content = (
             <motion.div
               variants={tabVariants}
               animate={item.isActive ? "active" : "inactive"}
@@ -161,8 +212,31 @@ export function MobileFooter() {
                 </span>
               )}
             </motion.div>
-          </Link>
-        ))}
+          )
+
+          if (item.onClick) {
+            return (
+              <button
+                key={index}
+                type="button"
+                onClick={item.onClick}
+                className="flex flex-col items-center justify-center flex-1 hover:text-primary cursor-pointer bg-transparent border-none"
+              >
+                {content}
+              </button>
+            )
+          }
+
+          return (
+            <Link
+              key={index}
+              href={item.href}
+              className="flex flex-col items-center justify-center flex-1 hover:text-primary"
+            >
+              {content}
+            </Link>
+          )
+        })}
       </div>
       
       {/* Safe area for devices with home indicators */}

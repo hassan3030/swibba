@@ -1,24 +1,36 @@
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 import axios from "axios"
-import {validateAuth , baseItemsURL, baseURL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
+import {validateAuth , baseItemsURL, DIRECTUS_URL, handleApiError, makeAuthenticatedRequest } from "./utiles.js"
 
 // Get available/unavailable products by user ID
-export const getAllCategories = async () => {
+export const getAllCategories = async (limit = null, optimized = false) => {
   try {
+    // Optimized fields for faster loading (only image, name, translations)
+    const fields = optimized 
+      ? "name,translations.*,main_image.id,main_image.type"
+      : "*,translations.*, main_image.*,parent_category.*,*.*.*"
+    
+    const params = { 
+      fields,
+      sort: "name"
+    }
+    
+    // Add limit if specified
+    if (limit && limit > 0) {
+      params.limit = limit
+    }
    
     const response = await axios.get(
       `${baseItemsURL}Categories`,
-      {
-         // Include parent_category relation so the UI can derive subcategories
-         params: { fields: "*,translations.*, main_image.*,parent_category.*,*.*.*", sort: "name" } 
-    } 
+      { params } 
     );
-    console.log(`Retrieved All categories:`, response);
+    // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
       count: response.data.data?.length || 0,
+      total: response.data.meta?.total_count || response.data.data?.length || 0,
       names: response.data.data.map(category => category.name) || [],
       message: `All categories retrieved successfully`,
     };
@@ -38,7 +50,7 @@ export const getLevelOneCategories = async () => {
         params: { fields: "*,translations.*" }
       }
     );
-    console.log(`Retrieved All categories:`, response);
+    // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -62,7 +74,7 @@ export const getLevelTwoCategories = async () => {
         params: { fields: "*,translations.*,parent_category.*" }
       }
     );
-    console.log(`Retrieved All categories:`, response);
+    // console.log(`Retrieved All categories:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -84,7 +96,7 @@ export const getFounders = async () => {
     const response = await axios.get(
       `https://deel-deal-directus.csiwm3.easypanel.host/items/Founder?fields=*,*.*&sort=order`
     );
-    console.log(`Retrieved Founders:`, response);
+    // console.log(`Retrieved Founders:`, response);
     return {
       success: true,
       data: response.data.data || [],
@@ -101,7 +113,7 @@ export const getFounders = async () => {
 export const getAllHints = async () => {
   try {
     const response = await axios.get(`${baseItemsURL}Hints?fields=*,*.* &sort=date_created`)
-    console.log(`Retrieved All hints:`, response.data.data);
+    // console.log(`Retrieved All hints:`, response.data.data);
     return {
       success: true,
       data: response.data.data || [],
@@ -117,7 +129,7 @@ export const getAllHints = async () => {
 export const getHintByName = async (name) => {
   try {
     const response = await axios.get(`${baseItemsURL}Hints?filter[title][_eq]=${name}&fields=*,*.*&sort=date_created`)
-    console.log(`Retrieved Hint by name:`, response.data.data);
+    // console.log(`Retrieved Hint by name:`, response.data.data);
     return {
       success: true,
       data: response.data.data || [],
@@ -128,3 +140,87 @@ export const getHintByName = async (name) => {
     return handleApiError(error, "Get Hint by name");
   }
 };
+
+
+
+// Get getAllSubCategories
+export const getAllSubCategories = async () => {
+  try {
+   
+    const response = await axios.get(
+      `${baseItemsURL}sub_categories`,
+      {
+         // Include parent_category relation so the UI can derive subcategories
+         params: { fields: "*,translations.*, parent_category.*,*.*.*", sort: "name" } 
+    } 
+    );
+    // console.log(`Retrieved All sub_categories:`, response);
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      // names: response.data.data.map(category => category.name) || [],
+      message: `All sub_categories retrieved successfully`,
+    };
+  } catch (error) {
+    return handleApiError(error, "Get All sub_categories");
+  }
+}
+
+
+
+// Get Brands with optional optimization
+export const getAllBrands = async (optimized = false) => {
+  try {
+    // Optimized fields for faster loading (only image, name, translations)
+    const fields = optimized 
+      ? "id,name,translations.*,brand_icon.id,brand_icon.filename_download"
+      : "*,translations.*, parent_category.*, sub_category.*, brand_icon , *.*.*"
+    
+    const response = await axios.get(
+      `${baseItemsURL}Brands`,
+      {
+         params: {  limit: -1 , fields, sort: "name"} 
+    } 
+    );
+    // console.log(`Retrieved All Brands:`, response);
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      message: `All Brands retrieved successfully`,
+    };
+  } catch (error) {
+    return handleApiError(error, "Get All Brands");
+  }
+}
+
+// Get Models
+export const getAllModels = async () => {
+  try {
+   
+    const response = await axios.get(
+      `${baseItemsURL}models`,
+      {
+         // Include parent_category relation so the UI can derive subcategories
+         params: {  limit: -1 ,  fields: "*,translations.*, parent_brand.*, sub_category.*, *.*.*", sort: "name" } 
+    } 
+    );
+    // console.log(`Retrieved All models:`, response);
+    return {
+      success: true,
+      data: response.data.data || [],
+      count: response.data.data?.length || 0,
+      // names: response.data.data.map(category => category.name) || [],
+      message: `All models retrieved successfully`,
+    };
+  } catch (error) {
+    return handleApiError(error, "Get All models ");
+  }
+};
+
+
+
+
+
+

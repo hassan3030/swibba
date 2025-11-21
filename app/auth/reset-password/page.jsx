@@ -5,7 +5,8 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
-import { Lock, Loader2, CheckCircle, AlertTriangle, Eye, EyeOff } from "lucide-react"
+import { Lock, Loader2, CheckCircle, AlertTriangle, Eye, EyeOff, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { resetPassword } from "@/callAPI/users"
 import { Progress } from "@/components/ui/progress"
 import { useRouter } from "next/navigation"
+import { AnimatedBackground } from "@/components/auth/animated-background"
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -173,28 +175,46 @@ const ResetPasswordPage = () => {
         type: "error",
         message: t("passwordResetFailed") || "Failed to reset password.",
       })
-      console.error("Reset password error:", error)
+      // console.error("Reset password error:", error)
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <motion.div
-        className="w-full max-w-md space-y-6 rounded-2xl bg-card p-8 shadow-2xl"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.div className="text-center" variants={itemVariants}>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {t("resetPasswordTitle") || "Reset Your Password"}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {t("resetPasswordDesc") || "Enter your new password below."}
-          </p>
+    <div className="flex min-h-screen w-full">
+      {/* Left Side - Form (40%) */}
+      <div className="w-full lg:w-[40%] flex flex-col justify-center px-6 py-12 lg:px-12 xl:px-16 relative z-10 bg-background dark:bg-gray-950 overflow-y-auto">
+        {/* Back to Home - Top Left */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute top-6 left-6"
+        >
+          <Link 
+            href="/" 
+            className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-300 hover:scale-105 shadow-sm"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
         </motion.div>
+
+        <div className="w-full max-w-md mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8 mt-16"
+          >
+            <h2 className="text-3xl font-bold mb-2">
+              {t("resetPasswordTitle") || "Reset Your Password"}
+            </h2>
+            <p className="text-muted-foreground">
+              {t("resetPasswordDesc") || "Enter your new password below."}
+            </p>
+          </motion.div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <motion.div className="space-y-2" variants={itemVariants}>
@@ -204,13 +224,14 @@ const ResetPasswordPage = () => {
             >
               <Lock className="mr-2 inline-block h-4 w-4 text-primary" />
               {t("newPassword") || "New Password"}
-            </label>
+            </label>  
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder={t("newPasswordPlaceholder") || "********"}
-                className={cn(isRTL ? "text-right" : "", errors.password && "border-destructive")}
+                className={cn(isRTL ? "text-right" : "","pr-10", errors.confirmPassword && "border-destructive")}
+
                 {...register("password", {
                   required: t("passwordRequired") || "Password is required",
                   minLength: {
@@ -226,9 +247,9 @@ const ResetPasswordPage = () => {
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="h-4 w-4 mx-2" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-4 w-4 mx-2" />
                 )}
               </button>
             </div>
@@ -298,7 +319,8 @@ const ResetPasswordPage = () => {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder={t("confirmNewPasswordPlaceholder") || "********"}
-                className={cn(isRTL ? "text-right" : "", errors.confirmPassword && "border-destructive")}
+                // className={` ${isRTL ? "text-right" : ""}`}
+                className={cn(isRTL ? "text-right" : "","pr-10", errors.confirmPassword && "border-destructive")}
                 {...register("confirmPassword", {
                   required: t("confirmPasswordRequired") || "Please confirm your password",
                   validate: (value) =>
@@ -307,7 +329,7 @@ const ResetPasswordPage = () => {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground "
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? (
@@ -368,7 +390,40 @@ const ResetPasswordPage = () => {
             </motion.div>
           </motion.div>
         </form>
-      </motion.div>
+        </div>
+      </div>
+
+      {/* Right Side - Animated Background (60%) */}
+      <div className="hidden lg:flex lg:w-[60%] relative overflow-hidden">
+        <AnimatedBackground />
+        
+        {/* Logo in Top Corner */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute top-8 ltr:right-8 rtl:left-8 z-10"
+        >
+          <Link href="/" className="inline-block">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
+              <img 
+                src="/logo.png" 
+                alt="Swibba Logo" 
+                className="h-10 w-auto"
+              />
+            </div>
+          </Link>
+        </motion.div>
+        
+        {/* Slogan at Bottom */}
+        <div className="absolute bottom-12 left-0 right-0 z-10 px-12">
+          <div className="text-center mx-auto bg-slate-300/20 rounded-lg p-2">
+            <h2 className="text-3xl font-bold drop-shadow-2xl dark:text-white">
+              {t("swibbaSlogan") || "Swap. Trade. Connect."}
+            </h2>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

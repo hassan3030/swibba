@@ -359,16 +359,16 @@ export default function ModernItemCard({ item }) {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("deleteOneItem") || "Mark Item as Sold"}</DialogTitle>
+            <DialogTitle className="mt-3" >{t("deleteOneItem") || "Mark Item as Sold"}</DialogTitle>
             <DialogDescription>
               {t("deleteDialogDesc") || "Are you sure you want to mark this item as sold? This action cannot be undone."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+            <Button variant="outline" className="mx-2" onClick={() => setShowDeleteDialog(false)}>
               {t("cancel") || "Cancel"}
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+            <Button variant="destructive" className="mx-2" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? (
                 <>
                   <motion.div
@@ -390,14 +390,14 @@ export default function ModernItemCard({ item }) {
       <Dialog open={showQuantityDialog} onOpenChange={setShowQuantityDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("addQuantity") || "Add Quantity"}</DialogTitle>
+            <DialogTitle className="mt-4">{t("addQuantity") || "Add Quantity"}</DialogTitle>
             <DialogDescription>
               {t("addQuantityDesc") || "This item is in an offer. Add new quantity to make it available again."}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-1 py-1">
             <div>
-              <label className="text-sm font-medium mb-2 block">{t("quantity") || "Quantity"}</label>
+              <label className="text-sm font-medium mb-1 block">{t("quantity") || "Quantity"}</label>
               <input
                 type="number"
                 min="1"
@@ -408,10 +408,10 @@ export default function ModernItemCard({ item }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowQuantityDialog(false)}>
-              {t("cancel") || "Cancel"}
+            <Button variant="outline" className="mx-2" onClick={() => setShowQuantityDialog(false)}>
+              {t("Cancel") || "Cancel"}
             </Button>
-            <Button onClick={() => handleUpdateQuantity(newQuantity, "available", "false")} disabled={isProcessing}>
+            <Button className="mx-2" onClick={() => handleUpdateQuantity(newQuantity, "available", "false")} disabled={isProcessing}>
               {isProcessing ? (
                 <>
                   <motion.div

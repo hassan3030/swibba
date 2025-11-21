@@ -17,8 +17,7 @@ export const useItemForm = (
   images: File[],
   filteredSubCategories: any[],
   filteredBrands: any[],
-  filteredModels: any[],
-  allCategories: any[]
+  filteredModels: any[]
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
@@ -94,15 +93,6 @@ export const useItemForm = (
             })
           : null
 
-      const selectedCategoryName = form.getValues('category')
-      const selectedCategory =
-        selectedCategoryName
-          ? allCategories.find((cat) => {
-              const catId = extractId(cat.id)
-              return cat.name === selectedCategoryName || catId === selectedCategoryName
-            })
-          : null
-
       // Create translations with fallbacks
       const translations = [
         {
@@ -111,7 +101,6 @@ export const useItemForm = (
           description: aiResponse?.description_translations?.en || form.getValues('description'),
           city: aiResponse?.city_translations?.en || form.getValues('city'),
           street: aiResponse?.street_translations?.en || form.getValues('street'),
-          category: selectedCategory?.translations?.[0]?.name || selectedCategory?.name || selectedCategoryName || '',
           sub_category: selectedSubCategory?.translations?.[0]?.name || selectedSubCategory?.name || '',
           brand: selectedBrand?.translations?.[0]?.name || selectedBrand?.name || '',
           model: selectedModel?.translations?.[0]?.name || selectedModel?.name || '',
@@ -122,7 +111,6 @@ export const useItemForm = (
           description: aiResponse?.description_translations?.ar || form.getValues('description'),
           city: aiResponse?.city_translations?.ar || form.getValues('city'),
           street: aiResponse?.street_translations?.ar || form.getValues('street'),
-          category: selectedCategory?.translations?.[1]?.name || selectedCategory?.name || selectedCategoryName || '',
           sub_category: selectedSubCategory?.translations?.[1]?.name || selectedSubCategory?.name || '',
           brand: selectedBrand?.translations?.[1]?.name || selectedBrand?.name || '',
           model: selectedModel?.translations?.[1]?.name || selectedModel?.name || '',
@@ -135,19 +123,10 @@ export const useItemForm = (
         geo_location,
         value_estimate: aiPriceEstimation,
         translations,
-        category: selectedCategory?.translations?.[0]?.name || selectedCategory?.name || selectedCategoryName || null,
-        sub_category:
-          selectedSubCategory && selectedSubCategoryId !== 'none'
-            ? selectedSubCategory?.translations?.[0]?.name || selectedSubCategory?.name
-            : null,
-        brand:
-          selectedBrand && selectedBrandId !== 'none'
-            ? selectedBrand?.translations?.[0]?.name || selectedBrand?.name
-            : null,
-        model:
-          selectedModel && selectedModelId !== 'none'
-            ? selectedModel?.translations?.[0]?.name || selectedModel?.name
-            : null,
+        category: form.getValues('category'),
+        sub_category: selectedSubCategoryId && selectedSubCategoryId !== 'none' ? selectedSubCategoryId : null,
+        brand: selectedBrandId && selectedBrandId !== 'none' ? selectedBrandId : null,
+        model: selectedModelId && selectedModelId !== 'none' ? selectedModelId : null,
       }
 
       const addNewProduct = await addProduct(payload, files)

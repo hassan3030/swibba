@@ -65,8 +65,7 @@ export function ItemAdd() {
     media.images,
     categoryChain.filteredSubCategories,
     categoryChain.filteredBrands,
-    categoryChain.filteredModels,
-    categoryChain.allCategories
+    categoryChain.filteredModels
   )
 
   // Validation for step 1 - Basic Info
@@ -119,10 +118,9 @@ export function ItemAdd() {
 
   const onSubmit = async (data: any, event?: any) => {
     if (event) event.preventDefault()
-     
+
     const { name, description, category, status_item, price, country, city, street, allowed_categories, quantity } =
       form.getValues()
-      console.log(form.getValues())
     if (
       !name ||
       !description ||

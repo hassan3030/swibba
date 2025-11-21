@@ -136,12 +136,12 @@ export default function ManageItemsPage() {
                 {t("myItems") || "My Items"}
               </motion.h1>
               <motion.p 
-                className={`text-sm sm:text-base text-muted-foreground flex items-center gap-2 ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}
+                className={`text-sm sm:text-base text-muted-foreground flex items-center ${isRTL ? 'flex-row-reverse force-rtl' : ''}`}
                 initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <span>{t("manageEditandupdate") || "Manage, edit, and update your listed items."}</span>
+                <span className="mx-2">{t("manageEditandupdate") || "Manage, edit, and update your listed items."}</span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   {items.length}
                 </span>

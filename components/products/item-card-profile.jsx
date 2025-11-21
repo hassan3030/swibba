@@ -385,7 +385,7 @@ export function ItemCardProfile({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <h3 className="line-clamp-2 text-sm sm:text-base font-bold group-hover:text-primary transition-colors capitalize leading-tight">
+                <h3 className="line-clamp-1 text-sm sm:text-base font-bold group-hover:text-primary transition-colors capitalize leading-tight">
                   {!isRTL ? (translations[0]?.name): (translations[1]?.name|| name) }
                 </h3>
               </motion.div>
@@ -416,12 +416,12 @@ export function ItemCardProfile({
                 </div>
 
                 {/* AI Price */}
-                <div className="flex items-center gap-1.5">
+                {/* <div className="flex items-center gap-1.5">
                   <span className="text-[10px] sm:text-xs text-muted-foreground">{t("aIExpectedPrice")}:</span>
                   <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     {Number(value_estimate).toLocaleString('en-US')} LE
                   </span>
-                </div>
+                </div> */}
               </motion.div>
             </div>
           </CardContent>

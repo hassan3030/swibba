@@ -815,35 +815,35 @@ export const getProductsOwnerById = async (productId) => {
 }
 
 // // Get image products by their IDs
-// export const getImageProducts = async (images) => {
-//   try {
-//     if (!images || !Array.isArray(images) || images.length === 0) {
-//       return { success: true, data: [], message: "No images to fetch." };
-//     }
+export const getImageProducts = async (images) => {
+  try {
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return { success: true, data: [], message: "No images to fetch." };
+    }
 
-//     const fileIds = images.map(img => img.directus_files_id).filter(id => id);
-//     if (fileIds.length === 0) {
-//       return { success: true, data: [], message: "No valid file IDs provided." };
-//     }
+    const fileIds = images.map(img => img.directus_files_id).filter(id => id);
+    if (fileIds.length === 0) {
+      return { success: true, data: [], message: "No valid file IDs provided." };
+    }
 
-//     const response = await axios.get(`${DIRECTUS_URL}files`, {
-//       params: {
-//         filter: {
-//           id: { _in: fileIds },
-//         },
-//       },
-//     });
+    const response = await axios.get(`${DIRECTUS_URL}files`, {
+      params: {
+        filter: {
+          id: { _in: fileIds },
+        },
+      },
+    });
 
-//     return {
-//       success: true,
-//       datas: true, // Maintaining compatibility with original structure
-//       data: response.data.data || [],
-//       message: "Image data retrieved successfully",
-//     };
-//   } catch (error) {
-//     return handleApiError(error, "Get Image Products");
-//   }
-// };
+    return {
+      success: true,
+      datas: true, // Maintaining compatibility with original structure
+      data: response.data.data || [],
+      message: "Image data retrieved successfully",
+    };
+  } catch (error) {
+    return handleApiError(error, "Get Image Products");
+  }
+};
 
 // Remove a single product image relationship
 export const removeProductImage = async (itemId, fileId) => {

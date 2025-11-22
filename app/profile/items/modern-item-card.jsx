@@ -264,7 +264,7 @@ export default function ModernItemCard({ item }) {
             </div>
 
             {/* Description */}
-            <p className={`text-sm text-muted-foreground `} >
+            <p className={` ${isRTL ? 'force-rtl' : ''} text-sm text-muted-foreground `} >
               {itemDescription}
             </p>
 

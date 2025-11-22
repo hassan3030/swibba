@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, Map, RefreshCw, Search } from "lucide-react"
+import { X, Upload, Info, Loader2, ImageIcon, DollarSign, Package, Navigation, MapPin, Map, RefreshCw, Search, FileText, Eye } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { getImageProducts } from "@/callAPI/products"
@@ -24,14 +24,19 @@ import { countriesListWithFlags } from "@/lib/countries-data"
 import FlagIcon from "@/components/general/flag-icon"
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "@/lib/use-translations"
-import { updateProduct } from "@/callAPI/products"
+import { updateProduct, removeProductImage } from "@/callAPI/products"
 import { getAllCategories, getAllSubCategories, getAllBrands, getAllModels } from "@/callAPI/static"
 import { sendMessage } from "@/callAPI/aiChat"
 import { useLanguage } from "@/lib/language-provider"
 import LocationMap from "@/components/general/location-map"
 import {  decodedToken } from "@/callAPI/utiles"
 import { getUserById } from "@/callAPI/users"
-import { mediaURL } from "@/callAPI/utiles";
+import { mediaURL } from "@/callAPI/utiles"
+import { ProgressStepper } from "./item-add-new/progress-stepper"
+import { StepNavigation } from "./item-add-new/step-navigation"
+import { AiEstimationSection } from "./item-add-new/ai-estimation-section"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 
 // Animation variants
 const containerVariants = {
@@ -1213,20 +1218,74 @@ else{
 
 
 
+  // Helper functions for step validation messages
+  const getStep1Missing = () => {
+    const missing = []
+    if (!((form.watch("name")?.length ?? 0) >= 3)) missing.push(t("Name") || "Name")
+    if (!((form.watch("description")?.length ?? 0) >= 20)) missing.push(t("description") || "Description")
+    if (!form.watch("category")) missing.push(t("category") || "Category")
+    if (!form.watch("status_item")) missing.push(t("Condition") || "Condition")
+    if (!form.watch("price")) missing.push(t("price") || "Price")
+    if (!form.watch("country")) missing.push(t("Country") || "Country")
+    if (!form.watch("city")) missing.push(t("City") || "City")
+    if (!form.watch("street")) missing.push(t("Street") || "Street")
+    if (!form.watch("quantity")) missing.push(t("quantity") || "Quantity")
+    return missing
+  }
+
+  const getStep2Missing = () => {
+    const missing = []
+    if ((existingImages.length + imagesFile.length) === 0) missing.push(t("Images") || "Images")
+    if (aiPriceEstimation === null || aiPriceEstimation <= 0) missing.push(t("AIEstimation") || "AI Estimation")
+    if (!((form.watch("allowed_categories")?.length ?? 0) > 0)) missing.push(t("AllowedCategories") || "Allowed Categories")
+    return missing
+  }
+
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center min-h-screen bg-background py-2 px-2 md:px-2 "
+      className="w-full max-w-5xl mx-auto"
     >
       <div className="w-full">
-        <Form {...form} >
-          <form   onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 ">
-            <div className="grid gap-2  md:grid-cols-1 rounded-2xl shadow-xl bg-card text-card-foreground p-6 md:p-10 border border-border">
-              <div className="grid gap-8 md:grid-cols-1">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <motion.div
+              className="rounded-3xl shadow-2xl bg-background dark:bg-gray-950 backdrop-blur-sm text-card-foreground border border-border/50 overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Progress Stepper as Card Header */}
+              <ProgressStepper
+                currentStep={step}
+                steps={[
+                  { id: 1, title: "ItemDetails", icon: <FileText className="h-5 w-5 sm:h-6 sm:w-6" /> },
+                  { id: 2, title: "Media", icon: <ImageIcon className="h-5 w-5 sm:h-6 sm:w-6" /> },
+                ]}
+                t={t}
+              />
+
+              {/* Form Content */}
+              <div className="p-6 sm:p-8 md:p-12">
                 {step === 1 && (
-                  <motion.div className="space-y-6" variants={sectionVariants}>
+                  <motion.div 
+                    className="space-y-6" 
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                          {t("ItemDetails") || "Item Details"}
+                        </h2>
+                      </div>
+                    </div>
+
                     <div className="grid gap-4">
                       {/* Name field */}
 
@@ -1908,18 +1967,34 @@ else{
                     </motion.div>
 
 
-                    <Button
-                      type="button"
-                      onClick={() => setStep(2)}
-                      disabled={!isStep1Valid}
-                      className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
-                    >
-                      {t("continue")}
-                    </Button>
+                    <StepNavigation
+                      step={step}
+                      setStep={setStep}
+                      isStepValid={isStep1Valid}
+                      isSubmitting={isSubmitting}
+                      onSubmit={() => handleSubmit(form.getValues())}
+                      getStepMissing={getStep1Missing}
+                      totalSteps={2}
+                      t={t}
+                    />
                   </motion.div>
                 )}
                 {step === 2 && (
-                  <motion.div className="space-y-6" variants={sectionVariants}>
+                  <motion.div 
+                    className="space-y-6" 
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                          {t("Media") || "Media & Preferences"}
+                        </h2>
+                      </div>
+                    </div>
                     {/* Current Images Section */}
                     <div className="space-y-2">
                       <FormLabel className="flex items-center gap-2">
@@ -2144,127 +2219,30 @@ else{
                       />
                     </div>
 
-                      {/* Value Estimation */}
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="value_estimate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center justify-between gap-2">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild >
-                                    <motion.div 
-                                      variants={buttonVariants} 
-                                      whileHover="hover" 
-                                      whileTap="tap" 
-                                      className="max-[370px]:w-full relative"
-                                    >
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {requestAiPriceEstimate() }}
-                                        disabled={isEstimating}
-                                        className="h-8 gap-1 rounded-lg max-[370px]:min-w-[100%] border-input bg-background text-foreground hover:text-foreground hover:bg-card hover:border-primary transition-all relative"
-                                      >
-                                        {isEstimating ? (
-                                          <>
-                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                            {t("Estimating") || "Estimating..."}
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Info className="h-3 w-3" />
-                                            {t("GetAIEstimate") || "Get AI Estimate"}
-                                          </>
-                                        )}
-                                        {/* AI Badge */}
-                                        {!isEstimating && (
-                                          <motion.div
-                                            className="absolute -top-1 -right-1 bg-gradient-to-r from-primary to-secondary text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg"
-                                            animate={{ 
-                                              scale: [1, 1.1, 1],
-                                              opacity: [0.8, 1, 0.8]
-                                            }}
-                                            transition={{ 
-                                              duration: 1.5, 
-                                              repeat: Infinity, 
-                                              ease: "easeInOut" 
-                                            }}
-                                          >
-                                            AI
-                                          </motion.div>
-                                        )}
-                                      </Button>
-                                    </motion.div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      {t("GetAIpoweredpriceestimatebasedonyouritemdetails") ||
-                                        "Get an AI-powered price estimate based on your item details"}
-                                    </p>
-                                    <p className="text-xs text-foreground/70 mt-1">
-                                      {t("Clicktoautomaticallyestimateyouritemprice") ||
-                                        "Click to automatically estimate your item price"}
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-
-                              </TooltipProvider>
-                            </div>
-                            
-                            <AnimatePresence>
-                              {aiPriceEstimation !== null && (
-                                <motion.p
-                                  className="text-md text-secondary2 font-semibold"
-                                  initial={{ opacity: 0, y: -10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -10 }}
-                                >
-                                  {t("AIsuggestsvalueof") || "AI suggests a value of"} {t('le')||"LE"} {aiPriceEstimation}
-                                </motion.p>
-                              )}
-                            </AnimatePresence>
-                            <FormDescription className="text-foreground/70">
-                              {t("Setfairmarketvaluetohelpfacilitatebalancedswaps") ||
-                                "Set a fair market value to help facilitate balanced swaps."}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                      {/* AI Estimation Section - reuse component from add-new for consistent UI */}
+                      <AiEstimationSection
+                        aiPriceEstimation={aiPriceEstimation}
+                        isEstimating={isEstimating}
+                        aiPriceEstimationHint={false}
+                        requestAiPriceEstimate={requestAiPriceEstimate}
+                        formData={form.getValues()}
+                        images={[...imagesFile, ...existingImages]}
+                        t={t}
                       />
-                    </div>
-                    <div className="flex flex-col-2 gap-2">
-                      <Button
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
-
-                      >
-                        {t("goBack")}
-                      </Button>
-                        <Button
-                        // type="submit"
-                        onClick={() => handleSubmit(form.getValues())}
-                          disabled={!isStep2Valid || (!isDirty && !isMediaDirty && aiPriceEstimation === value_estimate && existingImages.length === 0 && imagesFile.length === 0) || isSubmitting}
-                          className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 transition-all"
-                        >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {t("Saving") || "Saving..."}
-                          </>
-                        ) : (
-                          t("save")
-                        )}
-                      </Button>
-                    </div>
+                    <StepNavigation
+                      step={step}
+                      setStep={setStep}
+                      isStepValid={isStep2Valid && (isDirty || isMediaDirty || aiPriceEstimation !== value_estimate || existingImages.length > 0 || imagesFile.length > 0)}
+                      isSubmitting={isSubmitting}
+                      onSubmit={() => handleSubmit(form.getValues())}
+                      getStepMissing={getStep2Missing}
+                      totalSteps={2}
+                      t={t}
+                    />
                   </motion.div>
                 )}
               </div>
-            </div>
+            </motion.div>
           </form>
         </Form>
       </div>

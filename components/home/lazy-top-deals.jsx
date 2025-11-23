@@ -35,7 +35,7 @@ const LazyTopDeals = ({ showSwitchHeart, t }) => {
   return (
     <motion.section
       ref={ref}
-      className="container relative z-10"
+      className="container relative z-30"
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}

@@ -6,7 +6,23 @@ export const translations = {
     
     missing:"Missing",
     locationSelected: "Location",
+    AutoDetectLocation: "Auto-Detect Location",
+    ClickButtonToAutomaticallyDetectAndFillLocation: "Click the button below to automatically detect and fill your location details",
+    DetectingYourLocation: "Detecting Your Location...",
+    LocationDetected: "Location Detected Successfully!",
+    Coordinates: "Coordinates",
+    AddressDetails: "Address Details",
     
+    // Share functionality
+    linkCopied: "Link copied!",
+    linkCopiedDesc: "Product link copied to clipboard",
+    
+    // Map Modal
+    productLocation: "Product Location",
+    coordinates: "Coordinates",
+    openInMaps: "Open in Maps",
+    mapInteractionHint: "Use two fingers to pan and zoom the map",
+    close: "Close",
 
     fillData: "Fill Data",
     fillDataLogin:"Please enter your email address and password to login",
@@ -1271,7 +1287,7 @@ SelectCountry: "Select a country",
     Electronics: "Electronics",
     fashion: "Fashion",
     beauty: "Beauty",
-    home: "Home & Kitchen",
+    home: "Home",
     furniture: "Furniture",
     toys: "Toys",
     sports: "Sports",
@@ -1579,6 +1595,17 @@ SelectCountry: "Select a country",
     savedSuccessfullyWithTranslation: "Saved successfully with automatic translation!",
     errorPrefix: "ERROR ",
     failedToUpdateProfile: "Failed to update profile",
+
+    // How It Works Section
+    howItWorks: "How It Works",
+    howItWorksTitle: "How Swibba Works",
+    howItWorksSubtitle: "Simple steps to start swapping today",
+    step1Title: "List Your Item",
+    step1Desc: "Take photos, describe your item, and set your preferences.",
+    step2Title: "Browse Items",
+    step2Desc: "Discover and find items that match your needs and preferences.",
+    step3Title: "Swap & Save",
+    step3Desc: "Meet up, exchange items, and enjoy your new find!",
   },
   ar: {
     swaps:"المبادلات",
@@ -1587,6 +1614,23 @@ SelectCountry: "Select a country",
         
     missing:"غير موجود",
     locationSelected: "الموقع",
+    AutoDetectLocation: "اكتشاف الموقع تلقائيًا",
+    ClickButtonToAutomaticallyDetectAndFillLocation: "انقر على الزر أدناه للكشف عن موقعك تلقائيًا وملء تفاصيل الموقع",
+    DetectingYourLocation: "جارٍ اكتشاف موقعك...",
+    LocationDetected: "تم اكتشاف الموقع بنجاح!",
+    Coordinates: "الإحداثيات",
+    AddressDetails: "تفاصيل العنوان",
+
+    // Share functionality
+    linkCopied: "تم نسخ الرابط!",
+    linkCopiedDesc: "تم نسخ رابط المنتج إلى الحافظة",
+    
+    // Map Modal
+    productLocation: "موقع المنتج",
+    coordinates: "الإحداثيات",
+    openInMaps: "فتح في الخرائط",
+    mapInteractionHint: "استخدم إصبعين للتحريك والتكبير على الخريطة",
+    close: "إغلاق",
 
     ourBrands: "العلامات التجارية",
     filterBrands: "تصفية الماركات...",
@@ -3007,7 +3051,7 @@ SelectCountry: "اختر الدولة",
     electronics: "الإلكترونيات",
     fashion: "الموضة",
     beauty: "الجمال",
-    home: "المنزل والمطبخ",
+    home: "المنزل ",
     furniture: "الأثاث",
     toys: "الألعاب",
     sports: "الرياضة",
@@ -3196,6 +3240,17 @@ SelectCountry: "اختر الدولة",
     privacySecurity: "الخصوصية والأمان",
     mobileApp: "مساعدة تطبيق الجوال",
     developerAPIs: "واجهات برمجة التطبيقات للمطورين",
+
+    // How It Works Section
+    howItWorks: "كيف يعمل",
+    howItWorksTitle: "كيف تعمل منصة سويبا",
+    howItWorksSubtitle: "خطوات بسيطة للبدء في التبادل اليوم",
+    step1Title: "اعرض المنتج",
+    step1Desc: "التقط صورًا، وصف المنتج، وحدد تفضيلاتك.",
+    step2Title: "تصفح المنتجات",
+    step2Desc: "اكتشف واعثر على المنتجات التي تناسب احتياجاتك وتفضيلاتك.",
+    step3Title: "بادل ووفر",
+    step3Desc: "قابل الطرف الآخر، بادل المنتجات، واستمتع باكتشافك الجديد!",
   },
 };
 

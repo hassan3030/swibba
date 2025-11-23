@@ -149,12 +149,12 @@ const LazyStatsSection = ({ t , itemsCount, usersCount }) => {
     return (
       <motion.section
         ref={ref}
-        className="relative py-20 z-10"
+        className="relative py-20"
         variants={statsContainerVariants}
         initial="hidden"
         animate={controls}
       >
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 relative">
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 30 }}

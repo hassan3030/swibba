@@ -26,17 +26,8 @@ export const useLocationService = (
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
   const [isMapRefreshing, setIsMapRefreshing] = useState(false)
 
-  // Auto-refresh map every 2 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsMapRefreshing(true)
-      setTimeout(() => {
-        setIsMapRefreshing(false)
-      }, 500)
-    }, 2000)
-
-    return () => clearInterval(interval)
-  }, [])
+  // Remove auto-refresh - it was causing unnecessary updates
+  // The map will only refresh when explicitly requested by user
 
   const getCurrentPosition = () => {
     setIsGettingLocation(true)
@@ -58,12 +49,20 @@ export const useLocationService = (
 
         const locationData = await getLocationName(lat, lng)
 
-        // Auto-fill form fields if they're empty
-        if (locationData.country && !formSetValue) {
+        console.log('📦 Location data received:', locationData)
+
+        // Auto-fill all form fields with detected location data
+        if (locationData.country) {
+          console.log('🔧 Setting country to:', locationData.country)
           formSetValue('country', locationData.country)
         }
         if (locationData.city) {
+          console.log('🔧 Setting city to:', locationData.city)
           formSetValue('city', locationData.city)
+        }
+        if (locationData.street) {
+          console.log('🔧 Setting street to:', locationData.street)
+          formSetValue('street', locationData.street)
         }
 
         const pos: Position = {
@@ -119,12 +118,15 @@ export const useLocationService = (
   const handleLocationSelect = async (location: Position) => {
     const locationData = await getLocationName(location.lat, location.lng)
 
-    // Auto-fill form fields if they're empty
+    // Auto-fill all form fields when location is selected from map
     if (locationData.country) {
       formSetValue('country', locationData.country)
     }
     if (locationData.city) {
       formSetValue('city', locationData.city)
+    }
+    if (locationData.street) {
+      formSetValue('street', locationData.street)
     }
 
     const updatedLocation = {

@@ -41,23 +41,60 @@ export const extractId = (value: any): string | null => {
 export const getLocationName = async (
   lat: number,
   lng: number
-): Promise<{ locationName: string; country?: string; city?: string }> => {
+): Promise<{ locationName: string; country?: string; city?: string; street?: string }> => {
   try {
     const response = await fetch(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
     )
     if (response.ok) {
       const data = await response.json()
-      if (data.city && data.countryName) {
+      
+      console.log('🌍 API Response:', data)
+      console.log('📍 Country from API:', data.countryName)
+      console.log('🏙️ City from API:', data.city)
+      
+      // Extract street information
+      const street = data.locality || data.localityInfo?.administrative?.[0]?.name || 
+                    data.principalSubdivision || data.localityInfo?.informative?.[0]?.name || ''
+      
+      // Map API country names to match your countries list
+      let country = data.countryName
+      
+      // Common country name mappings
+      const countryMappings: { [key: string]: string } = {
+        'United States of America': 'United States',
+        'USA': 'United States',
+        'UK': 'United Kingdom',
+        'Great Britain': 'United Kingdom',
+        'UAE': 'United Arab Emirates',
+        'Czech Republic': 'Czech Republic',
+        'Czechia': 'Czech Republic',
+        'Republic of Korea': 'South Korea',
+        'Korea, South': 'South Korea',
+        'Korea, North': 'North Korea',
+        'Democratic Republic of the Congo': 'Democratic Republic of the Congo',
+        'Congo': 'Congo (Congo-Brazzaville)',
+        'DRC': 'Democratic Republic of the Congo',
+      }
+      
+      // Apply mapping if available
+      if (countryMappings[country]) {
+        country = countryMappings[country]
+      }
+      
+      console.log('✅ Final country to set:', country)
+      
+      if (data.city && country) {
         return {
-          locationName: `${data.city}, ${data.countryName}`,
-          country: data.countryName,
+          locationName: `${data.city}, ${country}`,
+          country: country,
           city: data.city,
+          street: street,
         }
       }
     }
   } catch (error) {
-    console.log('Reverse geocoding failed, using coordinates only')
+    console.log('❌ Reverse geocoding failed:', error)
   }
   return { locationName: 'Current Location' }
 }

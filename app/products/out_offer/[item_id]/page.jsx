@@ -1,53 +1,59 @@
 "use client"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import Link from "next/link"
 import { notFound, useRouter, useParams } from "next/navigation"
-import {  ArrowLeftRight, Repeat, Star, Verified, Plus, Minus, BadgeX, ArrowRight, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { ProductGallery } from "@/components/products/product-gallery"
+import { ProductHeader } from "@/components/products/productView/ProductHeader"
+import { ProductTitle } from "@/components/products/productView/ProductTitle"
+import { ProductPrice } from "@/components/products/productView/ProductPrice"
+import { ProductDescription } from "@/components/products/productView/ProductDescription"
+import { SellerInfo } from "@/components/products/productView/SellerInfo"
+import { SwapButton } from "@/components/products/productView/SwapButton"
+import { ProductTabs } from "@/components/products/productView/ProductTabs"
+import { MapModal } from "@/components/products/productView/MapModal"
 import { useTranslations } from "@/lib/use-translations"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getProductById } from "@/callAPI/products"
-import { decodedToken, getCookie, validateAuth ,setTarget , removeTarget } from "@/callAPI/utiles"
-import { getKYC, getUserByProductId , checkUserHasProducts } from "@/callAPI/users"
+import { decodedToken, getCookie, validateAuth, setTarget, removeTarget } from "@/callAPI/utiles"
+import { getKYC, getUserByProductId, checkUserHasProducts } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
-import { getCompletedOffer, getReview } from "@/callAPI/swap"
-import { mediaURL } from "@/callAPI/utiles";
-const containerVariants = {
+import { getCompletedOffer, getReview, getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
+import { mediaURL } from "@/callAPI/utiles"
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    }
+  }
+}
+
+const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
+      staggerChildren: 0.12,
+      delayChildren: 0.1
+    }
+  }
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+const scaleIn = {
+  hidden: { scale: 0.9, opacity: 0 },
   visible: {
+    scale: 1,
     opacity: 1,
-    y: 0,
     transition: {
       type: "spring",
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-}
-
-const buttonVariants = {
-  hover: {
-    scale: 1.05,
-    transition: { type: "spring", stiffness: 400, damping: 10 },
-  },
-  tap: { scale: 0.95 },
+      stiffness: 200,
+      damping: 20
+    }
+  }
 }
 
 export default function ProductPage() {
@@ -63,6 +69,10 @@ export default function ProductPage() {
   const [totalPrice, setTotalPrice] = useState(0)
   const [completedOffersCount, setCompletedOffersCount] = useState(0)
   const [rate, setRate] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSwapping, setIsSwapping] = useState(false)
+  const [switchHeart, setSwitchHeart] = useState(false)
+  const [isMapOpen, setIsMapOpen] = useState(false)
   const { t } = useTranslations()
   const params = useParams()
   const router = useRouter()
@@ -77,6 +87,61 @@ export default function ProductPage() {
       // This is expected for public visitors, so we can ignore the error.
     }
   }
+
+  const handleGetWishItem = async () => {
+    try {
+      const user = await decodedToken()
+      if (!user?.id) return
+      const WishItem = await getWishList(user.id)
+      if (WishItem?.success && Array.isArray(WishItem.data)) {
+        const isItem = WishItem.data.some((i) => i.item_id == id)
+        setSwitchHeart(isItem)
+      }
+    } catch (error) {
+      // console.error("Error getting wish item:", error)
+    }
+  }
+
+  const handleAddWishItem = async () => {
+    try {
+      const user = await decodedToken()
+      if (!user?.id) {
+        toast({
+          title: t("faildWish") || "Login required",
+          description: t("pleaseLoginWish") || "Please login to manage your wishlist.",
+          variant: "destructive",
+        })
+        return
+      }
+      const WishItem = await getWishList(user.id)
+      const items = Array.isArray(WishItem?.data) ? WishItem.data : []
+      const existing = items.find((i) => i.item_id == id)
+
+      if (existing) {
+        await deleteWishList(existing.id)
+        setSwitchHeart(false)
+        toast({
+          title: t("successAddWish") || "Success",
+          description: t("deletedWishDesc") || "Removed from wishlist",
+        })
+      } else {
+        const res = await addWishList(id, user.id)
+        if (res?.success) {
+          setSwitchHeart(true)
+          toast({
+            title: t("successAddWish") || "Success",
+            description: t("successAddWishDesc") || "Added to wishlist successfully.",
+          })
+        }
+      }
+    } catch (error) {
+      //  console.error("Error handling wish item:", error)
+    }
+  }
+
+  useEffect(() => {
+    handleGetWishItem()
+  }, [switchHeart])
 
   
 
@@ -99,15 +164,7 @@ export default function ProductPage() {
 
   // Quantity handlers
   const increaseQuantity = () => {
-    if (quantity < originalquantity) {
-      setQuantity(q => q + 1);
-    } else {
-      toast({
-        title: t("quantityExceeded") || "Maximum quantity reached",
-        description: t("quantityExceededDescription") || `You cannot add more than the available stock of ${originalquantity}.`,
-        variant: "destructive",
-      });
-    }
+    setQuantity(q => q + 1);
   };
 
   const decreaseQuantity = () => {
@@ -120,6 +177,7 @@ export default function ProductPage() {
   useEffect(() => {
     getToken()
     const fetchData = async () => {
+      setIsLoading(true)
       try {
         const prod = await getProductById(id)
         if (!prod.data) {
@@ -127,7 +185,6 @@ export default function ProductPage() {
           
         }
         setProduct(prod.data)
-console.log(prod.data)
         // Images
         if (prod.data.images && prod.data.images.length > 0) {
           // const filesArray = prod.data.images.map((item ) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
@@ -153,6 +210,8 @@ console.log(prod.data)
         }
       } catch (err) {
         notFound()
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchData()
@@ -226,6 +285,10 @@ console.log(prod.data)
   const makeSwap = async (e) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    if (isSwapping) return
+    setIsSwapping(true)
+    
     const token = await getCookie()
     const decoded = await decodedToken()
     await setTarget(id)
@@ -266,404 +329,141 @@ console.log(prod.data)
         router.push(`/auth/login`)
       }
     }catch(error){
-// console,log(error , "error in swap operation")
+      toast({
+        title: t("error") || "Error",
+        description: t("somethingWentWrong") || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSwapping(false)
     }
-   
   }
 
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">{t("loading") || "Loading..."}</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!product) {
     return null
   }
 
+  // Share handler
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: product.description,
+        url: window.location.href,
+      })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      toast({
+        title: t("linkCopied") || "Link copied!",
+        description: t("linkCopiedDesc") || "Product link copied to clipboard",
+      })
+    }
+  }
+
   return (
-    <motion.div
-      className="container py-3 sm:py-5 px-4 sm:px-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-     
+    <div className="min-h-screen bg-background">
+      <motion.div
+        className="container max-w-[1400px] mx-auto py-4 sm:py-8 lg:py-10 px-3 sm:px-6 lg:px-12"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
+        {/* Header Component */}
+        <ProductHeader 
+          product={product}
+          isRTL={isRTL}
+          t={t}
+          switchHeart={switchHeart}
+          onWishlistClick={handleAddWishItem}
+          onShareClick={handleShare}
+        />
 
-      <motion.div className="grid gap-4 md:gap-6 md:grid-cols-2" variants={containerVariants} initial="hidden" animate="visible" dir={isRTL ? 'rtl' : 'ltr'}>
-        {/* Product Gallery - Left side in Arabic (RTL), Right side in English (LTR) */}
-        <motion.div variants={itemVariants} className={`order-1 ${isRTL ? 'md:order-2' : 'md:order-2'}`}>
-          <ProductGallery images={images} productName={product.name} />
-        </motion.div>
-
-        {/* Product Info - Right side in Arabic (RTL), Left side in English (LTR) */}
-        <motion.div className={`flex flex-col gap-3 sm:gap-4 order-2 ${isRTL ? 'md:order-1' : 'md:order-1'}`} variants={itemVariants}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize break-words line-clamp-2 sm:line-clamp-3 text-start">
-                  {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
-                </h1>
-              
-                <Link href={`/categories/${product.category}`}>
-                  <span
-                    className="inline-block text-primary border-primary/90 hover:cursor-pointer capitalize hover:scale-105 text-xs sm:text-sm px-2 py-1"
-                  >
-                    {isRTL ? (product.translations[1]?.category || product.category) : (product.translations[0]?.category || product.category) || product.category}
-                    {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}
-                  </span>
-                </Link>
-
-{product.brand !='no_brand' && product.brand != null && product.brand !='' && product.brand !='none' ? (
-  <Link href={`/brands/${product.brand}`}>
-    <span
-      className="inline-block text-primary hover:cursor-pointer capitalize hover:scale-105 text-xs sm:text-sm px-2 py-1"
-    >  
-      {isRTL ? product.translations[1]?.brand : product.translations[0]?.brand || product.brand}
-      {isRTL ? <ArrowLeft className="h-4 w-4 inline-block ml-1 text-primary" /> : <ArrowRight className="h-4 w-4 inline-block ml-1 text-primary" />}  
-    </span>
-  </Link>
-) : null}
-                
-              </div>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
-                className="flex-shrink-0"
-              >
-                <Badge
-                  variant="outline"
-                  className="text-primary border-primary/90 hover:cursor-pointer hover:scale-105 text-xs sm:text-sm px-2 py-1"
-                >
-                  {t(product.status_item)}
-                </Badge>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Price */}
-          <motion.div
-            className="mt-2 flex flex-col gap-1"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
+        <div className="grid gap-6 sm:gap-8 lg:gap-12 xl:gap-16 lg:grid-cols-[1fr_1.1fr]" dir={isRTL ? 'rtl' : 'ltr'}>
+          {/* Product Gallery */}
+          <motion.div 
+            variants={fadeInUp}
+            className={`${isRTL ? 'lg:order-2' : 'lg:order-1'}`}
           >
-            <div className="flex items-center gap-2 sm:gap-3 text-secondary2/90">
-              <div className="flex items-baseline min-w-0 gap-1">
-                <span className="text-xs sm:text-sm font-medium flex-shrink-0">{t("le")}</span>
-                <motion.span
-                  className="text-2xl sm:text-3xl md:text-4xl font-bold truncate"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-                  title={Number(product.price).toLocaleString('en-US')}
-                >
-                  {Number(product.price).toLocaleString('en-US')}
-                </motion.span>
-              </div>
-            </div>
-            <div className="text-xs text-secondary2/85 line-clamp-2">
-              {t("searcAboutProdPrice") || "Search About Product Or More With The Same Price"}: {Number(product.price).toLocaleString('en-US')} {t("le")}
-            </div>
-            <div className="text-xs text-secondary2/85 line-clamp-2">
-              {t("quantity")}: {Number(originalquantity).toLocaleString('en-US')}
-            </div>
+            <ProductGallery images={images} productName={product.name} />
           </motion.div>
 
-          {/* Quantity Selector */}
-          <motion.div
-            className="flex flex-col gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+          {/* Product Details */}
+          <motion.div 
+            variants={fadeInUp}
+            className={`flex flex-col gap-5 ${isRTL ? 'lg:order-1' : 'lg:order-2'}`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{t("quantity") || "Quantity"}:</span>
-              <div className="flex items-center gap-3">
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 rounded-full"
-                    onClick={()=>{decreaseQuantity()}}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-                <motion.span
-                  className="text-lg font-semibold min-w-[2rem] text-center"
-                  key={quantity}
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  {quantity}
-                </motion.span>
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 rounded-full"
-                    onClick={()=>{increaseQuantity()}}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-              </div>
-            </div>
+            {/* Title Component */}
+            <ProductTitle 
+              product={product}
+              isRTL={isRTL}
+              t={t}
+              onMapOpen={() => setIsMapOpen(true)}
+            />
 
-            {/* Total Price Display */}
-            {totalPrice > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/5 rounded-lg border border-primary/20 shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t("totalPrice") || "Total Price"}:
-                  </span>
-                  <motion.span
-                    className="text-xl font-bold text-primary"
-                    key={totalPrice}
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    {totalPrice.toLocaleString('en-US')} {t("le") || "EGP"}
-                  </motion.span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {Number(product.price).toLocaleString('en-US')} × {quantity} = {totalPrice.toLocaleString('en-US')}
-                </div>
-              </motion.div>
-            )}
+            {/* Price Component */}
+            <ProductPrice 
+              product={product}
+              t={t}
+            />
+
+            {/* Description Component */}
+            <ProductDescription 
+              product={product}
+              isRTL={isRTL}
+              t={t}
+            />
+
+            <Separator />
+
+            {/* Seller Info Component */}
+            <SellerInfo 
+              user={user}
+              name={name}
+              avatar={avatar}
+              rate={rate}
+              completedOffersCount={completedOffersCount}
+              t={t}
+            />
+
+            {/* Swap Button Component */}
+            <SwapButton 
+              product={product}
+              tokenId={tokenId}
+              isSwapping={isSwapping}
+              onSwap={makeSwap}
+              t={t}
+            />
+
+            <Separator />
+
+            {/* Product Tabs Component */}
+            <ProductTabs 
+              product={product}
+              isRTL={isRTL}
+              t={t}
+            />
           </motion.div>
+        </div>
 
-          <motion.div
-            className="text-muted-foreground text-sm sm:text-base leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <span className="font-medium block mb-1 text-start">{isRTL ? `: ${t("description")}` : `${t("description")}:`}</span>
-            <div className="text-break-responsive whitespace-pre-wrap leading-relaxed line-clamp-1 overflow-ellipsis text-start">
-              {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
-            </div>
-          </motion.div>
-
-          <Separator />
-
-          {/* Owner */}
-          <motion.div
-            className="flex items-start gap-3 sm:gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
-              <motion.div 
-                whileHover={{ scale: 1.05 }} 
-                transition={{ type: "spring", stiffness: 400 }} 
-                className="flex-shrink-0 relative"
-              >
-                <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-border">
-                  <AvatarImage src={avatar || "/placeholder.svg"} alt={name || "User"} />
-                  <AvatarFallback className="text-sm sm:text-base bg-muted">{name ? name.charAt(0) : "U"}</AvatarFallback>
-                </Avatar>
-                {user?.Verified === "true" || user?.Verified === true ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
-                    className="absolute -top-1 -right-1"
-                  >
-                    <Verified className="h-5 w-5 text-primary bg-background rounded-full p-0.5 shadow-md ring-2 ring-background" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.8, type: "spring", stiffness: 400 }}
-                    className="absolute -top-1 -right-1"
-                  >
-                    <BadgeX className="h-5 w-5 text-destructive bg-background rounded-full p-0.5 shadow-md ring-2 ring-background" />
-                  </motion.div>
-                )}
-              </motion.div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold text-base sm:text-lg truncate" title={name || "Unknown"}>
-                    {name || "Unknown"}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-2">
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-secondary2 text-secondary2" />
-                    <span className="font-medium">{rate ? `${rate} / 5.0 ${t("Rating") || "Rating"}` : (t("noRate") || "No ratings yet")}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <ArrowLeftRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    <span className="font-medium">
-                      {completedOffersCount > 1000 
-                        ? (t("moreThan1000CompletedSwaps") || "More than 1000 completed swaps")
-                        : `${completedOffersCount || 0} ${t("completedSwaps") || "Completed swaps"}`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <Separator />
-
-          {/* Add to Cart Section */}
-          <motion.div
-            className="grid gap-3 sm:gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {product.status_swap === "available" && product.user_id !== tokenId && (
-                <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                  <Button className="w-full text-sm sm:text-base gap-2" onClick={(e)=>{makeSwap(e)}}>
-                    <Repeat className="h-4 w-4" />
-                    {t("swap")}
-                  </Button>
-                </motion.div>
-              )}
-              {/* <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                <Link href={tokenId? `/profile` : `/`} className="block w-full">
-                  <Button variant="secondary" className="w-full text-sm sm:text-base">
-                    {t("goBack")}
-                  </Button>
-                </Link>
-              </motion.div> */}
-            </div>
-          </motion.div>
-
-          {/* <Separator className="my-3 sm:my-4" /> */}
-
-          {/* Product Details Tabs */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} >
-            <Tabs defaultValue="features" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-primary/30">
-                <TabsTrigger value="features" className="text-xs sm:text-sm px-3 py-2.5 h-auto data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  {t("features")}
-                </TabsTrigger>
-                <TabsTrigger value="Category" className="text-xs sm:text-sm px-3 py-2.5 h-auto data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  {t("category")}
-                </TabsTrigger>
-                <TabsTrigger value="swap_status" className="text-xs sm:text-sm px-3 py-2.5 h-auto data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  {t("statusSwap")}
-                </TabsTrigger>
-              </TabsList>
-                <TabsContent value="features" className="mt-3 sm:mt-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm sm:text-base w-full"
-                  >
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary capitalize">{isRTL ? `: ${t("name")}` : `${t("name")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start capitalize">
-                      {(!isRTL ? product.translations[0]?.name: product.translations[1]?.name) || product.name}
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("location")}` : `${t("location")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {t(product.country)} - {(!isRTL ? product.translations[0]?.city: product.translations[1]?.city) || product.city} - {(!isRTL ? product.translations[0]?.street: product.translations[1]?.street) || product.street}
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("listedOn") || "Listed on"}` : `${t("listedOn") || "Listed on"}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {new Date(product.date_created).toLocaleDateString('en-US')}
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start text-secondary">{isRTL ? `: ${t("AllowTo")}` : `${t("AllowTo")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                     {
-                      product.allowed_categories.map((cat, index) => (
-                        <div key={index} className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                         {cat=="all" ? t("allCategories") : t(cat)}
-                        </div>
-                      ))
-                     }
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary capitalize">{isRTL ? `: ${t("category")}` : `${t("category")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start capitalize">
-                    {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
-                      {product.sub_category?( !isRTL? product.translations[0]?.sub_category: product.translations[1]?.sub_category || product.sub_category):'' }{' '}
-                      {product.brand? (!isRTL ? product.translations[0]?.brand: product.translations[1]?.brand || product.brand):'' }{' '}
-                      {product.model?(!isRTL ? product.translations[0]?.model: product.translations[1]?.model || product.model):'' }{' '}
-                   
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("price")}` : `${t("price")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-secondary2 text-start">
-                      {Number(product.price).toLocaleString('en-US')} {t("le")}
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("quantity")}` : `${t("quantity")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {Number(product.quantity).toLocaleString('en-US')}
-                    </div>
-                    <Separator />
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("status")}` : `${t("status")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-primary text-start capitalize">
-                      {t(product.status_item)}
-                    </div>
-                    
-                    
-                    <Separator />
-
-                    <h2 className="text-lg sm:text-xl font-bold mb-1 text-start  text-secondary">{isRTL ? `: ${t("description")}` : `${t("description")}:`}</h2>
-                    <div className="text-break-responsive whitespace-pre-wrap leading-relaxed max-w-full text-start">
-                      {(!isRTL ? product.translations[0]?.description: product.translations[1]?.description) || product.description}
-                    </div>
-                    <Separator />
-                  </motion.div>
-                </TabsContent>
-                <TabsContent value="Category" className="mt-3 sm:mt-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="grid gap-2 text-primary text-sm sm:text-base capitalize"
-                  >
-                      {product.category?(isRTL ? product.translations[0]?.category: product.translations[1]?.category || product.category):'' }{' '}
-                      {product.sub_category?( !isRTL? product.translations[0]?.sub_category: product.translations[1]?.sub_category || product.sub_category):'' }{' '}
-                      {product.brand? (!isRTL ? product.translations[0]?.brand: product.translations[1]?.brand || product.brand):'' }{' '}
-                      {product.model?(!isRTL ? product.translations[0]?.model: product.translations[1]?.model || product.model):'' }{' '}
-                   
-                  </motion.div>
-                </TabsContent>
-                <TabsContent value="swap_status" className="mt-3 sm:mt-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm sm:text-base"
-                  >
-                    {product.status_swap === "available" ? (
-                      <p className="text-primary/85 mx-1 line-clamp-2">
-                        {t("statusSwap")}: 
-                        {t("availableItems")}
-                      </p>
-                    ) : (
-                      <p className="text-destructive mx-1 line-clamp-2">
-                        {t("statusSwap")}:
-                        {t("unAvailableItems")}
-                      </p>
-                    )}
-                  </motion.div>
-                </TabsContent>
-            </Tabs>
-          </motion.div>
-        </motion.div>
+        {/* Map Modal Component */}
+        <MapModal 
+          isOpen={isMapOpen}
+          onClose={() => setIsMapOpen(false)}
+          geoLocation={product.geo_location}
+        />
       </motion.div>
-    </motion.div>
+    </div>
   )
 }

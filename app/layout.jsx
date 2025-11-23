@@ -3,10 +3,9 @@ import { Toaster } from "@/components/ui/toaster"
 import { ConditionalLayout } from "@/components/layout/conditional-layout"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { LanguageProvider } from "@/lib/language-provider"
-import Image from "next/image";
 
 import "./globals.css"
-import Script from "next/script"
+
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -117,32 +116,6 @@ export default function RootLayout({ children }) {
             <Toaster position="top-right" />
           </LanguageProvider>
         </ThemeProvider>
-
-        {/* Add custom animations */}
-        <Script id="custom-animations" strategy="beforeInteractive">
-          {`
-            if (typeof document !== 'undefined') {
-              const style = document.createElement('style');
-              style.textContent = \`
-                @keyframes blob {
-                  0%, 100% { transform: translate(0, 0) scale(1); }
-                  25% { transform: translate(20px, -50px) scale(1.1); }
-                  50% { transform: translate(-20px, 20px) scale(0.9); }
-                  75% { transform: translate(50px, 50px) scale(1.05); }
-                }
-                .animate-blob { animation: blob 20s infinite ease-in-out; }
-                .animation-delay-2000 { animation-delay: 2s; }
-                .animation-delay-4000 { animation-delay: 4s; }
-                .animation-delay-6000 { animation-delay: 6s; }
-                .bg-noise {
-                  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-                }
-              \`;
-              document.head.appendChild(style);
-            }
-          `}
-        </Script>
-     
       </body>
     </html>
   )

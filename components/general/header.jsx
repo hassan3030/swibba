@@ -882,27 +882,13 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
                   {/* lang and theme */}
                   <motion.div custom={9} variants={itemVariants}>
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="relative hover:text-popover/80 group"
-                        >
-                          <LanguageToggle className="h-6 w-6" />
-                          
-                        </Button>
+                        <LanguageToggle />
                       </motion.div>
                   </motion.div>
                   
                   <motion.div custom={10} variants={itemVariants}>
                       <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="relative z-[100000]">
-                        <Button 
-                          variant="ghost"
-                          size="icon"
-                          className="relative hover:text-popover/80 group"
-                        >
-                          <ThemeToggle className="h-6 w-6" />
-                         
-                        </Button>
+                        <ThemeToggle />
                       </motion.div>
                   </motion.div>
 

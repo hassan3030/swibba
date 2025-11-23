@@ -36,16 +36,92 @@ export function LocationSection({
   handleLocationSelect,
 }: LocationSectionProps) {
   return (
-    <motion.div className="space-y-2" variants={itemVariants}>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="country"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-foreground">{t("Country") || "Country"}</FormLabel>
+    <motion.div className="space-y-4" variants={itemVariants}>
+      {/* Get Current Location Button - First Priority */}
+      <motion.div variants={itemVariants}>
+        <Card className="rounded-xl shadow-md bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Navigation className="h-5 w-5 text-primary" />
+              {t("AutoDetectLocation") || "Auto-Detect Location"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground mb-3">
+              {t("ClickButtonToAutomaticallyDetectAndFillLocation") || "Click the button below to automatically detect and fill your location details"}
+            </p>
+            <motion.div variants={buttonVariants} whileTap="tap">
+              <Button
+                type="button"
+                onClick={getCurrentPosition}
+                disabled={isGettingLocation}
+                className="w-full py-6 rounded-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium transition-all shadow-lg"
+                size="lg"
+              >
+                {isGettingLocation ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    {t("DetectingYourLocation") || "Detecting Your Location..."}
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="mr-2 h-5 w-5" />
+                    {t("GetCurrentLocation") || "Get Current Location"}
+                  </>
+                )}
+              </Button>
+            </motion.div>
+            
+            <AnimatePresence>
+              {selectedPosition && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="rounded-lg border border-green-500/50 bg-green-50 dark:bg-green-950/20 p-4 mt-3">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                      <div className="space-y-1 flex-1">
+                        <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                          {t("LocationDetected") || "Location Detected Successfully!"}
+                        </p>
+                        <p className="text-xs text-green-700 dark:text-green-300">
+                          {selectedPosition.name}
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          {t("Coordinates") || "Coordinates"}: {selectedPosition.lat.toFixed(6)}, {selectedPosition.lng.toFixed(6)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Address Fields - Second Priority */}
+      <motion.div variants={itemVariants}>
+        <Card className="rounded-xl shadow-md bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <MapPin className="h-5 w-5 text-primary" />
+              {t("AddressDetails") || "Address Details"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">{t("Country") || "Country"}</FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                <Select onValueChange={field.onChange} value={field.value || ""}>
                   <SelectTrigger className="bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring">
                     <SelectValue placeholder={t("SelectCountry") || "Select country/countries"}>
                       {field.value && (
@@ -101,109 +177,47 @@ export function LocationSection({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="city"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-foreground">{t("City") || "City"}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t("e.g., Sohage") || "e.g., Sohage"}
-                  {...field}
-                  className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <FormField
-        control={form.control}
-        name="street"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-foreground">{t("Street") || "Street"}</FormLabel>
-            <FormControl>
-              <Input
-                placeholder={t("egOmarebnElkhtab") || "e.g., Omar ebn Elkhtab"}
-                {...field}
-                className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <motion.div variants={itemVariants}>
-        <Card className="rounded-xl shadow-md bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Navigation className="h-5 w-5 text-primary" />
-              {t("CurrentPosition") || "Current Position"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <motion.div variants={buttonVariants} whileTap="tap">
-              <Button
-                type="button"
-                onClick={getCurrentPosition}
-                disabled={isGettingLocation}
-                className="w-full py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all shadow-md"
-              >
-                {isGettingLocation ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("GettingLocation") || "Getting Location..."}
-                  </>
-                ) : (
-                  <>
-                    <MapPin className="mr-2 h-4 w-4" />
-                    {t("GetCurrentLocation") || "Get Current Location"}
-                  </>
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">{t("City") || "City"}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("e.g., Sohage") || "e.g., Sohage"}
+                        {...field}
+                        className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </motion.div>
-          </CardContent>
+              />
+            </div>
 
-          <AnimatePresence>
-            {selectedPosition && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="rounded-lg border border-border bg-card/50 mt-2">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-card-foreground">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      {t("SelectedPosition") || "Selected Position"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="space-y-1">
-                      <p className="text-sm text-foreground/70">
-                        <strong>{t("Name") || "Name"}:</strong> {selectedPosition.name}
-                      </p>
-                      <p className="text-sm text-foreground/70">
-                        <strong>{t("Latitude") || "Latitude"}:</strong> {selectedPosition.lat.toFixed(6)}
-                      </p>
-                      <p className="text-sm text-foreground/70">
-                        <strong>{t("Longitude") || "Longitude"}:</strong> {selectedPosition.lng.toFixed(6)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            <FormField
+              control={form.control}
+              name="street"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground">{t("Street") || "Street"}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("egOmarebnElkhtab") || "e.g., Omar ebn Elkhtab"}
+                      {...field}
+                      className="rounded-lg bg-background border-input text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-all"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
         </Card>
       </motion.div>
 
+      {/* Interactive Map - Third Priority */}
       <motion.div variants={itemVariants}>
         <Card className="rounded-xl shadow-md bg-card border-border">
           <CardHeader>

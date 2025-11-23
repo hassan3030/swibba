@@ -39,7 +39,7 @@ const LazyRecentProducts = ({ showSwitchHeart, t }) => {
     return (
       <motion.section
         ref={ref}
-        className="container relative z-10 mt-8 md:mt-12 px-4 md:px-6 lg:px-8"
+        className="container relative z-30 mt-8 md:mt-12 px-4 md:px-6 lg:px-8"
         id="items"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}

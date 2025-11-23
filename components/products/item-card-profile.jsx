@@ -272,16 +272,18 @@ export function ItemCardProfile({
         whileHover="hover"
         className="h-full"
       >
-        <Card className="group relative overflow-hidden h-full flex flex-col border-0 bg-card shadow-md hover:shadow-2xl transition-all duration-500 rounded-2xl">
+        <Card className="group relative overflow-hidden h-full flex flex-col border-2 border-gray-300 dark:border-gray-600 bg-card shadow-sm hover:shadow-md hover:border-primary dark:hover:border-primary transition-all duration-300 rounded-2xl">
           {/* Image Container */}
           <div className="relative flex-shrink-0">
-            <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/60">
+            <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
               <AnimatePresence>
-               
-                  <motion.div
-       
-                   whileHover="hover">
-{(() => {
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative w-full h-full"
+                >
+                  {(() => {
                       const mediaUrl ={
                         id: images[0]?.directus_files_id.id,
                         type: images[0]?.directus_files_id.type,
@@ -290,12 +292,12 @@ export function ItemCardProfile({
                       
                       const mediaType = getMediaType(mediaUrl.type)
                       
-                      if (mediaType == 'video') {
+                      if (mediaType === 'video') {
                         return (
-                          <div className="relative w-full h-full">
+                          <div className="w-full h-full relative">
                             <video
                               src={mediaUrl.url}
-                              className="w-full h-full object-cover transition-transform duration-300"
+                              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                               muted
                               loop
                               playsInline
@@ -309,30 +311,30 @@ export function ItemCardProfile({
                         )
                       } else if (mediaType === 'audio') {
                         return (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                          <div className="w-full h-full relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-105">
                             <div className="text-center text-white">
-                              <div className="text-3xl mb-1">🎵</div>
-                              <div className="text-xs font-medium">Audio</div>
+                              <div className="text-4xl mb-2">🎵</div>
+                              <div className="text-sm font-medium">Audio File</div>
                             </div>
                           </div>
                         )
                       } else {
                         return (
                           <Image
-                            src={mediaUrl.url}
+                            src={mediaUrl.url || "/placeholder.svg"}
                             alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                             fill
-                            loading="lazy"
-                            placeholder="blur"
-                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 180px"
-                            className="object-cover transition-transform duration-300"
+                            sizes="(max-width: 640px) 90vw, (max-width: 768px) 260px, (max-width: 1024px) 280px, 300px"
+                            quality={90}
+                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg"
+                            }}
                           />
                         )
                       }
                     })()}
                   </motion.div>
-           
               </AnimatePresence>
 
               {/* Heart button */}
@@ -376,7 +378,7 @@ export function ItemCardProfile({
           </div>
 
           {/* Content Container */}
-          <CardContent className="p-4 space-y-2.5 flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-card/50">
+          <CardContent className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
             <div className="space-y-2">
               {/* Title */}
               <motion.div

@@ -63,7 +63,7 @@ export function Footer() {
       initial="hidden"
       animate="visible"
     >
-      <div className="container pt-8">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-6xl pt-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <motion.div variants={itemVariants}>
            <Image className="w-32  h-6 rounded-full mx-1 mt-1 mb-4" src="/logo.png" alt="swibba" width={100} height={100} />

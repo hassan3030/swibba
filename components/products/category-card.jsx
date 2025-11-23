@@ -121,7 +121,7 @@ export function CategoryCard({ name, imageSrc, translations = [], showCategoryLe
       className="group block h-full"
       aria-label={`Browse ${displayName} category`}
     >
-      <div className="relative h-full bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary/50 dark:hover:border-primary/50">
+      <div className="relative h-full bg-white dark:bg-background/20 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary/50 dark:hover:border-primary/50">
         {/* Animated gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-500 pointer-events-none" />
         

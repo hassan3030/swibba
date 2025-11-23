@@ -104,7 +104,7 @@ const LazyCategoriesSection = ({ t, categories = [], categoriesNames = [] }) => 
   
     return (
       <motion.section ref={ref} className="relative py-20 overflow-hidden">
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl relative">
           <motion.div 
             className="text-center mb-16 max-w-3xl mx-auto" 
             variants={titleVariants} 

@@ -275,13 +275,13 @@ export function SwibbaProductCard({
        variants={cardVariants} 
        initial="hidden" 
        animate="visible" 
-       className="group h-full"
+       className="group h-full relative z-10 snap-center snap-always flex-shrink-0 w-[70vw] xs:w-[260px] sm:w-[280px] md:w-[280px] lg:w-[300px] max-w-[300px]"
        onHoverStart={() => setIsHovered(true)}
        onHoverEnd={() => setIsHovered(false)}
      >
       
       <Link href={`/products/out_offer/${id}`}>
-        <div className="group relative flex h-full lg:w-[280px] md:w-[240px] w-[165px] flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-background/20 shadow-sm hover:shadow-xl transition-shadow duration-300">
+        <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border-2 border-gray-300 dark:border-gray-600 bg-background dark:bg-background/20 shadow-sm hover:shadow-md hover:border-primary dark:hover:border-primary transition-all duration-300">
           {/* Image container */}
           <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
             <AnimatePresence>
@@ -347,11 +347,13 @@ export function SwibbaProductCard({
                           src={mediaUrl.url || "/placeholder.svg"}
                           alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                           fill
-                          className="transition-transform duration-500 ease-out object-fill group-hover:scale-110"
-                          placeholder="blur"
-                          blurDataURL="/placeholder.svg?height=300&width=300"
-                          priority
+                          sizes="(max-width: 640px) 90vw, (max-width: 768px) 260px, (max-width: 1024px) 280px, 300px"
+                          quality={90}
+                          className="transition-transform duration-500 ease-out  group-hover:scale-105"
                           onLoad={() => setImageLoaded(true)}
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg"
+                          }}
                         />
                       )
                     }
@@ -526,14 +528,14 @@ export function SwibbaProductCard({
             </motion.div>
           </div>
           
-          {/* Green hover overlay on entire card */}
+          {/* Green hover overlay at bottom of card */}
           <AnimatePresence>
             {isHovered && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-gradient-to-br from-primary/10 via-emerald-500/5 to-primary/10 pointer-events-none rounded-2xl"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none rounded-b-2xl"
               />
             )}
           </AnimatePresence>

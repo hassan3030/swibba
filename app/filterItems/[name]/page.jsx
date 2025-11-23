@@ -1,7 +1,7 @@
 "use client"
 import { motion } from "framer-motion"
 import {  getProducts } from "@/callAPI/products"
-import { ItemsList } from "@/components/products/items-list"
+import { ProductsList } from "@/components/products/productsPage"
 import { useState, useEffect } from "react"
 
 const containerVariants = {
@@ -110,7 +110,7 @@ const FilterItemsPage = ({ params }) => {
     >
       <motion.div variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={itemVariants}>
-          <ItemsList items={products} />
+          <ProductsList items={products} />
         </motion.div>
       </motion.div>
     </motion.div>

@@ -1,5 +1,5 @@
 import {  getProducts} from "@/callAPI/products"
-import { ItemsList } from "@/components/products/items-list";
+import { ProductsList } from "@/components/products/productsPage";
 
 const FilterItemsCategoryPage = async ({params}) => {
     const {cat} =  await params ;
@@ -14,9 +14,11 @@ const FilterItemsCategoryPage = async ({params}) => {
     // console.log(`Category page: ${normalizedCat}, found ${products.count} items`)
     
   return (
-  <div className="my-3 mx-3">
-      <ItemsList items={products.data} showCategoriesFilter={true} showFilters={showFilters} defaultCategory={normalizedCat} /> 
- </div>
+  <div className="min-h-screen bg-background dark:bg-gray-950">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ProductsList items={products.data} showCategoriesFilter={true} showFilters={showFilters} defaultCategory={normalizedCat} /> 
+    </div>
+  </div>
   )
 }
 

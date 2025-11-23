@@ -10,7 +10,7 @@ import LoadingSpinner from "@/components/loading/loading-spinner";
 import ErrorDisplay from "@/components/general/error-display";
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
-import { ItemsList } from "@/components/products/items-list.jsx";
+import { ProductsList } from "@/components/products/productsPage";
 
 // Component for a single brand in the scrollable header
 const BrandHeaderCard = ({ brand, currentBrandId }) => {
@@ -144,7 +144,7 @@ const BrandItemsPage = () => {
           {/* {products.map((product) => (
             <ItemCardProfile key={product.id} {...product} showbtn={true} />
           ))} */}
-          <ItemsList items={products} showbtn={true} />
+          <ProductsList items={products} showbtn={true} />
         </div>
       )}
     </div>

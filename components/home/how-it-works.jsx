@@ -79,7 +79,7 @@ const HowItWorks = () => {
 
   return (
     <section ref={sectionRef} className="py-32 relative overflow-visible">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
         <div className={`text-center max-w-2xl mx-auto mb-20 ${isRTL ? 'rtl' : 'ltr'}`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

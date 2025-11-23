@@ -124,7 +124,7 @@ const Wishlist = () => {
   }
 
   if (loading) {
-    return <LoadingSpinner/>
+    return <LoadingSpinner branded fullPage />
   }
 
   return (

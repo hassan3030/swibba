@@ -10,7 +10,7 @@ import { TbShoppingCartUp } from "react-icons/tb"
 import { BiCartDownload } from "react-icons/bi"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
-import { ItemsList } from "@/components/products/items-list"
+import { ProductsList } from "@/components/products/productsPage"
 import OffersPage from "@/app/offers/page"
 
 const tabVariants = {
@@ -290,7 +290,7 @@ export function ProfileContentTabs({
             </div>
 
             {Array.isArray(myAvailableItems) && myAvailableItems.length > 0 ? (
-              <ItemsList
+              <ProductsList
                 items={myAvailableItems}
                 showFilters={false}
                 showbtn={false}
@@ -343,7 +343,7 @@ export function ProfileContentTabs({
             <Card className="shadow-lg border-border/50">
               <CardContent className="p-6">
                 {Array.isArray(myUnavailableItems) && myUnavailableItems.length > 0 ? (
-                  <ItemsList 
+                  <ProductsList 
                     items={myUnavailableItems} 
                     showFilters={false} 
                     showSwitchHeart={false} 

@@ -3,7 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Play, Pause, Volume2, X, ZoomIn, ZoomOut } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Pause, Volume2, X, ZoomIn, ZoomOut, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMediaType } from "@/lib/utils"
 import { mediaURL } from "@/callAPI/utiles"
@@ -51,7 +51,7 @@ const buttonVariants = {
   tap: { scale: 0.9 },
 }
 
-export function ProductGallery({ images, productName }) {
+export function ProductGallery({ images = [], productName }) {
   const [currentImage, setCurrentImage] = useState(0)
   const [direction, setDirection] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -59,24 +59,106 @@ export function ProductGallery({ images, productName }) {
   const [isZoomOpen, setIsZoomOpen] = useState(false)
   const [zoomBgPos, setZoomBgPos] = useState({ x: 50, y: 50 })
   const [zoomScale, setZoomScale] = useState(2)
+  const [isMainImageLoading, setIsMainImageLoading] = useState(true)
+  const [isZoomImageLoaded, setIsZoomImageLoaded] = useState(false)
+
   const mainImageRef = useRef(null)
   const overlayImageRef = useRef(null)
+  const touchStartRef = useRef(null)
+  const lastDistanceRef = useRef(null)
+
+  useEffect(() => {
+    setIsMainImageLoading(true)
+    setIsZoomImageLoaded(false)
+  }, [currentImage])
+
+  // Reset current image if images array changes and index is out of bounds
+  useEffect(() => {
+    if (currentImage >= images.length) {
+      setCurrentImage(0)
+    }
+  }, [images, currentImage])
+
+  // Prefetch adjacent images for smooth navigation
+  useEffect(() => {
+    if (typeof window === 'undefined' || images.length === 0) return
+
+    const prefetchImage = (index) => {
+      const media = images[index]?.directus_files_id
+      if (!media?.id) return
+      
+      const mediaType = getMediaType(media.type || '')
+      if (mediaType !== 'image') return
+
+      const url = `${mediaURL}${media.id}`
+      const link = document.createElement('link')
+      link.rel = 'prefetch'
+      link.as = 'image'
+      link.href = url
+      document.head.appendChild(link)
+
+      return () => {
+        try {
+          document.head.removeChild(link)
+        } catch (e) {
+          // Link already removed
+        }
+      }
+    }
+
+    // Prefetch next and previous images
+    const nextIndex = (currentImage + 1) % images.length
+    const prevIndex = (currentImage - 1 + images.length) % images.length
+
+    const cleanupNext = prefetchImage(nextIndex)
+    const cleanupPrev = prefetchImage(prevIndex)
+
+    return () => {
+      cleanupNext?.()
+      cleanupPrev?.()
+    }
+  }, [currentImage, images])
+
+  if (images.length === 0) return null
+
 
   const nextImage = (e) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Pause current video if playing
+    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (currentVideoElement) {
+      currentVideoElement.pause()
+    }
+    
     setDirection(1)
     setCurrentImage((prev) => (prev + 1) % images.length)
+    setIsPlaying(false)
   }
 
   const prevImage = (e) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Pause current video if playing
+    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (currentVideoElement) {
+      currentVideoElement.pause()
+    }
+    
     setDirection(-1)
     setCurrentImage((prev) => (prev - 1 + images.length) % images.length)
+    setIsPlaying(false)
   }
 
   const selectImage = (index) => {
+    // Pause current video if playing
+    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (currentVideoElement) {
+      currentVideoElement.pause()
+    }
+    
     setDirection(index > currentImage ? 1 : -1)
     setCurrentImage(index)
     // Reset video controls when switching media
@@ -105,8 +187,8 @@ export function ProductGallery({ images, productName }) {
 
   // Resolve current media once for reuse
   const currentMedia = {
-    id: images[currentImage]?.directus_files_id.id || '',
-    type: images[currentImage]?.directus_files_id.type || '',
+    id: images[currentImage]?.directus_files_id?.id || '',
+    type: images[currentImage]?.directus_files_id?.type || '',
     url: images[currentImage]?.directus_files_id?.id
       ? `${mediaURL}${images[currentImage]?.directus_files_id.id}`
       : ''
@@ -114,13 +196,13 @@ export function ProductGallery({ images, productName }) {
   const currentMediaType = getMediaType(currentMedia.type)
 
   const handleMouseMove = useCallback((e) => {
-    if (!isZoomOpen) return
+    if (!isZoomOpen || zoomScale <= 1) return
     const targetRect = overlayImageRef.current?.getBoundingClientRect()
     if (!targetRect) return
     const x = Math.max(0, Math.min(1, (e.clientX - targetRect.left) / targetRect.width))
     const y = Math.max(0, Math.min(1, (e.clientY - targetRect.top) / targetRect.height))
     setZoomBgPos({ x: x * 100, y: y * 100 })
-  }, [isZoomOpen])
+  }, [isZoomOpen, zoomScale])
 
   const handleWheel = useCallback((e) => {
     if (!isZoomOpen) return
@@ -133,8 +215,7 @@ export function ProductGallery({ images, productName }) {
 
   const handleTouchStart = useCallback((e) => {
     if (!isZoomOpen) return
-    e.preventDefault()
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && zoomScale > 1) {
       const touch = e.touches[0]
       const targetRect = overlayImageRef.current?.getBoundingClientRect()
       if (!targetRect) return
@@ -143,13 +224,14 @@ export function ProductGallery({ images, productName }) {
       setZoomBgPos({ x: x * 100, y: y * 100 })
       
       // Store initial touch position for tap detection
-      handleTouchStart.initialTouch = { x: touch.clientX, y: touch.clientY, time: Date.now() }
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() }
+    } else if (e.touches.length === 1) {
+      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() }
     }
-  }, [isZoomOpen])
+  }, [isZoomOpen, zoomScale])
 
   const handleTouchMove = useCallback((e) => {
     if (!isZoomOpen) return
-    e.preventDefault()
     
     // Handle pinch-to-zoom
     if (e.touches.length === 2) {
@@ -161,16 +243,16 @@ export function ProductGallery({ images, productName }) {
       )
       
       // Store initial distance for comparison
-      if (!handleTouchMove.lastDistance) {
-        handleTouchMove.lastDistance = distance
+      if (!lastDistanceRef.current) {
+        lastDistanceRef.current = distance
       }
       
-      const scaleChange = distance / handleTouchMove.lastDistance
+      const scaleChange = distance / lastDistanceRef.current
       const newScale = Math.max(1, Math.min(5, zoomScale * scaleChange))
       setZoomScale(newScale)
-      handleTouchMove.lastDistance = distance
-    } else if (e.touches.length === 1) {
-      // Handle single touch for panning
+      lastDistanceRef.current = distance
+    } else if (e.touches.length === 1 && zoomScale > 1) {
+      // Handle single touch for panning only when zoomed
       const touch = e.touches[0]
       const targetRect = overlayImageRef.current?.getBoundingClientRect()
       if (!targetRect) return
@@ -182,13 +264,12 @@ export function ProductGallery({ images, productName }) {
 
   const handleTouchEnd = useCallback((e) => {
     if (!isZoomOpen) return
-    e.preventDefault()
-    handleTouchMove.lastDistance = null
+    lastDistanceRef.current = null
     
     // Detect tap to close zoom (single touch, short duration, minimal movement)
-    if (e.touches.length === 0 && handleTouchStart.initialTouch) {
+    if (e.touches.length === 0 && touchStartRef.current) {
       const touch = e.changedTouches[0]
-      const initialTouch = handleTouchStart.initialTouch
+      const initialTouch = touchStartRef.current
       const timeDiff = Date.now() - initialTouch.time
       const distance = Math.sqrt(
         Math.pow(touch.clientX - initialTouch.x, 2) + 
@@ -201,7 +282,7 @@ export function ProductGallery({ images, productName }) {
       }
     }
     
-    handleTouchStart.initialTouch = null
+    touchStartRef.current = null
   }, [isZoomOpen])
 
   // Handle keyboard events for accessibility
@@ -226,6 +307,8 @@ export function ProductGallery({ images, productName }) {
     }
   }, [isZoomOpen])
 
+  if (images.length === 0) return null
+
   return (
     <motion.div
       className="flex flex-col gap-3 sm:gap-4 w-full"
@@ -237,7 +320,7 @@ export function ProductGallery({ images, productName }) {
       <div className="bg-gradient-to-br from-primary/5 via-transparent to-secondary2/5 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-lg">
         <div
           ref={mainImageRef}
-          className="relative aspect-square overflow-hidden rounded-lg sm:rounded-xl border bg-background shadow-lg w-full cursor-zoom-in hover:shadow-xl transition-shadow duration-300"
+          className="relative aspect-square overflow-hidden rounded-lg sm:rounded-xl border shadow-lg w-full cursor-zoom-in hover:shadow-xl transition-shadow duration-300"
           onClick={() => {
             if (currentMediaType === 'image') {
               setZoomScale(2)
@@ -270,16 +353,22 @@ export function ProductGallery({ images, productName }) {
             >
               {(() => {
                 const mediaType = currentMediaType
+                if (!currentMedia.url) return null
                 if (mediaType === 'video') {
                   return (
                     <video
+                      key={`video-${currentImage}-${currentMedia.id}`}
                       id={`gallery-video-${currentImage}`}
                       src={currentMedia.url}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full"
+                      style={{ objectFit: 'contain', objectPosition: 'center' }}
                       muted={isMuted}
                       playsInline
+                      preload="metadata"
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
+                      onLoadStart={() => setIsMainImageLoading(true)}
+                      onLoadedData={() => setIsMainImageLoading(false)}
                     />
                   )
                 } else if (mediaType === 'audio') {
@@ -299,15 +388,32 @@ export function ProductGallery({ images, productName }) {
                   )
                 } else {
                   return (
-                    <Image
-                      src={currentMedia.url}
-                      alt={`${productName} - Image ${currentImage + 1}`}
-                      fill
-                      className="object-contain"
-                      priority={currentImage === 0}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      quality={90}
-                    />
+                    <>
+                      {isMainImageLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 z-10">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                      )}
+                      <Image
+                        src={currentMedia.url}
+                        alt={`${productName} - Image ${currentImage + 1}`}
+                        fill
+                        className={`transition-opacity duration-300 ${isMainImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                        style={{
+                          objectFit: 'contain',
+                          objectPosition: 'center',
+                        }}
+                        priority={currentImage === 0}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px"
+                        quality={95}
+                        loading={currentImage === 0 ? "eager" : "lazy"}
+                        onLoad={() => setIsMainImageLoading(false)}
+                        onError={(e) => {
+                          console.error('Image load error:', currentMedia.url)
+                          setIsMainImageLoading(false)
+                        }}
+                      />
+                    </>
                   )
                 }
               })()}
@@ -382,93 +488,70 @@ export function ProductGallery({ images, productName }) {
             </motion.div>
           )}
 
-          {/* Dot Indicators - Hidden on small mobile */}
-          {images.length > 1 && images.length <= 10 && (
-            <motion.div
-              className="absolute bottom-10 sm:bottom-12 left-1/2 -translate-x-1/2 gap-1.5 sm:gap-2 z-10 hidden xs:flex"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              {images.map((_, index) => (
-                <motion.button
-                  key={index}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    selectImage(index)
-                  }}
-                  className={`h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full transition-all duration-300 ${
-                    currentImage === index 
-                      ? "bg-primary w-4 sm:w-5 shadow-lg" 
-                      : "bg-white/60 hover:bg-white/80"
-                  }`}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={`Go to image ${index + 1}`}
-                />
-              ))}
-            </motion.div>
+          {/* Thumbnail Circles - Overlaid on main image */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 sm:bottom-4 left-0 right-0 flex justify-center z-10">
+              <motion.div
+                className="flex gap-2 sm:gap-2.5 items-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+              {images.map((image, index) => {
+                const thumbMedia = {
+                  id: image?.directus_files_id?.id || '',
+                  type: image?.directus_files_id?.type || '',
+                  url: image?.directus_files_id?.id
+                    ? `${mediaURL}${image.directus_files_id.id}`
+                    : ''
+                }
+                const thumbMediaType = getMediaType(thumbMedia.type)
+
+                return (
+                  <motion.button
+                    key={index}
+                    variants={thumbnailVariants}
+                    initial="inactive"
+                    animate={currentImage === index ? "active" : "inactive"}
+                    whileHover="hover"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      selectImage(index)
+                    }}
+                    className={`relative flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 transition-all duration-300 ${
+                      currentImage === index
+                        ? "border-primary shadow-lg ring-2 ring-primary/50 scale-110"
+                        : "border-white/60 hover:border-white"
+                    }`}
+                  >
+                    {thumbMediaType === 'video' ? (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                        <Play className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      </div>
+                    ) : thumbMediaType === 'audio' ? (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <Volume2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      </div>
+                    ) : (
+                      <Image
+                        src={thumbMedia.url}
+                        alt={`Thumbnail ${index + 1}`}
+                        fill
+                        className="transition-opacity hover:opacity-90"
+                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                        sizes="48px"
+                        quality={70}
+                        loading="lazy"
+                      />
+                    )}
+                  </motion.button>
+                )
+              })}
+              </motion.div>
+            </div>
           )}
         </div>
       </div>
-
-      {/* Thumbnail Strip - Scrollable on Mobile */}
-      {images.length > 1 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="w-full"
-        >
-          <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
-            {images.map((image, index) => {
-              const thumbMedia = {
-                id: image?.directus_files_id?.id || '',
-                type: image?.directus_files_id?.type || '',
-                url: image?.directus_files_id?.id
-                  ? `${mediaURL}${image.directus_files_id.id}`
-                  : ''
-              }
-              const thumbMediaType = getMediaType(thumbMedia.type)
-
-              return (
-                <motion.button
-                  key={index}
-                  variants={thumbnailVariants}
-                  initial="inactive"
-                  animate={currentImage === index ? "active" : "inactive"}
-                  whileHover="hover"
-                  onClick={() => selectImage(index)}
-                  className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                    currentImage === index
-                      ? "border-primary shadow-lg ring-2 ring-primary/30"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {thumbMediaType === 'video' ? (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                      <Play className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-                    </div>
-                  ) : thumbMediaType === 'audio' ? (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                      <Volume2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-                    </div>
-                  ) : (
-                    <Image
-                      src={thumbMedia.url}
-                      alt={`Thumbnail ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                      quality={60}
-                    />
-                  )}
-                </motion.button>
-              )
-            })}
-          </div>
-        </motion.div>
-      )}
 
       {/* Zoom Modal - Full Screen with Better Mobile Support */}
       {/* Zoom Modal - Full Screen with Better Mobile Support */}
@@ -528,20 +611,37 @@ export function ProductGallery({ images, productName }) {
             {/* Zoomable Image Container */}
             <div
               ref={overlayImageRef}
-              className="w-full h-full relative overflow-hidden touch-none"
+              className="w-full h-full relative overflow-hidden flex items-center justify-center bg-black/5"
+              style={{ touchAction: 'none' }}
               onMouseMove={handleMouseMove}
               onWheel={handleWheel}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              <div
-                className="absolute inset-0 bg-no-repeat bg-center"
+              {!isZoomImageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-white drop-shadow-lg" />
+                </div>
+              )}
+              
+              {/* High-resolution image for zooming with proper aspect ratio */}
+              <img 
+                src={currentMedia.url} 
+                className="max-w-full max-h-full transition-opacity duration-300 select-none"
                 style={{
-                  backgroundImage: `url(${currentMedia.url})`,
-                  backgroundSize: `${zoomScale * 100}% ${zoomScale * 100}%`,
-                  backgroundPosition: `${zoomBgPos.x}% ${zoomBgPos.y}%`,
+                  objectFit: 'contain',
+                  objectPosition: `${zoomBgPos.x}% ${zoomBgPos.y}%`,
+                  transform: `scale(${zoomScale})`,
+                  transformOrigin: `${zoomBgPos.x}% ${zoomBgPos.y}%`,
+                  opacity: isZoomImageLoaded ? 1 : 0,
+                  cursor: zoomScale > 1 ? 'move' : 'zoom-in',
+                  imageRendering: zoomScale > 2 ? 'high-quality' : 'auto',
                 }}
+                onLoad={() => setIsZoomImageLoaded(true)}
+                onError={() => setIsZoomImageLoaded(true)} 
+                alt={`${productName} - Zoomed`}
+                draggable={false}
               />
             </div>
 

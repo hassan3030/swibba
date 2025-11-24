@@ -275,7 +275,7 @@ export function SwibbaProductCard({
        variants={cardVariants} 
        initial="hidden" 
        animate="visible" 
-       className="group h-full relative z-10 snap-center snap-always flex-shrink-0 w-[70vw] xs:w-[260px] sm:w-[280px] md:w-[280px] lg:w-[300px] max-w-[300px]"
+       className="group h-full relative z-10 snap-center snap-always flex-shrink-0 w-[75vw] xs:w-[280px] sm:w-[300px] md:w-[300px] lg:w-[320px] max-w-[340px]"
        onHoverStart={() => setIsHovered(true)}
        onHoverEnd={() => setIsHovered(false)}
      >
@@ -349,7 +349,7 @@ export function SwibbaProductCard({
                           fill
                           sizes="(max-width: 640px) 90vw, (max-width: 768px) 260px, (max-width: 1024px) 280px, 300px"
                           quality={90}
-                          className="transition-transform duration-500 ease-out  group-hover:scale-105"
+                          className=" transition-transform duration-500 ease-out  group-hover:scale-105"
                           onLoad={() => setImageLoaded(true)}
                           onError={(e) => {
                             e.currentTarget.src = "/placeholder.svg"

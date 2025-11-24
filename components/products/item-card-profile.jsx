@@ -273,9 +273,9 @@ export function ItemCardProfile({
         className="h-full"
       >
         <Card className="group relative overflow-hidden h-full flex flex-col border-2 border-gray-300 dark:border-gray-600 bg-card shadow-sm hover:shadow-md hover:border-primary dark:hover:border-primary transition-all duration-300 rounded-2xl">
-          {/* Image Container */}
+          {/* Image coverer */}
           <div className="relative flex-shrink-0">
-            <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
+            <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-90">
               <AnimatePresence>
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -301,6 +301,7 @@ export function ItemCardProfile({
                               muted
                               loop
                               playsInline
+                              preload="metadata"
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
                               <div className="bg-white/90 rounded-full p-2 group-hover:scale-110 transition-transform">
@@ -311,7 +312,7 @@ export function ItemCardProfile({
                         )
                       } else if (mediaType === 'audio') {
                         return (
-                          <div className="w-full h-full relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-105">
+                          <div className="w-full h-full relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                             <div className="text-center text-white">
                               <div className="text-4xl mb-2">🎵</div>
                               <div className="text-sm font-medium">Audio File</div>
@@ -324,9 +325,12 @@ export function ItemCardProfile({
                             src={mediaUrl.url || "/placeholder.svg"}
                             alt={!isRTL ? translations[0]?.name: translations[1]?.name || name}
                             fill
-                            sizes="(max-width: 640px) 90vw, (max-width: 768px) 260px, (max-width: 1024px) 280px, 300px"
-                            quality={90}
-                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                            quality={95}
+                            priority={false}
+                            loading="lazy"
+                            className="transition-transform duration-500 ease-out group-hover:scale-105"
+                            
                             onError={(e) => {
                               e.currentTarget.src = "/placeholder.svg"
                             }}
@@ -377,7 +381,7 @@ export function ItemCardProfile({
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
           </div>
 
-          {/* Content Container */}
+          {/* Content coverer */}
           <CardContent className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
             <div className="space-y-2">
               {/* Title */}

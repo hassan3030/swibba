@@ -18,7 +18,7 @@ function NavigationButton({ direction, onClick, buttonVariants, icon: Icon, isRT
 
   return (
     <motion.div
-      className={`absolute ${positionClasses} top-1/2 md:top-1/2 z-30 -translate-y-1/2`}
+      className={`hidden md:block absolute ${positionClasses} top-1/2 md:top-1/2 z-30 -translate-y-1/2`}
       variants={buttonVariants}
       initial="hidden"
       animate="visible"

@@ -8,6 +8,7 @@ import { itemsStatus } from "@/lib/data"
 import { motion } from "framer-motion"
 import { Package, DollarSign, Hash, CheckCircle } from "lucide-react"
 import { itemVariants } from "./constants"
+import { slugify } from "./helpers"
 
 interface BasicInfoSectionProps {
   form: any
@@ -34,6 +35,12 @@ export function BasicInfoSection({ form, t }: BasicInfoSectionProps) {
                   placeholder="e.g., MacBook Pro 16-inch 2021"
                   {...field}
                   className="rounded-xl h-12 bg-background border-input text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  onChange={(e) => {
+                    field.onChange(e)
+                    // Auto-generate slug from name
+                    const slug = slugify(e.target.value)
+                    form.setValue('slug', slug)
+                  }}
                 />
               </FormControl>
               <FormMessage />

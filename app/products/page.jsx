@@ -8,13 +8,14 @@ import { useRouter } from "next/navigation"
 import { ItemCardProfile } from "@/components/products/item-card-profile"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
-import { ChevronRight, ChevronLeft } from "lucide-react"
+import { ChevronRight, ChevronLeft, X } from "lucide-react"
 import { SearchBar } from "@/components/products/productsPage/SearchBar"
 import { CategoryFilter } from "@/components/products/productsPage/CategoryFilter"
 import { FilterButton } from "@/components/products/productsPage/FilterButton"
 import { FilterSidebar } from "@/components/products/productsPage/FilterSidebar"
 import { useFilters } from "@/components/products/productsPage/useFilters"
 import { useStaticData } from "@/components/products/productsPage/useProductsData"
+import LoadingSpinner from "@/components/loading/loading-spinner"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -98,13 +99,10 @@ export default function ProductsPage() {
 
   // Filter and group products whenever search or filter changes
   useEffect(() => {
-    if (displayedItems.length > 0 && allCategories.length > 0) {
+    if (allCategories.length > 0) {
       groupProductsByCategory(displayedItems, allCategories)
-    } else if (allProducts.length > 0 && allCategories.length > 0) {
-      // Fallback to all products if displayedItems is empty
-      groupProductsByCategory(allProducts, allCategories)
     }
-  }, [displayedItems, allCategories, allProducts])
+  }, [displayedItems, allCategories])
 
   const groupProductsByCategory = (products, categories) => {
     // Group products by category
@@ -166,19 +164,10 @@ export default function ProductsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen py-4 bg-background dark:bg-gray-950 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-primary/90">{t("Loading products...")}</p>
-        </motion.div>
+        <LoadingSpinner 
+          size="lg" 
+         
+        />
       </div>
     )
   }
@@ -201,7 +190,7 @@ export default function ProductsPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10" />
           
-          <div className={`max-w-7xl mx-auto flex flex-col ${isRTL ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-8`}>
+          <div className={`max-w-7xl mx-auto flex ${isRTL ? 'flex-row-reverse' : 'flex-row'} items-center gap-4 sm:gap-8`}>
             {/* Icon Section */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -211,9 +200,9 @@ export default function ProductsPage() {
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse" />
-                <div className="relative bg-gradient-to-br from-primary to-primary/70 p-6 rounded-2xl shadow-lg">
+                <div className="relative bg-gradient-to-br from-primary to-primary/70 p-4 sm:p-6 rounded-2xl shadow-lg">
                   <svg
-                    className="w-16 h-16 "
+                    className="w-12 h-12 sm:w-16 sm:h-16"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -230,9 +219,9 @@ export default function ProductsPage() {
             </motion.div>
 
             {/* Text Content */}
-            <div className={`flex-1 space-y-4 `}>
+            <div className={`flex-1 space-y-2 sm:space-y-4`}>
               <motion.h1 
-                className="text-3xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent"
+                className="text-2xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent"
                 initial={{ x: isRTL ? 50 : -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
@@ -240,7 +229,7 @@ export default function ProductsPage() {
                 {isRTL ? "استكشف وبادل المنتجات" : "Explore & Swap Products"}
               </motion.h1>
               <motion.p 
-                className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl"
+                className="hidden sm:block text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl"
                 initial={{ x: isRTL ? 50 : -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -262,14 +251,14 @@ export default function ProductsPage() {
           transition={{ delay: 0.4, duration: 0.5 }}
           className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-sm space-y-4"
         >
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm} 
               onSearch={handleSearch} 
             />
             
-            <div className="flex flex-col gap-2 sm:flex-row w-full lg:w-1/2">
+            <div className="flex gap-2 w-full lg:w-auto">
               <FilterButton 
                 onClick={() => setShowFilterSidebar(true)} 
                 activeFiltersCount={getActiveFiltersCount()} 
@@ -279,33 +268,29 @@ export default function ProductsPage() {
                 category={selectedFilter} 
                 onCategoryChange={handleCategoryChange} 
               />
+
+              {(getActiveFiltersCount() > 0 || selectedFilter !== "all" || searchTerm) && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleClearAllFilters}
+                  className="flex items-center gap-2 px-4 py-2 bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 rounded-lg transition-all duration-200 text-destructive font-medium whitespace-nowrap"
+                >
+                  <X className="w-4 h-4" />
+                  {isRTL ? "مسح الفلاتر" : "Clear"}
+                </motion.button>
+              )}
             </div>
           </div>
-
-          {/* Action hint - subtle */}
-          {getActiveFiltersCount() > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className={`flex items-center gap-2 text-xs text-muted-foreground ${isRTL ? 'justify-end' : 'justify-start'}`}
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleClearAllFilters}
-                className="text-destructive hover:text-destructive/80 underline underline-offset-2 transition-colors"
-              >
-                {t("Clear all filters")}
-              </motion.button>
-            </motion.div>
-          )}
         </motion.div>
 
         {/* Categorized Products */}
         <div className="space-y-12">
         {categorizedProducts.map((item, idx) => {
-          const categoryName = item.category.translations?.[0]?.name || item.category.name
+          const categoryName = t(item.category.name) || item.category.name
           const productsToShow = item.products.slice(0, 8)
           const hasMore = item.products.length > 8
           
@@ -379,11 +364,70 @@ export default function ProductsPage() {
         
         {categorizedProducts.length === 0 && !isLoading && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center py-20 px-4"
           >
-            <p className="text-xl text-muted-foreground">{t("No products available")}</p>
+            {/* Empty State Icon */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="mb-6"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
+                <div className="relative bg-gradient-to-br from-primary/20 to-primary/5 p-8 rounded-full">
+                  <svg
+                    className="w-24 h-24 text-primary/60"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Empty State Text */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-center space-y-3 max-w-md"
+            >
+              <h3 className="text-2xl font-bold text-foreground">
+                {t("noProductsAvailable")}
+              </h3>
+              <p className="text-base text-muted-foreground">
+                {t("noProductsFound")}
+              </p>
+              <p className="text-sm text-muted-foreground/80">
+                {t("tryAdjustingFilters")}
+              </p>
+            </motion.div>
+
+            {/* Action Button */}
+            {(selectedFilter !== "all" || searchTerm || getActiveFiltersCount() > 0) && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleClearAllFilters}
+                className="mt-8 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
+              >
+                {t("browseAllProducts")}
+              </motion.button>
+            )}
           </motion.div>
         )}
       </div>

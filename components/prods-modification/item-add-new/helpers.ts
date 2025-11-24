@@ -36,6 +36,24 @@ export const extractId = (value: any): string | null => {
 }
 
 /**
+ * Helper to slugify text (convert to URL-friendly slug)
+ * Handles both English and Arabic text
+ */
+export const slugify = (text: string): string => {
+  if (!text) return ''
+  
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\u0600-\u06FF\-]+/g, '') // Remove all non-word chars except Arabic and hyphens
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, '') // Trim - from end of text
+}
+
+/**
  * Reverse geocoding to get location name from coordinates
  */
 export const getLocationName = async (

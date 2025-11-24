@@ -7,6 +7,10 @@ export const createFormSchema = (t: (key: string) => string) => {
       .string()
       .min(3, t('Namemustbeatleast3characters') || 'Name must be at least 3 characters')
       .max(100, t('Namemustbelessthan100characters') || 'Name must be less than 100 characters'),
+    slug: z
+      .string()
+      .min(3, 'Slug must be at least 3 characters')
+      .max(100, 'Slug must be less than 100 characters'),
     description: z
       .string()
       .min(20, t('Descriptiomustbeatleast20characters') || 'Description must be at least 20 characters')

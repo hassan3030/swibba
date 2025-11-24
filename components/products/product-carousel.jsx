@@ -58,7 +58,7 @@ export function ProductCarousel({ title, viewAllHref, viewAllLabel, children }) 
         <motion.div
           ref={containerRef}
           dir={isRTL ? "rtl" : "ltr"}
-          className={`flex ${isRTL ? 'flex-row-reverse' : 'flex-row'} gap-4 md:gap-6 overflow-x-auto pb-6 pt-2 px-[15vw] md:px-0 scrollbar-hide scroll-smooth snap-x snap-mandatory ${isRTL ? 'md:justify-end' : 'md:justify-start'} ${
+          className={`flex ${isRTL ? 'flex-row-reverse' : 'flex-row'} gap-3 md:gap-6 overflow-x-auto pb-6 pt-2 px-[5vw] md:px-0 scrollbar-hide scroll-smooth snap-x snap-mandatory ${isRTL ? 'md:justify-end' : 'md:justify-start'} ${
             isDragging ? "cursor-grabbing" : "cursor-grab"
           }`}
           onMouseDown={handleMouseDown}

@@ -198,7 +198,11 @@ export function ProductsList({
             <ItemsListSkeleton count={ITEMS_PER_PAGE} />
           </motion.div>
         ) : paginatedItems.length === 0 ? (
-          <EmptyState key="empty" />
+          <EmptyState 
+            key="empty" 
+            showClearButton={hasActiveFilters || searchTerm || category !== "all"}
+            onClearFilters={handleClearAllFilters}
+          />
         ) : (
           <motion.div key="content">
             <ProductsGrid

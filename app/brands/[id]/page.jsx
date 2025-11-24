@@ -144,7 +144,7 @@ const BrandItemsPage = () => {
           {/* {products.map((product) => (
             <ItemCardProfile key={product.id} {...product} showbtn={true} />
           ))} */}
-          <ProductsList items={products} showbtn={true} />
+          <ProductsList items={products} showbtn={true} showFilters={false} />
         </div>
       )}
     </div>

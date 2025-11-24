@@ -30,7 +30,7 @@ export function CategoryFilter({ category, onCategoryChange }) {
             className="capitalize hover:!bg-primary/10 focus:!bg-primary/10 rounded-lg my-1 text-foreground cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-primary/50" />
+              <div className={`w-2 h-2 rounded-full ${category === "all" ? "bg-gradient-to-r from-primary to-primary/50" : "bg-muted-foreground/30"}`} />
               <span className="text-foreground">{t("allCategories") || "All Categories"}</span>
             </div>
           </SelectItem>
@@ -41,7 +41,7 @@ export function CategoryFilter({ category, onCategoryChange }) {
               className="capitalize hover:!bg-primary/10 focus:!bg-primary/10 rounded-lg my-1 text-foreground cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                <div className={`w-2 h-2 rounded-full ${category === cat ? "bg-gradient-to-r from-primary to-primary/50" : "bg-muted-foreground/30"}`} />
                 <span className="text-foreground">{t(cat) || cat}</span>
               </div>
             </SelectItem>

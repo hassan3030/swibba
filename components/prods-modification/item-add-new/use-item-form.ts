@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { addProduct } from '@/callAPI/products'
 import { getTarget, removeTarget } from '@/callAPI/utiles'
-import { extractId } from './helpers'
+import { extractId, slugify } from './helpers'
 import { createFormSchema } from './form-schema'
 
 export const useItemForm = (
@@ -31,6 +31,7 @@ export const useItemForm = (
     reValidateMode: 'onChange',
     defaultValues: {
       name: '',
+      slug: '',
       description: '',
       category: '',
       sub_category: 'none',
@@ -108,6 +109,7 @@ export const useItemForm = (
         {
           languages_code: 'en-US',
           name: aiResponse?.name_translations?.en || form.getValues('name'),
+          slug: slugify(aiResponse?.name_translations?.en || form.getValues('name')),
           description: aiResponse?.description_translations?.en || form.getValues('description'),
           city: aiResponse?.city_translations?.en || form.getValues('city'),
           street: aiResponse?.street_translations?.en || form.getValues('street'),
@@ -119,6 +121,7 @@ export const useItemForm = (
         {
           languages_code: 'ar-SA',
           name: aiResponse?.name_translations?.ar || form.getValues('name'),
+          slug: slugify(aiResponse?.name_translations?.ar || form.getValues('name')),
           description: aiResponse?.description_translations?.ar || form.getValues('description'),
           city: aiResponse?.city_translations?.ar || form.getValues('city'),
           street: aiResponse?.street_translations?.ar || form.getValues('street'),

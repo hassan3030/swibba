@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
 import { getCompletedOffer, getReview, getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
 import { mediaURL } from "@/callAPI/utiles"
+import LoadingSpinner from "@/components/loading/loading-spinner"
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { 
@@ -342,11 +343,11 @@ export default function ProductPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">{t("loading") || "Loading..."}</p>
-        </div>
+       <div className="min-h-screen py-4 bg-background dark:bg-gray-950 flex items-center justify-center">
+        <LoadingSpinner 
+          size="lg" 
+         
+        />
       </div>
     )
   }
@@ -373,7 +374,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-gray-950 ">
       <motion.div
         className="container max-w-[1400px] mx-auto py-4 sm:py-8 lg:py-10 px-3 sm:px-6 lg:px-12"
         initial="hidden"
@@ -425,18 +426,6 @@ export default function ProductPage() {
               t={t}
             />
 
-            <Separator />
-
-            {/* Seller Info Component */}
-            <SellerInfo 
-              user={user}
-              name={name}
-              avatar={avatar}
-              rate={rate}
-              completedOffersCount={completedOffersCount}
-              t={t}
-            />
-
             {/* Swap Button Component */}
             <SwapButton 
               product={product}
@@ -446,12 +435,26 @@ export default function ProductPage() {
               t={t}
             />
 
+          
+
             <Separator />
 
             {/* Product Tabs Component */}
             <ProductTabs 
               product={product}
               isRTL={isRTL}
+              t={t}
+            />
+
+              <Separator />
+
+            {/* Seller Info Component */}
+            <SellerInfo 
+              user={user}
+              name={name}
+              avatar={avatar}
+              rate={rate}
+              completedOffersCount={completedOffersCount}
               t={t}
             />
           </motion.div>

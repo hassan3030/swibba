@@ -16,6 +16,7 @@ import { FilterSidebar } from "@/components/products/productsPage/FilterSidebar"
 import { useFilters } from "@/components/products/productsPage/useFilters"
 import { useStaticData } from "@/components/products/productsPage/useProductsData"
 import LoadingSpinner from "@/components/loading/loading-spinner"
+import PageHeader from "@/components/general/page-header"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -180,67 +181,29 @@ export default function ProductsPage() {
       transition={{ duration: 0.5 }}
     >
         {/* Page Header */}
-        <motion.div
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative  overflow-hidden  bg-gradient-to-b from-primary/10 via-primary/5 to-transparent  p-8 sm:p-12"
-        >
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10" />
-          
-          <div className={`max-w-7xl mx-auto flex ${isRTL ? 'flex-row-reverse' : 'flex-row'} items-center gap-4 sm:gap-8`}>
-            {/* Icon Section */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.8, type: "spring", delay: 0.2 }}
-              className="flex-shrink-0"
+        <PageHeader
+          customIcon={
+            <svg
+              className="w-12 h-12 sm:w-16 sm:h-16 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse" />
-                <div className="relative bg-gradient-to-br from-primary to-primary/70 p-4 sm:p-6 rounded-2xl shadow-lg">
-                  <svg
-                    className="w-12 h-12 sm:w-16 sm:h-16"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Text Content */}
-            <div className={`flex-1 space-y-2 sm:space-y-4`}>
-              <motion.h1 
-                className="text-2xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent"
-                initial={{ x: isRTL ? 50 : -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                {isRTL ? "استكشف وبادل المنتجات" : "Explore & Swap Products"}
-              </motion.h1>
-              <motion.p 
-                className="hidden sm:block text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl"
-                initial={{ x: isRTL ? 50 : -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                {isRTL 
-                  ? "اكتشف مجموعة متنوعة من المنتجات وابحث عن ما يناسبك وابدأ عمليات التبادل مع مستخدمين آخرين بسهولة وأمان." 
-                  : "Discover a diverse collection of products, find what suits you, and start swapping with other users easily and securely."}
-              </motion.p>
-            </div>
-          </div>
-        </motion.div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              />
+            </svg>
+          }
+          title={isRTL ? "استكشف وبادل المنتجات" : "Explore & Swap Products"}
+          description={isRTL 
+            ? "اكتشف مجموعة متنوعة من المنتجات وابحث عن ما يناسبك وابدأ عمليات التبادل مع مستخدمين آخرين بسهولة وأمان." 
+            : "Discover a diverse collection of products, find what suits you, and start swapping with other users easily and securely."
+          }
+          iconAnimation="none"
+        />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
 

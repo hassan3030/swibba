@@ -10,7 +10,7 @@ export function ProductsGrid({
   slideDirection, 
   showbtn, 
   showSwitchHeart, 
-  LinkItemOffer 
+  LinkItemOffer
 }) {
   return (
     <AnimatePresence mode="wait" custom={slideDirection}>

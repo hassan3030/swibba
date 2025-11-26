@@ -24,6 +24,11 @@ const LazyRecentProducts = ({ showSwitchHeart, t }) => {
     { threshold: 0.05, margin: "-50px" }
   )
 
+  // Don't render if no products and loading is complete
+  if (hasLoaded && (!products || products.length === 0)) {
+    return null
+  }
+
   return (
     <motion.section
       ref={ref}

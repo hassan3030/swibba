@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
@@ -34,7 +33,7 @@ import { useLanguage } from "@/lib/language-provider"
 
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
@@ -47,9 +46,9 @@ const cardVariants = {
   },
   exit: {
     opacity: 0,
-    y: -20,
+    y: -30,
     scale: 0.95,
-    transition: { duration: 0.2 },
+    transition: { duration: 0.3 },
   },
 }
 
@@ -147,23 +146,28 @@ export default function OfferCard({
       variants={cardVariants}
       layout
       layoutId={`offer-${offer.id}`}
-      className="mb-3"
+      className="mb-4"
     >
       <Card
         id={`offer-card-${offer.id}`}
-        className="relative overflow-hidden border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300"
+        className="relative overflow-hidden border border-border/50 bg-background/80 backdrop-blur-sm hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 rounded-2xl"
       >
         {/* Top-left quick delete for rejected/completed swaps */}
         {(offer.status_offer === "rejected" || offer.status_offer === "completed") && (
-          <div className="absolute z-30 top-1 right-12">
+          <motion.div 
+            className="absolute z-30 top-3 right-14"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 400, delay: 0.2 }}
+          >
             <Button
               size="icon"
-              className="h-8 w-8 p-1 !bg-background rounded-full hover:!bg-primary/20"
+              className="h-9 w-9 p-1.5 !bg-background/90 backdrop-blur-sm rounded-xl hover:!bg-destructive/10 border border-border/50 shadow-sm hover:shadow-md transition-all duration-300"
               onClick={() => onDeleteFinally?.(offer.id, isReceived ? "to" : "from")}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
-          </div>
+          </motion.div>
         )}
 
         {/* Top-right screenshot button */}
@@ -227,9 +231,13 @@ export default function OfferCard({
           </motion.div>
         )} */}
 
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5 pb-4 pt-9">
+        <CardHeader className="relative bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pb-5 pt-10 rounded-t-2xl">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-secondary/10 to-transparent rounded-tr-full" />
+          
           {/* Top Section: User Info & Status Badge */}
-          <div className="flex items-center justify-between gap-4 mb-4 ">
+          <div className="relative flex items-center justify-between gap-4 mb-5">
             <motion.div
               className="flex items-center gap-3"
               initial={{ opacity: 0, x: -20 }}
@@ -296,64 +304,79 @@ export default function OfferCard({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.1 + 0.2 }}
             >
-              <Badge className={`${getStatusColor(offer.status_offer)} text-white px-4 py-2 text-sm font-semibold capitalize shadow-md`}>
+              <Badge className={`${getStatusColor(offer.status_offer)} text-white px-4 py-2.5 text-sm font-semibold capitalize shadow-lg rounded-xl`}>
                 {t(offer.status_offer)}
               </Badge>
             </motion.div>
           </div>
 
           {/* Info Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="relative grid grid-cols-2 gap-3">
             <motion.div
-              className="bg-background/60 backdrop-blur-sm rounded-lg p-3"
+              className="bg-background/70 backdrop-blur-sm rounded-xl p-3.5 border border-border/30 hover:border-primary/30 transition-colors duration-300"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 + 0.1 }}
+              whileHover={{ y: -2 }}
             >
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <Calendar className="w-3 h-3" />
-                <span>{t("Date") || "Date"}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
+                <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Calendar className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <span className="font-medium">{t("Date") || "Date"}</span>
               </div>
-              <div className="text-sm font-medium">
-                {offer.date_created ? new Date(offer.date_created).toLocaleDateString("en-US") : ""}
+              <div className="text-sm font-semibold text-foreground pl-8">
+                {offer.date_created ? new Date(offer.date_created).toLocaleDateString("en-US", { 
+                  month: 'short', 
+                  day: 'numeric',
+                  year: 'numeric'
+                }) : ""}
               </div>
             </motion.div>
 
             {offer.status_offer !== "completed" && offer.status_offer !== "rejected" && (
               <motion.div
-                className="bg-background/60 backdrop-blur-sm rounded-lg p-3"
+                className="bg-background/70 backdrop-blur-sm rounded-xl p-3.5 border border-border/30 hover:border-primary/30 transition-colors duration-300"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 + 0.2 }}
+                whileHover={{ y: -2 }}
               >
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                  <ArrowRightLeft className="w-3 h-3" />
-                  <span>{t("Items") || "Items"}</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
+                  <div className="w-6 h-6 rounded-lg bg-secondary/10 flex items-center justify-center">
+                    <ArrowRightLeft className="w-3.5 h-3.5 text-secondary" />
+                  </div>
+                  <span className="font-medium">{t("Items") || "Items"}</span>
                 </div>
-                <div className="text-sm font-medium">
-                  {itemsOffer
+                <div className="text-sm font-semibold text-foreground pl-8">
+                  <span className="text-primary">{itemsOffer
                     .filter((u) => u.offered_by === myId && u.offer_id === offer.id)
-                    .reduce((sum, item) => sum + (item.quantity || 1), 0)}{" "}
-                  ↔️{" "}
-                  {itemsOffer
+                    .reduce((sum, item) => sum + (item.quantity || 1), 0)}</span>
+                  {" "}
+                  <span className="text-muted-foreground">↔</span>
+                  {" "}
+                  <span className="text-secondary">{itemsOffer
                     .filter((u) => u.offered_by !== myId && u.offer_id === offer.id)
-                    .reduce((sum, item) => sum + (item.quantity || 1), 0)}
+                    .reduce((sum, item) => sum + (item.quantity || 1), 0)}</span>
                 </div>
               </motion.div>
             )}
 
             {offer.cash_adjustment && (
               <motion.div
-                className="bg-background/60 backdrop-blur-sm rounded-lg p-3 col-span-2"
+                className="bg-background/70 backdrop-blur-sm rounded-xl p-3.5 col-span-2 border border-border/30 hover:border-primary/30 transition-colors duration-300"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 + 0.3 }}
+                whileHover={{ y: -2 }}
               >
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                  <Scale className="w-3 h-3" />
-                  <span>{t("CashAdjustment") || "Cash Adjustment"}</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
+                  <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                    <Scale className="w-3.5 h-3.5 text-amber-500" />
+                  </div>
+                  <span className="font-medium">{t("CashAdjustment") || "Cash Adjustment"}</span>
                 </div>
-                <div className={`text-sm font-bold ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment, isReceived).colorClass}`}>
+                <div className={`text-sm font-bold pl-8 ${handlePriceDifference(offer.from_user_id, offer.cash_adjustment, isReceived).colorClass}`}>
                   {handlePriceDifference(offer.from_user_id, offer.cash_adjustment, isReceived).text}
                 </div>
               </motion.div>
@@ -361,7 +384,7 @@ export default function OfferCard({
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-6">
           {["pending", "accepted"].includes(offer.status_offer) ? (
             <>
               <motion.div
@@ -372,13 +395,16 @@ export default function OfferCard({
               >
                 {/* My Items */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-sm">
                       <span className="text-sm font-bold text-primary">
                         {myItems.reduce((sum, item) => sum + (item.quantity || 1), 0)}
                       </span>
                     </div>
-                    <h4 className="font-bold text-lg text-start">{t("Myitems") || "My items"}</h4>
+                    <div>
+                      <h4 className="font-bold text-base text-start">{t("Myitems") || "My items"}</h4>
+                      <p className="text-xs text-muted-foreground">{t("ItemsYouOffer") || "Items you offer"}</p>
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {myItems.map((item, itemIndex) => (
@@ -410,34 +436,47 @@ export default function OfferCard({
                 <div className="hidden lg:flex flex-col items-center justify-center py-8">
                   <motion.div
                     className="flex flex-col items-center gap-3"
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                   >
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
-                      <ArrowRightLeft className="h-6 w-6 text-white" />
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-2xl blur-xl opacity-50" />
+                      <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-secondary flex items-center justify-center shadow-lg">
+                        <ArrowRightLeft className="h-7 w-7 text-white" />
+                      </div>
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground">{t("Exchange") || "Exchange"}</span>
+                    <span className="text-xs font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">{t("Exchange") || "Exchange"}</span>
                   </motion.div>
                 </div>
 
                 {/* Mobile Divider */}
-                <div className="lg:hidden flex items-center gap-3 my-4">
-                  <Separator className="flex-1" />
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
-                    <ArrowRightLeft className="h-5 w-5 text-white" />
-                  </div>
-                  <Separator className="flex-1" />
+                <div className="lg:hidden flex items-center gap-4 my-6">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                  <motion.div 
+                    className="relative"
+                    animate={{ rotate: [0, 180, 360] }}
+                    transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-xl blur-lg opacity-40" />
+                    <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                      <ArrowRightLeft className="h-5 w-5 text-white" />
+                    </div>
+                  </motion.div>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                 </div>
 
                 {/* Their Items */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
-                      <span className="text-sm font-bold text-accent">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center shadow-sm">
+                      <span className="text-sm font-bold text-secondary">
                         {theirItems.reduce((sum, item) => sum + (item.quantity || 1), 0)}
                       </span>
                     </div>
-                    <h4 className="font-bold text-lg text-start">{t("Theiritems") || "Their Items"}</h4>
+                    <div>
+                      <h4 className="font-bold text-base text-start">{t("Theiritems") || "Their Items"}</h4>
+                      <p className="text-xs text-muted-foreground">{t("ItemsYouReceive") || "Items you receive"}</p>
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {theirItems.map((item, itemIndex) => (
@@ -489,7 +528,7 @@ export default function OfferCard({
             <OfferRejected />
           )}
 
-          <Separator className="my-4" />
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-4" />
 
           {/* Action Buttons */}
           <OfferActions
@@ -516,15 +555,24 @@ function OfferChat({ offer, chatMessages, message, onMessageChange, onSendMessag
       transition={{ delay: 0.5 }}
       className="w-full"
     >
-      <Card className="mb-6 mt-2 hover:shadow-md transition-shadow w-full">
-        <CardHeader className="px-4 py-3">
-          <motion.div className="flex items-center" whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400 }}>
-            <MessageCircle className="h-5 w-5 mr-2" />
-            {t("ChatwithSwapPartner") || "Chat with Swap Partner"}
+      <Card className="mb-6 mt-2 border border-border/50 bg-background/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden w-full">
+        <CardHeader className="px-5 py-4 bg-gradient-to-r from-primary/5 to-secondary/5 border-b border-border/30">
+          <motion.div 
+            className="flex items-center gap-3" 
+            whileHover={{ x: 5 }} 
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <MessageCircle className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h4 className="font-semibold">{t("ChatwithSwapPartner") || "Chat with Swap Partner"}</h4>
+              <p className="text-xs text-muted-foreground">{t("SendMessages") || "Send messages to coordinate"}</p>
+            </div>
           </motion.div>
         </CardHeader>
-        <CardContent className="px-4 py-3">
-          <ScrollArea className="h-40 w-full border rounded-md p-1 mb-4">
+        <CardContent className="p-4">
+          <ScrollArea className="h-48 w-full rounded-xl border border-border/30 bg-muted/30 p-3 mb-4">
             <motion.div className="space-y-3" variants={containerVariants} initial="hidden" animate="visible">
               <AnimatePresence>
                 {chatMessages
@@ -540,17 +588,21 @@ function OfferChat({ offer, chatMessages, message, onMessageChange, onSendMessag
                       className={`flex ${msg.from_user_id === myUserId ? "justify-end" : "justify-start"}`}
                     >
                       <motion.div
-                        className={`max-w-xs rounded-lg p-3 ${
+                        className={`max-w-[80%] rounded-2xl px-4 py-2.5 shadow-sm ${
                           msg.from_user_id === myUserId
-                            ? "bg-primary/50 text-primary-foreground ml-auto mx-1"
-                            : "bg-primary/60"
+                            ? "bg-primary text-primary-foreground rounded-br-md"
+                            : "bg-background border border-border/50 rounded-bl-md"
                         }`}
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={{ scale: 1.01 }}
                         transition={{ type: "spring", stiffness: 400 }}
                       >
                         <div className="text-sm">{msg.message}</div>
-                        <div className="text-xs opacity-70 mt-1">
-                          {new Date(msg.date_created).toLocaleString("en-US")}
+                        <div className={`text-[10px] mt-1 ${msg.from_user_id === myUserId ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                          {new Date(msg.date_created).toLocaleString("en-US", {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          })}
                         </div>
                       </motion.div>
                     </motion.div>
@@ -558,20 +610,20 @@ function OfferChat({ offer, chatMessages, message, onMessageChange, onSendMessag
               </AnimatePresence>
             </motion.div>
           </ScrollArea>
-          <div className="flex space-x-2 w-full">
+          <div className="flex gap-2 w-full">
             <Input
-              placeholder={t("Type your message...")}
+              placeholder={t("Type your message...") || "Type your message..."}
               value={message}
               onChange={(e) => onMessageChange?.(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && onSendMessage?.(offer.from_user_id, offer.id)}
-              className="flex-1 w-full"
+              className="flex-1 w-full rounded-xl border-border/50 bg-background/50 focus:bg-background transition-colors"
             />
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Button
                 onClick={() => onSendMessage?.(offer.from_user_id, offer.id)}
                 size="icon"
                 disabled={!message.trim()}
-                className="flex-shrink-0"
+                className="flex-shrink-0 h-10 w-10 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -596,7 +648,7 @@ function OfferCompleted({ offer, userSwaps, myUserId, isReceived }) {
 
   return (
     <motion.div
-      className="text-center text-green-600"
+      className="text-center py-6"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -605,18 +657,25 @@ function OfferCompleted({ offer, userSwaps, myUserId, isReceived }) {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
+        className="relative inline-block mb-4"
       >
-        <ShieldCheck className="h-8 w-8 mx-auto mb-2" />
+        <div className="absolute inset-0 bg-green-500/30 rounded-full blur-2xl" />
+        <div className="relative w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+          <ShieldCheck className="h-10 w-10 text-white" />
+        </div>
       </motion.div>
-      <h3 className="text-xl font-semibold mb-2">
+      <h3 className="text-2xl font-bold mb-2 text-green-600 dark:text-green-400">
         {t("SwapCompletedSuccessfully") || "Swap Completed Successfully!"}
       </h3>
-      <p className="text-muted-foreground mb-4">
+      <p className="text-muted-foreground mb-4 max-w-md mx-auto">
         {t("Thankyouforcompletingtheswap") || "Thank you for completing the swap!"}
       </p>
-      <p className="text-muted-foreground mb-4">
-        {t("Contactphone") || "Contact phone"}: {userToContact.phone_number || t("Nophoneavailable") || "No phone available"}
-      </p>
+      <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-xl mb-6">
+        <Phone className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium">
+          {t("Contactphone") || "Contact"}: {userToContact.phone_number || t("Nophoneavailable") || "No phone available"}
+        </span>
+      </div>
       <SwapRating
         from_user_id={myUserId}
         to_user_id={userToRate.id}
@@ -634,7 +693,7 @@ function OfferRejected() {
 
   return (
     <motion.div
-      className="text-center text-destructive"
+      className="text-center py-6"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -643,12 +702,16 @@ function OfferRejected() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
+        className="relative inline-block mb-4"
       >
-        <Trash2 className="h-8 w-8 mx-auto my-2 hover:scale-110 cursor-pointer" />
+        <div className="absolute inset-0 bg-destructive/30 rounded-full blur-2xl" />
+        <div className="relative w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-destructive to-red-600 flex items-center justify-center shadow-lg shadow-destructive/30">
+          <Trash2 className="h-10 w-10 text-white" />
+        </div>
       </motion.div>
-      <h3 className="text-xl font-semibold mb-2">{t("SwapRejected") || "Swap Rejected"}</h3>
-      <p className="text-muted-foreground mb-4">
-        {t("Theswapwasrejectedbyyou") || "The swap was rejected by you."}
+      <h3 className="text-2xl font-bold mb-2 text-destructive">{t("SwapRejected") || "Swap Rejected"}</h3>
+      <p className="text-muted-foreground max-w-md mx-auto">
+        {t("Theswapwasrejectedbyyou") || "This swap was rejected and is no longer active."}
       </p>
     </motion.div>
   )
@@ -660,29 +723,38 @@ function OfferActions({ offer, isReceived, onAcceptSwap, onRejectSwap, onComplet
 
   const buttonVariants = {
     hover: {
-      scale: 1.05,
+      scale: 1.03,
       transition: { type: "spring", stiffness: 400, damping: 10 },
     },
-    tap: { scale: 0.95 },
+    tap: { scale: 0.97 },
   }
 
   if (isReceived && offer.status_offer === "pending") {
     return (
       <motion.div
-        className="flex justify-around gap-2 mt-4"
+        className="flex flex-col sm:flex-row justify-center gap-3 mt-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
-        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-          <Button size="sm" onClick={() => onAcceptSwap?.(offer.id)} className="flex items-center gap-1">
-            <Handshake className="h-4 w-4" />
+        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 sm:flex-initial">
+          <Button 
+            size="lg" 
+            onClick={() => onAcceptSwap?.(offer.id)} 
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/25 rounded-xl px-6"
+          >
+            <Handshake className="h-5 w-5" />
             {t("AcceptSwap") || "Accept Swap"}
           </Button>
         </motion.div>
-        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-          <Button variant="secondary" size="sm" onClick={() => onRejectSwap?.(offer.id)} className="flex items-center gap-1">
-            <Trash2 className="h-4 w-4" />
+        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 sm:flex-initial">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => onRejectSwap?.(offer.id)} 
+            className="w-full sm:w-auto flex items-center justify-center gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl px-6"
+          >
+            <Trash2 className="h-5 w-5" />
             {t("RejectSwap") || "Reject Swap"}
           </Button>
         </motion.div>
@@ -693,21 +765,28 @@ function OfferActions({ offer, isReceived, onAcceptSwap, onRejectSwap, onComplet
   if (isReceived && offer.status_offer === "accepted") {
     return (
       <motion.div
-        className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+        className="mb-4 p-5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <div className="flex items-center gap-2">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          >
-            <Loader className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-          </motion.div>
-          <p className="text-yellow-800 dark:text-yellow-200 font-medium">
-            {t("YouarewaitingtocompletswapfromanotherUser") || "You are waiting to complete swap from another user"}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            >
+              <Loader className="h-5 w-5 text-amber-500" />
+            </motion.div>
+          </div>
+          <div>
+            <p className="text-amber-700 dark:text-amber-300 font-semibold">
+              {t("WaitingForCompletion") || "Waiting for completion"}
+            </p>
+            <p className="text-sm text-amber-600/80 dark:text-amber-400/80">
+              {t("YouarewaitingtocompletswapfromanotherUser") || "The other user needs to complete the swap"}
+            </p>
+          </div>
         </div>
       </motion.div>
     )
@@ -716,19 +795,19 @@ function OfferActions({ offer, isReceived, onAcceptSwap, onRejectSwap, onComplet
   if (!isReceived && offer.status_offer === "pending") {
     return (
       <motion.div
-        className="flex justify-around gap-2 mt-4"
+        className="flex justify-center gap-3 mt-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
           <Button
-            variant="destructive"
-            size="sm"
+            variant="outline"
+            size="lg"
             onClick={() => onRejectSwap?.(offer.id)}
-            className="flex items-center gap-1"
+            className="flex items-center gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl px-6"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
             {t("cancelSwap") || "Cancel Swap"}
           </Button>
         </motion.div>
@@ -739,14 +818,18 @@ function OfferActions({ offer, isReceived, onAcceptSwap, onRejectSwap, onComplet
   if (!isReceived && offer.status_offer === "accepted") {
     return (
       <motion.div
-        className="flex justify-around gap-2 mt-4"
+        className="flex justify-center gap-3 mt-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
         <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-          <Button size="sm" onClick={() => onCompleteSwap?.(offer.id)} className="flex items-center gap-1">
-            <ShieldCheck className="h-4 w-4" />
+          <Button 
+            size="lg" 
+            onClick={() => onCompleteSwap?.(offer.id)} 
+            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 rounded-xl px-8"
+          >
+            <ShieldCheck className="h-5 w-5" />
             {t("CompleteSwap") || "Complete Swap"}
           </Button>
         </motion.div>

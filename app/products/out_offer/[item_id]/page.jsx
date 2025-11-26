@@ -11,7 +11,7 @@ import { ProductDescription } from "@/components/products/productView/ProductDes
 import { SellerInfo } from "@/components/products/productView/SellerInfo"
 import { SwapButton } from "@/components/products/productView/SwapButton"
 import { ProductTabs } from "@/components/products/productView/ProductTabs"
-import { MapModal } from "@/components/products/productView/MapModal"
+import { MapModal } from "@/components/general/map-modal"
 import { useTranslations } from "@/lib/use-translations"
 import { getProductById } from "@/callAPI/products"
 import { decodedToken, getCookie, validateAuth, setTarget, removeTarget } from "@/callAPI/utiles"
@@ -465,6 +465,7 @@ export default function ProductPage() {
           isOpen={isMapOpen}
           onClose={() => setIsMapOpen(false)}
           geoLocation={product.geo_location}
+          title={t("productLocation") || "Product Location"}
         />
       </motion.div>
     </div>

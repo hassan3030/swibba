@@ -83,6 +83,7 @@ export function ItemCardProfile({
   translations,
   showSwitchHeart = true,
   LinkItemOffer,
+  user_id: itemOwnerId, // Owner of this item
 }) {
   const { t } = useTranslations()
   const { toast } = useToast()
@@ -93,6 +94,7 @@ export function ItemCardProfile({
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState(null)
   let linkToItemOffer = LinkItemOffer ? `/products/in_offer/${id}` : `/products/out_offer/${id}`  // Advanced filter states
 
   // const getDataImage = async () => {
@@ -238,10 +240,17 @@ export function ItemCardProfile({
         const token = await getCookie()
         if (isMounted) {
           setIsAuthenticated(Boolean(token))
+          if (token) {
+            const decoded = await decodedToken()
+            if (decoded?.id) {
+              setCurrentUserId(decoded.id)
+            }
+          }
         }
       } catch (error) {
         if (isMounted) {
           setIsAuthenticated(false)
+          setCurrentUserId(null)
         }
       }
     }
@@ -341,8 +350,8 @@ export function ItemCardProfile({
                   </motion.div>
               </AnimatePresence>
 
-              {/* Heart button */}
-              {showSwitchHeart && isAuthenticated && (
+              {/* Heart button - Hide for user's own items */}
+              {showSwitchHeart && isAuthenticated && (!currentUserId || currentUserId !== itemOwnerId) && (
                 <motion.button
                   type="button"
                   className="absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-md rounded-full p-2.5 hover:bg-background transition-all shadow-lg border border-border/40"
@@ -432,8 +441,8 @@ export function ItemCardProfile({
             </div>
           </CardContent>
 
-          {/* Swap Button */}
-          {status_swap == "available" && showbtn && (
+          {/* Swap Button - Hide if item belongs to current user */}
+          {status_swap == "available" && showbtn && (!currentUserId || currentUserId !== itemOwnerId) && (
             <motion.div
               className="p-3 sm:p-4 pt-0 flex-shrink-0"
               initial={{ opacity: 0, y: 20 }}

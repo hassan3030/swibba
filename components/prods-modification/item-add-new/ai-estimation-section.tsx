@@ -15,6 +15,7 @@ interface AiEstimationSectionProps {
   formData: any
   images: File[]
   t: (key: string) => string
+  totalImagesCount?: number
 }
 
 export function AiEstimationSection({
@@ -25,8 +26,10 @@ export function AiEstimationSection({
   formData,
   images,
   t,
+  totalImagesCount,
 }: AiEstimationSectionProps) {
   const hasEstimation = aiPriceEstimation !== null && aiPriceEstimation > 0
+  const displayImageCount = totalImagesCount ?? images.length
 
   return (
     <div className="space-y-6">
@@ -159,7 +162,7 @@ export function AiEstimationSection({
                       <ImageIcon className="h-3 w-3" />
                       {t("Photos") || "Photos"}:
                     </span>
-                    <span className="text-sm font-medium text-foreground">{images.length} {t("images") || "images"}</span>
+                    <span className="text-sm font-medium text-foreground">{displayImageCount} {t("images") || "images"}</span>
                   </div>
                 </div>
               </div>

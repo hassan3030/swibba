@@ -110,7 +110,7 @@ const FilterItemsPage = ({ params }) => {
     >
       <motion.div variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={itemVariants}>
-          <ProductsList items={products} />
+          <ProductsList items={products} hideOwnItems={true} />
         </motion.div>
       </motion.div>
     </motion.div>

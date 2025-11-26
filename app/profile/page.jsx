@@ -42,16 +42,21 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("")
   const [myUserId, setMyUserId] = useState(null)
 
-  // Fetch completed offers
+  // Fetch completed offers - count from actual offers with status "completed"
   const getCompletedOffers = async () => {
     try {
       const decoded = await decodedToken()
-      const completedOffers = await getCompletedOffer(decoded.id)
-      if (completedOffers.success) {
-        setCompletedOffersCount(completedOffers.count)
-      } else {
-        setCompletedOffersCount(0)
-      }
+      // Get both sent and received offers to count completed ones
+      const [sentOffers, receivedOffers] = await Promise.all([
+        getOfferById(decoded.id),
+        getOffeReceived(decoded.id)
+      ])
+      
+      const sentCompleted = (sentOffers?.data || []).filter(o => o.status_offer === "completed").length
+      const receivedCompleted = (receivedOffers?.data || []).filter(o => o.status_offer === "completed").length
+      
+      // Count unique completed offers (an offer appears in both sent and received for different users)
+      setCompletedOffersCount(sentCompleted + receivedCompleted)
     } catch (error) {
       setCompletedOffersCount(0)
     }
@@ -150,10 +155,8 @@ export default function ProfilePage() {
       setReceivedSwapItems(items)
       setReceivedItemsOffer(offerItems)
       
-      const filteredOffers = offersReceived.data.filter(
-        (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
-      )
-      setrecievedOffers(filteredOffers.length)
+      // Set total count of all received offers
+      setrecievedOffers(offersReceived.data?.length || 0)
     } catch (error) {
       setrecievedOffers(0)
       setReceivedOffers([])
@@ -204,11 +207,9 @@ export default function ProfilePage() {
     setSentSwapItems(items)
     setSentItemsOffer(offerItems)
 
+    // Set total count of all sent offers
     if (offers.success && Array.isArray(offers.data)) {
-      const filteredOffers = offers.data.filter(
-        (offer) => offer.status_offer === "pending" || offer.status_offer === "accepted"
-      )
-      setSentOffersCount(filteredOffers.length)
+      setSentOffersCount(offers.data.length)
     } else {
       setSentOffersCount(0)
     }
@@ -281,10 +282,11 @@ export default function ProfilePage() {
         user={enhancedUser} 
         rate={rate} 
         completedOffersCount={completedOffersCount}
+        myAvailableItems={myAvailableItems}
       />
 
       {/* Stats Grid and Content */}
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16">
         <ProfileStatsGrid
           myAvailableItems={myAvailableItems}
           completedOffersCount={completedOffersCount}
@@ -301,6 +303,13 @@ export default function ProfilePage() {
           sentOffersCount={sentOffersCount}
           recievedOffers={recievedOffers}
           showSwitchHeart={showSwitchHeart}
+          // Pass swap data for the table
+          sentOffers={sentOffers}
+          receivedOffers={receivedOffers}
+          sentSwapItems={sentSwapItems}
+          receivedSwapItems={receivedSwapItems}
+          sentUserSwaps={sentUserSwaps}
+          receivedUserSwaps={receivedUserSwaps}
         />
       </div>
     </div>

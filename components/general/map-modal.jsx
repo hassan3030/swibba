@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/language-provider"
 import { useTranslations } from "@/lib/use-translations"
 
-export function MapModal({ isOpen, onClose, geoLocation }) {
+export function MapModal({ isOpen, onClose, geoLocation, title, subtitle }) {
   const { isRTL } = useLanguage()
   const { t } = useTranslations()
 
@@ -46,11 +46,9 @@ export function MapModal({ isOpen, onClose, geoLocation }) {
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                      {t("Location") || "Location"}
+                      {title || t("Location") || "Location"}
                     </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      {t("productLocation") || "Product Location"}
-                    </p>
+                  
                   </div>
                 </div>
                 <Button
@@ -77,7 +75,7 @@ export function MapModal({ isOpen, onClose, geoLocation }) {
                   loading="lazy"
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
-                  title={t("productLocation") || "Product Location"}
+                  title={title || t("Location") || "Location"}
                   scrolling="yes"
                 />
               </div>

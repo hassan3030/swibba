@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ItemsListSkeleton } from "@/components/loading/items-list-skeleton"
 import { useLanguage } from "@/lib/language-provider"
@@ -16,6 +16,7 @@ import { useProductsData, useStaticData } from "./useProductsData"
 import { useFilters } from "./useFilters"
 import { containerVariants, filterVariants, paginationVariants } from "./animations"
 import { X } from "lucide-react"
+import { getCookie, decodedToken } from "@/callAPI/utiles"
 
 const ITEMS_PER_PAGE = 12
 
@@ -29,14 +30,52 @@ export function ProductsList({
   LinkItemOffer = false,
   totalCount = null,
   skipFetch = false,
+  hideOwnItems = false,
 }) {
   // Language
   const { isRTL } = useLanguage()
   const router = useRouter()
   
+  // Current user ID for filtering own items
+  const [currentUserId, setCurrentUserId] = useState(null)
+  const [isUserLoaded, setIsUserLoaded] = useState(!hideOwnItems) // Skip loading if not hiding own items
+  
+  // Get current user ID on mount (only if hideOwnItems is true)
+  useEffect(() => {
+    if (!hideOwnItems) {
+      setIsUserLoaded(true)
+      return
+    }
+    
+    const getCurrentUser = async () => {
+      try {
+        const token = await getCookie()
+        if (token) {
+          const decoded = await decodedToken()
+          if (decoded?.id) {
+            setCurrentUserId(decoded.id)
+          }
+        }
+      } catch (error) {
+        setCurrentUserId(null)
+      } finally {
+        setIsUserLoaded(true)
+      }
+    }
+    getCurrentUser()
+  }, [hideOwnItems])
+  
   // Data loading
   const { allItems, isLoading, allItemsFetched, productsCount, setProductsCount } = useProductsData(items, skipFetch)
   const { allCategoriesData, allSubCategoriesData, allBrandsData, allModelsData } = useStaticData()
+  
+  // Filter out own items if hideOwnItems is true - memoized to prevent infinite loops
+  const itemsToFilter = useMemo(() => {
+    if (hideOwnItems && currentUserId) {
+      return allItems.filter(item => item.user_id !== currentUserId)
+    }
+    return allItems
+  }, [allItems, hideOwnItems, currentUserId])
   
   // State
   const [searchTerm, setSearchTerm] = useState("")
@@ -52,7 +91,7 @@ export function ProductsList({
   const [brandsOpen, setBrandsOpen] = useState(false)
   const [modelsOpen, setModelsOpen] = useState(false)
   
-  // Filtering
+  // Filtering - now using itemsToFilter instead of allItems
   const {
     filters,
     displayedItems,
@@ -63,7 +102,7 @@ export function ProductsList({
     toggleAllCategories,
     clearAllFilters,
     getActiveFiltersCount,
-  } = useFilters(allItems, category, searchTerm, defaultCategory, isRTL)
+  } = useFilters(itemsToFilter, category, searchTerm, defaultCategory, isRTL)
 
   // Update productsCount from filtered results
   useEffect(() => {
@@ -188,7 +227,7 @@ export function ProductsList({
       )}
 
       <AnimatePresence mode="wait">
-        {isLoading || isPaginationLoading ? (
+        {isLoading || isPaginationLoading || !isUserLoaded ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

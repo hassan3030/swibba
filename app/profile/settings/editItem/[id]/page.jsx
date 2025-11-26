@@ -1,44 +1,9 @@
 "use client"
 import { motion } from "framer-motion"
-import { ItemUpdate } from "@/components/prods-modification/item-update"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ItemUpdateNew } from "@/components/prods-modification/item-update-new"
 import { getProductById } from "@/callAPI/products"
-import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { useState, useEffect } from "react"
-import { mediaURL } from "@/callAPI/utiles";
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-}
-
-const buttonVariants = {
-  hover: {
-    scale: 1.05,
-    transition: { type: "spring", stiffness: 400, damping: 10 },
-  },
-  tap: { scale: 0.95 },
-}
 
 export default function EditItemPage({ params }) {
   const [item, setItem] = useState(null)
@@ -76,44 +41,27 @@ export default function EditItemPage({ params }) {
   }
 
   return (
-    <motion.div
-      className="container py-2"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <motion.div
-        className="mb-2 flex items-center gap-2 "
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        
-      </motion.div> 
+    <div className="min-h-screen bg-background dark:bg-gray-950">
+      {/* Modern Hero Section - Same as Add Item */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/50">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text mb-4">
+              {t("UpdateItem") || "Update Item"}
+            </h1>
+            <p className="text-lg text-foreground/70 leading-relaxed">
+              {t("Updatedetailedlistingtofindtheperfectswapforyouritem") ||
+                "Update your listing details to find the perfect swap for your item."}
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <motion.div className="mb-2 " variants={itemVariants} initial="hidden" animate="visible">
-        <motion.h1
-          className="text-3xl font-bold text-primary/90"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {t("Updateitem") || "Update Item"}
-        </motion.h1>
-        <motion.p
-          className="text-foreground/70"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          {t("Updatedetailedlistingtofindtheperfectswapforyouritem") ||
-            "Update a detailed listing to find the perfect swap for your item"}
-        </motion.p>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} >
-        {item && <ItemUpdate {...item} />}
-      </motion.div>
-    </motion.div>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {item && <ItemUpdateNew {...item} />}
+      </div>
+    </div>
   )
 }

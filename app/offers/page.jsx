@@ -1,503 +1,70 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getProductById } from "@/callAPI/products"
-import {
-  getOfferById,
-  getOfferItemsByOfferId,
-  rejectOfferById,
-  deleteOfferItemsById,
-  completedOfferById,
-  deleteFinallyOfferById,
-  getOffeReceived,
-  getAllMessage,
-  addMessage,
-  acceptedOfferById,
-} from "@/callAPI/swap"
-import { getUserById } from "@/callAPI/users"
-import { getCookie, decodedToken } from "@/callAPI/utiles"
+import { ArrowRightLeft, Loader, TrendingUp, Package } from "lucide-react"
 import { useTranslations } from "@/lib/use-translations"
-import { TbShoppingCartUp } from "react-icons/tb"
-import { BiCartDownload } from "react-icons/bi"
-import { Loader } from "lucide-react"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from "@/components/ui/dialog"
+import { useLanguage } from "@/lib/language-provider"
 import OfferCard from "@/components/offers/offer-card"
-import OfferStats from "@/components/offers/offer-stats"
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-const buttonVariants = {
-  hover: {
-    scale: 1.05,
-    transition: { type: "spring", stiffness: 400, damping: 10 },
-  },
-  tap: { scale: 0.95 },
-}
+import PageHeader from "@/components/general/page-header"
+import { StatCard, StatCardGrid } from "@/components/general/stat-card"
+import LoadingSpinner from "@/components/loading/loading-spinner"
+import {
+  DeleteItemDialog,
+  RejectSwapDialog,
+  CompleteSwapDialog,
+} from "@/components/offers/offer-dialogs"
+import OffersTabs from "@/components/offers/offers-tabs"
+import { useOffers } from "@/hooks/use-offers"
 
 export default function OffersPage() {
-  const [activeTab, setActiveTab] = useState(() => {
-    try {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("offers_active_tab")
-        if (saved === "received" || saved === "sent") {
-          return saved
-        }
-      }
-    } catch {}
-    return "received"
-  })
-  const [receivedOffers, setReceivedOffers] = useState([])
-  const [sentOffers, setSentOffers] = useState([])
-  const [receivedSwapItems, setReceivedSwapItems] = useState([])
-  const [sentSwapItems, setSentSwapItems] = useState([])
-  const [receivedUserSwaps, setReceivedUserSwaps] = useState([])
-  const [sentUserSwaps, setSentUserSwaps] = useState([])
-  const [receivedItemsOffer, setReceivedItemsOffer] = useState([])
-  const [sentItemsOffer, setSentItemsOffer] = useState([])
-  const [showDeleteItemDialog, setShowDeleteItemDialog] = useState(false)
-  const [showRejectSwapDialog, setShowRejectSwapDialog] = useState(false)
-  const [showCompleteDialog, setShowCompleteDialog] = useState(false)
-  const [pendingDelete, setPendingDelete] = useState({
-    idItem: null,
-    idOffer: null,
-    owner: null,
-    itemIdItself: null,
-    cashAdjustment: null,
-    isReceived: null,
-  })
-  const [pendingDeleteItem, setPendingDeleteItem] = useState({
-    offerItemId: null,
-    itemId: null,
-    offerId: null,
-    isReceived: null,
-  })
-  const [pendingCompleted, setPendingCompleted] = useState({
-    idOffer: null,
-    owner: null,
-  })
-  const [chatMessages, setChatMessages] = useState([])
-  const [message, setMessage] = useState("")
-  const [myUserId, setMyUserId] = useState()
-  const [isLoading, setIsLoading] = useState(true)
-  const [hiddenHints, setHiddenHints] = useState(new Set())
-  const [cashAdjustment, setCashAdjustment] = useState(null)
-
-  const router = useRouter()
   const { t } = useTranslations()
+  const { isRTL } = useLanguage()
 
-  // Restore last active tab from localStorage and persist on change
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("offers_active_tab")
-      if (saved !== "received" && saved !== "sent") {
-        localStorage.setItem("offers_active_tab", "received")
-      }
-    } catch {}
-  }, [])
-  useEffect(() => {
-    try {
-      localStorage.setItem("offers_active_tab", activeTab)
-    } catch {}
-  }, [activeTab])
+  const {
+    // State
+    activeTab,
+    receivedOffers,
+    sentOffers,
+    receivedSwapItems,
+    sentSwapItems,
+    receivedUserSwaps,
+    sentUserSwaps,
+    receivedItemsOffer,
+    sentItemsOffer,
+    showDeleteItemDialog,
+    showRejectSwapDialog,
+    showCompleteDialog,
+    pendingDelete,
+    pendingCompleted,
+    chatMessages,
+    message,
+    myUserId,
+    isLoading,
+    hiddenHints,
+    statusFilter,
 
-  const handleTabChange = useCallback((val) => {
-    setActiveTab((prev) => {
-      if (prev === val) return prev
-      try {
-        localStorage.setItem("offers_active_tab", val)
-      } catch {}
-      return val
-    })
-  }, [])
+    // Setters
+    setShowDeleteItemDialog,
+    setShowRejectSwapDialog,
+    setShowCompleteDialog,
+    setPendingDelete,
+    setPendingCompleted,
+    setMessage,
+    setHiddenHints,
+    setStatusFilter,
 
-  // Helper to normalize quantity
-  const _qty = (it) => Number(it?.quantity ?? it?.qty ?? it?.available_quantity ?? 1)
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "accepted":
-        return "bg-green-500"
-      case "pending":
-        return "bg-yellow-500"
-      case "completed":
-        return "bg-blue-500"
-      case "rejected":
-        return "bg-destructive"
-      default:
-        return "bg-gray-500"
-    }
-  }
-
-  const handlePriceDifference = (userId, cash, isReceived = false) => {
-    let text = ""
-    let colorClass = "text-gray-500"
-
-    if (isReceived) {
-      // For received offers, we are the receiver
-      if (userId === myUserId) {
-        if (cash < 0) {
-          text = `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-destructive"
-        } else if (cash > 0) {
-          text = `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-green-500"
-        } else {
-          text = `${t("Thepriceisequal") || "The price is equal"}`
-        }
-      } else {
-        if (cash > 0) {
-          text = `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-destructive"
-        } else if (cash < 0) {
-          text = `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-green-500"
-        } else {
-          text = `${t("Thepriceisequal") || "The price is equal"}`
-        }
-      } 
-    } else {
-      // For sent offers, we are the sender
-      if (userId === myUserId) {
-        if (cash > 0) {
-          text = `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-destructive"
-        } else if (cash < 0) {
-          text = `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-green-500"
-        } else {
-          text = `${t("Thepriceisequal") || "The price is equal"}`
-        }
-      } else {
-        if (cash < 0) {
-          text = `${t("Youpay") || "You pay"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-destructive"
-        } else if (cash > 0) {
-          text = `${t("Youget") || "You get"}: ${Math.abs(Math.ceil(cash))} ${t("LE") || "LE"}`
-          colorClass = "text-green-500"
-        } else {
-          text = `${t("Thepriceisequal") || "The price is equal"}`
-        }
-      }
-    }
-    return { text, colorClass }
-  }
-
-  const fetchUserId = async () => {
-    const { id } = await decodedToken()
-    setMyUserId(id)
-  }
-
-  // Fetch received offers
-  const getReceivedOffers = useCallback(async () => {
-    const token = await getCookie()
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
-
-    const offerItems = []
-    const items = []
-    const usersSwaper = []
-    const { id } = await decodedToken()
-
-    const offersReceived = await getOffeReceived(id)
-
-    for (const offer of offersReceived.data) {
-      const offerItem = await getOfferItemsByOfferId(offer.id)
-      const user_from = await getUserById(offer.from_user_id)
-      const user_to = await getUserById(offer.to_user_id)
-      usersSwaper.push(user_from.data, user_to.data)
-      if (offerItem?.success && Array.isArray(offerItem.data)) {
-        offerItems.push(...offerItem.data)
-      }
-    }
-
-    for (const item of offerItems) {
-      const product = await getProductById(item.item_id)
-      items.push({
-        ...product.data,
-        offer_item_id: item.id,
-        offered_by: item.offered_by,
-        offer_id: item.offer_id,
-        user_id: product.data.user_id,
-        quantity: item.quantity,
-      })
-    }
-
-    const uniqueUsers = Array.from(new Map(usersSwaper.map((user) => [user.id, user])).values())
-
-    setReceivedOffers(offersReceived.data)
-    setReceivedUserSwaps(uniqueUsers)
-    setReceivedSwapItems(items)
-    setReceivedItemsOffer(offerItems)
-  }, [])
-
-  // Fetch sent offers
-  const getSentOffers = useCallback(async () => {
-    const token = await getCookie()
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
-
-    const offerItems = []
-    const items = []
-    const usersSwaper = []
-    const { id } = await decodedToken()
-
-    const offers = await getOfferById(id)
-
-    for (const offer of offers.data) {
-      const offerItem = await getOfferItemsByOfferId(offer.id)
-      const user_from = await getUserById(offer.from_user_id)
-      const user_to = await getUserById(offer.to_user_id)
-      usersSwaper.push(user_from.data, user_to.data)
-      if (offerItem?.success && Array.isArray(offerItem.data)) {
-        offerItems.push(...offerItem.data)
-      }
-    }
-
-    for (const item of offerItems) {
-      const product = await getProductById(item.item_id)
-      items.push({
-        ...product.data,
-        offer_item_id: item.id,
-        offered_by: item.offered_by,
-        offer_id: item.offer_id,
-        quantity: item.quantity,
-      })
-    }
-
-    const uniqueUsers = Array.from(new Map(usersSwaper.map((user) => [user.id, user])).values())
-
-    setSentOffers(offers.data)
-    setSentUserSwaps(uniqueUsers)
-    setSentSwapItems(items)
-    setSentItemsOffer(offerItems)
-  }, [])
-
-  // Chat
-  const handleGetMessages = useCallback(async () => {
-    const messages = await getAllMessage()
-    setChatMessages(messages.data)
-  }, [])
-
-  const handleSendMessage = async (to_user_id, offer_id) => {
-    if (!message.trim()) return
-    await addMessage(message.trim(), to_user_id, offer_id)
-    setMessage("")
-    handleGetMessages()
-  }
-
-  // Delete handlers
-  const handleDeleteFinally = async (offerId, type) => {
-    try {
-      const deletedOffer = await deleteFinallyOfferById(offerId, type)
-      if (deletedOffer.success) {
-        toast({
-          title: t("successfully") || "Successfully",
-          description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
-        })
-        router.refresh()
-        if (type === "to") {
-          getReceivedOffers()
-        } else {
-          getSentOffers()
-        }
-      } else {
-        toast({
-          title: t("error") || "Error",
-          description: t("Failedtodeleteswap") || "Failed to delete swap",
-          variant: "destructive",
-        })
-      }
-    } catch (err) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtodeleteswap") || "Failed to delete swap",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleDeleteItem = async (offerItemId, itemId, isReceived) => {
-    const swapItems = isReceived ? receivedSwapItems : sentSwapItems
-    const offers = isReceived ? receivedOffers : sentOffers
-    const itemsOffer = isReceived ? receivedItemsOffer : sentItemsOffer
-
-    const item = swapItems.find((itm) => itm.id === itemId)
-    if (!item) return
-
-    const offer = offers.find((o) => o.id === item.offer_id)
-    if (!offer) return
-
-    const allOfferItemsAfterDelete = swapItems.filter((itm) => itm.offer_id === item.offer_id && itm.id !== itemId)
-    const senderId = offer.from_user_id
-    const senderCountAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by === senderId).length
-    const receiverCountAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by !== senderId).length
-
-    // If this is the last item for sender or receiver, show confirmation dialog
-    if (senderCountAfterDelete === 0 || receiverCountAfterDelete === 0) {
-      setPendingDeleteItem({
-        offerItemId,
-        itemId,
-        offerId: item.offer_id,
-        isReceived,
-      })
-      setShowDeleteItemDialog(true)
-      return
-    }
-
-    let newCashAdjustment = 0
-    const myItemsAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by === (isReceived ? offer.to_user_id : offer.from_user_id))
-    const theirItemsAfterDelete = allOfferItemsAfterDelete.filter((itm) => itm.offered_by !== (isReceived ? offer.to_user_id : offer.from_user_id))
-
-    const myTotal = myItemsAfterDelete.reduce((sum, itm) => {
-      const qty = _qty(itm)
-      return sum + (Number.parseFloat(itm.price || 0) || 0) * qty
-    }, 0)
-
-    const theirTotal = theirItemsAfterDelete.reduce((sum, itm) => {
-      const qty = _qty(itm)
-      return sum + (Number.parseFloat(itm.price || 0) || 0) * qty
-    }, 0)
-
-    newCashAdjustment = isReceived ? theirTotal - myTotal : myTotal - theirTotal
-
-    try {
-      await deleteOfferItemsById(offerItemId, itemId, newCashAdjustment, item.offer_id)
-      toast({
-        title: t("successfully") || "Successfully",
-        description: t("Itemdeletedfromswapsuccessfully") || "Item deleted from swap successfully",
-      })
-      if (isReceived) {
-        getReceivedOffers()
-      } else {
-        getSentOffers()
-      }
-    } catch (err) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtodeleteitem") || "Failed to delete item",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleDeleteItemConfirm = async () => {
-    try {
-      await rejectOfferById(pendingDeleteItem.offerId)
-      toast({
-        title: t("successfully") || "Successfully",
-        description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
-      })
-      setShowDeleteItemDialog(false)
-      if (pendingDeleteItem.isReceived) {
-        getReceivedOffers()
-      } else {
-        getSentOffers()
-      }
-      router.refresh()
-    } catch (err) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtodeleteswap") || "Failed to delete swap",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleDeleteSwap = async (swapId, isReceived) => {
-    try {
-      await rejectOfferById(swapId)
-      toast({
-        title: t("successfully") || "Successfully",
-        description: t("Swapdeletedsuccessfully") || "Swap deleted successfully",
-      })
-      if (isReceived) {
-        getReceivedOffers()
-      } else {
-        getSentOffers()
-      }
-      router.refresh()
-    } catch (err) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtodeleteswap") || "Failed to delete swap",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const getAcceptSwap = async (offerId) => {
-    const acceptSwap = await acceptedOfferById(offerId)
-    if (!acceptSwap) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtoacceptswap") || "Failed to accept swap",
-        variant: "destructive",
-      })
-      router.refresh()
-    } else {
-      toast({
-        title: t("successfully") || "Successfully",
-        description: t("Swap accepted successfully") || "Swap accepted successfully",
-      })
-      router.refresh()
-      getReceivedOffers()
-    }
-  }
-
-  const addCompletedSwap = async (offerId) => {
-    const completeSwap = await completedOfferById(offerId)
-    if (!completeSwap) {
-      toast({
-        title: t("error") || "Error",
-        description: t("Failedtocompleteswap") || "Failed to complete swap",
-        variant: "destructive",
-      })
-    } else {
-      toast({
-        title: t("successfully") || "Successfully",
-        description: t("Swapcompletedsuccessfully") || "Swap completed successfully",
-      })
-      router.refresh()
-      getSentOffers()
-    }
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      await fetchUserId()
-      await Promise.all([getReceivedOffers(), getSentOffers(), handleGetMessages()])
-      setIsLoading(false)
-    }
-    fetchData()
-  }, [getReceivedOffers, getSentOffers, handleGetMessages])
+    // Handlers
+    handleTabChange,
+    getStatusColor,
+    handlePriceDifference,
+    handleSendMessage,
+    handleDeleteFinally,
+    handleDeleteItem,
+    handleDeleteItemConfirm,
+    handleDeleteSwap,
+    getAcceptSwap,
+    addCompletedSwap,
+    getSentOffers,
+    router,
+  } = useOffers()
 
   // Render offer card component
   const renderOfferCard = (offer, index, isReceived) => {
@@ -550,259 +117,120 @@ export default function OffersPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-muted-foreground">{t("loading") || "Loading..."}</p>
-        </motion.div>
+      <div className="min-h-screen py-4 bg-background dark:bg-gray-950 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
 
-  const currentOffers = activeTab === "received" ? receivedOffers : sentOffers
-  const currentSwapItems = activeTab === "received" ? receivedSwapItems : sentSwapItems
-  const currentUserSwaps = activeTab === "received" ? receivedUserSwaps : sentUserSwaps
-  const currentItemsOffer = activeTab === "received" ? receivedItemsOffer : sentItemsOffer
-
   return (
     <>
-      {/* Delete Item Dialog - When removing last item */}
-      <Dialog open={showDeleteItemDialog} onOpenChange={setShowDeleteItemDialog}>
-        <DialogContent>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            <DialogHeader className="mt-2">
-              <DialogTitle>{t("DeleteEntireSwapConfirmation") || "Delete Entire Swap?"}</DialogTitle>
-              <DialogDescription>
-                {t("Thisisthelastiteminyouroffer_deletingitwilldeletetheentireswap") ||
-                  "This is the last item in your offer. Deleting it will delete the entire swap. Are you sure?"}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-col gap-2 sm:flex-row mt-2">
-              <DialogClose asChild>
-                <Button
-                  variant="destructive"
-                  className="mx-2"
-                  onClick={handleDeleteItemConfirm}
-                >
-                  {t("DeleteEntireSwap") || "Delete Entire Swap"}
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button className="mx-2" variant="secondary" onClick={() => setShowDeleteItemDialog(false)}>
-                  {t("Cancel") || "Cancel"}
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </motion.div>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      <DeleteItemDialog
+        open={showDeleteItemDialog}
+        onOpenChange={setShowDeleteItemDialog}
+        onConfirm={handleDeleteItemConfirm}
+      />
 
-      {/* Reject Swap Dialog */}
-      <Dialog open={showRejectSwapDialog} onOpenChange={setShowRejectSwapDialog}>
-        <DialogContent>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            <DialogHeader className="mt-2">
-              <DialogTitle className="mt-2">{t("RejectSwapConfirmation") || "Reject Swap?"}</DialogTitle>
-              <DialogDescription className="mb-2">
-                {t("AreyousureyouwanttorejectthisswapThisactioncannotbeundone") ||
-                  "Are you sure you want to reject this swap? This action cannot be undone."}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-col gap-2 sm:flex-row mt-2">
-              <DialogClose asChild>
-                <Button
-                  variant="destructive"
-                  className="mx-2"
-                  onClick={async () => {
-                    await handleDeleteSwap(pendingDelete.idOffer, pendingDelete.isReceived)
-                    setShowRejectSwapDialog(false)
-                  }}
-                >
-                  {t("RejectSwap") || "Reject Swap"}
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button className="mx-2" variant="secondary" onClick={() => setShowRejectSwapDialog(false)}>
-                  {t("Cancel") || "Cancel"}
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </motion.div>
-        </DialogContent>
-      </Dialog>
+      <RejectSwapDialog
+        open={showRejectSwapDialog}
+        onOpenChange={setShowRejectSwapDialog}
+        onConfirm={async () => {
+          await handleDeleteSwap(pendingDelete.idOffer, pendingDelete.isReceived)
+          setShowRejectSwapDialog(false)
+        }}
+      />
 
-      {/* Complete Swap Dialog */}
-      <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
-        <DialogContent>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            <DialogHeader>
-              <DialogTitle>{t("CompleteSwap") || "Complete Swap"}</DialogTitle>
-              <DialogDescription>
-                <ul>
-                  <li>{t("AreyousureyouwanttoCompletethisswap") || "Are you sure you want to Complete this swap?"}</li>
-                  <li>
-                    {t("Ifyoucompletetheswapyouwillnotbeabletoundothisaction") ||
-                      "If you complete the swap,you will not be able to undo this action."}
-                  </li>
-                  <li>{t("Chatwillbeclosed.") || "Chat will be closed."}</li>
-                  <li>{t("Itemswillberemoved") || "Items will be removed."}</li>
-                </ul>
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button
-                  variant="secondary"
-                  onClick={async () => {
-                    await addCompletedSwap(pendingCompleted.idOffer)
-                    setShowCompleteDialog(false)
-                    router.refresh()
-                    getSentOffers()
-                  }}
-                >
-                  {t("Complete") || "Complete"}
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    setShowCompleteDialog(false)
-                    router.refresh()
-                    getSentOffers()
-                  }}
-                >
-                  {t("Cancel") || "Cancel"}
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </motion.div>
-        </DialogContent>
-      </Dialog>
+      <CompleteSwapDialog
+        open={showCompleteDialog}
+        onOpenChange={setShowCompleteDialog}
+        onConfirm={async () => {
+          await addCompletedSwap(pendingCompleted.idOffer)
+          setShowCompleteDialog(false)
+          router.refresh()
+          getSentOffers()
+        }}
+      />
 
-      <motion.div
-        className="min-h-screen bg-background dark:bg-gray-950"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/10 shadow-sm">
-              <TabsTrigger value="received" className="flex items-center gap-2 ">
-                <BiCartDownload className="h-4 w-4" />
-                {t("Received") || "Received"} ({receivedOffers.length})
-              </TabsTrigger>
-              <TabsTrigger value="sent" className="flex items-center gap-2">
-                <TbShoppingCartUp className="h-4 w-4" />
-                {t("Sent") || "Sent"} ({sentOffers.length})
-              </TabsTrigger>
-            </TabsList>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 dark:from-gray-950 dark:via-gray-950 dark:to-primary/10">
+        {/* Hero Header Section */}
+        <PageHeader
+          icon={ArrowRightLeft}
+          title={isRTL ? "عروضك" : "Your Offers"}
+          description={
+            isRTL
+              ? "إدارة جميع مبادلاتك في مكان واحد. تابع العروض المستلمة والمرسلة وأكمل عمليات التبادل بسهولة."
+              : "Manage all your swaps in one place. Track received and sent offers and complete exchanges easily."
+          }
+          iconAnimation="flip"
+        />
 
-            {/* Swap Summary Stats */}
-            <OfferStats
-              offers={currentOffers}
-              icon={activeTab === "received" ? BiCartDownload : TbShoppingCartUp}
-              label={activeTab === "received" ? (t("AllNotifications") || "All Notifications") : (t("AllSwaps") || "All Swaps")}
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          {/* Quick Stats Cards */}
+          <StatCardGrid className="mb-8">
+            <StatCard
+              icon={Package}
+              value={receivedOffers.length + sentOffers.length}
+              label={t("TotalOffers") || "Total Offers"}
+              color="text-primary"
+              bgColor="bg-primary/10"
+              borderColor="border-primary/20"
+              glowColor="from-primary/20 to-primary/10"
             />
+            <StatCard
+              icon={Loader}
+              value={
+                [...receivedOffers, ...sentOffers].filter(
+                  (o) => o.status_offer === "pending"
+                ).length
+              }
+              label={t("Pending") || "Pending"}
+              color="text-yellow-500"
+              bgColor="bg-yellow-500/10"
+              borderColor="border-yellow-500/20"
+              glowColor="from-yellow-500/20 to-yellow-500/10"
+            />
+            <StatCard
+              icon={TrendingUp}
+              value={
+                [...receivedOffers, ...sentOffers].filter(
+                  (o) => o.status_offer === "accepted"
+                ).length
+              }
+              label={t("Active") || "Active"}
+              color="text-green-500"
+              bgColor="bg-green-500/10"
+              borderColor="border-green-500/20"
+              glowColor="from-green-500/20 to-green-500/10"
+            />
+            <StatCard
+              icon={ArrowRightLeft}
+              value={
+                [...receivedOffers, ...sentOffers].filter(
+                  (o) => o.status_offer === "completed"
+                ).length
+              }
+              label={t("Completed") || "Completed"}
+              color="text-blue-500"
+              bgColor="bg-blue-500/10"
+              borderColor="border-blue-500/20"
+              glowColor="from-blue-500/20 to-blue-500/10"
+            />
+          </StatCardGrid>
 
-            {/* Received Offers Tab */}
-            <TabsContent value="received" className="mt-0 pb-6">
-              <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                <AnimatePresence mode="popLayout">
-                  {[...receivedOffers]
-                    .sort((a, b) => new Date(b.date_created) - new Date(a.date_created))
-                    .map((offer, index) => renderOfferCard(offer, index, true))}
-                </AnimatePresence>
-
-                {receivedOffers.length === 0 && (
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <Card className="p-12 text-center mt-8">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-                      >
-                        <BiCartDownload className="h-16 w-16 mx-auto mb-4 text-primary/90" />
-                      </motion.div>
-                      <h3 className="text-xl font-semibold mb-2">{t("noRecivedOffers") || "No Received Offers"}</h3>
-                      <p className="text-muted-foreground">
-                        {t("YoureallcaughtupNewnotificationswillappearhere") ||
-                          "You're all caught up! New notifications will appear here."}
-                      </p>
-                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                        <Button variant="outline" className="mt-4" onClick={() => router.push("/products")}>
-                          {t("MakeSwap") || "Make Swap"}
-                        </Button>
-                      </motion.div>
-                    </Card>
-                  </motion.div>
-                )}
-              </motion.div>
-            </TabsContent>
-
-            {/* Sent Offers Tab */}
-            <TabsContent value="sent" className="mt-0 pb-6">
-              <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                <AnimatePresence mode="popLayout">
-                  {[...sentOffers]
-                    .sort((a, b) => new Date(b.date_created) - new Date(a.date_created))
-                    .map((offer, index) => renderOfferCard(offer, index, false))}
-                </AnimatePresence>
-
-                {sentOffers.length === 0 && (
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <Card className="p-12 text-center mt-8">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-                      >
-                        <TbShoppingCartUp className="h-16 w-16 mx-auto mb-4 text-primary/90" />
-                      </motion.div>
-                      <h3 className="text-xl font-semibold mb-2">{t("NoCart") || "No offers up till now"}</h3>
-                      <p className="text-muted-foreground">
-                        {t("YoureallcaughtupNewAddincartwillappearhere") ||
-                          "You're all caught up! New Add in cart items offers will appear here."}
-                      </p>
-                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                        <Button variant="outline" className="mt-4" onClick={() => router.push("/products")}>
-                          {t("MakeSwap") || "Make Swap"}
-                        </Button>
-                      </motion.div>
-                    </Card>
-                  </motion.div>
-                )}
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+          {/* Tabs */}
+          <OffersTabs
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            receivedOffers={receivedOffers}
+            sentOffers={sentOffers}
+            renderOfferCard={renderOfferCard}
+          />
         </div>
-      </motion.div>
+      </div>
     </>
   )
 }

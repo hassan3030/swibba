@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,7 @@ import { Star, MapPin, Verified, BadgeX, Clock, Settings, Package } from "lucide
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
+import { MapModal } from "@/components/general/map-modal"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -27,9 +29,11 @@ const avatarVariants = {
   }
 }
 
-export function ProfileHeroSection({ user, rate, completedOffersCount }) {
+export function ProfileHeroSection({ user, rate, completedOffersCount, myAvailableItems = [] }) {
   const { t } = useTranslations()
   const { isRTL } = useLanguage()
+  const [isMapOpen, setIsMapOpen] = useState(false)
+  const hasAvailableItems = Array.isArray(myAvailableItems) && myAvailableItems.length > 0
 
   const fullName = user?.first_name && user?.last_name 
     ? `${user.first_name} ${user.last_name}`.trim() 
@@ -38,6 +42,10 @@ export function ProfileHeroSection({ user, rate, completedOffersCount }) {
   const location = user?.country || user?.city || user?.street
     ? `${isRTL ? user?.translations?.[1]?.country || "" : user?.translations?.[0]?.country || ""} ${isRTL ? user?.translations?.[1]?.city || "" : user?.translations?.[0]?.city || ""} ${isRTL ? user?.translations?.[1]?.street || "" : user?.translations?.[0]?.street || ""}`.trim()
     : t("noAddress") || "No address provided"
+
+  const fullStars = Math.floor(rate || 0)
+  const hasHalfStar = (rate || 0) % 1 >= 0.5
+  const hasGeoLocation = user?.geo_location?.lat && user?.geo_location?.lng
 
   return (
     <div className="relative bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pb-16 sm:pb-20">
@@ -100,18 +108,29 @@ export function ProfileHeroSection({ user, rate, completedOffersCount }) {
               </h1>
               
               <div className={`flex flex-wrap items-center gap-3 sm:gap-4 ${isRTL ? 'justify-end sm:justify-end' : 'justify-center sm:justify-start'}`}>
-                <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
+                <button 
+                  onClick={() => hasGeoLocation && setIsMapOpen(true)}
+                  className={`flex items-center gap-1.5 sm:gap-2 text-muted-foreground ${hasGeoLocation ? 'hover:text-primary cursor-pointer transition-colors' : ''}`}
+                  disabled={!hasGeoLocation}
+                >
                   <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="text-xs sm:text-sm line-clamp-1">{location}</span>
-                </div>
+                </button>
                 
-                {rate > 0 && (
-                  <div className="flex items-center gap-0.5 sm:gap-1">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs sm:text-sm font-semibold">{rate}</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">/5.0</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                        star <= fullStars
+                          ? "fill-yellow-400 text-yellow-400"
+                          : star === fullStars + 1 && hasHalfStar
+                          ? "fill-yellow-400/50 text-yellow-400"
+                          : "fill-none text-muted-foreground/30"
+                      }`}
+                    />
+                  ))}
+                </div>
                 
                 {user?.date_created && (
                   <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
@@ -128,21 +147,30 @@ export function ProfileHeroSection({ user, rate, completedOffersCount }) {
             <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start w-full sm:w-auto">
               <Button className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow" asChild>
                 <Link href="/profile/settings/editProfile">
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                   {t("editProfile") || "Edit Profile"}
                 </Link>
               </Button>
               
-              <Button variant="outline" className="w-full sm:w-auto shadow-sm" asChild>
-                <Link href="/profile/items">
-                  <Package className="mr-2 h-4 w-4" />
-                  {t("manageItems") || "Manage Items"}
-                </Link>
-              </Button>
+              {hasAvailableItems && (
+                <Button variant="outline" className="w-full sm:w-auto shadow-sm" asChild>
+                  <Link href="/profile/items">
+                    <Package className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                    {t("manageItems") || "Manage Items"}
+                  </Link>
+                </Button>
+              )}
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Map Modal */}
+      <MapModal 
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        geoLocation={user?.geo_location}
+      />
     </div>
   )
 }

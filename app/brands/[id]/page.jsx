@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { getProductsEnhanced } from "../../../callAPI/products.js";
 import { getAllBrands } from "../../../callAPI/static.js";
 import { ItemCardProfile } from "@/components/products/item-card-profile"; // Import ItemCardProfile
@@ -11,6 +12,8 @@ import ErrorDisplay from "@/components/general/error-display";
 import { useTranslations } from "@/lib/use-translations"
 import { useLanguage } from "@/lib/language-provider"
 import { ProductsList } from "@/components/products/productsPage";
+import { Button } from "@/components/ui/button";
+import { Tag, ArrowLeft, ShoppingBag } from "lucide-react";
 
 // Component for a single brand in the scrollable header
 const BrandHeaderCard = ({ brand, currentBrandId }) => {
@@ -138,13 +141,95 @@ const BrandItemsPage = () => {
       {/* <h1 className="text-3xl font-bold mb-6 text-center text-primary">{t('productsFor')}{currentBrandName}</h1> */}
       
       {products.length === 0 ? (
-        <p className="text-center text-gray-500 py-12">{t('noProductsFoundForBrand')}</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center justify-center py-20 px-4"
+        >
+          {/* Empty State Icon */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mb-6"
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
+              <div className="relative bg-gradient-to-br from-primary/20 to-primary/5 p-8 rounded-full">
+                <Tag className="w-24 h-24 text-primary/60" strokeWidth={1.5} />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Empty State Text */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-center space-y-3 max-w-md"
+          >
+            <h3 className="text-2xl font-bold text-foreground">
+              {t("noProductsFoundForBrand") || "No Products Found"}
+            </h3>
+            <p className="text-base text-muted-foreground">
+              {isRTL 
+                ? `لا توجد منتجات متاحة حالياً لعلامة "${brandId}" التجارية.`
+                : `There are no products available for the "${brandId}" brand at the moment.`
+              }
+            </p>
+            <p className="text-sm text-muted-foreground/80">
+              {isRTL
+                ? "تحقق لاحقاً أو استكشف علامات تجارية أخرى."
+                : "Check back later or explore other brands."
+              }
+            </p>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 flex flex-col sm:flex-row gap-3"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                onClick={() => router.push("/brands")}
+                variant="default"
+                size="lg"
+                className="px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
+              >
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                {isRTL ? "استكشف العلامات التجارية" : "Explore Brands"}
+              </Button>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                onClick={() => router.push("/products")}
+                variant="outline"
+                size="lg"
+                className="px-6 py-3 rounded-full font-medium transition-all duration-300"
+              >
+                <ArrowLeft className={`w-4 h-4 ${isRTL ? "ml-2 rotate-180" : "mr-2"}`} />
+                {isRTL ? "تصفح جميع المنتجات" : "Browse All Products"}
+              </Button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       ) : (
         <div>
           {/* {products.map((product) => (
             <ItemCardProfile key={product.id} {...product} showbtn={true} />
           ))} */}
-          <ProductsList items={products} showbtn={true} showFilters={false} />
+          <ProductsList items={products} showbtn={true} showFilters={false} hideOwnItems={true} />
         </div>
       )}
     </div>

@@ -127,15 +127,15 @@ export function CompleteSwapDialog({ open, onOpenChange, onConfirm }) {
                   {t("Ifyoucompletetheswapyouwillnotbeabletoundothisaction") ||
                     "If you complete the swap, you will not be able to undo this action."}
                 </li>
-                <li>{t("Chatwillbeclosed.") || "Chat will be closed."}</li>
-                <li>{t("Itemswillberemoved") || "Items will be removed."}</li>
+                <li>{t("Chatwillbeclosed") || "Chat will be closed."}</li>
+                <li>{t("Itemswillberemoved") || "Items will be removed from the swap."}</li>
               </ul>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col gap-2 sm:flex-row mt-4">
             <DialogClose asChild>
               <Button className="w-full sm:w-auto" onClick={onConfirm}>
-                {t("Complete") || "Complete"}
+                {t("Confirm") || "Confirm"}
               </Button>
             </DialogClose>
             <DialogClose asChild>

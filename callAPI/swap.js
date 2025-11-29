@@ -88,6 +88,29 @@ export const getAllOffers = async (filters = {}) => {
   }
 }
 
+// Get single offer by offer ID
+export const getOfferByIdSingle = async (offerId) => {
+  try {
+    if (!offerId) {
+      throw new Error("Offer ID is required")
+    }
+
+    const response = await axios.get(`${baseItemsURL}Offers/${offerId}`, {
+      params: {
+        fields: "*"
+      }
+    })
+
+    return {
+      success: true,
+      data: response.data.data,
+      message: "Offer retrieved successfully",
+    }
+  } catch (error) {
+    return handleApiError(error, "Get Offer By ID Single")
+  }
+}
+
 // Get offers by from_user_id (keeping original function name)
 export const getOfferById = async (id) => {
   try {

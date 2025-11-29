@@ -1,15 +1,11 @@
 "use client"
 
 import { ItemAdd } from "@/components/prods-modification/item-add-new"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Sparkles } from "lucide-react"
-import Link from "next/link"
-import { useTranslations } from "@/lib/use-translations";
-
-
+import { useTranslations } from "@/lib/use-translations"
 
 export default function NewItemPage() {
-    const { t } = useTranslations();
+  const { t } = useTranslations()
+  
   return (
     <div className="min-h-screen bg-background dark:bg-gray-950">
       {/* Modern Hero Section */}
@@ -17,7 +13,7 @@ export default function NewItemPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative">
           <div className="max-w-3xl">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text  mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text mb-4">
               {t('ListNewItem') || "List a New Item"}
             </h1>
             <p className="text-lg text-foreground/70 leading-relaxed">

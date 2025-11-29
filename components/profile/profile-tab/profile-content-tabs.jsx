@@ -281,7 +281,7 @@ export function ProfileContentTabs({
               </h2>
               {hasAvailableItems && (
                 <Button asChild className="bg-primary hover:bg-primary/90 shadow-lg w-full sm:w-auto">
-                  <Link href="/profile/items">
+                  <Link href="/profile/my-items">
                     <Settings className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                     {t("manageItems") || "Manage Items"}
                   </Link>

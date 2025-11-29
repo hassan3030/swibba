@@ -119,82 +119,6 @@ export function ProductGallery({ images = [], productName }) {
     }
   }, [currentImage, images])
 
-  if (images.length === 0) return null
-
-
-  const nextImage = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    // Pause current video if playing
-    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
-    if (currentVideoElement) {
-      currentVideoElement.pause()
-    }
-    
-    setDirection(1)
-    setCurrentImage((prev) => (prev + 1) % images.length)
-    setIsPlaying(false)
-  }
-
-  const prevImage = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    // Pause current video if playing
-    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
-    if (currentVideoElement) {
-      currentVideoElement.pause()
-    }
-    
-    setDirection(-1)
-    setCurrentImage((prev) => (prev - 1 + images.length) % images.length)
-    setIsPlaying(false)
-  }
-
-  const selectImage = (index) => {
-    // Pause current video if playing
-    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
-    if (currentVideoElement) {
-      currentVideoElement.pause()
-    }
-    
-    setDirection(index > currentImage ? 1 : -1)
-    setCurrentImage(index)
-    // Reset video controls when switching media
-    setIsPlaying(false)
-  }
-
-  const togglePlayPause = () => {
-    const videoElement = document.querySelector(`#gallery-video-${currentImage}`)
-    if (videoElement) {
-      if (isPlaying) {
-        videoElement.pause()
-      } else {
-        videoElement.play()
-      }
-      setIsPlaying(!isPlaying)
-    }
-  }
-
-  const toggleMute = () => {
-    const videoElement = document.querySelector(`#gallery-video-${currentImage}`)
-    if (videoElement) {
-      videoElement.muted = !isMuted
-      setIsMuted(!isMuted)
-    }
-  }
-
-  // Resolve current media once for reuse
-  const currentMedia = {
-    id: images[currentImage]?.directus_files_id?.id || '',
-    type: images[currentImage]?.directus_files_id?.type || '',
-    url: images[currentImage]?.directus_files_id?.id
-      ? `${mediaURL}${images[currentImage]?.directus_files_id.id}`
-      : ''
-  }
-  const currentMediaType = getMediaType(currentMedia.type)
-
   const handleMouseMove = useCallback((e) => {
     if (!isZoomOpen || zoomScale <= 1) return
     const targetRect = overlayImageRef.current?.getBoundingClientRect()
@@ -211,7 +135,6 @@ export function ProductGallery({ images = [], productName }) {
     const newScale = Math.max(1, Math.min(5, zoomScale + delta))
     setZoomScale(newScale)
   }, [isZoomOpen, zoomScale])
-
 
   const handleTouchStart = useCallback((e) => {
     if (!isZoomOpen) return
@@ -307,7 +230,81 @@ export function ProductGallery({ images = [], productName }) {
     }
   }, [isZoomOpen])
 
+  // Early return AFTER all hooks
   if (images.length === 0) return null
+
+  const nextImage = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    // Pause current video if playing
+    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (currentVideoElement) {
+      currentVideoElement.pause()
+    }
+    
+    setDirection(1)
+    setCurrentImage((prev) => (prev + 1) % images.length)
+    setIsPlaying(false)
+  }
+
+  const prevImage = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    // Pause current video if playing
+    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (currentVideoElement) {
+      currentVideoElement.pause()
+    }
+    
+    setDirection(-1)
+    setCurrentImage((prev) => (prev - 1 + images.length) % images.length)
+    setIsPlaying(false)
+  }
+
+  const selectImage = (index) => {
+    // Pause current video if playing
+    const currentVideoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (currentVideoElement) {
+      currentVideoElement.pause()
+    }
+    
+    setDirection(index > currentImage ? 1 : -1)
+    setCurrentImage(index)
+    // Reset video controls when switching media
+    setIsPlaying(false)
+  }
+
+  const togglePlayPause = () => {
+    const videoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (videoElement) {
+      if (isPlaying) {
+        videoElement.pause()
+      } else {
+        videoElement.play()
+      }
+      setIsPlaying(!isPlaying)
+    }
+  }
+
+  const toggleMute = () => {
+    const videoElement = document.querySelector(`#gallery-video-${currentImage}`)
+    if (videoElement) {
+      videoElement.muted = !isMuted
+      setIsMuted(!isMuted)
+    }
+  }
+
+  // Resolve current media once for reuse
+  const currentMedia = {
+    id: images[currentImage]?.directus_files_id?.id || '',
+    type: images[currentImage]?.directus_files_id?.type || '',
+    url: images[currentImage]?.directus_files_id?.id
+      ? `${mediaURL}${images[currentImage]?.directus_files_id.id}`
+      : ''
+  }
+  const currentMediaType = getMediaType(currentMedia.type)
 
   return (
     <motion.div

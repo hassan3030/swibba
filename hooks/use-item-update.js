@@ -182,7 +182,7 @@ export const useItemUpdate = (initialData) => {
           title: t("successfully") || "Successfully",
           description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`,
         })
-        router.push('/profile/items')
+        router.push('/profile/my-items')
       } else {
         throw new Error(updateItem.error || "Failed to update item")
       }

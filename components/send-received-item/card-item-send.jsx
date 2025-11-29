@@ -125,7 +125,7 @@ export const CardItemSend = ({ id, name, description, price, status_item, images
     const totalPrice = unitPrice * qty
   
     const handleView = (id) => {
-      router.push(`/products/in_offer/${id}`)
+      router.push(`/products/${id}`)
     }
    
      return (

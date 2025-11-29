@@ -992,7 +992,7 @@ export function ItemUpdate(props) {
           description: `Item updated successfully with images${hasTranslations ? ' and translations' : ''}!`, 
         })
         // Redirect to profile items page
-        router.push('/profile/items')
+        router.push('/profile/my-items')
       } else {
         throw new Error(updateItem.error || "Failed to update item")
       }

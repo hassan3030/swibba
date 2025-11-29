@@ -114,9 +114,20 @@ const BrandItemsPage = () => {
   }
 
   if (brandsError || productsError) {
+    const errorMessage = brandsError || productsError;
+    const isAuthError = errorMessage?.toLowerCase().includes('auth') || 
+                        errorMessage?.toLowerCase().includes('login') ||
+                        errorMessage?.toLowerCase().includes('unauthorized');
+    
     return (
       <div className="container mx-auto p-4">
-        <ErrorDisplay message={brandsError || productsError} onRetry={handleRetry} />
+        <ErrorDisplay 
+          message={errorMessage} 
+          onRetry={handleRetry}
+          type={isAuthError ? "auth" : "error"}
+          showHomeButton={true}
+          showBackButton={true}
+        />
       </div>
     );
   }

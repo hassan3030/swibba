@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -41,7 +41,20 @@ import { checkItemInOfferItems, checkItemUpdate } from "@/callAPI/swap"
 import { getMediaType } from "@/lib/utils"
 import { mediaURL } from "@/callAPI/utiles"
 
-export default function ModernItemCardList({ item }) {
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 25 },
+  },
+}
+
+const imageVariants = {
+  hover: { scale: 1.05, transition: { duration: 0.3 } },
+}
+
+export default function ModernItemCard({ item }) {
   const { toast } = useToast()
   const { t } = useTranslations()
   const { isRTL } = useLanguage()
@@ -52,6 +65,7 @@ export default function ModernItemCardList({ item }) {
   const [showQuantityDialog, setShowQuantityDialog] = useState(false)
   const [newQuantity, setNewQuantity] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   const itemName = !isRTL ? item.translations?.[0]?.name : item.translations?.[1]?.name || item.name
   const itemDescription = !isRTL ? item.translations?.[0]?.description : item.translations?.[1]?.description || item.description
@@ -127,12 +141,12 @@ export default function ModernItemCardList({ item }) {
         const checkUpdate = await checkItemUpdate(item.id)
         
         if (checkUpdate.success && checkUpdate.data.updated) {
-          router.push(`/profile/settings/editItem/${item.id}`)
+          router.push(`/profile/my-items/${item.id}/edit`)
         } else {
           setShowQuantityDialog(true)
         }
       } else {
-        router.push(`/profile/settings/editItem/${item.id}`)
+        router.push(`/profile/my-items/${item.id}/edit`)
       }
     } catch (error) {
       toast({
@@ -164,10 +178,11 @@ export default function ModernItemCardList({ item }) {
             muted
             loop
             playsInline
+            onLoadedData={() => setImageLoaded(true)}
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-            <div className="bg-white/90 rounded-full p-2 group-hover:scale-110 transition-transform">
-              <Play className="h-4 w-4 text-gray-800 fill-current" />
+            <div className="bg-white/90 rounded-full p-3 group-hover:scale-110 transition-transform">
+              <Play className="h-6 w-6 text-gray-800 fill-current" />
             </div>
           </div>
         </div>
@@ -176,8 +191,8 @@ export default function ModernItemCardList({ item }) {
       return (
         <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
           <div className="text-center text-white">
-            <div className="text-3xl mb-1">🎵</div>
-            <div className="text-xs font-medium">Audio</div>
+            <div className="text-5xl mb-2">🎵</div>
+            <div className="text-sm font-medium">Audio File</div>
           </div>
         </div>
       )
@@ -188,6 +203,7 @@ export default function ModernItemCardList({ item }) {
           alt={itemName}
           fill
           className="object-cover"
+          onLoad={() => setImageLoaded(true)}
         />
       )
     }
@@ -200,125 +216,140 @@ export default function ModernItemCardList({ item }) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="group"
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        className="group h-full"
       >
-        <div className="relative bg-background dark:bg-gray-950 rounded-xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-lg" dir={isRTL ? 'rtl' : 'ltr'}>
-          <div className={`flex ${isRTL ? 'flex-row-reverse' : 'flex-row'} flex-col sm:flex-row min-h-[180px] gap-3 p-3`}>
-            {/* Image Section - 30% width */}
-            <div className="relative w-full sm:w-[30%] h-[200px] sm:h-[156px] flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border/30">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-                className="w-full h-full"
-              >
-                {renderMedia()}
-              </motion.div>
-              
-              {/* Status Badge on Image */}
-              <div className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'}`}>
-                <Badge className={`${statusColor} backdrop-blur-sm text-xs font-medium px-2 py-0.5`}>
-                  {t(item.status_item)}
-                </Badge>
-              </div>
-
-              {/* Quantity Badge */}
-              {item.quantity === 0 && (
-                <div className={`absolute bottom-2 ${isRTL ? 'right-2' : 'left-2'}`}>
-                  <Badge variant="destructive" className="backdrop-blur-sm text-xs font-medium px-2 py-0.5">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {t("outOfStock") || "Out"}
-                  </Badge>
-                </div>
-              )}
+        <div className={`relative bg-background dark:bg-gray-950 rounded-2xl overflow-hidden border border-border/50 hover:border-border transition-all duration-300 hover:shadow-xl h-full flex flex-col`} dir={isRTL ? 'rtl' : 'ltr'}>
+          {/* Image Section */}
+          <div className="relative h-48 w-full overflow-hidden bg-muted">
+            <motion.div
+              variants={imageVariants}
+              whileHover="hover"
+              className="w-full h-full"
+            >
+              {renderMedia()}
+            </motion.div>
+            
+            {/* Status Badge Overlay */}
+            <div className={`absolute top-3 ${isRTL ? 'left-3' : 'right-3'}`}>
+              <Badge className={` backdrop-blur-sm text-xs font-medium px-2.5 py-1`}>
+                {t(item.status_item)}
+              </Badge>
             </div>
 
-            {/* Content Section */}
-            <div className={`flex-1 min-w-0 flex flex-col ${isRTL ? 'items-end' : 'items-start'}`}>
-              {/* Title & Status */}
-              <div className="w-full flex-1">
-                <div className={`flex items-start justify-between gap-2 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <h3 className={`font-bold text-base line-clamp-1 flex-1 ${isRTL ? 'text-right force-rtl' : 'text-left'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-                    {itemName}
-                  </h3>
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {t(item.status_swap)}
-                  </Badge>
-                </div>
+            {/* Quantity Badge */}
+            {item.quantity === 0 && (
+              <div className={`absolute top-3 ${isRTL ? 'right-3' : 'left-3'}`}>
+                <Badge variant="destructive" className="backdrop-blur-sm text-xs font-medium px-2.5 py-1">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  {t("outOfStock") || "Out of Stock"}
+                </Badge>
+              </div>
+            )}
+          </div>
 
-                {/* Description */}
-                <p className={`text-sm text-muted-foreground line-clamp-2 mb-2 ${isRTL ? 'text-right force-rtl' : 'text-left'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-                  {itemDescription}
-                </p>
+          {/* Content Section */}
+          <div className="p-4 flex flex-col flex-1">
+            <div className="flex-1 space-y-3">
+            {/* Title & Swap Status Badge */}
+            <div className={`flex justify-between gap-2 `} >
+              <h3 className={`font-bold text-lg line-clamp-1`}>
+                {itemName}
+              </h3>
+              <Badge variant="secondary" className="text-xs shrink-0">
+                {t(item.status_swap)}
+              </Badge>
+            </div>
+
+            {/* Description */}
+            <p className={`text-sm text-muted-foreground line-clamp-2 ${isRTL ? 'force-rtl text-right' : 'text-left'}`}>
+              {itemDescription}
+            </p>
+
+            {/* Value & Quantity Row */}
+            <div className={`flex items-center gap-3 sm:gap-6 lg:gap-8 pt-2 flex-wrap ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className="p-1.5 rounded-lg bg-green-500/10">
+                  <Banknote className="h-4 w-4 text-green-600" />
+                </div>
+                <div className={isRTL ? 'text-right' : ''}>
+                  <p className="text-xs text-muted-foreground">{t("price") || "Price"}</p>
+                  <p className="text-sm font-bold text-green-600">{item.price} {t("currencyLE") || "LE"}</p>
+                </div>
               </div>
 
-              <div className="w-full mt-auto">
-                {/* Value & Quantity Row */}
-                <div className={`flex items-center gap-2 sm:gap-4 mb-2 flex-wrap ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Banknote className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-bold text-green-600">
-                      {t("price") || "Price"} {item.price} {t("currencyLE") || "LE"}
-                    </span>
-                  </div>
-                  
-                  <div className="hidden sm:block h-4 w-[1px] bg-border/50" />
+              <div className="hidden sm:block h-8 w-[1px] bg-border/50" />
 
-                  <div className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{item.quantity}</span>
-                  </div>
-
-                  <div className={`flex items-center gap-1.5 text-xs text-muted-foreground ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Calendar className="h-3 w-3" />
-                    <span>{new Date(item.date_created).toLocaleDateString()}</span>
-                  </div>
-
-                  <Badge variant="outline" className="text-xs">
-                    {t(item.category)}
-                  </Badge>
+              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Package className="h-4 w-4 text-primary" />
                 </div>
+                <div className={isRTL ? 'text-right' : ''}>
+                  <p className="text-xs text-muted-foreground">{t("quantity") || "Qty"}</p>
+                  <p className="text-sm font-bold">{item.quantity}</p>
+                </div>
+              </div>
+            </div>
 
-                {/* Actions */}
-                <div className={`flex items-center gap-2 pt-2 mt-2 border-t border-border/50 flex-wrap ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                  >
-                    <Link href={item.quantity > 0 ? `/products/out_offer/${item.id}` : `/products/in_offer/${item.id}`} className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <Eye className="h-3.5 w-3.5" />
-                      {t("view") || "View"}
-                    </Link>
-                  </Button>
+            {/* Date & Category Row */}
+            <div className={`flex items-center justify-between gap-2 pb-2 flex-wrap ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-2 text-xs text-muted-foreground ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Calendar className="h-3 w-3" />
+                <span>{new Date(item.date_created).toLocaleDateString()}</span>
+              </div>
+              <Badge variant="outline" >
+                {t(item.category)}
+              </Badge>
+            </div>
+            </div>
 
-                  {item.quantity > 0 && item.status_swap === "available" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleUpdate}
-                      disabled={isProcessing}
-                    >
-                      <Edit className={`h-3.5 w-3.5 ${isRTL ? 'ml-1.5' : 'mr-1.5'}`} />
-                      {t("edit") || "Edit"}
+            {/* Actions */}
+            <div className={`flex items-center gap-2 pt-3 mt-auto border-t border-border/50 flex-wrap ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 min-w-[80px]"
+                asChild
+              >
+                <Link href={`/products/${item.id}`} className={`flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Eye className="h-4 w-4" />
+                  {t("view") || "View"}
+                </Link>
+              </Button>
+
+              {item.quantity > 0 && item.status_swap === "available" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 min-w-[80px]"
+                  onClick={handleUpdate}
+                  disabled={isProcessing}
+                >
+                  <Edit className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                  {t("edit") || "Edit"}
+                </Button>
+              )}
+
+              {item.quantity > 0 && item.status_swap === "available" && item.completed_offer === "false" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                      <MoreVertical className="h-4 w-4" />
                     </Button>
-                  )}
-
-                  {item.quantity > 0 && item.status_swap === "available" && item.completed_offer === "false" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align={isRTL ? "start" : "end"}>
+                    <DropdownMenuItem
                       onClick={() => setShowDeleteDialog(true)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="text-destructive focus:text-destructive"
                     >
-                      <Trash2 className={`h-3.5 w-3.5 ${isRTL ? 'ml-1.5' : 'mr-1.5'}`} />
-                      {t("soldOut") || "Sold"}
-                    </Button>
-                  )}
-                </div>
-              </div>
+                      <Trash2 className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {t("soldOut") || "Mark as Sold"}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </div>
@@ -328,16 +359,16 @@ export default function ModernItemCardList({ item }) {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("deleteOneItem") || "Mark Item as Sold"}</DialogTitle>
+            <DialogTitle className="mt-3" >{t("deleteOneItem") || "Mark Item as Sold"}</DialogTitle>
             <DialogDescription>
               {t("deleteDialogDesc") || "Are you sure you want to mark this item as sold? This action cannot be undone."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+            <Button variant="outline" className="mx-2" onClick={() => setShowDeleteDialog(false)}>
               {t("cancel") || "Cancel"}
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+            <Button variant="destructive" className="mx-2" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? (
                 <>
                   <motion.div
@@ -359,14 +390,14 @@ export default function ModernItemCardList({ item }) {
       <Dialog open={showQuantityDialog} onOpenChange={setShowQuantityDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("addQuantity") || "Add Quantity"}</DialogTitle>
+            <DialogTitle className="mt-4">{t("addQuantity") || "Add Quantity"}</DialogTitle>
             <DialogDescription>
               {t("addQuantityDesc") || "This item is in an offer. Add new quantity to make it available again."}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-1 py-1">
             <div>
-              <label className="text-sm font-medium mb-2 block">{t("quantity") || "Quantity"}</label>
+              <label className="text-sm font-medium mb-1 block">{t("quantity") || "Quantity"}</label>
               <input
                 type="number"
                 min="1"
@@ -377,10 +408,10 @@ export default function ModernItemCardList({ item }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowQuantityDialog(false)}>
-              {t("cancel") || "Cancel"}
+            <Button variant="outline" className="mx-2" onClick={() => setShowQuantityDialog(false)}>
+              {t("Cancel") || "Cancel"}
             </Button>
-            <Button onClick={() => handleUpdateQuantity(newQuantity, "available", "false")} disabled={isProcessing}>
+            <Button className="mx-2" onClick={() => handleUpdateQuantity(newQuantity, "available", "false")} disabled={isProcessing}>
               {isProcessing ? (
                 <>
                   <motion.div

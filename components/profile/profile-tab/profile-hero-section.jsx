@@ -146,7 +146,7 @@ export function ProfileHeroSection({ user, rate, completedOffersCount, myAvailab
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start w-full sm:w-auto">
               <Button className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow" asChild>
-                <Link href="/profile/settings/editProfile">
+                <Link href="/profile/edit-profile">
                   <Settings className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                   {t("editProfile") || "Edit Profile"}
                 </Link>
@@ -154,7 +154,7 @@ export function ProfileHeroSection({ user, rate, completedOffersCount, myAvailab
               
               {hasAvailableItems && (
                 <Button variant="outline" className="w-full sm:w-auto shadow-sm" asChild>
-                  <Link href="/profile/items">
+                  <Link href="/profile/my-items">
                     <Package className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                     {t("manageItems") || "Manage Items"}
                   </Link>

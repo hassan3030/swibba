@@ -254,7 +254,7 @@ export function MobileHeader() {
 
     }
     else {
-        router.push(`/profile/settings/editItem/new`)
+        router.push(`/profile/my-items/new`)
       }
   }
 
@@ -477,7 +477,7 @@ export function MobileHeader() {
                         </Link>
 
                         <span
-                          // href="/profile/settings/editItem/new"
+                          // href="/profile/my-items/new"
                           className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors hover:cursor-pointer"
                           onClick={() => {setIsMenuOpen(false) , handleKYC()}}
                         >
@@ -514,7 +514,7 @@ export function MobileHeader() {
                         </Link>
 
                         <Link
-                          href="/profile/items"
+                          href="/profile/my-items"
                           className="flex items-center space-x-3 p-1 px-3 rounded-lg text-primary hover:bg-primary/20 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >

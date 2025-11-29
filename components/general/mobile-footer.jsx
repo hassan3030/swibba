@@ -105,7 +105,7 @@ export function MobileFooter() {
     
         }
         else {
-            router.push(`/profile/settings/editItem/new`)
+            router.push(`/profile/my-items/new`)
           }
       }else{
         router.push(`/auth/login`)
@@ -143,10 +143,10 @@ export function MobileFooter() {
       isActive: pathname === "/products" || pathname.startsWith("/products"),
     },
     {
-      href: user ? "/profile/settings/editItem/new" : "/auth/login",
+      href: user ? "/profile/my-items/new" : "/auth/login",
       icon: Plus,
       label: t("add") || "Add",
-      isActive: pathname === "/profile/settings/editItem/new",
+      isActive: pathname === "/profile/my-items/new",
       isSpecial: true,
       onClick: handleAddClick,
     },

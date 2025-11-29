@@ -502,11 +502,11 @@ Please return ONLY a JSON response in this format:
         description: t("requiredInfoForSwap"),
         variant: "default",
       })
-      router.push(`/profile/settings/editProfile`)
+      router.push(`/profile/edit-profile`)
 
     }
     else {
-        router.push(`/profile/settings/editItem/new`)
+        router.push(`/profile/my-items/new`)
       }
   }
 
@@ -654,7 +654,7 @@ Please return ONLY a JSON response in this format:
               router.refresh()
             }
         }else{
-          router.push(`/profile/settings/editItem/new`)
+          router.push(`/profile/my-items/new`)
         }
         
       }else{

@@ -167,7 +167,7 @@ export const useItemForm = (
           router.push(`/swap/${targetSwapId}`)
           await removeTarget()
         } else {
-          router.push('/profile/items')
+          router.push('/profile/my-items')
         }
       }
     } catch (err: any) {

@@ -263,11 +263,11 @@ export function Header() {
         description: t("DescFaildSwapKYC") || "Required information for swap. Please complete your information.",
         variant: "default",
       })
-      router.push(`/profile/settings/editProfile`)
+      router.push(`/profile/edit-profile`)
 
     }
     else {
-        router.push(`/profile/settings/editItem/new`)
+        router.push(`/profile/my-items/new`)
       }
   }
 
@@ -595,7 +595,7 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
                      
                       <DropdownMenuItem asChild>
                         <Link
-                          href={`/profile/settings/editProfile/`}
+                          href={`/profile/edit-profile`}
                           className="hover:bg-primary/10 bg-background/50 hover:shadow-sm"
                         >
                           <Settings className="mr-2 h-4 w-4" />
@@ -604,7 +604,7 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
                       </DropdownMenuItem>
 
                       <DropdownMenuItem asChild>
-                        <Link href="/profile/items" className="hover:bg-primary/10 bg-background/50 hover:shadow-sm ">
+                        <Link href="/profile/my-items" className="hover:bg-primary/10 bg-background/50 hover:shadow-sm ">
                           <ListChecks className="mr-2 h-4 w-4" />
                           <span>{t("manageItems")}</span>
                         </Link>
@@ -995,7 +995,7 @@ let allOffersCount = filteredOffers.length + filteredNotifications.length
                             <div className="my-2 border-t dark:border-[#2a2a2a]"></div>
                             {/* Mobile menu items */}
                        <Link
-                        href="/profile/settings/editItem/new"
+                        href="/profile/my-items/new"
                         className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10 z-[100000]"
                         onClick={() => setIsMenuOpen(false)}
                       >

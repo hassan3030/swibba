@@ -364,7 +364,7 @@ export default function SwapPage() {
 
     }
     else {
-        router.push(`/profile/settings/editItem/new`)
+        router.push(`/profile/my-items/new`)
       }
   }
 

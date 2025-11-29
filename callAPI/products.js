@@ -240,59 +240,40 @@ export const getProductByCategory = async (category) => {
 export const getProductsEnhanced = async (filters = {}) => {
   try {
     const token = await getCookie()
-    const { userId } = await validateAuth()
-    // Build comprehensive filter object
-    const apiFilter = {}
+    const { userId } = await getOptionalAuth()
+    
+    // Build filter array - all conditions will be combined with _and
+    const filterConditions = []
+    
+    // Base filters - always apply
+    filterConditions.push({ status_swap: { _eq: "available" } })
+    filterConditions.push({ quantity: { _gt: 0 } })
+    
+    // Exclude user's own items if authenticated
+    if (token && userId) {
+      filterConditions.push({ user_id: { _neq: `${userId}` } })
+    }
+
     const params = {
       // Include all fields including nested sub_cat structure for filtering
       fields: "*,images.*,translations.*,images.directus_files_id.*,sub_cat.*,sub_cat.level_1.*,sub_cat.level_2.*",
-      filter: {
-        quantity: { _gt: 0 },
-      }
     }
-
-    // Base authentication filters
-    if (!token) {
-      // Public access - show only available items
-      apiFilter.status_swap = { _eq: "available" }
-      apiFilter.quantity = { _gt: 0 }
-    } else {
-      // Authenticated access - exclude user's own items and unavailable items
-      
-      if (userId) {
-        apiFilter._and = [
-          { user_id: { _neq: `${userId}` } },
-          { status_swap: { _eq: "available" } },
-          { quantity: { _gt: 0 } }
-        ]
-      } else {
-        apiFilter.status_swap = { _eq: "available" }
-        apiFilter.quantity = { _gt: 0 }
-      }
-    }
-
-    // Apply additional filters
-    const additionalFilters = []
 
     // Category filter
     if (filters.category && filters.category !== "all") {
-      // Normalize category to lowercase for consistent filtering
       const normalizedCategory = filters.category.toLowerCase()
-      additionalFilters.push({ category: { _eq: normalizedCategory } })
-      // console.log('Enhanced API: Category filter applied:', normalizedCategory)
+      filterConditions.push({ category: { _eq: normalizedCategory } })
     }
 
     // Multiple categories filter
     if (filters.categories && filters.categories.length > 0) {
-      // Normalize all categories to lowercase for consistent filtering
       const normalizedCategories = filters.categories.map(cat => cat.toLowerCase())
-      additionalFilters.push({ category: { _in: normalizedCategories } })
-      // console.log('Enhanced API: Multiple categories filter applied:', normalizedCategories)
+      filterConditions.push({ category: { _in: normalizedCategories } })
     }
 
     // Search filter with RTL support
     if (filters.search) {
-      additionalFilters.push({
+      filterConditions.push({
         _or: [
           { name: { _contains: filters.search } },
           { description: { _contains: filters.search } },
@@ -304,7 +285,7 @@ export const getProductsEnhanced = async (filters = {}) => {
 
     // Name filter with RTL support
     if (filters.name) {
-      additionalFilters.push({
+      filterConditions.push({
         _or: [
           { name: { _contains: filters.name } },
           { "translations.name": { _contains: filters.name } }
@@ -314,34 +295,34 @@ export const getProductsEnhanced = async (filters = {}) => {
 
     // Price range filters
     if (filters.min_price) {
-      additionalFilters.push({ price: { _gte: parseFloat(filters.min_price) } })
+      filterConditions.push({ price: { _gte: parseFloat(filters.min_price) } })
     }
     if (filters.max_price) {
-      additionalFilters.push({ price: { _lte: parseFloat(filters.max_price) } })
+      filterConditions.push({ price: { _lte: parseFloat(filters.max_price) } })
     }
 
     // Location filters
     if (filters.country && filters.country !== "all") {
-      additionalFilters.push({ country: { _contains: filters.country } })
+      filterConditions.push({ country: { _contains: filters.country } })
     }
     if (filters.city) {
-      additionalFilters.push({ city: { _contains: filters.city } })
+      filterConditions.push({ city: { _contains: filters.city } })
     }
 
     // Status filters
     if (filters.status_item && filters.status_item !== "all") {
-      additionalFilters.push({ status_item: { _eq: filters.status_item } })
+      filterConditions.push({ status_item: { _eq: filters.status_item } })
     }
     if (filters.status_swap && filters.status_swap !== "all") {
-      additionalFilters.push({ status_swap: { _eq: filters.status_swap } })
+      filterConditions.push({ status_swap: { _eq: filters.status_swap } })
     }
 
     // Date range filters
     if (filters.date_from) {
-      additionalFilters.push({ date_created: { _gte: filters.date_from } })
+      filterConditions.push({ date_created: { _gte: filters.date_from } })
     }
     if (filters.date_to) {
-      additionalFilters.push({ date_created: { _lte: filters.date_to } })
+      filterConditions.push({ date_created: { _lte: filters.date_to } })
     }
 
     // Allowed categories filter
@@ -349,7 +330,7 @@ export const getProductsEnhanced = async (filters = {}) => {
       const allowedCatFilters = filters.allowed_categories.map(cat => ({
         allowed_categories: { _contains: cat }
       }))
-      additionalFilters.push({ _or: allowedCatFilters })
+      filterConditions.push({ _or: allowedCatFilters })
     }
 
     // Brand filter (case-insensitive attempt)
@@ -358,47 +339,20 @@ export const getProductsEnhanced = async (filters = {}) => {
         const raw = String(filters.brand)
         const lower = raw.toLowerCase()
         const upper = raw.toUpperCase()
-        // Some Directus installations/datastores are case-sensitive for _contains.
-        // To increase the chance of a case-insensitive match, add an _or group
-        // checking original, lowercased and uppercased variants.
-        additionalFilters.push({
+        filterConditions.push({
           _or: [
             { brand: { _contains: raw } },
             { brand: { _contains: lower } },
             { brand: { _contains: upper } },
-
           ]
         })
       } catch (e) {
-        // fallback to original behaviour if something goes wrong
-        additionalFilters.push({ brand: { _contains: filters.brand } })
+        filterConditions.push({ brand: { _contains: filters.brand } })
       }
     }
 
-
-    // Sub-level 1 filter (single value)
-    // Note: Directus JSON field filtering - try multiple approaches for compatibility
-  
-
-    // Sub-level 2 filter (single value)
-
-    // Sub-level 1 list filter (multiple values)
-    // For array filters, we check if ANY of the values match
- 
-
-    // Sub-level 2 list filter (multiple values)
-
-    // Combine all filters
-    if (additionalFilters.length > 0) {
-      if (apiFilter._and) {
-        apiFilter._and = [...apiFilter._and, ...additionalFilters]
-      } else if (Object.keys(apiFilter).length > 0) {
-        apiFilter._and = [apiFilter, ...additionalFilters]
-      } else {
-        apiFilter._and = additionalFilters
-      }
-    }
-    params.filter = apiFilter
+    // Combine all filters with _and
+    params.filter = { _and: filterConditions }
 
     // Pagination
     if (filters.page && filters.limit) {

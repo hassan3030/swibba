@@ -5,8 +5,8 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ModernItemCard from "./modern-item-card"
-import ModernItemCardList from "./modern-item-card-list"
+import ModernItemCard from "@/components/profile/user-items/modern-item-card"
+import ModernItemCardList from "@/components/profile/user-items/modern-item-card-list"
 import { Plus, AlertCircle, Grid3x3, List } from "lucide-react"
 import { getProductByUserId } from "@/callAPI/products"
 import { useTranslations } from "@/lib/use-translations"
@@ -175,7 +175,7 @@ export default function ManageItemsPage() {
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1 sm:flex-initial">
                 <Button asChild size="lg" className="w-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90">
-                  <Link href="/profile/settings/editItem/new" className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Link href="/profile/my-items/new" className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Plus className={isRTL ? 'ml-2' : 'mr-2'} />
                     {t("addNewItem") || "Add New Item"}
                   </Link>
@@ -239,7 +239,7 @@ export default function ManageItemsPage() {
                           transition={{ delay: 0.5 }}
                         >
                           <Button asChild size="lg" className="mt-6 sm:mt-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <Link href="/profile/settings/editItem/new" className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                            <Link href="/profile/my-items/new" className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                               <Plus className={isRTL ? 'ml-2' : 'mr-2'} />
                               {t("addNewItem") || "Add Your First Item"}
                             </Link>

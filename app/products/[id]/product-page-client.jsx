@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { notFound, useRouter, useParams } from "next/navigation"
+import { notFound, useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
 import { ProductGallery } from "@/components/products/product-gallery"
 import { ProductHeader } from "@/components/products/productView/ProductHeader"
@@ -13,14 +13,14 @@ import { SwapButton } from "@/components/products/productView/SwapButton"
 import { ProductTabs } from "@/components/products/productView/ProductTabs"
 import { MapModal } from "@/components/general/map-modal"
 import { useTranslations } from "@/lib/use-translations"
-import { getProductById } from "@/callAPI/products"
 import { decodedToken, getCookie, validateAuth, setTarget, removeTarget } from "@/callAPI/utiles"
 import { getKYC, getUserByProductId, checkUserHasProducts } from "@/callAPI/users"
 import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/language-provider"
-import { getCompletedOffer, getReview, getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
+import { getCompletedOffer, getWishList, deleteWishList, addWishList } from "@/callAPI/swap"
 import { mediaURL } from "@/callAPI/utiles"
 import LoadingSpinner from "@/components/loading/loading-spinner"
+
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { 
@@ -44,22 +44,9 @@ const staggerContainer = {
   }
 }
 
-const scaleIn = {
-  hidden: { scale: 0.9, opacity: 0 },
-  visible: {
-    scale: 1,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 20
-    }
-  }
-}
-
-export default function ProductPage() {
+export default function ProductPageClient({ initialProduct, productId }) {
   const { toast } = useToast()
-  const [product, setProduct] = useState(null)
+  const [product, setProduct] = useState(initialProduct)
   const [images, setImages] = useState([])
   const [user, setUser] = useState(null)
   const [name, setName] = useState("")
@@ -70,22 +57,21 @@ export default function ProductPage() {
   const [totalPrice, setTotalPrice] = useState(0)
   const [completedOffersCount, setCompletedOffersCount] = useState(0)
   const [rate, setRate] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!initialProduct)
   const [isSwapping, setIsSwapping] = useState(false)
   const [switchHeart, setSwitchHeart] = useState(false)
   const [isMapOpen, setIsMapOpen] = useState(false)
   const { t } = useTranslations()
-  const params = useParams()
   const router = useRouter()
-  const id = params.item_id
-  const { isRTL, toggleLanguage } = useLanguage()
+  const id = productId
+  const { isRTL } = useLanguage()
+
   const getToken = async () => {
     try {
       const { userId } = await validateAuth()
       setTokenId(userId)
     } catch (error) {
       // User is not authenticated, tokenId will remain undefined
-      // This is expected for public visitors, so we can ignore the error.
     }
   }
 
@@ -136,7 +122,7 @@ export default function ProductPage() {
         }
       }
     } catch (error) {
-      //  console.error("Error handling wish item:", error)
+      // console.error("Error handling wish item:", error)
     }
   }
 
@@ -144,125 +130,71 @@ export default function ProductPage() {
     handleGetWishItem()
   }, [switchHeart])
 
-  
-
   // Set original quantity from product and initialize selected quantity
   useEffect(() => {
     if (product) {
-      const stock = product.quantity || 0;
-      setOriginalquantity(stock);
-      setQuantity(stock > 0 ? 1 : 0);
+      const stock = product.quantity || 0
+      setOriginalquantity(stock)
+      setQuantity(stock > 0 ? 1 : 0)
+      
+      // Set images from product
+      if (product.images && product.images.length > 0) {
+        setImages(product.images)
+      } else {
+        setImages([])
+      }
     }
-  }, [product]);
+  }, [product])
 
   // Calculate total price whenever quantity or product price changes
   useEffect(() => {
     if (product?.price) {
-      const price = parseFloat(product.price) || 0;
-      setTotalPrice(price * quantity);
+      const price = parseFloat(product.price) || 0
+      setTotalPrice(price * quantity)
     }
-  }, [quantity, product?.price]);
+  }, [quantity, product?.price])
 
-  // Quantity handlers
-  const increaseQuantity = () => {
-    setQuantity(q => q + 1);
-  };
-
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(q => q - 1);
-    }
-  };
-
-  // Fetch product and related data
+  // Fetch user data and other client-side data
   useEffect(() => {
     getToken()
-    const fetchData = async () => {
-      setIsLoading(true)
+    const fetchUserData = async () => {
+      if (!id) return
+      
       try {
-        const prod = await getProductById(id)
-        if (!prod.data) {
-         return notFound()
-          
-        }
-        setProduct(prod.data)
-        // Images
-        if (prod.data.images && prod.data.images.length > 0) {
-          // const filesArray = prod.data.images.map((item ) => `https://deel-deal-directus.csiwm3.easypanel.host/assets/${item.directus_files_id}`)
-          setImages(prod.data.images)
-        } else {
-          setImages([])
-        }
-
-        // User
-        if (id) {
-          const userData = await getUserByProductId(id)
-          setUser(userData.data)
-          setName(
-            `${(String(userData.data?.first_name).length <= 11 ? (String(userData.data?.first_name)) : (String(userData.data?.first_name).slice(0, 10)) )|| t("account")} 
-            ${(String(userData.data?.last_name).length <= 11 ? (String(userData.data?.last_name)) : (String(userData.data?.last_name).slice(0, 10)) )|| ""}`.trim()
-          
-          )
-          setAvatar(userData.data?.avatar ? `${mediaURL}${userData.data.avatar}` : "")
-        } else {
-          setUser(null)
-          setName("")
-          setAvatar("")
-        }
+        const userData = await getUserByProductId(id)
+        setUser(userData.data)
+        setName(
+          `${(String(userData.data?.first_name).length <= 11 ? (String(userData.data?.first_name)) : (String(userData.data?.first_name).slice(0, 10))) || t("account")} 
+          ${(String(userData.data?.last_name).length <= 11 ? (String(userData.data?.last_name)) : (String(userData.data?.last_name).slice(0, 10))) || ""}`.trim()
+        )
+        setAvatar(userData.data?.avatar ? `${mediaURL}${userData.data.avatar}` : "")
       } catch (err) {
-        notFound()
-      } finally {
-        setIsLoading(false)
+        setUser(null)
+        setName("")
+        setAvatar("")
       }
     }
-    fetchData()
+    
+    fetchUserData()
   }, [id])
 
-  // const makeSwap = async (e) => {
-  //   e.preventDefault()
-  //   e.stopPropagation()
-  //   const token = await getCookie()
-  //   const decoded = await decodedToken(token)
-
-  //   if (token) {
-  //     const kyc = await getKYC(decoded.id) /// ------------- take id user
-  //     if (kyc.data === false || kyc.data == "false") {
-  //       toast({
-  //         title: t("faildSwap") || "Failed Swap",
-  //         description: t("DescFaildSwapKYC") || "KYC is required for swap. Please complete your KYC.",
-  //         variant: "destructive",
-  //       })
-  //     }
-  //     else {
-  //       router.push(`/swap/${id}`)
-  //     }
-  //   } else {
-  //     toast({
-  //       title: t("faildSwap") || "Failed Swap",
-  //       description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
-  //       variant: "destructive",
-  //     })
-  //     router.push(`/auth/login`)
-  //   }
-  // }
   const getCompletedOffers = async () => {
     try {
       const userId = user?.id
       if (!userId) {
         return
       } else {
-      const completedOffers = await getCompletedOffer(userId)
-      setCompletedOffersCount(completedOffers.count)
+        const completedOffers = await getCompletedOffer(userId)
+        setCompletedOffersCount(completedOffers.count)
+      }
+    } catch (error) {
+      setCompletedOffersCount(0)
     }
-  } catch (error) {
-    // console.error("Error fetching completed offers:", error)
-    setCompletedOffersCount(0)
-  }
   }
 
-  const handleGetBreviousRating = async (id) => {
+  const handleGetPreviousRating = async (id) => {
     try {
-      const response = await getCompletedOffer(id) 
+      const response = await getCompletedOffer(id)
       if (!response) {
         setRate(0)
       } else {
@@ -270,7 +202,6 @@ export default function ProductPage() {
         setRate(rates)
       }
     } catch (error) {
-      // console.error("Error fetching rating:", error)
       setRate(0)
     }
   }
@@ -278,10 +209,9 @@ export default function ProductPage() {
   useEffect(() => {
     getCompletedOffers()
     if (user?.id) {
-      handleGetBreviousRating(user.id)
+      handleGetPreviousRating(user.id)
     }
   }, [user])
-
 
   const makeSwap = async (e) => {
     e.preventDefault()
@@ -294,10 +224,9 @@ export default function ProductPage() {
     const decoded = await decodedToken()
     await setTarget(id)
 
-    try{
-      // check user exsit
+    try {
       if (token) {
-        const kyc = await getKYC(decoded.id) /// ------------- take id user
+        const kyc = await getKYC(decoded.id)
         const makeCheckUserHasProducts = await checkUserHasProducts(decoded.id)
         if (kyc.data === false) {
           toast({
@@ -306,30 +235,28 @@ export default function ProductPage() {
             variant: "default",
           })
           router.push(`/profile/settings/editProfile`)
-        }
-        else {
-          if(makeCheckUserHasProducts.count > 0){
+        } else {
+          if (makeCheckUserHasProducts.count > 0) {
             router.push(`/swap/${id}`)
             await removeTarget()
-          }
-          else{
+          } else {
             toast({
               title: t("addItem") || "Add Item",
               description: t("addItemToMakeSwapSesc") || "Please add new product to make swap with it",
               variant: "default",
             })
-            router.push(`/profile/settings/editItem/new`)
+            router.push(`/profile/my-items/new`)
           }
         }
       } else {
         toast({
           title: t("faildSwap") || "Failed Swap",
-          description: t("DescFaildSwapLogin") ||   "Invalid swap without login. Please try to login.",
+          description: t("DescFaildSwapLogin") || "Invalid swap without login. Please try to login.",
           variant: "default",
         })
         router.push(`/auth/login`)
       }
-    }catch(error){
+    } catch (error) {
       toast({
         title: t("error") || "Error",
         description: t("somethingWentWrong") || "Something went wrong. Please try again.",
@@ -340,14 +267,10 @@ export default function ProductPage() {
     }
   }
 
-
   if (isLoading) {
     return (
-       <div className="min-h-screen py-4 bg-background dark:bg-gray-950 flex items-center justify-center">
-        <LoadingSpinner 
-          size="lg" 
-         
-        />
+      <div className="min-h-screen py-4 bg-background dark:bg-gray-950 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
@@ -374,7 +297,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-gray-950 ">
+    <div className="min-h-screen bg-background dark:bg-gray-950">
       <motion.div
         className="container max-w-[1400px] mx-auto py-4 sm:py-8 lg:py-10 px-3 sm:px-6 lg:px-12"
         initial="hidden"
@@ -435,8 +358,6 @@ export default function ProductPage() {
               t={t}
             />
 
-          
-
             <Separator />
 
             {/* Product Tabs Component */}
@@ -446,7 +367,7 @@ export default function ProductPage() {
               t={t}
             />
 
-              <Separator />
+            <Separator />
 
             {/* Seller Info Component */}
             <SellerInfo 

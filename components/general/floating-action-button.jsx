@@ -74,8 +74,8 @@ const menuItems = [
   { icon: User, label: "Profile", color: "bg-green-500" , href:"/profile"},
   { icon:TbShoppingCartUp , label: "Send offers", color: "bg-blue-500", href:"/send-items" },
   { icon: BiCartDownload, label: "Received offers", color: "bg-red-500" , href:"/recived-items"},
-  { icon: Settings, label: "Settings Profile", color: "bg-green-500", href:"/profile/settings/editProfile" },
-  { icon: PlusCircle, label: "Add Item", color: "bg-blue-500", href:"/profile/settings/editItem/new" },
+  { icon: Settings, label: "Settings Profile", color: "bg-green-500", href:"/profile/edit-profile" },
+  { icon: PlusCircle, label: "Add Item", color: "bg-blue-500", href:"/profile/my-items/new" },
 ];
 
 export default  function  FloatingActionButton() {

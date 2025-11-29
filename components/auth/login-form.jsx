@@ -203,7 +203,7 @@ export function LoginForm() {
               description: t("completeProfileDesc") || "Please complete your profile information before continuing.",
               variant: "default",
             })
-            router.push(`/profile/settings/editProfile`)
+            router.push(`/profile/edit-profile`)
             router.refresh()
             return
           }
@@ -218,7 +218,7 @@ export function LoginForm() {
               description: t("addItemToMakeSwapSesc") || "Please add new product to make swap with it",
               variant: "default",
             })
-            router.push(`/profile/settings/editItem/new`)
+            router.push(`/profile/my-items/new`)
             router.refresh()
           } else {
             // Has products: go to swap page

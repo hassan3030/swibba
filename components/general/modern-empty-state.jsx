@@ -60,7 +60,7 @@ const presets = {
     buttonTextKey: "addNewItem",
     buttonTextFallback: "Add Your First Item",
     buttonIcon: Plus,
-    buttonLink: "/profile/settings/editItem/new",
+    buttonLink: "/profile/my-items/new",
   },
   // Profile page - Items in offers empty state
   itemsInOffers: {
@@ -193,16 +193,22 @@ export function ModernEmptyState({
   const colors = colorSchemes[colorScheme]
 
   // Handle title
+  const getStatusLabel = (status) => {
+    // Use translation keys that match the status
+    const statusKey = status.charAt(0).toUpperCase() + status.slice(1)
+    return t(statusKey) || status
+  }
+
   const title = titleProp || (
     statusFilter && statusFilter !== "all"
-      ? t("noOffersWithStatus") || `No ${statusFilter} offers`
+      ? t("noOffersWithStatus") || `No ${getStatusLabel(statusFilter)} Offers`
       : t(presetConfig.titleKey) || presetConfig.titleFallback || "No Items Found"
   )
 
   // Handle description
   const description = descriptionProp || (
     statusFilter && statusFilter !== "all"
-      ? t("noOffersMatchingFilter") || "No offers match the selected filter. Try selecting a different status."
+      ? t("noOffersMatchingFilter") || `You don't have any offers with "${getStatusLabel(statusFilter)}" status. Try selecting a different filter.`
       : t(presetConfig.descriptionKey) || presetConfig.descriptionFallback || "No items to display at the moment."
   )
 

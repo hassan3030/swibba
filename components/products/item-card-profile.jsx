@@ -95,7 +95,7 @@ export function ItemCardProfile({
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [currentUserId, setCurrentUserId] = useState(null)
-  let linkToItemOffer = LinkItemOffer ? `/products/in_offer/${id}` : `/products/out_offer/${id}`  // Advanced filter states
+  let linkToItemOffer = `/products/${id}`  // Direct link to product
 
   // const getDataImage = async () => {
   //   try {
@@ -168,7 +168,7 @@ export function ItemCardProfile({
               description: t("addItemToMakeSwapSesc") || "Please add new product to make swap with it",
               variant: "default",
             })
-            router.push(`/profile/settings/editItem/new`)
+            router.push(`/profile/my-items/new`)
           }
         }
       } else {

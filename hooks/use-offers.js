@@ -186,7 +186,10 @@ export function useOffers() {
 
     const offersReceived = await getOffeReceived(id)
 
-    for (const offer of offersReceived.data) {
+    // Ensure data is an array before iterating
+    const receivedData = offersReceived?.data && Array.isArray(offersReceived.data) ? offersReceived.data : []
+
+    for (const offer of receivedData) {
       const offerItem = await getOfferItemsByOfferId(offer.id)
       const user_from = await getUserById(offer.from_user_id)
       const user_to = await getUserById(offer.to_user_id)
@@ -212,7 +215,7 @@ export function useOffers() {
       new Map(usersSwaper.map((user) => [user.id, user])).values()
     )
 
-    setReceivedOffers(offersReceived.data)
+    setReceivedOffers(receivedData)
     setReceivedUserSwaps(uniqueUsers)
     setReceivedSwapItems(items)
     setReceivedItemsOffer(offerItems)
@@ -233,7 +236,10 @@ export function useOffers() {
 
     const offers = await getOfferById(id)
 
-    for (const offer of offers.data) {
+    // Ensure data is an array before iterating
+    const sentData = offers?.data && Array.isArray(offers.data) ? offers.data : []
+
+    for (const offer of sentData) {
       const offerItem = await getOfferItemsByOfferId(offer.id)
       const user_from = await getUserById(offer.from_user_id)
       const user_to = await getUserById(offer.to_user_id)
@@ -258,7 +264,7 @@ export function useOffers() {
       new Map(usersSwaper.map((user) => [user.id, user])).values()
     )
 
-    setSentOffers(offers.data)
+    setSentOffers(sentData)
     setSentUserSwaps(uniqueUsers)
     setSentSwapItems(items)
     setSentItemsOffer(offerItems)
@@ -267,7 +273,7 @@ export function useOffers() {
   // Chat
   const handleGetMessages = useCallback(async () => {
     const messages = await getAllMessage()
-    setChatMessages(messages.data)
+    setChatMessages(messages?.data && Array.isArray(messages.data) ? messages.data : [])
   }, [])
 
   const handleSendMessage = async (to_user_id, offer_id) => {

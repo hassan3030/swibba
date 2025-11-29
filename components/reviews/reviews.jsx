@@ -1,10 +1,10 @@
 "use client"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Star, Send, CheckCircle } from "lucide-react"
+import { Star, Send, CheckCircle, X } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { addReview, getReviewConditins } from "@/callAPI/swap"
 import { decodedToken } from "@/callAPI/utiles"
@@ -35,12 +35,10 @@ const starVariants = {
   inactive: {
     scale: 1,
     rotate: 0,
-    filter: "brightness(0.7)",
   },
   active: {
     scale: 1.2,
     rotate: -10,
-    filter: "brightness(1.2)",
     transition: {
       type: "spring",
       stiffness: 300,
@@ -50,32 +48,10 @@ const starVariants = {
   hover: {
     scale: 1.3,
     rotate: -5,
-    filter: "brightness(1.3)",
     transition: {
       type: "spring",
       stiffness: 400,
       damping: 25,
-    },
-  },
-}
-
-const buttonVariants = {
-  hover: {
-    scale: 1.05,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-  },
-  tap: { scale: 0.95 },
-}
-
-const textVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 20,
     },
   },
 }
@@ -94,11 +70,10 @@ const successVariants = {
   },
 }
 
-const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, onRatingSubmitted }) => {
+const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, onRatingSubmitted, onClose }) => {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [message, setMessage] = useState("")
-  const [onClose, setOnClose] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasReviewed, setHasReviewed] = useState(false)
   const router = useRouter()
@@ -111,7 +86,6 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
     try {
       const userId = await getCurrentUserId()
       if (!userId) {
-        // console.error("No user ID available")
         return
       }
       
@@ -119,11 +93,9 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
       if (myUser && myUser.data && myUser.data.email) {
         setMyEmail(myUser.data.email)
       } else {
-        // console.error("User data not found or invalid structure:", myUser)
         setMyEmail("")
       }
     } catch (error) {
-      // console.error("Error fetching user data:", error)
       setMyEmail("")
     }
   }
@@ -136,7 +108,6 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
     try {
       const {id} = await decodedToken()
       if (!id) {
-        // console.error("No user ID available for review check")
         setHasReviewed(false)
         return
       }
@@ -145,11 +116,9 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
       if (rev && rev.data && typeof rev.data.has_reviewed === 'boolean') {
         setHasReviewed(rev.data.has_reviewed)
       } else {
-        // console.error("Review data not found or invalid structure:", rev)
         setHasReviewed(false)
       }
     } catch (error) {
-      //  console.error("Error checking review conditions:", error)
       setHasReviewed(false)
     }
   }
@@ -189,18 +158,14 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
         description: t("Thankyouforrating") || "Thank you for rating",
       })
       
-      // Set hasReviewed to true to show success message
       setHasReviewed(true)
       
-      // Call the callback function if provided
       if (onRatingSubmitted) {
         onRatingSubmitted()
       }
       
-      // Refresh the page data
       router.refresh()
       
-      // Also try window.location.reload() as fallback
       setTimeout(() => {
         window.location.reload()
       }, 1000)
@@ -238,53 +203,35 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
   }, [hasReviewed])
 
   return (
-    <motion.div variants={cardVariants} initial="hidden" animate="visible" className="w-full max-w-md mx-auto">
-      <Card className="shadow-xl border-0 overflow-hidden">
-        <CardHeader className="text-center bg-primary/20">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <CardTitle className="flex items-center justify-center gap-2">
-              <motion.div
-                animate={{ rotate: [0, -10] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
-              >
-                <Star className="h-5 w-5 text-primary fill-primary" />
-              </motion.div>
-              {t("RateYourSwapPartner") || "Rate Your Swap Partner"}
-            </CardTitle>
-          </motion.div>
+    <motion.div variants={cardVariants} initial="hidden" animate="visible" className="w-full">
+      <Card className="shadow-2xl border-0 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b">
+          <h3 className="text-lg font-semibold">
+            {t("RateYourSwapPartner") || "Rate Your Swap Partner"}
+          </h3>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full h-8 w-8">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
 
-          <motion.div
-            className="flex items-center justify-center gap-3 mt-4"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, type: "spring", stiffness: 200, damping: 20 }}
-          >
-            {userAvatar && (
-              <Image
-                width={100}
-                height={100}
-                src={userAvatar}
-                alt={userName}
-                className="w-12 h-12 rounded-full object-cover shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
-            <div>
-              {userName && (
-                <motion.p
-                  className="font-semibold text-lg"
-                  variants={textVariants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: 0.5 }}
-                >
-                  {userName}
-                </motion.p>
-              )}
-            </div>
-          </motion.div>
-        </CardHeader>
+        {/* User Info */}
+        <div className="flex items-center gap-3 p-4 bg-muted/50">
+          {userAvatar && (
+            <Image
+              width={48}
+              height={48}
+              src={userAvatar}
+              alt={userName}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          )}
+          {userName && (
+            <p className="font-medium text-base">{userName}</p>
+          )}
+        </div>
 
         <AnimatePresence mode="wait">
           {!hasReviewed ? (
@@ -295,15 +242,13 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <CardContent className="space-y-6 p-6">
+              <CardContent className="p-4 space-y-4">
                 {/* Star Rating */}
-                <motion.div
-                  className="text-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <div className="flex justify-center gap-1 mb-2">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {getRatingText(hoverRating || rating)}
+                  </p>
+                  <div className="flex justify-center gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <motion.button
                         key={star}
@@ -319,100 +264,43 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
                       >
                         <Star
                           className={`h-8 w-8 transition-colors duration-200 ${
-                            star <= (hoverRating || rating) ? "fill-primary text-primary/80" : "text-primary/80"
+                            star <= (hoverRating || rating) ? "fill-amber-400 text-amber-400" : "text-gray-300"
                           }`}
                         />
                       </motion.button>
                     ))}
                   </div>
-                  <motion.p
-                    className="text-sm font-medium text-muted-foreground"
-                    key={hoverRating || rating}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {getRatingText(hoverRating || rating)}
-                  </motion.p>
-                </motion.div>
+                </div>
 
-                {/* Message */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
-                  <label className="text-sm font-medium mb-2 block">
-                    {t("Leaveamessageoptional") || "Leave a message (optional)"}
-                  </label>
-                  <motion.div whileFocus={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-                    <Textarea
-                      placeholder="Share your experience with this swap partner..."
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      className="min-h-[80px] resize-none transition-all duration-200 focus:ring-2 focus:ring-yellow-400/20"
-                      maxLength={500}
-                    />
-                  </motion.div>
-                  <motion.p
-                    className="text-xs text-muted-foreground mt-1 text-right"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
-                  >
-                    {message.length}/500
-                  </motion.p>
-                </motion.div>
-
-                {/* Action Buttons */}
-                <motion.div
-                  className="flex gap-3"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2 }}
-                >
-                  {onClose && (
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                      <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
-                        {t("Cancel") || "Cancel"}
-                      </Button>
-                    </motion.div>
-                  )}
-                  <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                {/* Message with inline send button */}
+                <div className="relative">
+                  <Textarea
+                    placeholder={t("Leaveamessageoptional") || "Leave a message (optional)"}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="min-h-[100px] resize-none pr-12 pb-12"
+                    maxLength={500}
+                  />
+                  <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{message.length}/500</span>
                     <Button
-                      onClick={() => {
-                        handleSubmit()
-                      }}
+                      size="icon"
+                      onClick={handleSubmit}
                       disabled={isSubmitting || rating === 0}
-                      className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white"
+                      className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
                     >
-                      <AnimatePresence mode="wait">
-                        {isSubmitting ? (
-                          <motion.div
-                            key="submitting"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                              className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-                            />
-                            {t("SubmitRating") || "Submit Rating"}
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key="submit"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex items-center"
-                          >
-                            <Send className="mr-2 h-4 w-4" />
-                            {t("SubmitRating") || "Submit Rating"}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {isSubmitting ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                          className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                        />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
                     </Button>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               </CardContent>
             </motion.div>
           ) : (
@@ -422,33 +310,19 @@ const SwapRating = ({ from_user_id, to_user_id, offer_id, userName, userAvatar, 
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="p-4 rounded-lg bg-green-50 border border-green-200 flex items-center gap-3 mb-4 mx-4 mt-2"
+              className="p-4"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30, delay: 0.2 }}
-              >
-                <CheckCircle className="w-6 h-6 text-green-500" />
-              </motion.div>
-              <div>
-                <motion.div
-                  className="font-semibold text-green-700"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  {t("ReviewSubmitted") || "Review Submitted"}
-                </motion.div>
-                <motion.div
-                  className="text-sm text-green-600"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  {t("YouhavealreadyreviewedthisofferThankyouforyourfeedback") ||
-                    "You have already reviewed this offer. Thank you for your feedback!"}
-                </motion.div>
+              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 flex items-center gap-3">
+                <CheckCircle className="w-6 h-6 text-green-500 shrink-0" />
+                <div>
+                  <p className="font-semibold text-green-700 dark:text-green-400">
+                    {t("ReviewSubmitted") || "Review Submitted"}
+                  </p>
+                  <p className="text-sm text-green-600 dark:text-green-500">
+                    {t("YouhavealreadyreviewedthisofferThankyouforyourfeedback") ||
+                      "You have already reviewed this offer. Thank you for your feedback!"}
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}

@@ -193,7 +193,7 @@ export function SwibbaProductCard({
               description: t("addItemToMakeSwapSesc") || "Please add new product to make swap with it",
               variant: "default",
             })
-            router.push(`/profile/settings/editItem/new`)
+            router.push(`/profile/my-items/new`)
           }
         }
       } else {
@@ -280,7 +280,7 @@ export function SwibbaProductCard({
        onHoverEnd={() => setIsHovered(false)}
      >
       
-      <Link href={`/products/out_offer/${id}`}>
+      <Link href={`/products/${id}`}>
         <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border-2 border-gray-300 dark:border-gray-600 bg-background dark:bg-background/20 shadow-sm hover:shadow-md hover:border-primary dark:hover:border-primary transition-all duration-300">
           {/* Image container */}
           <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">

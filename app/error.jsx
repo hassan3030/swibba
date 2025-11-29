@@ -4,9 +4,12 @@ import Link from "next/link"
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/use-translations"
+import { useLanguage } from "@/lib/language-provider"
+import { AlertCircle, Home } from "lucide-react"
 
 export default function Error({ error, reset }) {
   const { t } = useTranslations()
+  const { isRTL } = useLanguage()
 
   useEffect(() => {
     // Optionally log the error to your error reporting service
@@ -14,38 +17,46 @@ export default function Error({ error, reset }) {
   }, [error])
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center px-4">
-      <div className="mx-auto w-full max-w-lg text-center">
-        <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary/50 text-secondary-foreground">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="h-8 w-8"
-            aria-hidden="true"
-          >
-            <path d="M12 9v4" />
-            <path d="M12 17h.01" />
-            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
+    <div className="relative flex min-h-[60vh] items-center justify-center px-4 overflow-hidden">
+      {/* Background gradient effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-red-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto w-full max-w-lg text-center">
+        {/* Icon Container */}
+        <div className="relative mb-8 flex justify-center">
+          {/* Icon background */}
+          <div className="flex items-center justify-center w-28 h-28 rounded-full bg-red-50 dark:bg-red-950/30">
+            <AlertCircle className="w-14 h-14 text-red-500 dark:text-red-400" strokeWidth={1.5} />
+          </div>
         </div>
 
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight md:text-3xl">
-             {t("somethingWentWrong")||"Something went wrong"}
-          
+        {/* Title */}
+        <h1 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl text-foreground">
+          {t("somethingWentWrong") || (isRTL ? "حدث خطأ ما" : "Something went wrong")}
         </h1>
-        <p className="mb-6 text-muted-foreground">
-          {error?.message || "An unexpected error occurred. Please try again."}
+
+        {/* Message */}
+        <p className="mb-8 text-base md:text-lg text-muted-foreground leading-relaxed">
+          {isRTL 
+            ? "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+            : "An unexpected error occurred. Please try again."
+          }
         </p>
 
-        <div className="flex items-center justify-center gap-3">
-          <Button onClick={() => reset()}>
-             {t("tryAgain")||"Try again"}
-          </Button>
-          <Button asChild variant="secondary">
-            <Link href="/">{t("returnToHome")||"Go to Home"}</Link>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button 
+            asChild 
+            size="lg"
+            className="px-8 py-3 rounded-full font-semibold"
+          >
+            <Link href="/">
+              <Home className={`w-4 h-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+              {t("returnToHome") || (isRTL ? "الرجوع للصفحة الرئيسية" : "Go to Home")}
+            </Link>
           </Button>
         </div>
       </div>

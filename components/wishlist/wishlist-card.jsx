@@ -138,7 +138,7 @@ const WishlistCard = ({ item, onRemove }) => {
                 <CardFooter className="p-5 pt-0 flex justify-center">
             <motion.div className="flex gap-3 w-full" variants={containerVariants} initial="hidden" animate="visible">
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap" className="flex-1">
-                <Link href={`/products/out_offer/${item.id}`} className="w-full">
+                <Link href={`/products/${item.id}`} className="w-full">
                   <Button variant="outline" className="w-full rounded-full border-2 hover:border-primary transition-all">
                     {t("ViewDetails") || " View Details"}
                   </Button>
